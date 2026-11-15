@@ -1,0 +1,24 @@
+{
+  "name": "wordbridge",
+  "version": "2026.2.0",
+  "description": "WORD BRIDGE - Where Languages Bring People Together. Hệ sinh thái thực hành ngoại ngữ và kết nối cộng đồng trên một tên miền duy nhất https://wordbridge.io.vn",
+  "main": "src/worker.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "npx wrangler dev",
+    "deploy": "npx wrangler deploy",
+    "d1:migrate": "npx wrangler d1 execute word --remote --file=./database/schema.sql && npx wrangler d1 execute word --remote --file=./database/seeds/01_reference_data.sql",
+    "migrate": "node scripts/manage.js migrate",
+    "seed": "node scripts/manage.js seed",
+    "build": "node scripts/manage.js build",
+    "backup": "node scripts/manage.js backup",
+    "restore": "node scripts/manage.js restore",
+    "test": "node tests/full-system.test.js",
+    "verify": "node scripts/manage.js verify"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "author": "Bùi Tấn Lộc, Cao Anh Nhựt, Võ Gia Như - WORD BRIDGE Founding Team",
+  "license": "UNLICENSED"
+}

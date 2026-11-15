@@ -1,0 +1,458 @@
+{
+  "version": "2026.11",
+  "total_provinces": 34,
+  "provinces": [
+    {
+      "code": "01",
+      "name": "Thành phố Hà Nội",
+      "communes": [
+        "Phường Ba Đình",
+        "Phường Hoàn Kiếm",
+        "Phường Đống Đa",
+        "Phường Cầu Giấy",
+        "Phường Tây Hồ",
+        "Xã Đông Anh",
+        "Xã Sóc Sơn",
+        "Xã Gia Lâm"
+      ]
+    },
+    {
+      "code": "02",
+      "name": "Thành phố Hồ Chí Minh",
+      "communes": [
+        "Phường Bến Nghé",
+        "Phường Sài Gòn",
+        "Phường Thủ Đức",
+        "Phường Linh Trung",
+        "Phường Dĩ An",
+        "Phường Đông Hòa",
+        "Phường Phú Mỹ",
+        "Xã Cần Giờ",
+        "Đặc khu Côn Đảo"
+      ]
+    },
+    {
+      "code": "03",
+      "name": "Thành phố Hải Phòng",
+      "communes": [
+        "Phường Hồng Bàng",
+        "Phường Ngô Quyền",
+        "Phường Lê Chân",
+        "Phường Thủy Nguyên",
+        "Phường Hải Dương",
+        "Đặc khu Bạch Long Vĩ",
+        "Đặc khu Cát Hải"
+      ]
+    },
+    {
+      "code": "04",
+      "name": "Thành phố Đà Nẵng",
+      "communes": [
+        "Phường Hải Châu",
+        "Phường Thanh Khê",
+        "Phường Sơn Trà",
+        "Phường Ngũ Hành Sơn",
+        "Phường Hội An",
+        "Phường Tam Kỳ",
+        "Đặc khu Hoàng Sa"
+      ]
+    },
+    {
+      "code": "05",
+      "name": "Thành phố Cần Thơ",
+      "communes": [
+        "Phường Ninh Kiều",
+        "Phường Cái Răng",
+        "Phường Bình Thủy",
+        "Phường Vị Thanh",
+        "Phường Sóc Trăng",
+        "Xã Phong Điền"
+      ]
+    },
+    {
+      "code": "06",
+      "name": "Thành phố Huế",
+      "communes": [
+        "Phường Thuận Hóa",
+        "Phường Phú Xuân",
+        "Phường Hương Thủy",
+        "Phường Hương Trà",
+        "Xã Phong Điền",
+        "Xã Phú Lộc"
+      ]
+    },
+    {
+      "code": "07",
+      "name": "Tỉnh An Giang",
+      "communes": [
+        "Phường Long Xuyên",
+        "Phường Châu Đốc",
+        "Phường Rạch Giá",
+        "Phường Hà Tiên",
+        "Đặc khu Phú Quốc",
+        "Đặc khu Thổ Châu"
+      ]
+    },
+    {
+      "code": "08",
+      "name": "Tỉnh Bắc Ninh",
+      "communes": [
+        "Phường Kinh Bắc",
+        "Phường Từ Sơn",
+        "Phường Bắc Giang",
+        "Phường Việt Yên",
+        "Xã Yên Phong",
+        "Xã Quế Võ"
+      ]
+    },
+    {
+      "code": "09",
+      "name": "Tỉnh Cà Mau",
+      "communes": [
+        "Phường Tân Thành",
+        "Phường An Xuyên",
+        "Phường Bạc Liêu",
+        "Xã Năm Căn",
+        "Xã Đất Mũi"
+      ]
+    },
+    {
+      "code": "10",
+      "name": "Tỉnh Cao Bằng",
+      "communes": [
+        "Phường Hợp Giang",
+        "Phường Sông Bằng",
+        "Xã Trùng Khánh",
+        "Xã Quảng Hòa",
+        "Xã Bảo Lạc"
+      ]
+    },
+    {
+      "code": "11",
+      "name": "Tỉnh Đắk Lắk",
+      "communes": [
+        "Phường Buôn Ma Thuột",
+        "Phường Tân An",
+        "Phường Tuy Hòa",
+        "Phường Sông Cầu",
+        "Xã Buôn Đôn"
+      ]
+    },
+    {
+      "code": "12",
+      "name": "Tỉnh Điện Biên",
+      "communes": [
+        "Phường Mường Thanh",
+        "Phường Him Lam",
+        "Xã Điện Biên Phủ",
+        "Xã Mường Phăng",
+        "Xã Tuần Giáo"
+      ]
+    },
+    {
+      "code": "13",
+      "name": "Tỉnh Đồng Nai",
+      "communes": [
+        "Phường Biên Hòa",
+        "Phường Trấn Biên",
+        "Phường Long Khánh",
+        "Phường Đồng Xoài",
+        "Xã Long Thành",
+        "Xã Nhơn Trạch"
+      ]
+    },
+    {
+      "code": "14",
+      "name": "Tỉnh Đồng Tháp",
+      "communes": [
+        "Phường Cao Lãnh",
+        "Phường Sa Đéc",
+        "Phường Mỹ Tho",
+        "Phường Gò Công",
+        "Xã Tháp Mười"
+      ]
+    },
+    {
+      "code": "15",
+      "name": "Tỉnh Gia Lai",
+      "communes": [
+        "Phường Pleiku",
+        "Phường An Khê",
+        "Phường Quy Nhơn",
+        "Phường An Nhơn",
+        "Xã Chư Sê"
+      ]
+    },
+    {
+      "code": "16",
+      "name": "Tỉnh Hà Tĩnh",
+      "communes": [
+        "Phường Thành Sen",
+        "Phường Hồng Lĩnh",
+        "Phường Kỳ Anh",
+        "Xã Nghi Xuân",
+        "Xã Hương Sơn"
+      ]
+    },
+    {
+      "code": "17",
+      "name": "Tỉnh Hưng Yên",
+      "communes": [
+        "Phường Lam Sơn",
+        "Phường Mỹ Hào",
+        "Phường Thái Bình",
+        "Xã Văn Giang",
+        "Xã Yên Mỹ"
+      ]
+    },
+    {
+      "code": "18",
+      "name": "Tỉnh Khánh Hòa",
+      "communes": [
+        "Phường Nha Trang",
+        "Phường Cam Ranh",
+        "Phường Ninh Hòa",
+        "Phường Phan Rang",
+        "Đặc khu Trường Sa"
+      ]
+    },
+    {
+      "code": "19",
+      "name": "Tỉnh Lai Châu",
+      "communes": [
+        "Phường Đoàn Kết",
+        "Phường Tân Phong",
+        "Xã Phong Thổ",
+        "Xã Than Uyên",
+        "Xã Sìn Hồ"
+      ]
+    },
+    {
+      "code": "20",
+      "name": "Tỉnh Lâm Đồng",
+      "communes": [
+        "Phường Đà Lạt",
+        "Phường Bảo Lộc",
+        "Phường Phan Thiết",
+        "Phường Gia Nghĩa",
+        "Đặc khu Phú Quý"
+      ]
+    },
+    {
+      "code": "21",
+      "name": "Tỉnh Lạng Sơn",
+      "communes": [
+        "Phường Đông Kinh",
+        "Phường Chi Lăng",
+        "Xã Đồng Đăng",
+        "Xã Hữu Lũng",
+        "Xã Lộc Bình"
+      ]
+    },
+    {
+      "code": "22",
+      "name": "Tỉnh Lào Cai",
+      "communes": [
+        "Phường Lào Cai",
+        "Phường Sa Pa",
+        "Phường Yên Bái",
+        "Xã Bát Xát",
+        "Xã Bắc Hà"
+      ]
+    },
+    {
+      "code": "23",
+      "name": "Tỉnh Nghệ An",
+      "communes": [
+        "Phường Thành Vinh",
+        "Phường Cửa Lò",
+        "Phường Thái Hòa",
+        "Xã Nam Đàn",
+        "Xã Diễn Châu"
+      ]
+    },
+    {
+      "code": "24",
+      "name": "Tỉnh Ninh Bình",
+      "communes": [
+        "Phường Hoa Lư",
+        "Phường Tam Điệp",
+        "Phường Nam Định",
+        "Phường Phủ Lý",
+        "Xã Gia Viễn"
+      ]
+    },
+    {
+      "code": "25",
+      "name": "Tỉnh Phú Thọ",
+      "communes": [
+        "Phường Việt Trì",
+        "Phường Vĩnh Yên",
+        "Phường Hòa Bình",
+        "Xã Phong Châu",
+        "Xã Thanh Thủy"
+      ]
+    },
+    {
+      "code": "26",
+      "name": "Tỉnh Quảng Ngãi",
+      "communes": [
+        "Phường Cẩm Thành",
+        "Phường Đức Phổ",
+        "Phường Kon Tum",
+        "Đặc khu Lý Sơn",
+        "Xã Bình Sơn"
+      ]
+    },
+    {
+      "code": "27",
+      "name": "Tỉnh Quảng Ninh",
+      "communes": [
+        "Phường Hạ Long",
+        "Phường Cẩm Phả",
+        "Phường Uông Bí",
+        "Phường Móng Cái",
+        "Đặc khu Vân Đồn",
+        "Đặc khu Cô Tô"
+      ]
+    },
+    {
+      "code": "28",
+      "name": "Tỉnh Quảng Trị",
+      "communes": [
+        "Phường Đông Hà",
+        "Phường Đồng Hới",
+        "Phường Ba Đồn",
+        "Đặc khu Cồn Cỏ",
+        "Xã Vĩnh Linh"
+      ]
+    },
+    {
+      "code": "29",
+      "name": "Tỉnh Sơn La",
+      "communes": [
+        "Phường Chiềng Lề",
+        "Phường Mộc Châu",
+        "Xã Mai Sơn",
+        "Xã Thuận Châu",
+        "Xã Yên Châu"
+      ]
+    },
+    {
+      "code": "30",
+      "name": "Tỉnh Tây Ninh",
+      "communes": [
+        "Phường Tây Ninh",
+        "Phường Hòa Thành",
+        "Phường Tân An",
+        "Xã Trảng Bàng",
+        "Xã Bến Lức"
+      ]
+    },
+    {
+      "code": "31",
+      "name": "Tỉnh Thái Nguyên",
+      "communes": [
+        "Phường Phan Đình Phùng",
+        "Phường Sông Công",
+        "Phường Phổ Yên",
+        "Phường Bắc Kạn",
+        "Xã Đại Từ"
+      ]
+    },
+    {
+      "code": "32",
+      "name": "Tỉnh Thanh Hóa",
+      "communes": [
+        "Phường Hạc Thành",
+        "Phường Sầm Sơn",
+        "Phường Bỉm Sơn",
+        "Phường Nghi Sơn",
+        "Xã Hoằng Hóa"
+      ]
+    },
+    {
+      "code": "33",
+      "name": "Tỉnh Tuyên Quang",
+      "communes": [
+        "Phường Phan Thiết",
+        "Phường Minh Xuân",
+        "Phường Hà Giang",
+        "Xã Sơn Dương",
+        "Xã Đồng Văn"
+      ]
+    },
+    {
+      "code": "34",
+      "name": "Tỉnh Vĩnh Long",
+      "communes": [
+        "Phường Long Châu",
+        "Phường Trà Vinh",
+        "Phường Bến Tre",
+        "Xã Bình Minh",
+        "Xã Mang Thít"
+      ]
+    }
+  ],
+  "approved_activity_fields": [
+    "Giáo dục và Đào tạo ngoại ngữ",
+    "Giao lưu văn hóa và Quốc tế",
+    "Phát triển kỹ năng và Học thuật",
+    "Tình nguyện và Phát triển cộng đồng",
+    "Nghiên cứu, Biên phiên dịch và Khảo thí",
+    "Khác"
+  ],
+  "public_legal_registry": [
+    {
+      "legal_code": "0303460456",
+      "legal_name": "Trường Đại học Khoa học Xã hội và Nhân văn - Đại học Quốc gia TP. Hồ Chí Minh",
+      "trading_name": "VNUHCM - University of Social Sciences and Humanities",
+      "short_name": "USSH",
+      "entity_type": "Cơ sở giáo dục đại học công lập",
+      "founded_date": "1957-03-01",
+      "operating_status": "Đang hoạt động",
+      "headquarters_address": "10 - 12 Đinh Tiên Hoàng, Phường Bến Nghé, Thành phố Hồ Chí Minh",
+      "province_code": "02",
+      "province_name": "Thành phố Hồ Chí Minh",
+      "commune_name": "Phường Bến Nghé",
+      "representative_name": "Ngô Thị Phương Lan",
+      "representative_title": "Hiệu trưởng",
+      "business_lines": "Giáo dục đại học, sau đại học, đào tạo và nghiên cứu ngôn ngữ - văn hóa quốc tế",
+      "source_name": "Cổng thông tin quốc gia về đăng ký đơn vị & cơ sở giáo dục"
+    },
+    {
+      "legal_code": "3700589124",
+      "legal_name": "Trường Cao đẳng nghề Việt Nam - Singapore",
+      "trading_name": "Vietnam - Singapore Vocational College",
+      "short_name": "VSVC",
+      "entity_type": "Cơ sở giáo dục nghề nghiệp công lập",
+      "founded_date": "2001-09-15",
+      "operating_status": "Đang hoạt động",
+      "headquarters_address": "Quốc lộ 13, Phường Thuận Giao, Thành phố Hồ Chí Minh",
+      "province_code": "02",
+      "province_name": "Thành phố Hồ Chí Minh",
+      "commune_name": "Phường Dĩ An",
+      "representative_name": "Trần Hùng Phong",
+      "representative_title": "Hiệu trưởng",
+      "business_lines": "Giáo dục nghề nghiệp, đào tạo kỹ thuật, công nghệ và ngoại ngữ ứng dụng",
+      "source_name": "Cổng thông tin quốc gia về đăng ký đơn vị & cơ sở giáo dục"
+    },
+    {
+      "legal_code": "0318202699",
+      "legal_name": "Mạng lưới Giáo dục và Phát triển Cộng đồng Sky First",
+      "trading_name": "Sky First Education and Community Development Network",
+      "short_name": "SFN",
+      "entity_type": "Tổ chức giáo dục và phát triển cộng đồng",
+      "founded_date": "2025-11-01",
+      "operating_status": "Đang hoạt động",
+      "headquarters_address": "Số 15 Võ Văn Ngân, Phường Thủ Đức, Thành phố Hồ Chí Minh",
+      "province_code": "02",
+      "province_name": "Thành phố Hồ Chí Minh",
+      "commune_name": "Phường Thủ Đức",
+      "representative_name": "Bùi Tấn Lộc",
+      "representative_title": "Chủ tịch / Người sáng lập",
+      "business_lines": "Giáo dục ngoại ngữ cộng đồng, kết nối học thuật và phát triển kỹ năng thanh thiếu niên",
+      "source_name": "Hệ thống dữ liệu đối tác giáo dục đã xác thực"
+    }
+  ]
+}

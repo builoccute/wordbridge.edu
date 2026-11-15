@@ -1,0 +1,31 @@
+name = "wordbridge"
+main = "src/worker.js"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "./src/frontend"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[vars]
+APP_NAME = "WORD BRIDGE"
+APP_SLOGAN = "Where Languages Bring People Together."
+CANONICAL_ORIGIN = "https://wordbridge.io.vn"
+DEFAULT_LOCALE = "vi-VN"
+TIMEZONE = "Asia/Ho_Chi_Minh"
+MONTHLY_QUOTA_GB = "50"
+EMAIL_FROM_NOREPLY = "noreply@wordbridge.io.vn"
+EMAIL_FROM_NAME = "WORD BRIDGE – Email tự động từ hệ thống"
+EMAIL_OFFICIAL_CONTACT = "wordbridge.education@gmail.com"
+EMAIL_CSKH = "cskh@wordbridge.io.vn"
+EMAIL_PARTNERSHIP = "contact@wordbridge.io.vn"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "word"
+database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
+migrations_dir = "database/migrations"
+
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "word"

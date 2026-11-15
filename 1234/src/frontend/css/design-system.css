@@ -1,0 +1,502 @@
+/* ============================================================================
+ * WORD BRIDGE - DESIGN SYSTEM (PHẦN 04 & PHẦN 05)
+ * Bảng màu thương hiệu chuẩn:
+ * - Deep Teal:     #146466
+ * - Vermilion Red: #C92F1C
+ * - Light Teal:    #5AABA9
+ * - Warm Ivory:    #E2E2C4
+ * ============================================================================ */
+:root {
+  --wb-deep-teal: #146466;
+  --wb-deep-teal-dark: #0D4446;
+  --wb-vermilion: #C92F1C;
+  --wb-vermilion-hover: #A82414;
+  --wb-light-teal: #5AABA9;
+  --wb-warm-ivory: #E2E2C4;
+  --wb-bg-soft: #F3F8F8;
+  --wb-bg-mint: #E6F3F3;
+  --wb-surface: #FFFFFF;
+  --wb-text-main: #162B2C;
+  --wb-text-muted: #4E6768;
+  --wb-border: #D5E5E5;
+  --wb-success: #1F8A5B;
+  --wb-warning: #D9822B;
+  --wb-danger: #C92F1C;
+  --wb-radius-sm: 8px;
+  --wb-radius-md: 14px;
+  --wb-radius-lg: 20px;
+  --wb-shadow-sm: 0 2px 8px rgba(20, 100, 102, 0.06);
+  --wb-shadow-md: 0 8px 24px rgba(20, 100, 102, 0.10);
+  --wb-shadow-lg: 0 16px 38px rgba(20, 100, 102, 0.14);
+  --wb-font-sans: 'Be Vietnam Pro', 'Segoe UI', Roboto, 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--wb-font-sans);
+  background-color: var(--wb-bg-soft);
+  color: var(--wb-text-main);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--wb-deep-teal);
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+a:hover {
+  color: var(--wb-vermilion);
+}
+
+.wb-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Header & Mega Menu (Sát thiết kế 42.pdf trang 1 & trang 9, không có Sự kiện) */
+.wb-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: var(--wb-surface);
+  border-bottom: 1px solid var(--wb-border);
+  box-shadow: var(--wb-shadow-sm);
+}
+
+.wb-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 74px;
+}
+
+.wb-logo-link img {
+  height: 46px;
+  width: auto;
+  display: block;
+}
+
+.wb-nav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.wb-nav-item {
+  position: relative;
+}
+
+.wb-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 13px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--wb-text-main);
+  cursor: pointer;
+}
+
+.wb-nav-link:hover,
+.wb-nav-link.active {
+  background: var(--wb-deep-teal);
+  color: #FFFFFF;
+}
+
+.wb-mega-menu {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 440px;
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  box-shadow: var(--wb-shadow-lg);
+  padding: 18px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  z-index: 1100;
+}
+
+.wb-nav-item:hover .wb-mega-menu,
+.wb-nav-item:focus-within .wb-mega-menu {
+  display: grid;
+}
+
+.wb-mega-card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  border-radius: var(--wb-radius-sm);
+  background: var(--wb-bg-soft);
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.wb-mega-card:hover {
+  border-color: var(--wb-light-teal);
+  background: var(--wb-bg-mint);
+}
+
+.wb-mega-card strong {
+  color: var(--wb-deep-teal);
+  font-size: 14px;
+}
+
+.wb-mega-card span {
+  font-size: 12px;
+  color: var(--wb-text-muted);
+}
+
+/* Header Actions */
+.wb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wb-search-box {
+  display: flex;
+  align-items: center;
+  background: var(--wb-bg-soft);
+  border: 1px solid var(--wb-border);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+
+.wb-search-box input {
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 13px;
+  width: 140px;
+  color: var(--wb-text-main);
+}
+
+/* Buttons */
+.wb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: var(--wb-radius-sm);
+  font-size: 14px;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  font-family: inherit;
+}
+
+.wb-btn-primary {
+  background: var(--wb-deep-teal);
+  color: #FFFFFF;
+}
+
+.wb-btn-primary:hover {
+  background: var(--wb-deep-teal-dark);
+  color: #FFFFFF;
+}
+
+.wb-btn-danger,
+.wb-btn-accent {
+  background: var(--wb-vermilion);
+  color: #FFFFFF;
+}
+
+.wb-btn-danger:hover,
+.wb-btn-accent:hover {
+  background: var(--wb-vermilion-hover);
+  color: #FFFFFF;
+}
+
+.wb-btn-outline {
+  background: transparent;
+  border-color: var(--wb-deep-teal);
+  color: var(--wb-deep-teal);
+}
+
+.wb-btn-outline:hover {
+  background: var(--wb-bg-mint);
+}
+
+/* Hero Banner (Sát thiết kế 42.pdf trang 1, 10, 28) */
+.wb-hero {
+  background: linear-gradient(125deg, #E8F4F4 0%, #D4ECEB 55%, #E2E2C4 100%);
+  border-bottom: 3px solid var(--wb-deep-teal);
+  padding: 36px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.wb-hero-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 0.95fr;
+  gap: 28px;
+  align-items: center;
+}
+
+.wb-hero-title {
+  font-size: 34px;
+  font-weight: 800;
+  color: var(--wb-deep-teal);
+  margin: 0 0 10px 0;
+  line-height: 1.25;
+}
+
+.wb-hero-title::after {
+  content: '';
+  display: block;
+  width: 68px;
+  height: 4px;
+  background: var(--wb-vermilion);
+  border-radius: 2px;
+  margin-top: 8px;
+}
+
+/* Cards, Grids, Badges */
+.wb-card {
+  background: var(--wb-surface);
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  padding: 22px;
+  box-shadow: var(--wb-shadow-sm);
+}
+
+.wb-section {
+  padding: 28px 0;
+}
+
+.wb-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 21px;
+  font-weight: 800;
+  color: var(--wb-text-main);
+  margin: 0 0 18px 0;
+}
+
+.wb-section-title::before {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 22px;
+  background: var(--wb-vermilion);
+  border-radius: 3px;
+}
+
+.wb-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.wb-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.wb-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.wb-grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+
+.wb-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.wb-badge-teal { background: var(--wb-bg-mint); color: var(--wb-deep-teal); }
+.wb-badge-red { background: #FDECEC; color: var(--wb-vermilion); }
+.wb-badge-ivory { background: var(--wb-warm-ivory); color: #2B3A2B; }
+.wb-badge-success { background: #E6F6EE; color: var(--wb-success); }
+
+/* Forms & Inputs */
+.wb-form-group {
+  margin-bottom: 16px;
+}
+
+.wb-label {
+  display: block;
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-bottom: 6px;
+  color: var(--wb-text-main);
+}
+
+.wb-label .req {
+  color: var(--wb-vermilion);
+}
+
+.wb-input,
+.wb-select,
+.wb-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--wb-border);
+  border-radius: var(--wb-radius-sm);
+  font-size: 14px;
+  font-family: inherit;
+  background: #FFFFFF;
+  color: var(--wb-text-main);
+  transition: border-color 0.15s ease;
+}
+
+.wb-input:focus,
+.wb-select:focus,
+.wb-textarea:focus {
+  outline: none;
+  border-color: var(--wb-deep-teal);
+  box-shadow: 0 0 0 3px rgba(20, 100, 102, 0.12);
+}
+
+/* Tables */
+.wb-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--wb-border);
+  border-radius: var(--wb-radius-md);
+  background: var(--wb-surface);
+}
+
+.wb-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.wb-table th {
+  background: var(--wb-bg-mint);
+  color: var(--wb-deep-teal);
+  text-align: left;
+  padding: 12px 14px;
+  font-weight: 700;
+  border-bottom: 1px solid var(--wb-border);
+}
+
+.wb-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #EDF4F4;
+  vertical-align: middle;
+}
+
+/* Word-like CMS Ribbon Toolbar (PHẦN 25.1) */
+.wb-word-ribbon {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 12px;
+  background: #EDF5F5;
+  border: 1px solid var(--wb-border);
+  border-bottom: none;
+  border-radius: var(--wb-radius-md) var(--wb-radius-md) 0 0;
+}
+
+.wb-word-btn {
+  padding: 6px 10px;
+  background: #FFFFFF;
+  border: 1px solid var(--wb-border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.wb-word-btn:hover {
+  background: var(--wb-deep-teal);
+  color: #FFFFFF;
+}
+
+.wb-word-canvas {
+  min-height: 360px;
+  padding: 28px;
+  background: #FFFFFF;
+  border: 1px solid var(--wb-border);
+  border-radius: 0 0 var(--wb-radius-md) var(--wb-radius-md);
+  outline: none;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+/* Footer (Chuẩn trang 2 của 42.pdf) */
+.wb-footer {
+  background: linear-gradient(145deg, #093536 0%, #146466 65%, #0D4446 100%);
+  color: #FFFFFF;
+  padding: 48px 0 24px 0;
+  margin-top: 48px;
+  border-top: 5px solid var(--wb-vermilion);
+}
+
+.wb-footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr 1.3fr;
+  gap: 24px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+.wb-footer-col h4 {
+  font-size: 16px;
+  font-weight: 800;
+  margin: 0 0 14px 0;
+  color: #FFFFFF;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.wb-footer-col h4::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 36px;
+  height: 3px;
+  background: var(--wb-vermilion);
+}
+
+.wb-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.wb-footer-links li {
+  margin-bottom: 9px;
+}
+
+.wb-footer-links a {
+  color: #E2E2C4;
+  font-size: 13.5px;
+}
+
+.wb-footer-links a:hover {
+  color: #FFFFFF;
+}
+
+/* Toast Alert */
+.wb-toast-container {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wb-toast {
+  background: var(--wb-deep-teal-dark);
+  color: #FFFFFF;
+  padding: 13px 18px;
+  border-radius: var(--wb-radius-sm);
+  border-left: 5px solid var(--wb-vermilion);
+  box-shadow: var(--wb-shadow-lg);
+  font-size: 14px;
+  max-width: 380px;
+}

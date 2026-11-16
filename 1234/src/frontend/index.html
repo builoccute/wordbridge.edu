@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WORD BRIDGE – Where Languages Bring People Together.</title>
+  <meta name="description" content="WORD BRIDGE – Nền tảng thực hành ngoại ngữ (Tiếng Trung, Tiếng Anh, Tiếng Hàn, Tiếng Nhật, Tiếng Nga), kết nối bạn học đồng hành và vận hành câu lạc bộ, đội, nhóm, tổ chức giáo dục." />
+  <link rel="canonical" href="https://wordbridge.io.vn/" />
+  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="/css/design-system.css" />
+  <link rel="stylesheet" href="/css/layouts-responsive.css" />
+</head>
+<body>
+  <!-- HEADER CHÍNH THỨC (PHẦN IV.1 - Duy nhất 1 hàng trên Desktop, đúng cấu trúc ảnh duyệt) -->
+  <header class="wb-header" role="banner">
+    <div class="wb-container wb-header-inner">
+      <a href="/" class="wb-logo-link" data-nav="/" aria-label="Trang chủ WORD BRIDGE">
+        <img src="/assets/logo-light.svg" alt="WORD BRIDGE - Where Languages Bring People Together." />
+      </a>
+
+      <button type="button" class="wb-btn wb-btn-outline wb-mobile-menu-toggle" id="wbMobileMenuBtn" aria-expanded="false" aria-label="Mở hoặc đóng danh mục điều hướng">
+        <svg class="wb-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        <span>Danh mục</span>
+      </button>
+
+      <nav class="wb-nav" id="wbMainNav" aria-label="Điều hướng chính WORD BRIDGE">
+        <div class="wb-nav-item">
+          <a href="/" class="wb-nav-link active" data-nav="/" data-nav-group="home">Trang chủ</a>
+        </div>
+
+        <div class="wb-nav-item">
+          <a href="/hoc-tap" class="wb-nav-link" data-nav="/hoc-tap" data-nav-group="learning">
+            <span>Học ngoại ngữ</span>
+            <svg class="wb-caret" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg>
+          </a>
+          <div class="wb-mega-menu">
+            <a href="/ngon-ngu" class="wb-mega-card" data-nav="/ngon-ngu">
+              <strong>Khám phá 05 ngôn ngữ</strong>
+              <span>Tiếng Trung, Tiếng Anh, Tiếng Hàn, Tiếng Nhật, Tiếng Nga</span>
+            </a>
+            <a href="/hoc-tap" class="wb-mega-card" data-nav="/hoc-tap">
+              <strong>Trung tâm học tập</strong>
+              <span>Kho bài thực hành theo trình độ, chủ đề và người mới</span>
+            </a>
+            <a href="/hoc-tap/kiem-tra-trinh-do" class="wb-mega-card" data-nav="/hoc-tap/kiem-tra-trinh-do">
+              <strong>Kiểm tra trình độ &amp; Lộ trình</strong>
+              <span>Đánh giá đầu vào và lộ trình tự thực hành cá nhân</span>
+            </a>
+            <a href="/hoc-tap/nghe" class="wb-mega-card" data-nav="/hoc-tap/nghe">
+              <strong>Luyện nghe &amp; Điền từ</strong>
+              <span>Nghe từng câu, chép chính tả, tốc độ phát và lưu câu khó</span>
+            </a>
+            <a href="/hoc-tap/tu-vung" class="wb-mega-card" data-nav="/hoc-tap/tu-vung">
+              <strong>Từ vựng &amp; Flashcard</strong>
+              <span>Thẻ hai chiều, tạo bộ từ riêng và ôn tập ngắt quãng</span>
+            </a>
+            <a href="/hoc-tap/sap-xep-cau" class="wb-mega-card" data-nav="/hoc-tap/sap-xep-cau">
+              <strong>Sắp xếp câu</strong>
+              <span>Ghép từ và cụm từ chuẩn cấu trúc, chỉ rõ vị trí lỗi</span>
+            </a>
+            <a href="/hoc-tap/doc-hieu" class="wb-mega-card" data-nav="/hoc-tap/doc-hieu">
+              <strong>Đọc hiểu ngữ cảnh</strong>
+              <span>Đoạn đọc theo cấp độ, tra từ trực tiếp và giải thích đáp án</span>
+            </a>
+            <a href="/tien-do" class="wb-mega-card" data-nav="/tien-do">
+              <strong>Theo dõi tiến độ</strong>
+              <span>Thống kê lịch sử làm bài, chuỗi ngày và sổ tay lỗi sai</span>
+            </a>
+            <a href="/tai-nguyen" class="wb-mega-card" data-nav="/tai-nguyen">
+              <strong>Thư viện tài nguyên</strong>
+              <span>Học liệu phân loại có nguồn, tác giả và bài tập liên kết</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="wb-nav-item">
+          <a href="/cong-dong" class="wb-nav-link" data-nav="/cong-dong" data-nav-group="community">
+            <span>Cộng đồng</span>
+            <svg class="wb-caret" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg>
+          </a>
+          <div class="wb-mega-menu">
+            <a href="/cong-dong" class="wb-mega-card" data-nav="/cong-dong">
+              <strong>Bảng tin cộng đồng</strong>
+              <span>Cộng đồng 05 ngôn ngữ, đa ngôn ngữ và thảo luận học tập</span>
+            </a>
+            <a href="/ket-noi" class="wb-mega-card" data-nav="/ket-noi">
+              <strong>Tìm bạn thực hành</strong>
+              <span>Kết nối theo ngôn ngữ, trình độ, mục tiêu và thời gian rảnh</span>
+            </a>
+            <a href="/ban-be" class="wb-mega-card" data-nav="/ban-be">
+              <strong>Danh sách bạn học</strong>
+              <span>Quản lý lời mời kết nối đồng thuận hai bên và hồ sơ đã lưu</span>
+            </a>
+            <a href="/tin-nhan" class="wb-mega-card" data-nav="/tin-nhan">
+              <strong>Chat &amp; Nhắn tin</strong>
+              <span>Trò chuyện bạn học và phòng thực hành theo chủ đề</span>
+            </a>
+            <a href="/cong-dong/clb" class="wb-mega-card" data-nav="/cong-dong/clb">
+              <strong>Câu lạc bộ ngoại ngữ</strong>
+              <span>Không gian sinh hoạt câu lạc bộ và nhóm dành cho người mới</span>
+            </a>
+            <a href="/cong-dong/nhom" class="wb-mega-card" data-nav="/cong-dong/nhom">
+              <strong>Đội &amp; Nhóm thực hành</strong>
+              <span>Nhóm thực hành theo trình độ và thử thách ngắn hạn</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="wb-nav-item">
+          <a href="/cong-dong/to-chuc" class="wb-nav-link" data-nav="/cong-dong/to-chuc" data-nav-group="organization">
+            <span>Tổ chức</span>
+            <svg class="wb-caret" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg>
+          </a>
+          <div class="wb-mega-menu">
+            <a href="/cong-dong/to-chuc" class="wb-mega-card" data-nav="/cong-dong/to-chuc">
+              <strong>Khám phá tổ chức</strong>
+              <span>Tìm kiếm tổ chức, lọc theo loại hình và lĩnh vực hoạt động</span>
+            </a>
+            <a href="/dang-ky-to-chuc" class="wb-mega-card" data-nav="/dang-ky-to-chuc">
+              <strong>Đăng ký tổ chức</strong>
+              <span>Biểu mẫu đăng ký dành cho đơn vị, câu lạc bộ, đội và nhóm</span>
+            </a>
+            <a href="/khong-gian-cua-toi" class="wb-mega-card" data-nav="/khong-gian-cua-toi">
+              <strong>Tổ chức &amp; Cộng đồng của tôi</strong>
+              <span>Không gian dành riêng cho thành viên đơn vị đã tham gia</span>
+            </a>
+            <a href="/to-chuc" class="wb-mega-card" data-nav="/to-chuc">
+              <strong>Không gian Quản lý Tổ chức</strong>
+              <span>Quản trị thành viên, phân quyền sáu vai trò và báo cáo đơn vị</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="wb-nav-item">
+          <a href="/khao-thi" class="wb-nav-link" data-nav="/khao-thi" data-nav-group="exam">Khảo Thí</a>
+        </div>
+
+        <div class="wb-nav-item">
+          <a href="/tin-tuc" class="wb-nav-link" data-nav="/tin-tuc" data-nav-group="news">Tin tức</a>
+        </div>
+
+        <div class="wb-nav-item">
+          <a href="/ho-tro" class="wb-nav-link" data-nav="/ho-tro" data-nav-group="support">
+            <span>Hỗ trợ</span>
+            <svg class="wb-caret" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 6 8 10 12 6"/></svg>
+          </a>
+          <div class="wb-mega-menu wb-mega-menu-right">
+            <a href="/ho-tro" class="wb-mega-card" data-nav="/ho-tro">
+              <strong>Trung tâm trợ giúp</strong>
+              <span>Hướng dẫn sử dụng, câu hỏi thường gặp và gửi yêu cầu hỗ trợ</span>
+            </a>
+            <a href="/goi-dich-vu" class="wb-mega-card" data-nav="/goi-dich-vu">
+              <strong>Gói thành viên &amp; Hỗ trợ</strong>
+              <span>Bảng giá tiêu chuẩn và bốn chương trình hỗ trợ cộng đồng</span>
+            </a>
+            <a href="/thanh-toan" class="wb-mega-card" data-nav="/thanh-toan">
+              <strong>Thanh toán &amp; Đối soát QR</strong>
+              <span>Chuyển khoản ngân hàng thủ công và tra cứu lịch sử giao dịch</span>
+            </a>
+            <a href="/gioi-thieu" class="wb-mega-card" data-nav="/gioi-thieu">
+              <strong>Giới thiệu nền tảng</strong>
+              <span>Định hướng LEARN – CONNECT – COMMUNITY – GROW</span>
+            </a>
+            <a href="/phap-ly" class="wb-mega-card" data-nav="/phap-ly">
+              <strong>Điều khoản &amp; Quyền riêng tư</strong>
+              <span>Bảo vệ dữ liệu cá nhân và chính sách an toàn cho trẻ em</span>
+            </a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="wb-header-actions">
+        <form class="wb-search-box" id="wbGlobalSearchForm" role="search" aria-label="Tìm kiếm toàn nền tảng">
+          <button type="submit" class="wb-search-btn" aria-label="Thực hiện tìm kiếm">
+            <svg class="wb-icon" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="20" y1="20" x2="16.2" y2="16.2"/></svg>
+          </button>
+          <input type="search" id="wbGlobalSearchInput" placeholder="Tìm kiếm..." aria-label="Nhập từ khóa tìm kiếm trên WORD BRIDGE" />
+        </form>
+
+        <div class="wb-ui-lang-wrap" title="Ngôn ngữ hiển thị giao diện (Độc lập với ngôn ngữ đang học)">
+          <svg class="wb-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="3" y1="12" x2="21" y2="12"/><path d="M12 3a14.5 14.5 0 0 1 0 18 14.5 14.5 0 0 1 0-18"/></svg>
+          <select id="wbUiLocaleSelect" class="wb-ui-lang-select" aria-label="Chọn ngôn ngữ giao diện">
+            <option value="vi" selected>VI</option>
+            <option value="en">EN</option>
+          </select>
+        </div>
+
+        <div id="wbHeaderUserArea" class="wb-header-user-area">
+          <a href="/dang-nhap" class="wb-btn wb-btn-outline wb-btn-header" data-nav="/dang-nhap">Đăng nhập</a>
+          <a href="/dang-ky" class="wb-btn wb-btn-accent wb-btn-header" data-nav="/dang-ky">Đăng ký</a>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- KHU VỰC NỘI DUNG ĐỘNG THEO TRANG -->
+  <main id="wbAppRoot" role="main" style="min-height:74vh;"></main>
+
+  <!-- FOOTER CHÍNH THỨC (PHẦN IV.5 - Khớp 100% ảnh mẫu Footer đã duyệt, không lộ URL hay Admin) -->
+  <footer class="wb-footer" role="contentinfo">
+    <div class="wb-container">
+      <div class="wb-footer-grid">
+        <div class="wb-footer-col wb-footer-brand-col">
+          <img src="/assets/logo-dark.svg" alt="WORD BRIDGE - Where Languages Bring People Together" style="height:52px;width:auto;margin-bottom:16px;display:block;" />
+          <p class="wb-footer-desc">
+            Nền tảng thực hành ngoại ngữ, kết nối bạn học đồng hành và vận hành câu lạc bộ, đội, nhóm, tổ chức giáo dục.
+          </p>
+          <div class="wb-footer-pillars">
+            LEARN • CONNECT • COMMUNITY • GROW
+          </div>
+        </div>
+
+        <div class="wb-footer-col">
+          <h4>Khám phá &amp; Học tập</h4>
+          <ul class="wb-footer-links">
+            <li><a href="/" data-nav="/">Trang chủ WORD BRIDGE</a></li>
+            <li><a href="/gioi-thieu" data-nav="/gioi-thieu">Giới thiệu nền tảng</a></li>
+            <li><a href="/ngon-ngu" data-nav="/ngon-ngu">Khám phá 05 ngôn ngữ</a></li>
+            <li><a href="/hoc-tap" data-nav="/hoc-tap">Trung tâm học tập</a></li>
+            <li><a href="/tien-do" data-nav="/tien-do">Theo dõi tiến độ</a></li>
+            <li><a href="/tai-nguyen" data-nav="/tai-nguyen">Thư viện tài nguyên</a></li>
+          </ul>
+        </div>
+
+        <div class="wb-footer-col">
+          <h4>Kết nối &amp; Tổ chức</h4>
+          <ul class="wb-footer-links">
+            <li><a href="/ket-noi" data-nav="/ket-noi">Tìm bạn thực hành</a></li>
+            <li><a href="/tin-nhan" data-nav="/tin-nhan">Chat &amp; Nhắn tin</a></li>
+            <li><a href="/cong-dong" data-nav="/cong-dong">Bảng tin cộng đồng</a></li>
+            <li><a href="/cong-dong/to-chuc" data-nav="/cong-dong/to-chuc">Khám phá tổ chức</a></li>
+            <li><a href="/dang-ky-to-chuc" data-nav="/dang-ky-to-chuc">Đăng ký tổ chức</a></li>
+            <li><a href="/khao-thi" data-nav="/khao-thi">Hệ thống Khảo Thí</a></li>
+          </ul>
+        </div>
+
+        <div class="wb-footer-col">
+          <h4>Dịch vụ &amp; Chính sách</h4>
+          <ul class="wb-footer-links">
+            <li><a href="/goi-dich-vu" data-nav="/goi-dich-vu">Gói thành viên &amp; Hỗ trợ</a></li>
+            <li><a href="/thanh-toan" data-nav="/thanh-toan">Thanh toán &amp; Đối soát QR</a></li>
+            <li><a href="/ho-tro" data-nav="/ho-tro">Trung tâm trợ giúp</a></li>
+            <li><a href="/phap-ly" data-nav="/phap-ly">Điều khoản &amp; Quyền riêng tư</a></li>
+            <li><a href="/phap-ly" data-nav="/phap-ly">Bảo vệ dữ liệu &amp; Trẻ em</a></li>
+          </ul>
+        </div>
+
+        <div class="wb-footer-col">
+          <h4>Liên hệ Chính thức</h4>
+          <ul class="wb-footer-links wb-footer-contact-list">
+            <li>
+              <strong>Liên hệ chính thức &amp; chung:</strong>
+              <a href="mailto:wordbridge.education@gmail.com">wordbridge.education@gmail.com</a>
+            </li>
+            <li>
+              <strong>Chăm sóc khách hàng &amp; Hỗ trợ:</strong>
+              <a href="mailto:cskh@wordbridge.io.vn">cskh@wordbridge.io.vn</a>
+            </li>
+            <li>
+              <strong>Hợp tác &amp; Truyền thông:</strong>
+              <a href="mailto:contact@wordbridge.io.vn">contact@wordbridge.io.vn</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="wb-footer-bottom">
+        <div>© 2026–2027 <strong>WORD BRIDGE</strong>. All rights reserved.</div>
+        <div>Nhóm sáng lập: Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như</div>
+      </div>
+    </div>
+  </footer>
+
+  <div class="wb-toast-container" id="wbToastContainer" aria-live="polite"></div>
+
+  <script src="/js/app-core.js"></script>
+  <script src="/js/views-public-auth.js"></script>
+  <script src="/js/views-learning.js"></script>
+  <script src="/js/views-community-org.js"></script>
+  <script src="/js/views-commerce-exam.js"></script>
+  <script src="/js/views-admin-cms.js"></script>
+</body>
+</html>

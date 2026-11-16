@@ -1,645 +1,770 @@
 'use strict';
+const { test, describe, before, after } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const TEST_DIR = path.resolve(process.cwd(), '.tmp_test_suite_' + process.pid);
 process.env.NODE_ENV = 'test';
-process.env.SQLITE_DB_PATH = '/tmp/wb_test_suite.sqlite';
+process.env.SQLITE_DB_PATH = path.join(TEST_DIR, 'test_wordbridge.db');
+process.env.DB_PATH = path.join(TEST_DIR, 'test_wordbridge.db');
+process.env.STORAGE_PATH = path.join(TEST_DIR, 'r2_storage');
+process.env.BACKUP_PATH = path.join(TEST_DIR, 'backups');
+process.env.SESSION_SECRET = 'test-secret-key-wordbridge-2026-2027-secure-token-xyz';
+process.env.ADMIN_BOOTSTRAP_SECRET = 'test-bootstrap-admin-secret-2026';
+process.env.MONTHLY_QUOTA_GB = '999'; // Kiểm tra đảm bảo MONTHLY_QUOTA_GB không ghi đè hạn mức mặc định từng gói
 
-const assert = require('assert');
-const fs = require('fs');
 const { createAppServer, services } = require('../src/server');
-const { BRAND, GB_BYTES, TB_BYTES, EMAIL_ADDRESSES, OFFICIAL_ROUTES } = require('../src/config/constants');
+const workerModule = require('../src/worker');
 
-async function runTests() {
-  if (fs.existsSync(process.env.SQLITE_DB_PATH)) {
-    fs.unlinkSync(process.env.SQLITE_DB_PATH);
-  }
-  services.db.migrateAndInitialize();
-  const seedSql = fs.readFileSync(require('path').resolve(process.cwd(), 'database/seeds/01_reference_data.sql'), 'utf8');
-  services.db.execScript(seedSql);
+describe('WORD BRIDGE 2026–2027 — Bộ Kiểm Thử Toàn Diện 10 Phân Hệ & 16 Điểm Sửa Bắt Buộc', () => {
+  let server;
+  let baseUrl;
 
-  const server = createAppServer();
-  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-  const port = server.address().port;
-  const baseUrl = `http://127.0.0.1:${port}`;
-
-  async function req(pathname, options = {}) {
-    const headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
-    const res = await fetch(`${baseUrl}${pathname}`, {
-      method: options.method || 'GET',
-      headers,
-      body: options.body ? JSON.stringify(options.body) : undefined
+  before(async () => {
+    fs.mkdirSync(TEST_DIR, { recursive: true });
+    server = createAppServer();
+    await new Promise((resolve) => {
+      server.listen(0, '127.0.0.1', () => {
+        const addr = server.address();
+        baseUrl = `http://127.0.0.1:${addr.port}`;
+        resolve();
+      });
     });
-    const contentType = res.headers.get('content-type') || '';
-    const data = contentType.includes('application/json') ? await res.json() : await res.text();
-    return { status: res.status, data };
+  });
+
+  after(async () => {
+    if (server) {
+      await new Promise((resolve) => server.close(resolve));
+    }
+    fs.rmSync(TEST_DIR, { recursive: true, force: true });
+  });
+
+  async function api(urlPath, { method = 'GET', body = null, token = null, headers = {} } = {}) {
+    const reqHeaders = { ...headers };
+    if (body && !(body instanceof Buffer)) {
+      reqHeaders['content-type'] = 'application/json';
+    }
+    if (token) {
+      reqHeaders['authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${baseUrl}${urlPath}`, {
+      method,
+      headers: reqHeaders,
+      body: body ? (body instanceof Buffer ? body : JSON.stringify(body)) : undefined
+    });
+    const text = await res.text();
+    let json = null;
+    try {
+      json = JSON.parse(text);
+    } catch {
+      json = null;
+    }
+    return { status: res.status, headers: res.headers, text, json };
   }
 
-  let passed = 0;
-  function ok(name, cond) {
-    assert.ok(cond, `FAILED: ${name}`);
-    passed += 1;
-    console.log(`  [PASS] ${String(passed).padStart(2, '0')}. ${name}`);
-  }
+  // ==========================================================================
+  // 1. KIỂM THỬ GIAO DIỆN CHÍNH THỨC, HEADER, FOOTER & ẨN ĐƯỜNG DẪN KỸ THUẬT
+  // ==========================================================================
+  test('1. Giao diện HTML/JS chuẩn hóa Header 1 hàng, Footer 4 cột, không lộ đường dẫn kỹ thuật hay lối vào Quản trị công khai', async () => {
+    const res = await api('/');
+    assert.equal(res.status, 200);
+    assert.ok(res.text.includes('Where Languages Bring People Together.'), 'Phải có slogan chính thức');
+    assert.ok(res.text.includes('Khám phá &amp; Học tập') || res.text.includes('Khám phá & Học tập'), 'Footer cột 1');
+    assert.ok(res.text.includes('Kết nối &amp; Tổ chức') || res.text.includes('Kết nối & Tổ chức'), 'Footer cột 2');
+    assert.ok(res.text.includes('Dịch vụ &amp; Chính sách') || res.text.includes('Dịch vụ & Chính sách'), 'Footer cột 3');
+    assert.ok(res.text.includes('Liên hệ Chính thức'), 'Footer cột 4');
+    assert.ok(res.text.includes('Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như'), 'Thông tin nhóm sáng lập ở Footer');
 
-  try {
-    console.log('=== BẮT ĐẦU KIỂM THỬ TOÀN DIỆN HỆ SINH THÁI WORD BRIDGE + PHỤ LỤC A ===');
+    // Không lộ (/ho-tro) hay Trung tâm quản trị (/quan-tri) ở Footer/Header
+    assert.ok(!res.text.includes('(/ho-tro)'), 'Không được hiển thị chuỗi kỹ thuật (/ho-tro)');
+    assert.ok(!res.text.includes('Trung tâm quản trị'), 'Không được đặt liên kết Trung tâm quản trị công khai ở Footer');
 
-    // 1. Kiểm tra Kiến trúc 1 tên miền, Không có Sự kiện (/su-kien), Không có Vipro, Không dùng Cloudflare D1/R2
-    const boot = await req('/api/system/bootstrap');
-    ok('Bootstrap trả về đúng thương hiệu WORD BRIDGE & tên miền https://wordbridge.io.vn',
-      boot.status === 200 && boot.data.brand.NAME === 'WORD BRIDGE' && boot.data.brand.CANONICAL_ORIGIN === 'https://wordbridge.io.vn');
-    const wranglerTxt = fs.readFileSync(require("path").resolve(process.cwd(), "wrangler.toml"), "utf8");
-    ok("Tích hợp chuẩn wrangler.toml (name=wordbridge, D1 word ce84cc48-6d49-409b-b45a-13ba3bc4a771, R2 word, MONTHLY_QUOTA_GB)",
-      wranglerTxt.includes("name = \"wordbridge\"") &&
-      wranglerTxt.includes("database_id = \"ce84cc48-6d49-409b-b45a-13ba3bc4a771\"") &&
-      wranglerTxt.includes("bucket_name = \"word\"") &&
-      boot.data.integrations.infrastructure.d1_database_id === "ce84cc48-6d49-409b-b45a-13ba3bc4a771");
-
-    for (const svgPath of ["/assets/logo-light.svg", "/assets/logo-dark.svg", "/assets/logo-vertical.svg", "/assets/favicon.svg", "/assets/hero-globe-illustration.svg"]) {
-      const svgRes = await req(svgPath);
-      ok(`Tài nguyên ảnh SVG ${svgPath} hoạt động hoàn hảo không lỗi ảnh (HTTP 200)`,
-        svgRes.status === 200 && String(svgRes.data).includes("<svg"));
+    // Kiểm tra các tệp JS frontend không chứa chuỗi lộ kỹ thuật
+    const frontendDir = path.resolve(process.cwd(), 'src/frontend/js');
+    const jsFiles = fs.readdirSync(frontendDir).filter((f) => f.endsWith('.js'));
+    for (const file of jsFiles) {
+      const content = fs.readFileSync(path.join(frontendDir, file), 'utf8');
+      assert.ok(!content.includes('(/ho-tro)'), `File ${file} không được chứa (/ho-tro)`);
+      assert.ok(!content.includes('Đường dẫn: /khao-thi/'), `File ${file} không được lộ Đường dẫn: /khao-thi/`);
+      assert.ok(!content.includes('localStorage.setItem(\'wb_token'), `File ${file} không được lưu session token vào localStorage`);
+      assert.ok(!content.includes('localStorage.setItem("wb_token'), `File ${file} không được lưu session token vào localStorage`);
     }
 
-    const evRoute = await req('/su-kien');
-    ok('Route /su-kien bị loại bỏ hoàn toàn và trả về 404', evRoute.status === 404);
-    ok('Danh mục OFFICIAL_ROUTES có /quan-tri/luu-tru và tuyệt đối không chứa /su-kien hay Vipro',
-      OFFICIAL_ROUTES.some(r => r.path === '/quan-tri/luu-tru') &&
-      !OFFICIAL_ROUTES.some(r => r.path.includes('su-kien') || r.title.toLowerCase().includes('vipro')));
+    // Kiểm tra /su-kien đã bị loại bỏ hoàn toàn
+    const eventRes = await api('/su-kien');
+    assert.equal(eventRes.status, 404);
+  });
 
-    // 2. Kiểm tra quy chuẩn mật khẩu >= 15 ký tự, >= 1 chữ hoa, >= 3 ký tự đặc biệt
-    const weakReg = await req('/api/auth/register', {
+  // ==========================================================================
+  // 2. KIỂM THỬ TÀI KHOẢN, ĐĂNG KÝ, ĐĂNG NHẬP, OAUTH 2.0, QUÊN MẬT KHẨU & PHIÊN
+  // ==========================================================================
+  let learner1 = {};
+  let learner2 = {};
+
+  test('2. Đăng ký tài khoản cá nhân (7 ngày dùng thử Personal Plus), tách biệt ngôn ngữ giao diện và ngôn ngữ học, OAuth & Khôi phục mật khẩu', async () => {
+    const validPassword1 = 'WordBridge@!#2026Strong';
+    const reg1 = await api('/api/auth/register', {
       method: 'POST',
       body: {
-        full_name: 'Người dùng Mật khẩu Yếu',
-        email: 'weak@wordbridge.io.vn',
-        phone: '0912345678',
-        password: 'Short1!',
-        confirm_password: 'Short1!',
+        email: 'learner1@example.com',
+        phone: '0901234567',
+        password: validPassword1,
+        confirm_password: validPassword1,
+        full_name: 'Nguyễn Minh Anh',
         accept_terms: true,
-        accept_privacy: true
+        accept_privacy: true,
+        learning_languages: ['en', 'ja'],
+        proficiency_level: 'B1',
+        learning_goals: 'Giao tiếp công việc và đọc tài liệu'
       }
     });
-    ok('Từ chối mật khẩu dưới 15 ký tự hoặc thiếu ký tự đặc biệt', weakReg.status === 400);
+    assert.equal(reg1.status, 201, `Đăng ký learner1 lỗi: ${reg1.text}`);
+    assert.equal(reg1.json.user.plan_code, 'personal_plus_monthly', 'Tài khoản mới được kích hoạt dùng thử 7 ngày Personal Plus');
+    assert.equal(reg1.json.user.role, 'user', 'Tài khoản đăng ký thông thường luôn có vai trò user, không tự thành Admin');
+    assert.ok(reg1.json.trial.expires_at, 'Phải có thời hạn kết thúc dùng thử 7 ngày');
+    learner1 = {
+      id: reg1.json.user.id,
+      token: reg1.json.session.token
+    };
 
-    // 3. Đăng ký cá nhân hợp lệ + Kích hoạt dùng thử 07 ngày Personal Plus (5 GB mặc định)
-    const validPwd = 'WordBridge2026!@#Strong';
-    const user1Reg = await req('/api/auth/register', {
+    // Đăng ký người học thứ 2 (email sinh viên .edu.vn)
+    const reg2 = await api('/api/auth/register', {
       method: 'POST',
+      body: {
+        email: 'learner2@hcmus.edu.vn',
+        phone: '0912345678',
+        password: validPassword1,
+        confirm_password: validPassword1,
+        full_name: 'Trần Hoàng Nam',
+        accept_terms: true,
+        accept_privacy: true,
+        learning_languages: ['en', 'zh'],
+        proficiency_level: 'B1',
+        learning_goals: 'Thực hành phản xạ'
+      }
+    });
+    assert.equal(reg2.status, 201, `Đăng ký learner2 lỗi: ${reg2.text}`);
+    learner2 = {
+      id: reg2.json.user.id,
+      token: reg2.json.session.token
+    };
+
+    // Cập nhật hồ sơ không làm mất ngôn ngữ đang học
+    const patchProfile = await api('/api/profile', {
+      method: 'PUT',
+      token: learner1.token,
       body: {
         full_name: 'Nguyễn Minh Anh',
-        username: 'minhanh2026',
-        email: 'minhanh@vsvc.edu.vn',
+        bio: 'Yêu thích ngôn ngữ và giao lưu quốc tế'
+      }
+    });
+    assert.equal(patchProfile.status, 200);
+    assert.deepEqual(patchProfile.json.profile.learning_languages, ['en', 'ja'], 'Không làm thay đổi ngôn ngữ đang học của tài khoản');
+
+    // Kiểm tra trạng thái nhà cung cấp OAuth 2.0
+    const oauthProviders = await api('/api/auth/oauth/providers');
+    assert.equal(oauthProviders.status, 200);
+    assert.ok(oauthProviders.json.providers && oauthProviders.json.providers.google, 'Phải trả về thông tin nhà cung cấp Google OAuth');
+    assert.equal(oauthProviders.json.providers.google.configured, false, 'Khi chưa cấu hình CLIENT_ID/SECRET thì configured=false');
+
+    // Khi gọi khởi tạo OAuth chưa cấu hình, không được giả lập session đăng nhập và authorization_url = null
+    const oauthInit = await api('/api/auth/oauth/authorize?provider=google');
+    assert.equal(oauthInit.status, 200);
+    assert.equal(oauthInit.json.configured, false, 'Phải báo configured=false khi chưa có khóa OAuth');
+    assert.equal(oauthInit.json.authorization_url, null, 'Không được sinh URL giả khi chưa cấu hình Client ID/Secret');
+    assert.equal(oauthInit.json.session, undefined, 'Tuyệt đối không được tự tạo phiên đăng nhập giả');
+
+    // Chặn nhà cung cấp không hỗ trợ (ví dụ Zalo)
+    const zaloInit = await api('/api/auth/oauth/authorize?provider=zalo');
+    assert.equal(zaloInit.status, 400, 'Phải từ chối nhà cung cấp Zalo không nằm trong danh mục');
+
+    // Luồng quên mật khẩu & đặt lại mật khẩu bằng mã OTP
+    const forgotRes = await api('/api/auth/password/forgot', {
+      method: 'POST',
+      body: { email: 'learner1@example.com' }
+    });
+    assert.equal(forgotRes.status, 200);
+    const testOtp = forgotRes.json.otp_verification._test_only_otp;
+    assert.ok(testOtp, 'Phải sinh mã OTP khôi phục mật khẩu hợp lệ');
+
+    const newValidPassword = 'NewPassword@!#2027Strong';
+    const resetRes = await api('/api/auth/password/reset', {
+      method: 'POST',
+      body: {
+        email: 'learner1@example.com',
+        otp_code: testOtp,
+        new_password: newValidPassword,
+        confirm_password: newValidPassword
+      }
+    });
+    assert.equal(resetRes.status, 200, `Reset password failed: ${resetRes.text}`);
+
+    // Đăng nhập lại bằng mật khẩu mới
+    const relogin = await api('/api/auth/login', {
+      method: 'POST',
+      body: { email: 'learner1@example.com', password: newValidPassword }
+    });
+    assert.equal(relogin.status, 200);
+    learner1.token = relogin.json.session.token;
+
+    // Kiểm tra danh sách phiên đăng nhập
+    const sessionsRes = await api('/api/auth/sessions', { token: learner1.token });
+    assert.equal(sessionsRes.status, 200);
+    assert.ok(sessionsRes.json.sessions.length >= 1);
+  });
+
+  // ==========================================================================
+  // 3. KIỂM THỬ CỔNG ĐĂNG NHẬP QUẢN TRỊ RIÊNG BIỆT & PHÂN QUYỀN RBAC
+  // ==========================================================================
+  let adminSession = {};
+
+  test('3. Cổng đăng nhập Quản trị viên tách biệt (/api/admin/auth/*), chặn người dùng thường gọi API Admin & bảo vệ các API Worker', async () => {
+    // Người dùng thường không thể truy cập API quản trị
+    const userTryAdmin = await api('/api/admin/dashboard', { token: learner1.token });
+    assert.equal(userTryAdmin.status, 403);
+
+    // Xóa các admin seed tạm nếu có để kiểm thử trọn vẹn luồng bootstrapFirstAdmin một lần duy nhất
+    services.db.run(`DELETE FROM users WHERE role IN ('super_admin', 'system_admin')`);
+    services.db.run(`UPDATE admin_security_state SET first_admin_bootstrapped = 0 WHERE id = 'singleton'`);
+
+    const adminEmail = 'superadmin@wordbridge.io.vn';
+    const adminPassword = 'AdminStrong@!#2026Password';
+    const adminSecurityCode = 'WB-ADMIN-SEC-2026';
+
+    const bootstrapRes = await api('/api/admin/auth/bootstrap', {
+      method: 'POST',
+      body: {
+        bootstrap_secret: 'test-bootstrap-admin-secret-2026',
+        email: adminEmail,
         phone: '0988504210',
-        password: validPwd,
-        confirm_password: validPwd,
-        accept_terms: true,
-        accept_privacy: true
+        password: adminPassword,
+        security_code: adminSecurityCode,
+        full_name: 'Bùi Tấn Lộc (Super Admin)'
       }
     });
-    ok('Đăng ký tài khoản cá nhân thành công và cấp 07 ngày dùng thử Personal Plus',
-      user1Reg.status === 201 && user1Reg.data.trial.trial_days === 7);
-    const token1 = user1Reg.data.session.token;
-    const user1Id = user1Reg.data.user.id;
-    const authHeader1 = { Authorization: `Bearer ${token1}` };
+    assert.equal(bootstrapRes.status, 201, `Bootstrap Admin failed: ${bootstrapRes.text}`);
 
-    // 4. Kiểm tra Email OTP xác minh chính chủ
-    const otpVerify = await req('/api/auth/otp/verify', {
+    // Khi hệ thống đã có Quản trị viên, gọi bootstrap lần 2 phải bị từ chối (403)
+    const bootstrapAgain = await api('/api/admin/auth/bootstrap', {
       method: 'POST',
       body: {
-        email: 'minhanh@vsvc.edu.vn',
-        purpose: 'register',
-        otp_code: user1Reg.data.otp_verification._test_only_otp
+        bootstrap_secret: 'test-bootstrap-admin-secret-2026',
+        email: 'hacker@wordbridge.io.vn',
+        password: adminPassword,
+        security_code: adminSecurityCode,
+        full_name: 'Hacker'
       }
     });
-    ok('Xác thực Email OTP một lần thành công', otpVerify.status === 200 && otpVerify.data.verified === true);
+    assert.equal(bootstrapAgain.status, 403, 'Bootstrap lần 2 phải bị chặn khi đã có Super Admin');
 
-    // 5. Kiểm tra OAuth không hỗ trợ Zalo và bắt buộc xác minh chính chủ trước khi gộp
-    const zaloTry = await req('/api/auth/oauth/link', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { provider: 'zalo', provider_user_id: 'z1', provider_email: 'minhanh@vsvc.edu.vn', ownership_verified: true }
-    });
-    ok('Từ chối liên kết OAuth với Zalo (Chỉ hỗ trợ Google, Facebook, Microsoft, Apple)', zaloTry.status === 400);
-
-    const unverifiedOauth = await req('/api/auth/oauth/link', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { provider: 'google', provider_user_id: 'g1', provider_email: 'minhanh@vsvc.edu.vn', ownership_verified: false }
-    });
-    ok('Từ chối tự động gộp tài khoản OAuth khi chưa xác minh chính chủ', unverifiedOauth.status === 400);
-
-    // 6. Kiểm tra 05 ngôn ngữ & 04 công cụ thực hành cốt lõi
-    const langsRes = await req('/api/learning/languages');
-    ok('Đầy đủ 05 ngôn ngữ (Trung, Anh, Hàn, Nhật, Nga)',
-      langsRes.status === 200 && langsRes.data.languages.length === 5);
-
-    const allExRes = await req('/api/learning/exercises');
-    ok('Đầy đủ 20 bài thực hành cho 05 ngôn ngữ x 04 công cụ (Nghe, Từ vựng, Sắp xếp câu, Đọc hiểu)',
-      allExRes.status === 200 && allExRes.data.exercises.length === 20);
-
-    const listenAttempt = await req('/api/learning/attempts', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { exercise_id: 'ex_en_listen_1', submission: { blank: 'practice' }, duration_seconds: 18 }
-    });
-    ok('Chấm điểm chính xác bài Nghe điền từ và lưu lịch sử thực hành',
-      listenAttempt.status === 200 && listenAttempt.data.result.is_correct === true && listenAttempt.data.result.score === 10);
-
-    // 7. Kiểm tra Trợ lý AI ngữ cảnh
-    const aiCheatTry = await req('/api/learning/ai-assist', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { exercise_id: 'ex_en_listen_1', language_code: 'en', question: 'Hãy giải hết và làm thay toàn bộ bài cho tôi' }
-    });
-    ok('Trợ lý AI từ chối yêu cầu làm thay toàn bộ bài tập', aiCheatTry.status === 400);
-
-    const aiValid = await req('/api/learning/ai-assist', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { exercise_id: 'ex_en_listen_1', language_code: 'en', question: 'Giải thích ngữ cảnh từ practice trong câu' }
-    });
-    ok('Trợ lý AI giải thích ngữ cảnh hợp lệ và ghi nhận hạn mức sử dụng',
-      aiValid.status === 200 && aiValid.data.quota.used_today === 1);
-
-    // 8. Kiểm tra Theo dõi tiến độ & Hạn mức Personal Plus (5 GB mặc định)
-    const progRes = await req('/api/progress', { headers: authHeader1 });
-    ok('Dashboard Theo dõi tiến độ phản ánh đúng lượt làm bài thực tế & hạn mức Personal Plus 5 GB',
-      progRes.status === 200 &&
-      progRes.data.dashboard.total_attempts === 1 &&
-      progRes.data.dashboard.storage_quota.default_quota_bytes === 5 * GB_BYTES);
-
-    // 9. Kiểm tra Kết nối bạn học & Chat
-    const user2Reg = await req('/api/auth/register', {
+    // Người dùng thường không thể đăng nhập qua cổng Quản trị riêng (/api/admin/auth/login)
+    const learnerTryAdminLogin = await api('/api/admin/auth/login', {
       method: 'POST',
       body: {
-        full_name: 'Trần Quốc Bảo',
-        username: 'quocbao2026',
-        email: 'quocbao@wordbridge.io.vn',
-        phone: '0977112233',
-        password: validPwd,
-        confirm_password: validPwd,
-        accept_terms: true,
-        accept_privacy: true
+        email: 'learner1@example.com',
+        password: 'NewPassword@!#2027Strong',
+        security_code: adminSecurityCode
       }
     });
-    const token2 = user2Reg.data.session.token;
-    const user2Id = user2Reg.data.user.id;
-    const authHeader2 = { Authorization: `Bearer ${token2}` };
+    assert.equal(learnerTryAdminLogin.status, 403, 'Người dùng thường phải bị từ chối tại cổng đăng nhập Admin');
 
-    const prematureChat = await req('/api/chat/messages', {
+    // Đăng nhập cổng Quản trị riêng thành công
+    const adminLogin = await api('/api/admin/auth/login', {
       method: 'POST',
-      headers: authHeader1,
-      body: { recipient_id: user2Id, content: 'Xin chào khi chưa kết bạn' }
+      body: {
+        email: adminEmail,
+        password: adminPassword,
+        security_code: adminSecurityCode
+      }
     });
-    ok('Chặn mở trò chuyện riêng tư khi hai bên chưa đồng thuận kết bạn', prematureChat.status === 400);
+    assert.equal(adminLogin.status, 200, `Admin login failed: ${adminLogin.text}`);
+    assert.ok(adminLogin.json.admin_session.token.startsWith('wbadm_'), 'Token phiên quản trị phải có tiền tố wbadm_ tách biệt');
+    adminSession = {
+      token: adminLogin.json.admin_session.token
+    };
 
-    const frReq = await req('/api/friends/request', {
+    // Kiểm tra các API nhạy cảm bắt buộc xác thực & phân quyền
+    const unauthQuota = await api('/api/admin/storage/monthly-quota-config');
+    assert.ok([401, 403].includes(unauthQuota.status), 'API cấu hình quota không được mở tự do');
+
+    const userTryQuota = await api('/api/admin/storage/monthly-quota-config', { token: learner1.token });
+    assert.equal(userTryQuota.status, 403, 'Người dùng thường không được phép đọc/sửa cấu hình quota hệ thống');
+
+    const adminQuota = await api('/api/admin/storage/monthly-quota-config', { token: adminSession.token });
+    assert.equal(adminQuota.status, 200);
+    assert.equal(adminQuota.json.override_plan_quotas, false, 'override_plan_quotas bắt buộc là false');
+  });
+
+  // ==========================================================================
+  // 4. KIỂM THỬ TRỤ CỘT LEARN & GROW (5 NGÔN NGỮ, BÀI TẬP, SRS, LỘ TRÌNH, TIẾN ĐỘ)
+  // ==========================================================================
+  test('4. Học tập 05 ngôn ngữ, Kiểm tra trình độ, Lộ trình cá nhân hóa, Flashcard SRS, Lưu học liệu & Theo dõi tiến độ', async () => {
+    const langs = await api('/api/learning/languages');
+    assert.equal(langs.status, 200);
+    assert.equal(langs.json.languages.length, 5, 'Đúng 05 ngôn ngữ mục tiêu: zh, en, ko, ja, ru');
+
+    // Làm bài kiểm tra trình độ đầu vào (Placement Assessment)
+    const placementQuestions = await api('/api/learning/placement?language_code=en');
+    assert.equal(placementQuestions.status, 200);
+    const qList = placementQuestions.json.questions || [];
+    const placementSubmissions = {};
+    for (const q of qList) {
+      placementSubmissions[q.exercise_id] = 'A';
+    }
+
+    const placement = await api('/api/learning/placement', {
       method: 'POST',
-      headers: authHeader1,
-      body: { addressee_id: user2Id, match_note: 'Cùng học Tiếng Anh B1' }
+      token: learner1.token,
+      body: {
+        language_code: 'en',
+        daily_minutes_target: 30,
+        target_goal: 'Giao tiếp thực tế và đọc hiểu tài liệu',
+        submissions: placementSubmissions
+      }
     });
-    const frAccept = await req('/api/friends/respond', {
+    assert.equal(placement.status, 200, `Placement failed: ${placement.text}`);
+    assert.ok(placement.json.assessment_id, 'Phải trả về mã kết quả đánh giá trình độ');
+    assert.ok(placement.json.estimated_level, 'Phải trả về trình độ ước lượng');
+    assert.ok(placement.json.roadmap, 'Tự động sinh lộ trình tự thực hành theo trình độ');
+
+    // Lấy danh sách bài tập tiếng Anh và nộp bài thực hành
+    const exercises = await api('/api/learning/exercises?language_code=en');
+    assert.equal(exercises.status, 200);
+    assert.ok(exercises.json.exercises.length > 0);
+    const ex = exercises.json.exercises[0];
+
+    const submitEx = await api('/api/learning/attempts', {
       method: 'POST',
-      headers: authHeader2,
-      body: { friendship_id: frReq.data.friendship.id, action: 'accept' }
+      token: learner1.token,
+      body: {
+        exercise_id: ex.id,
+        submission: 'Hello',
+        duration_seconds: 95
+      }
     });
-    ok('Kết bạn thành công sau khi bên nhận đồng ý (accepted)',
-      frAccept.status === 200 && frAccept.data.friendship.status === 'accepted');
+    assert.equal(submitEx.status, 200, `Submit attempt failed: ${submitEx.text}`);
+    assert.ok(submitEx.json.result);
 
-    // 10. Kiểm tra Hệ thống Đăng ký Tổ chức (2 loại biểu mẫu, 3 mục I-II-III, 34 tỉnh/thành, chữ ký)
-    const catRes = await req('/api/organizations/catalog');
-    ok('Danh mục hành chính Việt Nam có đúng 34 tỉnh/thành phố hiện hành và 05 lĩnh vực + Khác',
-      catRes.status === 200 && catRes.data.catalog.total_provinces === 34 && catRes.data.catalog.approved_activity_fields.length === 6);
-
-    const lookupLegal = await req('/api/organizations/lookup-legal?code=0303460456');
-    ok('Tra cứu mã số pháp nhân Loại 2 hoạt động chính xác',
-      lookupLegal.status === 200 && lookupLegal.data.found_count === 1 && lookupLegal.data.results[0].short_name === 'USSH');
-
-    const orgAppRes = await req('/api/organizations/applications', {
+    // Lưu bài tập yêu thích
+    const saveItem = await api('/api/learning/saved-items', {
       method: 'POST',
-      headers: authHeader1,
+      token: learner1.token,
+      body: {
+        item_type: 'favorite_exercise',
+        reference_id: ex.id,
+        language_code: 'en',
+        content: { title: ex.title },
+        note: 'Ôn lại cấu trúc câu quan trọng'
+      }
+    });
+    assert.equal(saveItem.status, 201);
+
+    // Kiểm tra tiến độ học tập (GROW)
+    const progress = await api('/api/progress', { token: learner1.token });
+    assert.equal(progress.status, 200);
+    assert.ok(progress.json.dashboard);
+  });
+
+  // ==========================================================================
+  // 5. KIỂM THỬ TRỤ CỘT CONNECT & COMMUNITY (ĐỒNG THUẬN 2 CHIỀU, LƯU, CHẶN, BẢNG TIN)
+  // ==========================================================================
+  test('5. Kết nối bạn học đồng thuận hai chiều, nhắn tin, lưu bạn học, chặn người dùng & tương tác Bảng tin cộng đồng', async () => {
+    // Gửi lời mời kết nối từ learner1 -> learner2
+    const reqConn = await api('/api/friends/request', {
+      method: 'POST',
+      token: learner1.token,
+      body: {
+        addressee_id: learner2.id,
+        practice_language: 'en',
+        intro_message: 'Mình muốn luyện giao tiếp tiếng Anh B1 cùng bạn!'
+      }
+    });
+    assert.equal(reqConn.status, 201, `Friend request failed: ${reqConn.text}`);
+    const friendshipId = reqConn.json.friendship.id;
+
+    // learner2 chấp nhận lời mời
+    const acceptConn = await api('/api/friends/respond', {
+      method: 'POST',
+      token: learner2.token,
+      body: { friendship_id: friendshipId, action: 'accept' }
+    });
+    assert.equal(acceptConn.status, 200, `Friend accept failed: ${acceptConn.text}`);
+
+    // Lưu bạn học yêu thích
+    const favPartner = await api('/api/connections/favorite', {
+      method: 'POST',
+      token: learner1.token,
+      body: { partner_user_id: learner2.id, note: 'Bạn học tiếng Anh ăn ý' }
+    });
+    assert.equal(favPartner.status, 200);
+
+    // Đăng bài viết cộng đồng, thích và lưu bài viết
+    const createPost = await api('/api/community/posts', {
+      method: 'POST',
+      token: learner1.token,
+      body: {
+        title: 'Kinh nghiệm luyện phát âm tiếng Anh qua hội thoại ngắn',
+        content: 'Mỗi ngày dành 15 phút đọc to và ghi âm đối chiếu giúp cải thiện ngữ điệu rõ rệt.',
+        language_code: 'en',
+        topic: 'pronunciation',
+        post_type: 'sharing'
+      }
+    });
+    assert.equal(createPost.status, 201, `Create post failed: ${createPost.text}`);
+    const postId = createPost.json.post.id;
+
+    const likePost = await api('/api/community/posts/like', {
+      method: 'POST',
+      token: learner2.token,
+      body: { post_id: postId }
+    });
+    assert.equal(likePost.status, 200);
+    assert.equal(likePost.json.liked, true);
+
+    const bookmarkPost = await api('/api/community/posts/bookmark', {
+      method: 'POST',
+      token: learner2.token,
+      body: { post_id: postId }
+    });
+    assert.equal(bookmarkPost.status, 200);
+    assert.equal(bookmarkPost.json.bookmarked, true);
+  });
+
+  // ==========================================================================
+  // 6. KIỂM THỬ TỔ CHỨC, 6 VAI TRÒ, CHẶN TRUY CẬP TRÁI PHÉP & CÁCH LY DỮ LIỆU
+  // ==========================================================================
+  let org1 = {};
+
+  test('6. Đăng ký Tổ chức, duyệt Tổ chức, phân quyền 6 vai trò và chặn người dùng không thuộc tổ chức truy cập /khong-gian-cua-toi & /to-chuc', async () => {
+    // Khi learner2 chưa thuộc tổ chức nào, truy cập quản lý tổ chức (/api/organizations/manage) phải bị chặn (403)
+    const noOrgManage = await api('/api/organizations/manage', { token: learner2.token });
+    assert.equal(noOrgManage.status, 403, 'Người dùng chưa có quyền quản trị tổ chức phải bị chặn ngay');
+
+    // Lấy tỉnh và xã hợp lệ từ catalog hành chính
+    const catalogRes = await api('/api/organizations/catalog');
+    assert.equal(catalogRes.status, 200);
+    const hcm = catalogRes.json.catalog.provinces.find((p) => p.code === '02') || catalogRes.json.catalog.provinces[0];
+    const validCommune = hcm.communes[0];
+    const validActivityField = catalogRes.json.catalog.approved_activity_fields[0];
+
+    // learner1 nộp hồ sơ đăng ký thành lập tổ chức mới (Biểu mẫu Loại 1 - 3 phần)
+    const appRes = await api('/api/organizations/applications', {
+      method: 'POST',
+      token: learner1.token,
       body: {
         form_type: 1,
         section_i: {
-          name: 'Câu lạc bộ Ngoại ngữ Sky First',
-          short_name: 'SFEC',
           unit_category: 'Câu lạc bộ',
-          logo_url: '/assets/favicon.svg',
-          field_of_activity: 'Giáo dục và Đào tạo ngoại ngữ',
-          founded_date: '2025-11-01',
-          email: 'sfec@wordbridge.io.vn',
-          phone: '0988504210',
-          social_links: [{ platform: 'Facebook', url: 'https://facebook.com/sfec' }],
-          introduction: 'CLB thực hành ngoại ngữ cộng đồng',
-          mission: 'Kết nối người học',
-          operation_scope: 'Toàn quốc',
-          province_code: '02',
-          commune_name: 'Phường Thủ Đức',
-          address_detail: 'Số 1 Võ Văn Ngân',
-          has_legal_sponsor: false
+          name: 'Câu lạc bộ Ngoại ngữ Đa Quốc Gia Sài Gòn',
+          short_name: 'CLB-SG-POLYGLOT',
+          logo_url: '/assets/logo-light.svg',
+          field_of_activity: validActivityField,
+          founded_date: '2026-01-15',
+          email: 'clbsaigon@wordbridge.io.vn',
+          phone: '0901234567',
+          province_code: hcm.code,
+          commune_name: validCommune,
+          address_detail: 'Số 10 Đường Nguyễn Huệ',
+          social_links: [{ platform: 'Facebook', url: 'https://facebook.com/clbsaigonpolyglot' }],
+          introduction: 'Cộng đồng rèn luyện phản xạ giao tiếp tiếng Anh, Nhật, Trung hằng tuần.'
         },
         section_ii: {
-          full_name: 'Bùi Tấn Lộc',
-          birth_date: '2006-10-23',
-          title: 'Chủ nhiệm CLB',
-          email: 'minhanh@vsvc.edu.vn',
-          phone: '0988504210',
-          province_code: '02',
-          commune_name: 'Phường Thủ Đức',
-          address_detail: 'Số 1 Võ Văn Ngân'
+          full_name: 'Nguyễn Minh Anh',
+          birth_date: '1998-05-20',
+          title: 'Chủ nhiệm Câu lạc bộ',
+          email: 'learner1@example.com',
+          phone: '0901234567',
+          province_code: hcm.code,
+          commune_name: validCommune,
+          address_detail: 'Số 10 Đường Nguyễn Huệ'
         },
         section_iii: {
           signature_method: 'direct_draw',
-          signature_data: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA',
+          signature_data: 'data:image/svg+xml;base64,PHN2Zz48L3N2Zz4=',
           confirmed_accurate: true,
           accepted_terms: true
         }
       }
     });
-    ok('Nộp hồ sơ đăng ký tổ chức (3 mục I, II, III + chữ ký) thành công với trạng thái Chờ xét duyệt',
-      orgAppRes.status === 201 && orgAppRes.data.application.status === 'Chờ xét duyệt');
+    assert.equal(appRes.status, 201, `Submit org application failed: ${appRes.text}`);
+    const applicationId = appRes.json.application.id;
 
-    // 11. Kiểm tra Chương trình Hỗ trợ Sinh viên & Payment Core QR
-    const cardTry = await req('/api/commerce/support-programs/apply', {
+    // Quản trị viên phê duyệt hồ sơ tổ chức (kích hoạt tổ chức & dùng thử 14 ngày tối đa 10 thành viên)
+    const approveOrg = await api('/api/organizations/applications/review', {
       method: 'POST',
-      headers: authHeader1,
-      body: { program_type: 'student_plus', student_edu_email: 'minhanh@vsvc.edu.vn', reject_student_card_upload: true }
-    });
-    ok('Từ chối xác minh sinh viên bằng thẻ sinh viên (chỉ chấp nhận email trường cấp)', cardTry.status === 400);
-
-    const eduValid = await req('/api/commerce/support-programs/apply', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { program_type: 'student_plus', student_edu_email: 'minhanh@vsvc.edu.vn', reason: 'Sinh viên đăng ký thực hành ngoại ngữ' }
-    });
-    ok('Phê duyệt ưu đãi Personal Plus 03 tháng miễn phí qua email sinh viên .edu.vn (01 lần duy nhất)',
-      eduValid.status === 201 && eduValid.data.application.status === 'approved');
-
-    const ordRes = await req('/api/payments/orders', {
-      method: 'POST',
-      headers: authHeader2,
-      body: { plan_code: 'personal_plus_monthly' }
-    });
-    ok('Tạo đơn hàng thanh toán QR thành công với nội dung chuyển khoản duy nhất',
-      ordRes.status === 201 && ordRes.data.order.final_amount_vnd === 129000);
-
-    const notifyTransfer = await req('/api/payments/notify-transfer', {
-      method: 'POST',
-      headers: authHeader2,
-      body: { order_id: ordRes.data.order.id }
-    });
-    ok('Bấm nút thông báo đã chuyển khoản KHÔNG tự động đánh dấu paid khi chưa đối soát',
-      notifyTransfer.status === 200 && notifyTransfer.data.status === 'pending' && notifyTransfer.data.service_activated === false);
-
-    // 12. Kiểm tra HỆ THỐNG KHẢO THÍ WORD BRIDGE (/khao-thi)
-    const enterExam = await req('/api/exams/enter-room', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { exam_id: 'exam_wb_en_b1' }
-    });
-    const firstQ = enterExam.data.questions[0];
-    ok('Vào phòng thi /khao-thi thành công và tuyệt đối KHÔNG gửi đáp án đúng xuống trình duyệt',
-      enterExam.status === 200 && firstQ && firstQ.correct_answer_json === undefined && firstQ.explanation === undefined);
-
-    const integrityEvt = await req('/api/exams/integrity-events', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { session_id: enterExam.data.session.id, event_type: 'tab_switch', description: 'Chuyển tab trong giờ thi' }
-    });
-    ok('Ghi nhận sự kiện liêm chính khảo thí vào hồ sơ bằng chứng và AI không tự động đánh trượt thí sinh',
-      integrityEvt.status === 200 && integrityEvt.data.auto_disqualified === false);
-
-    const submitExam = await req('/api/exams/submit', {
-      method: 'POST',
-      headers: authHeader1,
+      token: adminSession.token,
       body: {
-        session_id: enterExam.data.session.id,
-        answers: { eq_en_1: 'interaction', eq_en_3: 'Đúng', eq_en_4: 'in' }
+        application_id: applicationId,
+        new_status: 'Đã kích hoạt',
+        review_note: 'Hồ sơ hợp lệ, kích hoạt dùng thử 14 ngày.'
       }
     });
-    ok('Nộp bài thi chính thức, chấm điểm tự động và khóa chỉnh sửa sau khi nộp',
-      submitExam.status === 200 && submitExam.data.score === 60 && submitExam.data.locked_after_submit === true);
+    assert.equal(approveOrg.status, 200, `Review org application failed: ${approveOrg.text}`);
+    const createdOrgId = approveOrg.json.application.approved_org_id;
+    org1 = services.db.get(`SELECT * FROM organizations WHERE id = ?`, [createdOrgId]);
+    assert.ok(org1?.id, 'Tổ chức mới phải được khởi tạo sau khi duyệt hồ sơ');
+    assert.equal(org1.plan_code, 'org_trial');
+    assert.equal(org1.max_members, 10);
 
-    // 13. Kiểm tra RBAC Backend
-    const userTryAdmin = await req('/api/admin/dashboard', { headers: authHeader1 });
-    ok('RBAC Backend chặn người dùng thường truy cập /api/admin/dashboard (HTTP 403)', userTryAdmin.status === 403);
-
-    services.db.run(`UPDATE users SET role = 'super_admin' WHERE id = ?`, [user1Id]);
-
-    // 14. Phê duyệt hồ sơ tổ chức & Kiểm tra hạn mức Organization Plus (50 GB/tháng, tối đa 30 thành viên)
-    const approveOrg = await req('/api/organizations/applications/review', {
+    // learner2 gửi yêu cầu xin gia nhập tổ chức org1
+    const joinReq = await api('/api/organizations/join-request', {
       method: 'POST',
-      headers: authHeader1,
-      body: { application_id: orgAppRes.data.application.id, new_status: 'Đã phê duyệt', review_note: 'Hồ sơ hợp lệ' }
-    });
-    const orgId = approveOrg.data.application.approved_org_id;
-    ok('Sau khi phê duyệt hồ sơ tổ chức mới cấp không gian tổ chức chính thức',
-      approveOrg.status === 200 && Boolean(orgId));
-
-    // Nâng tổ chức sang gói Organization Plus Tháng (50 GB/tháng, tối đa 30 thành viên)
-    services.db.run(`UPDATE organizations SET plan_code = 'org_plus_monthly', max_members = 30 WHERE id = ?`, [orgId]);
-    const orgQuota = services.progressMod.ensureQuotaRecord('organization', orgId, 'org_plus_monthly');
-    ok('Organization Plus Tháng có hạn mức mặc định 50 GB/tháng (tối đa 30 thành viên, chu kỳ tháng)',
-      orgQuota.default_quota_bytes === 50 * GB_BYTES && orgQuota.is_monthly_cycle === true);
-
-    // Kiểm tra thêm thành viên vào tổ chức KHÔNG làm nhân hạn mức 50 GB theo số thành viên (Phụ lục A3 & A7)
-    const addOrgMem = await req('/api/organizations/members', {
-      method: 'POST',
-      headers: authHeader1,
+      token: learner2.token,
       body: {
-        org_id: orgId,
-        full_name: 'Lê Hoàng Nam',
-        email: 'hoangnam@sfec.vn',
-        phone: '0911223344',
-        password: validPwd,
-        org_role: 'member',
-        title: 'Thành viên CLB'
+        org_id: org1.id,
+        message: 'Em muốn tham gia luyện nói tiếng Anh cùng CLB ạ.'
       }
     });
-    const orgQuotaAfterMember = services.progressMod.ensureQuotaRecord('organization', orgId, 'org_plus_monthly');
-    ok('Thêm thành viên vào tổ chức KHÔNG nhân hạn mức tổ chức theo số thành viên (Vẫn giữ đúng 50 GB chung) và thành viên nhận Personal Free 1 GB',
-      addOrgMem.status === 201 &&
-      orgQuotaAfterMember.effective_quota_bytes === 50 * GB_BYTES &&
-      services.progressMod.ensureQuotaRecord('personal', addOrgMem.data.member.member_user_id).default_quota_bytes === 1 * GB_BYTES);
+    assert.equal(joinReq.status, 201, `Join request failed: ${joinReq.text}`);
 
-    // 15. Kiểm tra Phụ lục A3 & A6: Khi hết gói Personal Plus (5 GB) về Personal Free (1 GB) mà đang lưu > 1 GB
-    // Người dùng 2 đang dùng thử Personal Plus (5 GB) tải lên tệp 2 GB -> thành công
-    const upload2Gb = await req('/api/resources', {
+    // Chủ tổ chức (learner1) duyệt yêu cầu gia nhập với vai trò member (Thành viên)
+    const approveJoin = await api('/api/organizations/join-requests/review', {
       method: 'POST',
-      headers: authHeader2,
+      token: learner1.token,
       body: {
-        title: 'Bộ tài liệu âm thanh luyện nghe 2GB',
-        language_code: 'en',
-        resource_type: 'pdf',
-        access_scope: 'personal',
-        simulated_size_bytes: 2 * GB_BYTES
+        org_id: org1.id,
+        request_id: joinReq.json.join_request.id,
+        decision: 'approved'
       }
     });
-    const uploadedFileId = upload2Gb.data.resource.file_id;
-    ok('Tải tệp 2 GB khi đang ở gói Personal Plus (hạn mức 5 GB) thành công',
-      upload2Gb.status === 201 && upload2Gb.data.resource.quota_after_upload.total_stored_bytes === 2 * GB_BYTES);
+    assert.equal(approveJoin.status, 200, `Review join request failed: ${approveJoin.text}`);
 
-    // Hết thời gian dùng thử / hạ về gói Personal Free (1 GB)
-    const user2Sub = services.db.get(`SELECT id FROM subscriptions WHERE user_id = ?`, [user2Id]);
-    const expireSub = await req('/api/commerce/subscriptions/manage', {
+    // Thành viên thường (member) xem được /api/organizations/my-space nhưng bị chặn /api/organizations/manage
+    const memberSpace = await api('/api/organizations/my-space', { token: learner2.token });
+    assert.equal(memberSpace.status, 200);
+    assert.ok(memberSpace.json.my_space.organizations.length >= 1, 'Thành viên phải thấy tổ chức của mình tại Không gian của tôi');
+
+    const memberTryManage = await api(`/api/organizations/manage?org_id=${org1.id}`, { token: learner2.token });
+    assert.equal(memberTryManage.status, 403, 'Thành viên thường (member) phải bị chặn truy cập khu vực quản lý tổ chức (/to-chuc)');
+
+    // Chủ tổ chức (learner1) truy cập được khu vực quản lý tổ chức
+    const ownerManage = await api(`/api/organizations/manage?org_id=${org1.id}`, { token: learner1.token });
+    assert.equal(ownerManage.status, 200);
+  });
+
+  // ==========================================================================
+  // 7. KIỂM THỬ THƯƠNG MẠI, GÓI DỊCH VỤ, QUOTA & ĐỐI SOÁT THANH TOÁN / HOÀN TIỀN
+  // ==========================================================================
+  test('7. Mua gói Tổ chức kích hoạt đúng tổ chức, hoàn tiền gói Tổ chức không làm mất gói Cá nhân của người mua & bảo vệ hạn mức lưu trữ', async () => {
+    // 1. Kiểm tra bảng giá và hạn mức mặc định không bị MONTHLY_QUOTA_GB=999 ghi đè
+    const catalogRes = await api('/api/commerce/catalog');
+    assert.equal(catalogRes.status, 200);
+    const plans = catalogRes.json.plans || [];
+    const pFree = plans.find((p) => p.code === 'personal_free');
+    const pPlusM = plans.find((p) => p.code === 'personal_plus_monthly');
+    const oPlusM = plans.find((p) => p.code === 'org_plus_monthly');
+    const oPlusY = plans.find((p) => p.code === 'org_plus_yearly');
+
+    assert.equal(pFree.default_storage_gb, 1, 'Gói Miễn Phí phải giữ đúng 1 GB');
+    assert.equal(pPlusM.default_storage_gb, 5, 'Gói Plus Tháng phải giữ đúng 5 GB');
+    assert.equal(oPlusM.default_storage_gb, 50, 'Gói Tổ Chức Tháng phải giữ đúng 50 GB');
+    assert.equal(oPlusY.default_storage_gb, 120, 'Gói Tổ Chức Năm phải giữ đúng 120 GB');
+
+    // 2. Đặt mua và đối soát gói Cá nhân Plus Năm cho learner1
+    const orderPersonal = await api('/api/payments/orders', {
       method: 'POST',
-      headers: authHeader2,
-      body: { subscription_id: user2Sub.id, action: 'expire_to_free' }
+      token: learner1.token,
+      body: { plan_code: 'personal_plus_yearly' }
     });
-    ok('Khi hết gói Personal Plus chuyển về Personal Free (1 GB): Không xóa 2 GB dữ liệu cũ nhưng bật trạng thái cảnh báo vượt hạn mức (over_quota_blocked = true)',
-      expireSub.status === 200 &&
-      expireSub.data.storage_quota.default_quota_bytes === 1 * GB_BYTES &&
-      expireSub.data.storage_quota.total_stored_bytes === 2 * GB_BYTES &&
-      expireSub.data.storage_quota.over_quota_blocked === true);
+    assert.equal(orderPersonal.status, 201, `Create personal order failed: ${orderPersonal.text}`);
 
-    // Khi đang vượt hạn mức (2 GB / 1 GB): Tải tệp mới bị chặn (403), nhưng đọc/tải xuống tệp cũ vẫn thành công (200)
-    const blockedNewUpload = await req('/api/resources', {
+    const reconcilePersonal = await api('/api/payments/reconcile', {
       method: 'POST',
-      headers: authHeader2,
-      body: { title: 'Tệp mới khi vượt hạn mức', language_code: 'en', simulated_size_bytes: 1024 }
-    });
-    ok('Ngăn tải lên tệp mới khi tài khoản đang đạt/vượt hạn mức (HTTP 403)', blockedNewUpload.status === 403);
-
-    const downloadOldFile = await req(`/api/resources/download?file_id=${encodeURIComponent(uploadedFileId)}`, {
-      headers: authHeader2
-    });
-    ok('Giữ nguyên quyền đọc và tải xuống dữ liệu hợp lệ đã lưu ngay cả khi tài khoản đạt/vượt hạn mức (HTTP 200)',
-      downloadOldFile.status === 200 && downloadOldFile.data.file.id === uploadedFileId);
-
-    // 16. Kiểm tra Phụ lục A5: Admin điều chỉnh hạn mức tại /quan-tri/luu-tru (Theo GB, TB, Không giới hạn, Gỡ cấu hình riêng)
-    // Ví dụ 1 trong Phụ lục A5: Tổ chức A mua Organization Plus tháng (mặc định 50 GB/tháng) -> Admin điều chỉnh lên 100 GB/tháng
-    const adminSet100Gb = await req('/api/admin/storage/quota', {
-      method: 'POST',
-      headers: authHeader1,
+      token: adminSession.token,
       body: {
-        target_type: 'organization',
-        target_id: orgId,
-        action: 'set_custom',
-        amount: 100,
-        unit: 'GB',
-        reason: 'Ví dụ A5: Nâng hạn mức Tổ chức lên 100 GB/tháng'
+        order_id: orderPersonal.json.order.id,
+        received_amount_vnd: orderPersonal.json.order.final_amount_vnd,
+        received_content: orderPersonal.json.order.transfer_content
       }
     });
-    ok('Admin điều chỉnh Tổ chức từ 50 GB/tháng lên 100 GB/tháng -> Áp dụng ưu tiên 100 GB/tháng (admin_custom)',
-      adminSet100Gb.status === 200 &&
-      adminSet100Gb.data.quota.effective_quota_bytes === 100 * GB_BYTES &&
-      adminSet100Gb.data.quota.priority_source === 'admin_custom');
+    assert.equal(reconcilePersonal.status, 200, `Reconcile personal failed: ${reconcilePersonal.text}`);
 
-    // Ví dụ 2 trong Phụ lục A5: Chuyển Tổ chức sang Organization Plus Năm (mặc định 120 GB/tháng) và Admin chuyển sang Không giới hạn
-    services.db.run(`UPDATE organizations SET plan_code = 'org_plus_yearly' WHERE id = ?`, [orgId]);
-    services.progressMod.ensureQuotaRecord('organization', orgId, 'org_plus_yearly');
+    const userAfterPersonal = services.db.get(`SELECT plan_code FROM users WHERE id = ?`, [learner1.id]);
+    assert.equal(userAfterPersonal.plan_code, 'personal_plus_yearly');
 
-    const adminSetUnlimited = await req('/api/admin/storage/quota', {
+    // 3. learner1 đặt mua gói Tổ Chức Plus – Năm (org_plus_yearly) cho tổ chức org1 (kèm ưu đãi phi lợi nhuận 30%)
+    const orderOrg = await api('/api/payments/orders', {
       method: 'POST',
-      headers: authHeader1,
+      token: learner1.token,
       body: {
-        target_type: 'organization',
-        target_id: orgId,
-        action: 'set_unlimited',
-        reason: 'Ví dụ A5: Chuyển Tổ chức sang Không giới hạn'
+        plan_code: 'org_plus_yearly',
+        org_id: org1.id,
+        nonprofit_approved: true
       }
     });
-    ok('Admin chuyển Tổ chức sang Không giới hạn -> Không áp dụng giới hạn phần mềm (is_unlimited = true)',
-      adminSetUnlimited.status === 200 &&
-      adminSetUnlimited.data.quota.is_unlimited === true &&
-      adminSetUnlimited.data.quota.effective_quota_bytes === null);
+    assert.equal(orderOrg.status, 201, `Create org order failed: ${orderOrg.text}`);
+    assert.equal(orderOrg.json.order.org_id, org1.id);
+    assert.equal(orderOrg.json.order.final_amount_vnd, 2450000, 'Tổ chức phi lợi nhuận giảm 30% từ 3.500.000đ còn 2.450.000đ');
 
-    // Gỡ cấu hình riêng của Admin -> Trở về đúng hạn mức mặc định theo gói đang hoạt động (Organization Plus Năm = 120 GB/tháng)
-    const adminRemoveCustom = await req('/api/admin/storage/quota', {
+    // Đối soát thanh toán đơn hàng tổ chức
+    const reconcileOrg = await api('/api/payments/reconcile', {
       method: 'POST',
-      headers: authHeader1,
+      token: adminSession.token,
       body: {
-        target_type: 'organization',
-        target_id: orgId,
-        action: 'remove_custom',
-        reason: 'Gỡ cấu hình riêng để trở về hạn mức mặc định của gói Organization Plus Năm'
+        order_id: orderOrg.json.order.id,
+        received_amount_vnd: orderOrg.json.order.final_amount_vnd,
+        received_content: orderOrg.json.order.transfer_content
       }
     });
-    ok('Khi Admin gỡ cấu hình riêng -> Trở về đúng hạn mức mặc định của gói đang hoạt động (120 GB/tháng cho Organization Plus Năm)',
-      adminRemoveCustom.status === 200 &&
-      adminRemoveCustom.data.quota.is_unlimited === false &&
-      adminRemoveCustom.data.quota.effective_quota_bytes === 120 * GB_BYTES &&
-      adminRemoveCustom.data.quota.priority_source === 'plan_default');
+    assert.equal(reconcileOrg.status, 200, `Reconcile org failed: ${reconcileOrg.text}`);
 
-    // 17. Kiểm tra Phụ lục A4 & A7: Tải tệp vào vùng lưu trữ Tổ chức, Thành viên rời tổ chức & Làm mới Chu kỳ Tháng Ngày 01 (Asia/Ho_Chi_Minh)
-    const memberLogin = await req('/api/auth/login', {
-      method: 'POST',
-      body: { email: 'hoangnam@sfec.vn', password: validPwd }
-    });
-    const authHeaderMem = { Authorization: `Bearer ${memberLogin.data.session.token}` };
+    // Kiểm tra: Tổ chức org1 được nâng lên org_plus_yearly (tối đa 30 thành viên), trong khi gói cá nhân của learner1 vẫn là personal_plus_yearly
+    const orgAfterPaid = services.db.get(`SELECT plan_code, max_members FROM organizations WHERE id = ?`, [org1.id]);
+    assert.equal(orgAfterPaid.plan_code, 'org_plus_yearly', 'Gói của tổ chức phải được nâng lên org_plus_yearly');
+    assert.equal(orgAfterPaid.max_members, 30, 'Số thành viên tối đa của tổ chức phải tăng lên 30');
 
-    const orgUpload = await req('/api/resources', {
+    const userAfterOrgPaid = services.db.get(`SELECT plan_code FROM users WHERE id = ?`, [learner1.id]);
+    assert.equal(userAfterOrgPaid.plan_code, 'personal_plus_yearly', 'Mua gói tổ chức không được ghi đè gói cá nhân của người mua');
+
+    // 4. Hoàn tiền đơn hàng gói Tổ chức -> Chỉ hạ gói của Tổ chức, tuyệt đối KHÔNG reset gói cá nhân của learner1
+    const refundOrg = await api('/api/payments/refund', {
       method: 'POST',
-      headers: authHeaderMem,
+      token: adminSession.token,
       body: {
-        title: 'Giáo trình nội bộ CLB Sky First',
-        language_code: 'en',
-        owner_org_id: orgId,
-        access_scope: 'organization',
-        simulated_size_bytes: 5 * GB_BYTES
+        order_id: orderOrg.json.order.id,
+        reason: 'Hoàn tiền theo yêu cầu đối soát tổ chức'
       }
     });
-    const orgFileId = orgUpload.data.resource.file_id;
-    ok('Dữ liệu tải lên trong không gian Tổ chức được tính vào hạn mức chung của Tổ chức (5 GB / 120 GB)',
-      orgUpload.status === 201 &&
-      orgUpload.data.resource.quota_after_upload.cycle_used_bytes === 5 * GB_BYTES &&
-      orgUpload.data.resource.quota_after_upload.total_stored_bytes === 5 * GB_BYTES);
+    assert.equal(refundOrg.status, 200, `Refund org failed: ${refundOrg.text}`);
 
-    // Khi thành viên rời tổ chức (Phụ lục A7): Không xóa dữ liệu tổ chức và không chuyển quyền sở hữu sang cá nhân
-    const departRes = await req('/api/organizations/members/remove', {
+    const orgAfterRefund = services.db.get(`SELECT plan_code FROM organizations WHERE id = ?`, [org1.id]);
+    assert.equal(orgAfterRefund.plan_code, 'org_trial', 'Tổ chức trở về gói cơ bản sau khi hoàn tiền');
+
+    const userAfterOrgRefund = services.db.get(`SELECT plan_code FROM users WHERE id = ?`, [learner1.id]);
+    assert.equal(
+      userAfterOrgRefund.plan_code,
+      'personal_plus_yearly',
+      'Hoàn tiền gói tổ chức tuyệt đối không được reset gói cá nhân của người mua về personal_free'
+    );
+
+    // 5. Chương trình Hỗ trợ Sinh viên (.edu.vn) 03 tháng một lần duy nhất, không yêu cầu ảnh thẻ SV
+    const studentApp = await api('/api/commerce/support-programs/apply', {
       method: 'POST',
-      headers: authHeader1,
-      body: { org_id: orgId, member_user_id: addOrgMem.data.member.member_user_id, reason: 'Hoàn tất nhiệm kỳ' }
-    });
-    ok('Khi thành viên rời tổ chức: Không xóa dữ liệu tổ chức, không chuyển quyền sở hữu cho cá nhân và ghi audit log',
-      departRes.status === 200 &&
-      departRes.data.org_files_deleted === 0 &&
-      departRes.data.ownership_transferred_to_personal === false &&
-      departRes.data.preserved_org_files_count === 1);
-
-    // Kiểm soát truy cập chéo tổ chức (Cross-Organization Protection): Thành viên đã rời tổ chức không còn quyền tải tệp nội bộ của tổ chức
-    const departedTryDownload = await req(`/api/resources/download?file_id=${encodeURIComponent(orgFileId)}`, {
-      headers: authHeaderMem
-    });
-    ok('Kiểm soát truy cập chéo tổ chức chặn người không còn thuộc tổ chức tải tệp nội bộ (HTTP 403)',
-      departedTryDownload.status === 403);
-
-    // Chạy làm mới bộ đếm chu kỳ tháng ngày 01 (Asia/Ho_Chi_Minh - Phụ lục A4)
-    const resetCycle = await req('/api/admin/storage/cycles/reset', {
-      method: 'POST',
-      headers: authHeader1,
-      body: { target_cycle_month: '2026-12' }
-    });
-    const orgQuotaAfterReset = services.progressMod.ensureQuotaRecord('organization', orgId, 'org_plus_yearly');
-    const user2QuotaAfterReset = services.progressMod.ensureQuotaRecord('personal', user2Id, 'personal_free');
-    ok('Làm mới chu kỳ tháng ngày 01 (Asia/Ho_Chi_Minh): Reset bộ đếm tháng tổ chức về 0, KHÔNG xóa 5 GB dữ liệu đã lưu và KHÔNG reset tài khoản cá nhân',
-      resetCycle.status === 200 &&
-      resetCycle.data.files_deleted === 0 &&
-      orgQuotaAfterReset.cycle_month === '2026-12' &&
-      orgQuotaAfterReset.cycle_used_bytes === 0 &&
-      orgQuotaAfterReset.total_stored_bytes === 5 * GB_BYTES &&
-      user2QuotaAfterReset.total_stored_bytes === 2 * GB_BYTES);
-
-    // 18. Kiểm tra Dashboard /quan-tri/luu-tru & Kiểm tra Backup + Phục hồi (Phụ lục A8 & A9)
-    const storageDashRes = await req('/api/admin/storage/dashboard', { headers: authHeader1 });
-    ok('Dashboard /quan-tri/luu-tru trả về đầy đủ Tổng quan hạ tầng, Quản lý tài khoản, Chu kỳ tháng, Cảnh báo & Nhật ký',
-      storageDashRes.status === 200 &&
-      storageDashRes.data.global_website_fixed_gb_limit === null &&
-      storageDashRes.data.infrastructure_overview.expansion_capability_verified === true &&
-      Array.isArray(storageDashRes.data.account_quotas) &&
-      Array.isArray(storageDashRes.data.monthly_cycles.historical_cycles));
-
-    const verifyRec = await req('/api/admin/storage/verify-recovery', {
-      method: 'POST',
-      headers: authHeader1,
-      body: {}
-    });
-    ok('Backup Database, Backup Storage và kiểm tra khả năng phục hồi (Recovery Verification) thành công',
-      verifyRec.status === 200 && verifyRec.data.database_recovery_verified.ok === true);
-
-    // 19. Đối soát thanh toán, 29 mẫu Email, CMS Word, Bảo trì & WAF
-    const reconcileRes = await req('/api/payments/reconcile', {
-      method: 'POST',
-      headers: authHeader1,
+      token: learner2.token,
       body: {
-        order_id: ordRes.data.order.id,
-        received_amount_vnd: 129000,
-        received_content: ordRes.data.order.transfer_content,
-        source: 'manual_reconcile'
+        program_type: 'student_plus',
+        student_edu_email: 'learner2@hcmus.edu.vn',
+        reason: 'Sinh viên đăng ký hỗ trợ học ngoại ngữ 03 tháng qua email trường.'
       }
     });
-    ok('Đối soát thanh toán hợp lệ mở quyền dịch vụ và phát hành hóa đơn điện tử',
-      reconcileRes.status === 200 && reconcileRes.data.status === 'paid');
+    assert.equal(studentApp.status, 201, `Student support apply failed: ${studentApp.text}`);
+    assert.equal(studentApp.json.application.status, 'approved');
+  });
 
-    const emailCenter = await req('/api/admin/emails', { headers: authHeader1 });
-    ok('Email Management Center có đúng 29 mẫu email HTML độc lập và 4 địa chỉ email chuẩn',
-      emailCenter.status === 200 &&
-      emailCenter.data.total_templates === 29 &&
-      EMAIL_ADDRESSES.SYSTEM_NOREPLY === 'noreply@wordbridge.io.vn' &&
-      EMAIL_ADDRESSES.OFFICIAL_CONTACT === 'wordbridge.education@gmail.com' &&
-      EMAIL_ADDRESSES.CUSTOMER_SUPPORT === 'cskh@wordbridge.io.vn' &&
-      EMAIL_ADDRESSES.PARTNERSHIP_MEDIA === 'contact@wordbridge.io.vn');
+  // ==========================================================================
+  // 8. KIỂM THỬ HỆ THỐNG KHẢO THÍ ĐỘC LẬP, CHỐNG NỘP TRÙNG & PHÚC KHẢO
+  // ==========================================================================
+  test('8. Hệ thống Khảo Thí độc lập (/api/exams), đăng ký, vào phòng thi, nộp bài, chống nộp trùng và gửi yêu cầu phúc khảo', async () => {
+    const examsRes = await api('/api/exams');
+    assert.equal(examsRes.status, 200);
+    assert.ok(examsRes.json.exams.length > 0);
+    const exam = examsRes.json.exams[0];
 
-    const cmsPub = await req('/api/cms/pages', {
+    // Đăng ký dự thi
+    const regExam = await api('/api/exams/register', {
       method: 'POST',
-      headers: authHeader1,
+      token: learner1.token,
+      body: { exam_id: exam.id, device_checked: true, camera_consented: true }
+    });
+    assert.equal(regExam.status, 201, `Register exam failed: ${regExam.text}`);
+
+    // Vào phòng thi
+    const enterRes = await api('/api/exams/enter-room', {
+      method: 'POST',
+      token: learner1.token,
+      body: { exam_id: exam.id, device_checked: true, camera_consented: true }
+    });
+    assert.equal(enterRes.status, 200, `Enter exam room failed: ${enterRes.text}`);
+    const sessionId = enterRes.json.session.id;
+
+    // Không câu hỏi nào trong phòng thi được lộ correct_answer_json
+    for (const q of enterRes.json.questions) {
+      assert.equal(q.correct_answer_json, undefined, 'Đề thi gửi xuống trình duyệt không được lộ đáp án đúng');
+    }
+
+    // Nộp bài lần 1 thành công
+    const submit1 = await api('/api/exams/submit', {
+      method: 'POST',
+      token: learner1.token,
       body: {
-        slug: '/gioi-thieu',
-        title: 'Giới thiệu WORD BRIDGE (Đã cập nhật qua CMS Word)',
-        html_content: '<h2>Giới thiệu WORD BRIDGE</h2><p>Nội dung xuất bản từ CMS Word.</p>',
-        workflow_action: 'publish'
+        session_id: sessionId,
+        answers: { q1: 'A', q2: 'B' }
       }
     });
-    ok('WORD BRIDGE CMS lưu lịch sử phiên bản và xuất bản nội dung thành công',
-      cmsPub.status === 200 && cmsPub.data.page.status === 'published');
+    assert.equal(submit1.status, 200, `Submit exam failed: ${submit1.text}`);
+    assert.equal(submit1.json.locked_after_submit, true);
 
-    const enableMaint = await req('/api/admin/maintenance', {
+    // Cố tình nộp trùng cùng session_id lần 2 -> Phải báo already_submitted = true và không chấm lại
+    const submitDuplicate = await api('/api/exams/submit', {
       method: 'POST',
-      headers: authHeader1,
-      body: { mode: 'maintenance_all', title: 'Bảo trì nâng cấp định kỳ', reason: 'Kiểm thử đóng/mở an toàn', advance_notice_days: 3 }
+      token: learner1.token,
+      body: {
+        session_id: sessionId,
+        answers: { q1: 'C', q2: 'D' }
+      }
     });
-    ok('Bật chế độ bảo trì toàn website thành công', enableMaint.status === 200 && enableMaint.data.maintenance.mode === 'maintenance_all');
+    assert.equal(submitDuplicate.status, 200);
+    assert.equal(submitDuplicate.json.already_submitted, true, 'Phải chặn chấm lại bài khảo thí nộp trùng');
 
-    const userBlockedDuringMaint = await req('/api/learning/languages', { headers: authHeader2 });
-    ok('Người dùng thường nhận trạng thái 503 Bảo trì khi website đang đóng bảo trì', userBlockedDuringMaint.status === 503);
-
-    const reopenMaint = await req('/api/admin/maintenance', {
+    // Gửi yêu cầu phúc khảo kết quả bài thi
+    const appealRes = await api('/api/exams/appeals', {
       method: 'POST',
-      headers: authHeader1,
-      body: { mode: 'active', title: 'Hệ thống hoạt động bình thường' }
+      token: learner1.token,
+      body: {
+        session_id: sessionId,
+        reason: 'Đề nghị kiểm tra lại câu hỏi đọc hiểu số 2.',
+        explanation_text: 'Phương án B phù hợp với ngữ cảnh đoạn văn thứ nhất.'
+      }
     });
-    ok('Quản trị viên kỹ thuật mở lại website an toàn kèm post-check toàn diện',
-      reopenMaint.status === 200 && reopenMaint.data.maintenance.mode === 'active');
+    assert.equal(appealRes.status, 201, `Appeal exam failed: ${appealRes.text}`);
+  });
 
-    const sqliTry = await req('/api/community/posts', {
+  // ==========================================================================
+  // 9. KIỂM THỬ EMAIL RESEND: KHÔNG ĐÁNH DẤU ĐÃ GỬI KHI CHƯA CÓ XÁC NHẬN PROVIDER
+  // ==========================================================================
+  test('9. Hàng đợi Email không tự đánh dấu Đã gửi (sent) khi chưa nhận phản hồi thành công từ Resend API', async () => {
+    const logsRes = await api('/api/admin/emails', { token: adminSession.token });
+    assert.equal(logsRes.status, 200);
+    const queue = logsRes.json.recent_queue || logsRes.json.queue || [];
+    assert.ok(queue.length > 0, 'Phải có bản ghi trong hàng đợi email');
+
+    // Khi chưa cấu hình RESEND_API_KEY thật, không có email nào được phép mang trạng thái 'sent' giả tạo không có provider_id
+    const fakeSent = queue.filter((e) => e.status === 'sent' && !e.provider_id && !e.provider_message_id);
+    assert.equal(fakeSent.length, 0, 'Tuyệt đối không có email nào mang trạng thái sent khi chưa có provider_id thực tế từ Resend');
+  });
+
+  // ==========================================================================
+  // 10. KIỂM THỬ TÌM KIẾM TOÀN NỀN TẢNG (10 NHÓM NỘI DUNG + 5 BỘ LỌC) & ĐỒNG NHẤT WORKER
+  // ==========================================================================
+  test('10. Tìm kiếm toàn nền tảng (/api/search) với 10 nhóm nội dung, 5 bộ lọc và đồng nhất đường chạy src/worker.js', async () => {
+    const searchRes = await api('/api/search?q=tiếng&language_code=en');
+    assert.equal(searchRes.status, 200);
+    assert.ok(searchRes.json.results, 'Phải trả về kết quả phân nhóm theo 10 nhóm nội dung');
+    const groupKeys = Object.keys(searchRes.json.results);
+    assert.equal(groupKeys.length, 10, `Phải hỗ trợ đầy đủ 10 nhóm nội dung tìm kiếm (hiện có: ${groupKeys.join(', ')})`);
+
+    // Kiểm tra thực thi trực tiếp qua src/worker.js (Cloudflare Worker Entrypoint)
+    const workerReq = new Request('https://wordbridge.io.vn/api/system/bootstrap', { method: 'GET' });
+    const workerRes = await workerModule.fetch(workerReq, {});
+    assert.equal(workerRes.status, 200);
+    const workerJson = await workerRes.json();
+    assert.equal(workerJson.ok, true);
+    assert.equal(workerJson.brand.SLOGAN, 'Where Languages Bring People Together.');
+
+    // Kiểm tra Worker chặn truy cập trái phép vào /api/admin/storage/monthly-quota-config và /api/r2/upload
+    const workerUnauthAdmin = new Request('https://wordbridge.io.vn/api/admin/storage/monthly-quota-config', {
+      method: 'GET'
+    });
+    const workerAdminRes = await workerModule.fetch(workerUnauthAdmin, {});
+    assert.ok([401, 403].includes(workerAdminRes.status), 'Cloudflare Worker phải chặn truy cập trái phép vào API cấu hình quota');
+
+    const workerUnauthR2 = new Request('https://wordbridge.io.vn/api/r2/upload', {
       method: 'POST',
-      headers: authHeader2,
-      body: { title: 'Test', content: "1' UNION SELECT * FROM users --" }
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ filename: 'test.txt', content: 'hello' })
     });
-    ok('Lớp bảo vệ WAF chặn payload SQL Injection (HTTP 400)', sqliTry.status === 400);
-
-    const xssTry = await req('/api/community/posts', {
-      method: 'POST',
-      headers: authHeader2,
-      body: { title: 'Test XSS', content: '<script>alert(1)</script>' }
-    });
-    ok('Lớp bảo vệ WAF chặn payload XSS Script (HTTP 400)', xssTry.status === 400);
-
-    
-    // 20. Kiểm tra cài đặt MONTHLY_QUOTA_GB tại máy chủ & RESEND_API_KEY
-    const mqGet = await req("/api/admin/storage/monthly-quota-config", { headers: authHeader1 });
-    ok("GET /api/admin/storage/monthly-quota-config trả về MONTHLY_QUOTA_GB=50 mặc định",
-      mqGet.status === 200 && mqGet.data.monthly_quota_gb === 50);
-
-    const mqPost = await req("/api/admin/storage/monthly-quota-config", {
-      method: "POST",
-      headers: authHeader1,
-      body: { monthly_quota_gb: 80, reason: "Nâng MONTHLY_QUOTA_GB tại máy chủ lên 80 GB" }
-    });
-    ok("POST /api/admin/storage/monthly-quota-config cập nhật MONTHLY_QUOTA_GB tại máy chủ thành công (80 GB)",
-      mqPost.status === 200 && mqPost.data.monthly_quota_gb === 80);
-
-    // Khôi phục về 50 GB mặc định
-    await req("/api/admin/storage/monthly-quota-config", {
-      method: "POST",
-      headers: authHeader1,
-      body: { monthly_quota_gb: 50 }
-    });
-
-    const resendCfg = await req("/api/admin/emails/config", {
-      method: "POST",
-      headers: authHeader1,
-      body: { resend_api_key: "re_test_wordbridge_key_2026" }
-    });
-    ok("Tích hợp RESEND_API_KEY tại máy chủ thành công (provider = resend)",
-      resendCfg.status === 200 && resendCfg.data.email_status.resend_configured === true && resendCfg.data.email_status.provider === "resend");
-
-    console.log(`=== HOÀN TẤT KIỂM THỬ: ${passed}/${passed} BÀI KIỂM THỬ ĐẠT 100% ===`);
-  } finally {
-    server.close();
-  }
-}
-
-runTests().catch(err => {
-  console.error('TEST SUITE FAILED:', err);
-  process.exit(1);
+    const workerR2Res = await workerModule.fetch(workerUnauthR2, {});
+    assert.ok([401, 403].includes(workerR2Res.status), 'Cloudflare Worker phải chặn tải tệp R2 không xác thực');
+  });
 });

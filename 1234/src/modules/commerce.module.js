@@ -1,6 +1,6 @@
 'use strict';
 const crypto = require('crypto');
-const { SERVICE_PLANS, ADDON_GROUPS } = require('../config/constants');
+const { SERVICE_PLANS, ADDON_GROUPS, PLAN_DEFAULT_QUOTAS, GB_BYTES } = require('../config/constants');
 const { requireAuth, requirePermission } = require('../security/rbac.middleware');
 
 /**
@@ -14,8 +14,22 @@ class CommerceModule {
 
   getPricingCatalog() {
     const dbPlans = this.db.query(`SELECT * FROM service_plans WHERE is_active = 1`);
+    const staticMap = new Map(SERVICE_PLANS.map(sp => [sp.code, sp]));
     return {
-      plans: dbPlans.length > 0 ? dbPlans.map(p => ({ ...p, features: JSON.parse(p.features_json || '[]') })) : SERVICE_PLANS,
+      plans: dbPlans.length > 0
+        ? dbPlans.map(p => {
+            const sp = staticMap.get(p.code) || {};
+            const qSpec = PLAN_DEFAULT_QUOTAS[p.code];
+            const quotaBytes = qSpec ? qSpec.quota_bytes : (sp.default_storage_bytes || GB_BYTES);
+            return {
+              ...sp,
+              ...p,
+              default_storage_bytes: quotaBytes,
+              default_storage_gb: Math.round(quotaBytes / GB_BYTES),
+              features: JSON.parse(p.features_json || '[]')
+            };
+          })
+        : SERVICE_PLANS,
       addons: ADDON_GROUPS,
       organization_scale_tiers: [
         { tier: 'Cơ bản (Trong gói Organization Plus)', max_members: 30, pricing_note: 'Đã bao gồm trong gói tháng/năm' },
@@ -158,34 +172,33 @@ class CommerceModule {
 
     if (action === 'cancel' || action === 'expire_to_free') {
       // Hết hạn hoặc hạ gói tự chuyển về Free và giữ nguyên 100% lịch sử học tập (PHẦN 16.3 & 16.6)
-      history.push({ action, preserved_learning_history: true, at: nowIso });
+      history.push({ action, Fallback_plan: 'personal_free', data_preserved: true, at: nowIso });
       this.db.run(
         `UPDATE subscriptions SET status = ?, auto_renew = 0, history_json = ? WHERE id = ?`,
         [action === 'cancel' ? 'canceled' : 'expired', JSON.stringify(history), sub.id]
       );
-      this.db.run(`UPDATE users SET plan_code = 'personal_free', updated_at = ? WHERE id = ?`, [nowIso, user.id]);
-      this.emailAdapter.enqueueEmail({
-        templateSlug: 'subscription-expired.html',
-        toEmail: user.email,
-        variables: { full_name: user.full_name, plan_name: sub.plan_code, ref_code: sub.id.toUpperCase() }
-      });
+      if (!sub.org_id) {
+        this.db.run(`UPDATE users SET plan_code = 'personal_free' WHERE id = ?`, [user.id]);
+      }
+    } else if (action === 'pause') {
+      history.push({ action: 'paused', at: nowIso });
+      this.db.run(`UPDATE subscriptions SET status = 'paused', history_json = ? WHERE id = ?`, [JSON.stringify(history), sub.id]);
+    } else if (action === 'resume') {
+      history.push({ action: 'resumed', at: nowIso });
+      this.db.run(`UPDATE subscriptions SET status = 'active', history_json = ? WHERE id = ?`, [JSON.stringify(history), sub.id]);
     } else if (action === 'toggle_auto_renew') {
-      // Không gia hạn tự động nếu khách hàng chưa đồng ý rõ ràng
-      const renewVal = consent_auto_renew ? 1 : 0;
-      history.push({ action: 'set_auto_renew', value: Boolean(renewVal), at: nowIso });
-      this.db.run(`UPDATE subscriptions SET auto_renew = ?, history_json = ? WHERE id = ?`, [
-        renewVal,
-        JSON.stringify(history),
-        sub.id
-      ]);
-    } else if (action === 'downgrade' && target_plan_code) {
-      history.push({ action: 'downgrade', from: sub.plan_code, to: target_plan_code, preserved_history: true, at: nowIso });
-      this.db.run(`UPDATE subscriptions SET plan_code = ?, history_json = ? WHERE id = ?`, [
-        target_plan_code,
-        JSON.stringify(history),
-        sub.id
-      ]);
-      this.db.run(`UPDATE users SET plan_code = ? WHERE id = ?`, [target_plan_code, user.id]);
+      // Chỉ bật gia hạn tự động khi người dùng đồng ý rõ ràng (PHẦN 16.6)
+      const flag = consent_auto_renew ? 1 : 0;
+      history.push({ action: 'auto_renew_updated', auto_renew: Boolean(flag), explicit_consent: Boolean(consent_auto_renew), at: nowIso });
+      this.db.run(`UPDATE subscriptions SET auto_renew = ?, history_json = ? WHERE id = ?`, [flag, JSON.stringify(history), sub.id]);
+    } else if (action === 'change_plan' && target_plan_code) {
+      history.push({ action: 'plan_changed', from: sub.plan_code, to: target_plan_code, at: nowIso });
+      this.db.run(`UPDATE subscriptions SET plan_code = ?, history_json = ? WHERE id = ?`, [target_plan_code, JSON.stringify(history), sub.id]);
+      if (!sub.org_id) {
+        this.db.run(`UPDATE users SET plan_code = ? WHERE id = ?`, [target_plan_code, user.id]);
+      } else {
+        this.db.run(`UPDATE organizations SET plan_code = ? WHERE id = ?`, [target_plan_code, sub.org_id]);
+      }
     }
 
     return this.db.get(`SELECT * FROM subscriptions WHERE id = ?`, [sub.id]);
@@ -193,29 +206,40 @@ class CommerceModule {
 
   applyReferralCode(user, { referral_code }) {
     requireAuth(user);
-    const cleanCode = String(referral_code || '').trim().toUpperCase();
+    const code = String(referral_code || '').trim().toUpperCase();
     const myLoyalty = this.db.get(`SELECT * FROM loyalty_accounts WHERE user_id = ?`, [user.id]);
-    if (!myLoyalty) throw new Error('Chưa khởi tạo tài khoản thành viên thân thiết.');
-    if (myLoyalty.referral_code === cleanCode) {
-      throw new Error('Không được tự sử dụng mã giới thiệu của chính mình (Chống gian lận tự giới thiệu).');
+    if (!myLoyalty) throw new Error('Không tìm thấy tài khoản điểm thưởng.');
+    if (myLoyalty.referral_code === code) {
+      throw new Error('Không được tự giới thiệu chính mình để trục lợi điểm thưởng.');
     }
     if (myLoyalty.referred_by_code) {
-      throw new Error('Tài khoản của bạn đã áp dụng mã giới thiệu trước đó.');
+      throw new Error('Tài khoản của bạn đã từng áp dụng mã giới thiệu trước đó.');
     }
-    const referrer = this.db.get(`SELECT * FROM loyalty_accounts WHERE referral_code = ?`, [cleanCode]);
+    const referrer = this.db.get(`SELECT * FROM loyalty_accounts WHERE referral_code = ?`, [code]);
     if (!referrer) {
       throw new Error('Mã giới thiệu không tồn tại.');
     }
+
     const nowIso = new Date().toISOString();
-    this.db.run(`UPDATE loyalty_accounts SET referred_by_code = ?, points_balance = points_balance + 100, lifetime_points = lifetime_points + 100, updated_at = ? WHERE user_id = ?`, [
-      cleanCode,
-      nowIso,
-      user.id
-    ]);
-    this.db.run(`UPDATE loyalty_accounts SET points_balance = points_balance + 150, lifetime_points = lifetime_points + 150, updated_at = ? WHERE user_id = ?`, [
-      nowIso,
-      referrer.user_id
-    ]);
+    // Cộng điểm minh bạch cho cả người giới thiệu và người được giới thiệu
+    this.db.run(
+      `UPDATE loyalty_accounts SET points_balance = points_balance + 100, lifetime_points = lifetime_points + 100, referred_by_code = ?, updated_at = ? WHERE user_id = ?`,
+      [code, nowIso, user.id]
+    );
+    this.db.run(
+      `UPDATE loyalty_accounts SET points_balance = points_balance + 150, lifetime_points = lifetime_points + 150, updated_at = ? WHERE user_id = ?`,
+      [nowIso, referrer.user_id]
+    );
+
+    this.db.run(
+      `INSERT INTO loyalty_transactions (id, user_id, delta_points, reason, reference_id, created_at) VALUES (?, ?, 100, 'Áp dụng mã giới thiệu thành viên hợp lệ', ?, ?)`,
+      ['ltx_' + crypto.randomBytes(8).toString('hex'), user.id, code, nowIso]
+    );
+    this.db.run(
+      `INSERT INTO loyalty_transactions (id, user_id, delta_points, reason, reference_id, created_at) VALUES (?, ?, 150, 'Giới thiệu thành viên mới hợp lệ', ?, ?)`,
+      ['ltx_' + crypto.randomBytes(8).toString('hex'), referrer.user_id, user.id, nowIso]
+    );
+
     return this.db.get(`SELECT * FROM loyalty_accounts WHERE user_id = ?`, [user.id]);
   }
 }

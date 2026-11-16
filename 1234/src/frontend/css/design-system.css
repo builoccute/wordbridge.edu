@@ -1,5 +1,5 @@
 /* ============================================================================
- * WORD BRIDGE - DESIGN SYSTEM (PHẦN 04 & PHẦN 05)
+ * WORD BRIDGE - DESIGN SYSTEM & OFFICIAL BRAND IDENTITY (PHẦN IV & PHẦN XX)
  * Bảng màu thương hiệu chuẩn:
  * - Deep Teal:     #146466
  * - Vermilion Red: #C92F1C
@@ -8,16 +8,16 @@
  * ============================================================================ */
 :root {
   --wb-deep-teal: #146466;
-  --wb-deep-teal-dark: #0D4446;
+  --wb-deep-teal-dark: #093D3E;
   --wb-vermilion: #C92F1C;
   --wb-vermilion-hover: #A82414;
   --wb-light-teal: #5AABA9;
   --wb-warm-ivory: #E2E2C4;
-  --wb-bg-soft: #F3F8F8;
+  --wb-bg-soft: #F5F8F8;
   --wb-bg-mint: #E6F3F3;
   --wb-surface: #FFFFFF;
-  --wb-text-main: #162B2C;
-  --wb-text-muted: #4E6768;
+  --wb-text-main: #15292A;
+  --wb-text-muted: #4A6364;
   --wb-border: #D5E5E5;
   --wb-success: #1F8A5B;
   --wb-warning: #D9822B;
@@ -25,7 +25,7 @@
   --wb-radius-sm: 8px;
   --wb-radius-md: 14px;
   --wb-radius-lg: 20px;
-  --wb-shadow-sm: 0 2px 8px rgba(20, 100, 102, 0.06);
+  --wb-shadow-sm: 0 2px 10px rgba(20, 100, 102, 0.06);
   --wb-shadow-md: 0 8px 24px rgba(20, 100, 102, 0.10);
   --wb-shadow-lg: 0 16px 38px rgba(20, 100, 102, 0.14);
   --wb-font-sans: 'Be Vietnam Pro', 'Segoe UI', Roboto, 'Noto Sans SC', 'Noto Sans KR', 'Noto Sans JP', 'Noto Sans', sans-serif;
@@ -42,6 +42,7 @@ html, body {
   background-color: var(--wb-bg-soft);
   color: var(--wb-text-main);
   line-height: 1.6;
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -56,12 +57,20 @@ a:hover {
 }
 
 .wb-container {
-  max-width: 1280px;
+  max-width: 1320px;
   margin: 0 auto;
   padding: 0 24px;
 }
 
-/* Header & Mega Menu (Sát thiết kế 42.pdf trang 1 & trang 9, không có Sự kiện) */
+/* Monochrome Icon Rule (PHẦN IV.6) */
+.wb-icon {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+  stroke: currentColor;
+}
+
+/* HEADER CHÍNH THỨC (PHẦN IV.1 - Duy nhất 1 hàng trên Desktop, không chồng lấn) */
 .wb-header {
   position: sticky;
   top: 0;
@@ -75,21 +84,30 @@ a:hover {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  min-height: 74px;
+  gap: 12px;
+  min-height: 72px;
+  flex-wrap: nowrap;
+}
+
+.wb-logo-link {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 
 .wb-logo-link img {
-  height: 46px;
+  height: 44px;
   width: auto;
   display: block;
+  object-fit: contain;
 }
 
 .wb-nav {
   display: flex;
   align-items: center;
-  gap: 4px;
-  flex-wrap: wrap;
+  gap: 2px;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 .wb-nav-item {
@@ -99,13 +117,15 @@ a:hover {
 .wb-nav-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 9px 13px;
-  border-radius: 999px;
+  gap: 4px;
+  padding: 8px 12px;
+  border-radius: 8px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--wb-text-main);
   cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
 }
 
 .wb-nav-link:hover,
@@ -114,20 +134,40 @@ a:hover {
   color: #FFFFFF;
 }
 
+.wb-caret {
+  opacity: 0.8;
+}
+
 .wb-mega-menu {
   display: none;
   position: absolute;
-  top: calc(100% + 8px);
+  top: calc(100% + 6px);
   left: 0;
-  min-width: 440px;
+  min-width: 480px;
+  max-width: 92vw;
   background: var(--wb-surface);
   border: 1px solid var(--wb-border);
   border-radius: var(--wb-radius-md);
   box-shadow: var(--wb-shadow-lg);
-  padding: 18px;
+  padding: 16px;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  z-index: 1100;
+  gap: 10px;
+  z-index: 1200;
+  white-space: normal;
+}
+
+.wb-mega-menu-right {
+  left: auto;
+  right: 0;
+}
+
+.wb-nav-item::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 10px;
 }
 
 .wb-nav-item:hover .wb-mega-menu,
@@ -138,7 +178,7 @@ a:hover {
 .wb-mega-card {
   display: flex;
   flex-direction: column;
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: var(--wb-radius-sm);
   background: var(--wb-bg-soft);
   border: 1px solid transparent;
@@ -152,19 +192,23 @@ a:hover {
 
 .wb-mega-card strong {
   color: var(--wb-deep-teal);
-  font-size: 14px;
+  font-size: 13.5px;
+  margin-bottom: 2px;
 }
 
 .wb-mega-card span {
   font-size: 12px;
   color: var(--wb-text-muted);
+  line-height: 1.4;
 }
 
-/* Header Actions */
+/* Header Actions (Search + UI Language + Auth Buttons) */
 .wb-header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .wb-search-box {
@@ -173,7 +217,17 @@ a:hover {
   background: var(--wb-bg-soft);
   border: 1px solid var(--wb-border);
   border-radius: 999px;
-  padding: 5px 12px;
+  padding: 4px 10px;
+}
+
+.wb-search-btn {
+  background: none;
+  border: none;
+  color: var(--wb-text-main);
+  padding: 2px 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
 .wb-search-box input {
@@ -181,8 +235,38 @@ a:hover {
   background: transparent;
   outline: none;
   font-size: 13px;
-  width: 140px;
+  width: 108px;
   color: var(--wb-text-main);
+}
+
+.wb-ui-lang-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--wb-bg-soft);
+  border: 1px solid var(--wb-border);
+  border-radius: 999px;
+  padding: 5px 10px;
+  color: var(--wb-text-main);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.wb-ui-lang-select {
+  border: none;
+  background: transparent;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--wb-text-main);
+  outline: none;
+  cursor: pointer;
+}
+
+.wb-header-user-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 /* Buttons */
@@ -190,15 +274,27 @@ a:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 10px 18px;
+  gap: 7px;
+  padding: 9px 16px;
   border-radius: var(--wb-radius-sm);
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
   border: 1.5px solid transparent;
   cursor: pointer;
   transition: all 0.18s ease;
   font-family: inherit;
+  white-space: nowrap;
+}
+
+.wb-btn-header {
+  padding: 7px 14px;
+  font-size: 13.5px;
+}
+
+.wb-btn-pill {
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 14.5px;
 }
 
 .wb-btn-primary {
@@ -224,47 +320,282 @@ a:hover {
 }
 
 .wb-btn-outline {
-  background: transparent;
+  background: #FFFFFF;
   border-color: var(--wb-deep-teal);
   color: var(--wb-deep-teal);
 }
 
 .wb-btn-outline:hover {
   background: var(--wb-bg-mint);
+  color: var(--wb-deep-teal);
 }
 
-/* Hero Banner (Sát thiết kế 42.pdf trang 1, 10, 28) */
+/* HERO TRANG CHỦ (PHẦN IV.2 - Khớp ảnh mẫu trang chủ) */
 .wb-hero {
-  background: linear-gradient(125deg, #E8F4F4 0%, #D4ECEB 55%, #E2E2C4 100%);
-  border-bottom: 3px solid var(--wb-deep-teal);
-  padding: 36px 0;
+  background: linear-gradient(125deg, #F3F9F9 0%, #DFF1F0 58%, #EFEBD6 100%);
+  padding: 34px 0 48px 0;
   position: relative;
   overflow: hidden;
 }
 
 .wb-hero-grid {
   display: grid;
-  grid-template-columns: 1.25fr 0.95fr;
+  grid-template-columns: 1.12fr 1.08fr;
   gap: 28px;
   align-items: center;
 }
 
-.wb-hero-title {
-  font-size: 34px;
+.wb-hero-kicker {
+  font-size: 27px;
   font-weight: 800;
-  color: var(--wb-deep-teal);
-  margin: 0 0 10px 0;
-  line-height: 1.25;
+  color: #162B2C;
+  line-height: 1.28;
+  margin: 0 0 6px 0;
 }
 
-.wb-hero-title::after {
+.wb-hero-brand-line {
+  font-size: 48px;
+  font-weight: 900;
+  line-height: 1.08;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px 0;
+}
+
+.wb-hero-brand-line .word-part {
+  color: var(--wb-deep-teal);
+  position: relative;
+  display: inline-block;
+}
+
+.wb-hero-brand-line .word-part::after {
   content: '';
   display: block;
   width: 68px;
   height: 4px;
   background: var(--wb-vermilion);
   border-radius: 2px;
-  margin-top: 8px;
+  margin-top: 4px;
+}
+
+.wb-hero-brand-line .bridge-part {
+  color: var(--wb-vermilion);
+}
+
+.wb-hero-slogan {
+  font-size: 18px;
+  font-style: italic;
+  font-weight: 600;
+  color: #182C2D;
+  margin: 6px 0 14px 0;
+}
+
+.wb-hero-desc {
+  font-size: 14.5px;
+  color: #263E3F;
+  margin: 0 0 20px 0;
+  line-height: 1.65;
+}
+
+/* THANH 5 NHÓM GIÁ TRỊ (PHẦN IV.3) */
+.wb-pillars-strip {
+  background: #FFFFFF;
+  border: 1px solid #E2ECEC;
+  border-radius: 18px;
+  box-shadow: 0 10px 28px rgba(20, 100, 102, 0.09);
+  padding: 16px 20px;
+  margin-top: -28px;
+  position: relative;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.wb-pillar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px;
+  border-right: 1px solid #E5EFEF;
+  color: var(--wb-text-main);
+  transition: transform 0.15s ease;
+}
+
+.wb-pillar-item:last-child {
+  border-right: none;
+}
+
+.wb-pillar-item:hover {
+  transform: translateY(-2px);
+}
+
+.wb-pillar-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #FDECEC;
+  color: var(--wb-vermilion);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.wb-pillar-item strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  color: #15292A;
+}
+
+.wb-pillar-item span {
+  display: block;
+  font-size: 12px;
+  color: var(--wb-text-muted);
+}
+
+/* KHU VỰC 3 NHÓM NGƯỜI DÙNG (PHẦN IV.4) */
+.wb-user-groups-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin: 24px 0;
+}
+
+.wb-user-group-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 20px 22px;
+  border-radius: 16px;
+  border: 1px solid rgba(20, 100, 102, 0.12);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.wb-user-group-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--wb-shadow-md);
+}
+
+.wb-ug-personal {
+  background: linear-gradient(135deg, #E3F4F3 0%, #EFF9F8 100%);
+}
+
+.wb-ug-org {
+  background: linear-gradient(135deg, #FDECE9 0%, #FFF5F3 100%);
+}
+
+.wb-ug-member {
+  background: linear-gradient(135deg, #F9F2DF 0%, #FCF9EE 100%);
+}
+
+.wb-ug-icon-circle {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #FFFFFF;
+}
+
+.wb-ug-personal .wb-ug-icon-circle { background: #1F8A85; }
+.wb-ug-org .wb-ug-icon-circle { background: var(--wb-vermilion); }
+.wb-ug-member .wb-ug-icon-circle { background: #B8924A; }
+
+.wb-ug-body h3 {
+  margin: 0 0 4px 0;
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.wb-ug-personal .wb-ug-body h3 { color: var(--wb-deep-teal); }
+.wb-ug-org .wb-ug-body h3 { color: var(--wb-vermilion); }
+.wb-ug-member .wb-ug-body h3 { color: #2D2618; }
+
+.wb-ug-body p {
+  margin: 0;
+  font-size: 13px;
+  color: #2B4243;
+  line-height: 1.45;
+}
+
+.wb-ug-arrow {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--wb-deep-teal);
+}
+
+/* KHÁM PHÁ WORD BRIDGE (9 THẺ + BANNER CTA BÊN PHẢI) */
+.wb-explore-home-row {
+  display: grid;
+  grid-template-columns: 1.85fr 1fr;
+  gap: 22px;
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+
+.wb-explore-9-grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 10px;
+}
+
+.wb-explore-tile {
+  background: #FFFFFF;
+  border: 1px solid var(--wb-border);
+  border-radius: 12px;
+  padding: 14px 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--wb-shadow-sm);
+  transition: all 0.15s ease;
+}
+
+.wb-explore-tile:hover {
+  border-color: var(--wb-deep-teal);
+  transform: translateY(-2px);
+}
+
+.wb-explore-tile-icon {
+  color: var(--wb-deep-teal);
+}
+
+.wb-explore-tile.accent-red .wb-explore-tile-icon {
+  color: var(--wb-vermilion);
+}
+
+.wb-explore-tile span {
+  font-size: 12px;
+  font-weight: 700;
+  color: #182C2D;
+  line-height: 1.3;
+}
+
+.wb-cta-join-banner {
+  background: linear-gradient(135deg, #0D4B4D 0%, #146466 65%, #1E7E7A 100%);
+  color: #FFFFFF;
+  border-radius: 16px;
+  padding: 20px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--wb-shadow-md);
 }
 
 /* Cards, Grids, Badges */
@@ -277,7 +608,7 @@ a:hover {
 }
 
 .wb-section {
-  padding: 28px 0;
+  padding: 26px 0;
 }
 
 .wb-section-title {
@@ -307,6 +638,7 @@ a:hover {
 .wb-badge {
   display: inline-flex;
   align-items: center;
+  gap: 5px;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 12px;
@@ -354,7 +686,7 @@ a:hover {
 .wb-textarea:focus {
   outline: none;
   border-color: var(--wb-deep-teal);
-  box-shadow: 0 0 0 3px rgba(20, 100, 102, 0.12);
+  box-shadow: 0 0 0 3px rgba(20, 100, 102, 0.14);
 }
 
 /* Tables */
@@ -387,7 +719,7 @@ a:hover {
   vertical-align: middle;
 }
 
-/* Word-like CMS Ribbon Toolbar (PHẦN 25.1) */
+/* Word-like CMS Ribbon Toolbar */
 .wb-word-ribbon {
   display: flex;
   flex-wrap: wrap;
@@ -415,39 +747,52 @@ a:hover {
 }
 
 .wb-word-canvas {
-  min-height: 360px;
-  padding: 28px;
+  min-height: 320px;
+  padding: 24px;
   background: #FFFFFF;
   border: 1px solid var(--wb-border);
   border-radius: 0 0 var(--wb-radius-md) var(--wb-radius-md);
   outline: none;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.03);
 }
 
-/* Footer (Chuẩn trang 2 của 42.pdf) */
+/* FOOTER CHÍNH THỨC (PHẦN IV.5 - Chuẩn ảnh mẫu Footer đã duyệt) */
 .wb-footer {
-  background: linear-gradient(145deg, #093536 0%, #146466 65%, #0D4446 100%);
+  background: linear-gradient(145deg, #063839 0%, #0B4D4F 55%, #073B3C 100%);
   color: #FFFFFF;
-  padding: 48px 0 24px 0;
+  padding: 46px 0 24px 0;
   margin-top: 48px;
   border-top: 5px solid var(--wb-vermilion);
 }
 
 .wb-footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr 1.3fr;
-  gap: 24px;
+  grid-template-columns: 1.45fr 1fr 1fr 1fr 1.25fr;
+  gap: 28px;
   padding-bottom: 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.22);
+}
+
+.wb-footer-desc {
+  color: #E8EFEF;
+  font-size: 14px;
+  line-height: 1.65;
+  margin: 0 0 18px 0;
+}
+
+.wb-footer-pillars {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: #63C7C4;
 }
 
 .wb-footer-col h4 {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 800;
-  margin: 0 0 14px 0;
+  margin: 0 0 16px 0;
   color: #FFFFFF;
   position: relative;
-  padding-bottom: 8px;
+  padding-bottom: 10px;
 }
 
 .wb-footer-col h4::after {
@@ -455,8 +800,8 @@ a:hover {
   position: absolute;
   left: 0;
   bottom: 0;
-  width: 36px;
-  height: 3px;
+  width: 38px;
+  height: 3.5px;
   background: var(--wb-vermilion);
 }
 
@@ -467,16 +812,39 @@ a:hover {
 }
 
 .wb-footer-links li {
-  margin-bottom: 9px;
+  margin-bottom: 11px;
 }
 
 .wb-footer-links a {
-  color: #E2E2C4;
-  font-size: 13.5px;
+  color: #EAF2F2;
+  font-size: 14px;
 }
 
 .wb-footer-links a:hover {
   color: #FFFFFF;
+  text-decoration: underline;
+}
+
+.wb-footer-contact-list li {
+  margin-bottom: 14px;
+}
+
+.wb-footer-contact-list strong {
+  color: #FFFFFF;
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.wb-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding-top: 20px;
+  font-size: 14px;
+  color: #EAF2F2;
 }
 
 /* Toast Alert */

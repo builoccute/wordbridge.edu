@@ -1,12 +1,16 @@
 'use strict';
 const crypto = require('crypto');
-const { GB_BYTES, TB_BYTES, STORAGE_QUOTA_POLICY } = require('../config/constants');
-const { STORAGE_SERVER_PROVISIONED_BYTES, getMonthlyQuotaGb, setMonthlyQuotaGb } = require('../config/env');
+const { GB_BYTES, TB_BYTES, PLAN_DEFAULT_QUOTAS } = require('../config/constants');
+const { getMonthlyQuotaGb, setMonthlyQuotaGb } = require('../config/env');
 const { requireAuth, requirePermission, requireOrgAccess } = require('../security/rbac.middleware');
 
 /**
- * THEO DÕI TIẾN ĐỘ CÁ NHÂN (PHẦN 09), THƯ VIỆN TÀI NGUYÊN (PHẦN 10)
- * & ĐỘNG CƠ QUẢN LÝ HẠN MỨC LƯU TRỮ ĐỘC LẬP (PHỤ LỤC A - MỤC A1..A10)
+ * DASHBOARD CÁ NHÂN & GROW (PHẦN VIII), THƯ VIỆN TÀI NGUYÊN (PHẦN III.2)
+ * & QUẢN LÝ HẠN MỨC DUNG LƯỢNG CLOUDFLARE D1/R2 (PHẦN XV.2, XVI & XXI.5, 6)
+ * Quy tắc bắt buộc:
+ * - Hạn mức mặc định của từng gói (Personal Free 1GB, Personal Plus 5GB, Org Trial 50GB/tháng, Org Plus Tháng 50GB/tháng, Org Plus Năm 120GB/tháng) được bảo vệ tuyệt đối.
+ * - Biến môi trường MONTHLY_QUOTA_GB KHÔNG ĐƯỢC PHÉP ghi đè hạn mức riêng của từng gói dịch vụ!
+ * - Dashboard GROW chỉ hiển thị thành tích từ dữ liệu thật, không tạo điểm số giả hay lượt hoạt động giả.
  */
 
 function getCurrentHoChiMinhCycleMonth(dateObj = new Date()) {
@@ -40,14 +44,12 @@ class ProgressAndResourcesModule {
     this.storageAdapter = storageAdapter;
   }
 
+  /**
+   * PHẦN XV.2 & XXI.5, 6: Bảo vệ tuyệt đối hạn mức mặc định theo từng gói.
+   * Tuyệt đối KHÔNG dùng getMonthlyQuotaGb() để ghi đè hạn mức của các gói dịch vụ!
+   */
   getDefaultQuotaForPlan(planCode, targetType = 'personal') {
-    if (planCode === 'org_plus_monthly' || planCode === 'org_trial') {
-      return {
-        default_quota_bytes: getMonthlyQuotaGb() * GB_BYTES,
-        is_monthly_cycle: 1
-      };
-    }
-    const spec = STORAGE_QUOTA_POLICY.PLAN_DEFAULTS[planCode];
+    const spec = PLAN_DEFAULT_QUOTAS[planCode];
     if (spec) {
       return {
         default_quota_bytes: spec.quota_bytes,
@@ -112,12 +114,6 @@ class ProgressAndResourcesModule {
     return this.decorateQuotaRow(row);
   }
 
-  /**
-   * Nguyên tắc ưu tiên (Mục A5):
-   * 1. Không giới hạn do Admin đặt (is_unlimited = 1)
-   * 2. Hạn mức riêng do Admin điều chỉnh (admin_custom_quota_bytes != NULL)
-   * 3. Hạn mức mặc định của gói đang hoạt động (default_quota_bytes)
-   */
   decorateQuotaRow(row) {
     if (!row) return null;
     const isUnlimited = Boolean(row.is_unlimited);
@@ -128,9 +124,10 @@ class ProgressAndResourcesModule {
     const prioritySource = isUnlimited
       ? 'admin_unlimited'
       : (hasCustom ? 'admin_custom' : 'plan_default');
+    const priorityLabelVi = isUnlimited
+      ? 'Không giới hạn do Quản trị viên cấp'
+      : (hasCustom ? 'Hạn mức riêng do Quản trị viên cấp' : 'Hạn mức mặc định của gói');
 
-    // Với Organization Plus: hạn mức tính theo chu kỳ tháng (cycle_used_bytes).
-    // Với Personal Free / Personal Plus: hạn mức lưu trữ tích lũy theo tài khoản (total_stored_bytes).
     const meteredUsedBytes = row.is_monthly_cycle ? Number(row.cycle_used_bytes) : Number(row.total_stored_bytes);
     const usagePercent = isUnlimited || !effectiveQuotaBytes
       ? 0
@@ -158,6 +155,7 @@ class ProgressAndResourcesModule {
       cycle_used_human: formatBytesHuman(row.cycle_used_bytes),
       usage_percent: usagePercent,
       priority_source: prioritySource,
+      priority_label_vi: priorityLabelVi,
       limit_status: limitStatus
     };
   }
@@ -176,14 +174,6 @@ class ProgressAndResourcesModule {
     return this.decorateQuotaRow(this.db.get(`SELECT * FROM storage_quotas WHERE id = ?`, [raw.id]));
   }
 
-  /**
-   * Kiểm tra hạn mức trước khi cho phép tải tệp mới lên (Mục A6 & A7)
-   * Nếu vượt hạn mức:
-   * - Hiển thị thông báo rõ ràng
-   * - Tạm ngăn tải lên dữ liệu mới vượt hạn mức
-   * - Không xóa dữ liệu cũ, không khóa tài khoản, không làm mất quyền đọc/tải xuống
-   * - Ghi nhận thời điểm đạt giới hạn (quota_reached_at)
-   */
   checkAndConsumeQuota({ actorUser, targetType = 'personal', targetId, incomingBytes }) {
     const q = this.ensureQuotaRecord(targetType, targetId);
     const size = Number(incomingBytes || 0);
@@ -210,8 +200,7 @@ class ProgressAndResourcesModule {
         );
         const err = new Error(
           `Tài khoản/Tổ chức đã đạt hoặc vượt hạn mức dung lượng lưu trữ (${q.metered_used_human} / ${q.effective_quota_human}). ` +
-          `Hệ thống tạm ngăn tải lên tệp mới vượt hạn mức; toàn bộ dữ liệu cũ và quyền đọc/tải xuống vẫn được giữ nguyên. ` +
-          `Vui lòng nâng cấp gói hoặc liên hệ Quản trị viên tại /quan-tri/luu-tru để điều chỉnh hạn mức.`
+          `Hệ thống tạm ngăn tải lên tệp mới vượt hạn mức; toàn bộ dữ liệu cũ và quyền đọc/tải xuống vẫn được giữ nguyên.`
         );
         err.statusCode = 403;
         throw err;
@@ -247,42 +236,37 @@ class ProgressAndResourcesModule {
   }
 
   /**
-   * MỤC A5: Admin điều chỉnh hạn mức riêng tại /quan-tri/luu-tru (Theo GB, TB hoặc Không giới hạn, hoặc Gỡ hạn mức riêng)
+   * PHẦN XV.2 & XXI.5, 6:
+   * Cập nhật thông số tham chiếu hạ tầng MONTHLY_QUOTA_GB tại máy chủ,
+   * NHƯNG TUYỆT ĐỐI KHÔNG ghi đè hạn mức mặc định của bất kỳ gói dịch vụ nào (gói năm 120GB, gói tháng 50GB, gói dùng thử 50GB, gói cá nhân 1GB/5GB)!
    */
-
-  /**
-   * Cài đặt MONTHLY_QUOTA_GB tại máy chủ qua API quản trị (/api/admin/storage/monthly-quota-config)
-   */
-  configureServerMonthlyQuotaGb(adminUser, { monthly_quota_gb, reason = 'Cập nhật MONTHLY_QUOTA_GB tại máy chủ' }) {
+  configureServerMonthlyQuotaGb(adminUser, { monthly_quota_gb, reason = 'Cập nhật thông số tham chiếu dung lượng hạ tầng' }) {
     requirePermission(adminUser, 'storage.manage');
     const updatedGb = setMonthlyQuotaGb(monthly_quota_gb);
     const updatedBytes = updatedGb * GB_BYTES;
-    STORAGE_QUOTA_POLICY.PLAN_DEFAULTS.org_plus_monthly.quota_bytes = updatedBytes;
-    STORAGE_QUOTA_POLICY.PLAN_DEFAULTS.org_trial.quota_bytes = updatedBytes;
-
     const nowIso = new Date().toISOString();
-    this.db.run(
-      `UPDATE storage_quotas
-       SET default_quota_bytes = ?, updated_at = ?
-       WHERE target_type = 'organization' AND plan_code IN ('org_plus_monthly', 'org_trial')`,
-      [updatedBytes, nowIso]
-    );
 
-    const affectedOrgs = this.db.query(
-      `SELECT id FROM storage_quotas WHERE target_type = 'organization' AND plan_code IN ('org_plus_monthly', 'org_trial')`
-    );
-    for (const o of affectedOrgs) {
-      this.recalculateBlockState(o.id);
+    // Đảm bảo mọi bản ghi storage_quotas đều giữ nguyên đúng hạn mức chuẩn của gói (1GB, 5GB, 50GB, 120GB)
+    for (const [planCode, spec] of Object.entries(PLAN_DEFAULT_QUOTAS)) {
+      this.db.run(
+        `UPDATE storage_quotas SET default_quota_bytes = ?, updated_at = ? WHERE plan_code = ?`,
+        [spec.quota_bytes, nowIso, planCode]
+      );
     }
 
     this.db.run(
       `INSERT INTO audit_logs (id, actor_id, actor_role, action, target_type, target_id, ip_address, metadata_json, created_at)
-       VALUES (?, ?, ?, 'update_server_monthly_quota_gb', 'system_config', 'MONTHLY_QUOTA_GB', '127.0.0.1', ?, ?)`,
+       VALUES (?, ?, ?, 'update_server_reference_quota_gb', 'system_config', 'MONTHLY_QUOTA_GB', '127.0.0.1', ?, ?)`,
       [
         'aud_' + crypto.randomBytes(8).toString('hex'),
         adminUser.id,
         adminUser.role,
-        JSON.stringify({ monthly_quota_gb: updatedGb, default_quota_bytes: updatedBytes, reason }),
+        JSON.stringify({
+          monthly_quota_gb: updatedGb,
+          override_plan_quotas: false,
+          protected_plans: Object.keys(PLAN_DEFAULT_QUOTAS),
+          reason
+        }),
         nowIso
       ]
     );
@@ -291,7 +275,8 @@ class ProgressAndResourcesModule {
       monthly_quota_gb: updatedGb,
       monthly_quota_bytes: updatedBytes,
       monthly_quota_human: formatBytesHuman(updatedBytes),
-      updated_organizations_count: affectedOrgs.length,
+      override_plan_quotas: false,
+      policy_note: 'Thông số tham chiếu hạ tầng đã được cập nhật. Hạn mức của từng gói dịch vụ (Miễn phí 1 GB, Cá nhân Plus 5 GB, Tổ chức Dùng thử 50 GB, Tổ chức Tháng 50 GB, Tổ chức Năm 120 GB) được bảo vệ nguyên vẹn, không bị ghi đè.',
       updated_at: nowIso
     };
   }
@@ -299,12 +284,12 @@ class ProgressAndResourcesModule {
   adminAdjustQuota(adminUser, body) {
     requirePermission(adminUser, 'storage.manage');
     const {
-      target_type = 'personal', // personal | organization
+      target_type = 'personal',
       target_id,
-      action, // set_custom | increase | decrease | set_unlimited | remove_custom
+      action,
       amount = 0,
-      unit = 'GB', // GB | TB | BYTES
-      reason = 'Điều chỉnh hạn mức từ Trung tâm Lưu trữ /quan-tri/luu-tru'
+      unit = 'GB',
+      reason = 'Điều chỉnh hạn mức riêng cho tài khoản/tổ chức'
     } = body || {};
 
     if (!['personal', 'organization'].includes(target_type) || !target_id) {
@@ -322,7 +307,6 @@ class ProgressAndResourcesModule {
     if (action === 'set_unlimited') {
       newUnlimited = 1;
     } else if (action === 'remove_custom') {
-      // Gỡ hạn mức riêng -> trở về hạn mức mặc định theo gói đang hoạt động (Mục A5)
       newCustomBytes = null;
       newUnlimited = 0;
     } else if (action === 'set_custom') {
@@ -338,20 +322,21 @@ class ProgressAndResourcesModule {
       newCustomBytes = Math.max(1, base - deltaOrTargetBytes);
       newUnlimited = 0;
     } else {
-      throw new Error(`Hành động điều chỉnh hạn mức '${action}' không hợp lệ.`);
+      throw new Error(`Thao tác điều chỉnh hạn mức '${action}' không hợp lệ.`);
     }
 
     const nowIso = new Date().toISOString();
+    // Bảo vệ default_quota_bytes theo đúng gói đang hoạt động của tài khoản/tổ chức
+    const planDef = this.getDefaultQuotaForPlan(current.plan_code, target_type);
     this.db.run(
       `UPDATE storage_quotas
-       SET admin_custom_quota_bytes = ?, is_unlimited = ?, updated_at = ?
+       SET default_quota_bytes = ?, admin_custom_quota_bytes = ?, is_unlimited = ?, updated_at = ?
        WHERE id = ?`,
-      [newCustomBytes, newUnlimited, nowIso, current.id]
+      [planDef.default_quota_bytes, newCustomBytes, newUnlimited, nowIso, current.id]
     );
 
     const updated = this.recalculateBlockState(current.id);
 
-    // Ghi lịch sử thay đổi hạn mức (storage_quota_history) & nhật ký quản trị (audit_logs)
     this.db.run(
       `INSERT INTO storage_quota_history (
         id, target_type, target_id, action, previous_custom_bytes, new_custom_bytes,
@@ -386,6 +371,7 @@ class ProgressAndResourcesModule {
           action,
           unit_input: `${amount} ${unitNorm}`,
           effective_quota_bytes: updated.effective_quota_bytes,
+          default_quota_bytes: updated.default_quota_bytes,
           is_unlimited: updated.is_unlimited,
           over_quota_blocked: updated.over_quota_blocked,
           preserved_existing_files: true
@@ -402,13 +388,6 @@ class ProgressAndResourcesModule {
     };
   }
 
-  /**
-   * MỤC A4: Quản lý Chu kỳ Tháng cho Organization Plus (Múi giờ Asia/Ho_Chi_Minh, ngày 01 hàng tháng)
-   * - Chốt số liệu tháng trước & lưu lịch sử (storage_quota_cycles)
-   * - Làm mới bộ đếm chu kỳ (cycle_used_bytes = 0), không cộng dồn phần dư
-   * - Tuyệt đối KHÔNG xóa dữ liệu đã lưu (total_stored_bytes và storage_files giữ nguyên 100%)
-   * - Không áp dụng reset tháng cho Personal Free và Personal Plus
-   */
   runMonthlyOrganizationQuotaReset(actorUser = null, { target_cycle_month = null } = {}) {
     if (actorUser) {
       requirePermission(actorUser, 'storage.manage');
@@ -426,7 +405,6 @@ class ProgressAndResourcesModule {
       const dec = this.decorateQuotaRow(oq);
       const cycleId = 'sqc_' + crypto.randomBytes(8).toString('hex');
 
-      // 1. Chốt số liệu tháng trước và lưu lịch sử chu kỳ
       this.db.run(
         `INSERT INTO storage_quota_cycles (
           id, org_id, cycle_month, plan_code, effective_quota_bytes,
@@ -446,7 +424,6 @@ class ProgressAndResourcesModule {
         ]
       );
 
-      // 2. Khởi tạo bộ đếm chu kỳ mới (cycle_used_bytes = 0), giữ nguyên total_stored_bytes!
       this.db.run(
         `UPDATE storage_quotas
          SET cycle_month = ?, cycle_used_bytes = 0, over_quota_blocked = 0, quota_reached_at = NULL, updated_at = ?
@@ -482,16 +459,20 @@ class ProgressAndResourcesModule {
       timezone: 'Asia/Ho_Chi_Minh',
       new_cycle_month: newCycleMonth,
       organizations_reset_count: processed.length,
-      personal_accounts_reset_count: 0, // Personal Free & Plus không reset hàng tháng
+      personal_accounts_reset_count: 0,
       files_deleted: 0,
       processed
     };
   }
 
+  /**
+   * PHẦN VIII: DASHBOARD CÁ NHÂN VÀ GROW (DỮ LIỆU THỰC TẾ 100%)
+   */
   getUserProgressDashboard(user) {
     requireAuth(user);
+    const fullUser = this.db.get(`SELECT * FROM users WHERE id = ?`, [user.id]);
     const attempts = this.db.query(
-      `SELECT a.*, e.title AS exercise_title, e.topic
+      `SELECT a.*, e.title AS exercise_title, e.topic, e.level
        FROM practice_attempts a
        LEFT JOIN practice_exercises e ON a.exercise_id = e.id
        WHERE a.user_id = ?
@@ -500,57 +481,110 @@ class ProgressAndResourcesModule {
     );
 
     const bySkill = {
-      listening: { count: 0, total_score: 0, max_score: 0 },
-      vocabulary: { count: 0, total_score: 0, max_score: 0 },
-      sentence: { count: 0, total_score: 0, max_score: 0 },
-      reading: { count: 0, total_score: 0, max_score: 0 }
+      listening: { name_vi: 'Nghe điền từ', count: 0, total_score: 0, max_score: 0, errors_count: 0 },
+      vocabulary: { name_vi: 'Từ vựng & Flashcard', count: 0, total_score: 0, max_score: 0, errors_count: 0 },
+      sentence: { name_vi: 'Sắp xếp câu', count: 0, total_score: 0, max_score: 0, errors_count: 0 },
+      reading: { name_vi: 'Đọc hiểu', count: 0, total_score: 0, max_score: 0, errors_count: 0 }
     };
 
+    let totalDurationSeconds = 0;
+    const activeDatesSet = new Set();
+
     for (const att of attempts) {
+      totalDurationSeconds += Number(att.duration_seconds || 0);
+      if (att.created_at) {
+        activeDatesSet.add(att.created_at.slice(0, 10));
+      }
       if (bySkill[att.tool_type]) {
         bySkill[att.tool_type].count += 1;
         bySkill[att.tool_type].total_score += att.score;
         bySkill[att.tool_type].max_score += att.max_score;
+        if (!att.is_correct) {
+          bySkill[att.tool_type].errors_count += 1;
+        }
       }
     }
 
     const skillBreakdown = Object.entries(bySkill).map(([skill, stat]) => ({
       skill,
+      skill_name_vi: stat.name_vi,
       attempts_count: stat.count,
+      errors_count: stat.errors_count,
       total_score: stat.total_score,
       max_score: stat.max_score,
       accuracy_percent: stat.max_score > 0 ? Math.round((stat.total_score / stat.max_score) * 100) : 0
     }));
 
-    const vocabCountRow = this.db.get(`SELECT COUNT(*) AS cnt FROM vocabulary_items WHERE user_id = ?`, [user.id]);
-    const goals = this.db.query(`SELECT * FROM learning_goals WHERE user_id = ?`, [user.id]);
-    const quota = this.ensureQuotaRecord('personal', user.id, user.plan_code);
+    // Tính chuỗi ngày thực hành (streak_days) từ dữ liệu thật
+    const sortedDates = Array.from(activeDatesSet).sort().reverse();
+    const streakDays = sortedDates.length;
 
-    const weakestSkill = [...skillBreakdown].sort((a, b) => a.attempts_count - b.attempts_count)[0];
+    const vocabItems = this.db.query(`SELECT * FROM vocabulary_items WHERE user_id = ?`, [user.id]);
+    const knownWordsCount = vocabItems.filter(v => Number(v.mastery_level || 0) >= 3).length;
+    const unmemorizedWordsCount = vocabItems.length - knownWordsCount;
+
+    const goals = this.db.query(`SELECT * FROM learning_goals WHERE user_id = ?`, [user.id]);
+    const roadmaps = this.db.query(`SELECT * FROM learning_roadmaps WHERE user_id = ? ORDER BY updated_at DESC`, [user.id]).map(r => ({
+      ...r,
+      skills_to_improve: JSON.parse(r.skills_to_improve_json || '[]'),
+      recommended_exercises: JSON.parse(r.recommended_exercises_json || '[]')
+    }));
+    const savedItems = this.db.query(`SELECT * FROM saved_learning_items WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`, [user.id]).map(s => ({
+      ...s,
+      content: JSON.parse(s.content_json || '{}')
+    }));
+    const achievements = this.db.query(`SELECT * FROM user_achievements WHERE user_id = ? ORDER BY earned_at DESC`, [user.id]);
+    const quota = this.ensureQuotaRecord('personal', user.id, fullUser.plan_code);
+
+    const weakestSkill = [...skillBreakdown].sort((a, b) => a.attempts_count - b.attempts_count || a.accuracy_percent - b.accuracy_percent)[0];
+    const nextExercises = this.db.query(
+      `SELECT id, language_code, tool_type, level, topic, title, points FROM practice_exercises WHERE tool_type = ? LIMIT 3`,
+      [weakestSkill ? weakestSkill.skill : 'listening']
+    );
+
     const recommendation = weakestSkill
-      ? `Gợi ý luyện tập tiếp theo: Hãy thực hành thêm công cụ '${weakestSkill.skill}' để cân bằng 04 kỹ năng.`
-      : 'Hãy bắt đầu bài thực hành đầu tiên của bạn tại Trung tâm học tập (/hoc-tap).';
+      ? `Gợi ý thực hành tiếp theo: Bạn nên rèn luyện thêm công cụ "${weakestSkill.skill_name_vi}" để cân bằng cả 04 kỹ năng.`
+      : 'Hãy bắt đầu bài thực hành đầu tiên của bạn tại Trung tâm học tập.';
 
     return {
+      account_overview: {
+        full_name: fullUser.full_name,
+        learning_languages: JSON.parse(fullUser.learning_languages || '["en"]'),
+        current_level: fullUser.proficiency_level,
+        learning_goals: fullUser.learning_goals,
+        plan_code: fullUser.plan_code
+      },
       total_attempts: attempts.length,
+      completed_exercises_count: new Set(attempts.filter(a => a.is_correct).map(a => a.exercise_id)).size,
+      total_duration_seconds: totalDurationSeconds,
+      total_duration_minutes: Math.round((totalDurationSeconds / 60) * 10) / 10,
       total_score_earned: attempts.reduce((acc, x) => acc + x.score, 0),
-      vocabulary_reviewing_count: vocabCountRow ? vocabCountRow.cnt : 0,
+      streak_days: streakDays,
+      practice_calendar_dates: sortedDates,
+      vocabulary_reviewing_count: vocabItems.length,
+      vocabulary_known_count: knownWordsCount,
+      vocabulary_unmemorized_count: unmemorizedWordsCount,
       skill_breakdown: skillBreakdown,
       recent_attempts: attempts.slice(0, 20),
+      mistake_items: savedItems.filter(i => i.item_type === 'wrong_sentence' || i.item_type === 'difficult_sentence'),
+      saved_items: savedItems,
       personal_goals: goals,
+      roadmaps,
+      achievements,
+      recommended_next_exercises: nextExercises,
       storage_quota: quota,
       practice_recommendation: recommendation
     };
   }
 
-  upsertLearningGoal(user, { language_code, target_title, target_sessions_per_week = 5 }) {
+  upsertLearningGoal(user, { language_code, target_title, target_sessions_per_week = 5, daily_minutes_target = 30 }) {
     requireAuth(user);
     const id = 'goal_' + crypto.randomBytes(8).toString('hex');
     const now = new Date().toISOString();
     this.db.run(
       `INSERT INTO learning_goals (id, user_id, language_code, target_title, target_sessions_per_week, current_sessions, status, updated_at)
        VALUES (?, ?, ?, ?, ?, 0, 'in_progress', ?)`,
-      [id, user.id, language_code, String(target_title).trim(), Number(target_sessions_per_week || 5), now]
+      [id, user.id, language_code || 'en', String(target_title || 'Thực hành mỗi ngày').trim(), Number(target_sessions_per_week || 5), now]
     );
     return this.db.get(`SELECT * FROM learning_goals WHERE id = ?`, [id]);
   }
@@ -571,7 +605,11 @@ class ProgressAndResourcesModule {
       params.push(`%${q}%`, `%${q}%`);
     }
     const rows = this.db.query(
-      `SELECT * FROM resources WHERE ${clauses.join(' AND ')} ORDER BY created_at DESC`,
+      `SELECT r.*, u.full_name AS author_name
+       FROM resources r
+       LEFT JOIN users u ON r.uploader_id = u.id
+       WHERE ${clauses.join(' AND ').replace(/language_code/g, 'r.language_code').replace(/resource_type/g, 'r.resource_type').replace(/moderation_status/g, 'r.moderation_status').replace(/title/g, 'r.title').replace(/description/g, 'r.description')}
+       ORDER BY r.created_at DESC`,
       params
     );
     return rows.filter(r => {
@@ -588,7 +626,39 @@ class ProgressAndResourcesModule {
       if (r.access_scope === 'member') return true;
       if (r.access_scope === 'plus_only') return user.plan_code !== 'personal_free';
       return false;
+    }).map(r => {
+      const linkedEx = this.db.query(
+        `SELECT id, title, tool_type, level FROM practice_exercises WHERE language_code = ? LIMIT 2`,
+        [r.language_code]
+      );
+      return {
+        ...r,
+        source_attribution: r.author_name || 'Kho học liệu cộng đồng WORD BRIDGE',
+        usage_rights_label: r.access_scope === 'public' ? 'Sử dụng cho mục đích học tập trên WORD BRIDGE' : 'Tài liệu lưu hành theo phân quyền',
+        linked_exercises: linkedEx
+      };
     });
+  }
+
+  toggleResourceFavorite(user, { resource_id }) {
+    requireAuth(user);
+    const resRow = this.db.get(`SELECT * FROM resources WHERE id = ?`, [resource_id]);
+    if (!resRow) throw new Error('Không tìm thấy tài liệu.');
+    const existing = this.db.get(
+      `SELECT * FROM resource_favorites WHERE user_id = ? AND resource_id = ?`,
+      [user.id, resource_id]
+    );
+    if (existing) {
+      this.db.run(`DELETE FROM resource_favorites WHERE user_id = ? AND resource_id = ?`, [user.id, resource_id]);
+      this.db.run(`UPDATE resources SET favorite_count = MAX(0, favorite_count - 1) WHERE id = ?`, [resource_id]);
+      return { favorited: false, resource_id };
+    }
+    this.db.run(
+      `INSERT INTO resource_favorites (user_id, resource_id, created_at) VALUES (?, ?, ?)`,
+      [user.id, resource_id, new Date().toISOString()]
+    );
+    this.db.run(`UPDATE resources SET favorite_count = favorite_count + 1 WHERE id = ?`, [resource_id]);
+    return { favorited: true, resource_id };
   }
 
   uploadResource(user, body) {
@@ -608,11 +678,10 @@ class ProgressAndResourcesModule {
 
     if (!title) throw new Error('Vui lòng nhập tiêu đề học liệu.');
 
-    // Nếu tải lên trong không gian Tổ chức: kiểm tra quyền thành viên tổ chức và tính vào hạn mức chung của Tổ chức (Mục A7)
     let targetType = 'personal';
     let targetId = user.id;
     if (owner_org_id) {
-      requireOrgAccess(this.db, user, owner_org_id, ['head', 'executive', 'coordinator', 'member']);
+      requireOrgAccess(this.db, user, owner_org_id, ['owner', 'head', 'manager', 'executive', 'coordinator', 'group_leader', 'member']);
       targetType = 'organization';
       targetId = owner_org_id;
     }
@@ -623,7 +692,6 @@ class ProgressAndResourcesModule {
 
     const effectiveSizeBytes = simulated_size_bytes !== null ? Number(simulated_size_bytes) : buf.length;
 
-    // 1. Kiểm tra hạn mức lưu trữ trước khi ghi tệp (Mục A3, A6, A7)
     const updatedQuota = this.checkAndConsumeQuota({
       actorUser: user,
       targetType,
@@ -631,7 +699,6 @@ class ProgressAndResourcesModule {
       incomingBytes: effectiveSizeBytes
     });
 
-    // 2. Ghi tệp nhị phân trực tiếp xuống Máy chủ Storage riêng (Không lưu Base64 vào DB - Mục A9)
     const stored = this.storageAdapter.saveFile({
       buffer: buf,
       mimeType: mime_type,
@@ -687,7 +754,6 @@ class ProgressAndResourcesModule {
       ]
     );
 
-    // 3. Ghi nhật ký tải lên (Mục A9)
     this.db.run(
       `INSERT INTO storage_access_logs (id, file_id, actor_user_id, owner_type, owner_id, action, size_bytes, status, detail, created_at)
        VALUES (?, ?, ?, ?, ?, 'upload', ?, 'success', ?, ?)`,
@@ -698,7 +764,7 @@ class ProgressAndResourcesModule {
         targetType,
         targetId,
         effectiveSizeBytes,
-        `Tải lên học liệu '${title}' (${formatBytesHuman(effectiveSizeBytes)})`,
+        `Tải lên học liệu '${title}' (${formatBytesHuman(effectiveSizeBytes)}) lên Cloudflare R2`,
         now
       ]
     );
@@ -710,11 +776,6 @@ class ProgressAndResourcesModule {
     };
   }
 
-  /**
-   * Đọc / Tải xuống tệp hợp lệ (Mục A6 & A9):
-   * - Kể cả khi tài khoản đang đạt/vượt hạn mức (over_quota_blocked = 1), quyền đọc và tải xuống tệp cũ hợp lệ vẫn được giữ nguyên 100%!
-   * - Kiểm soát chặt chẽ truy cập chéo tài khoản và truy cập chéo tổ chức.
-   */
   downloadStorageFile(user, fileId) {
     const fileRec = this.db.get(`SELECT * FROM storage_files WHERE id = ? AND status = 'active'`, [fileId]);
     if (!fileRec) {

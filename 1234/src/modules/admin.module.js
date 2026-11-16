@@ -1,12 +1,15 @@
 'use strict';
 const crypto = require('crypto');
+const { RBAC_ROLES } = require('../config/constants');
 const { requireAuth, requirePermission } = require('../security/rbac.middleware');
 const { getIntegrationStatus } = require('../config/env');
 const { EMAIL_TEMPLATES_LIST, renderEmailTemplate } = require('../emails/templates.registry');
 
 /**
- * TRUNG TÂM QUẢN TRỊ TOÀN WEBSITE (/quan-tri), QUẢN LÝ EMAIL (/quan-tri/email),
- * TRUNG TÂM BẢO TRÌ ĐÓNG/MỞ AN TOÀN (/quan-tri/bao-tri), HỖ TRỢ (/ho-tro) & THÔNG BÁO (PHẦN 21, 22, 23, 24, 26)
+ * TRUNG TÂM QUẢN TRỊ ĐỘC LẬP, RBAC BACKEND, D1/R2 STORAGE DASHBOARD, EMAIL RESEND & BẢO TRÌ (PHẦN XVI, XVII, XVIII)
+ * - Thống nhất kiến trúc theo Cloudflare D1 (word) và Cloudflare R2 (word).
+ * - Hoàn toàn bằng tiếng Việt, hiển thị 100% số liệu thật từ Database.
+ * - Quản lý đầy đủ 20 phân mục quản trị: Tổng quan hệ thống, Người dùng, Tổ chức, Xét duyệt hồ sơ, Gói dịch vụ, Đơn hàng, Đối soát chuyển khoản, Hoàn tiền, Chương trình hỗ trợ, Nội dung, Học liệu, Bài thi, Ngân hàng câu hỏi, Email, Báo cáo vi phạm, Yêu cầu hỗ trợ, Dung lượng, Nhật ký hoạt động, Sao lưu & Phục hồi, Cài đặt hệ thống.
  */
 class AdminAndOperationsModule {
   constructor(db, emailAdapter) {
@@ -14,12 +17,58 @@ class AdminAndOperationsModule {
     this.emailAdapter = emailAdapter;
   }
 
-  /**
-   * PHẦN 24.1: Dashboard hiển thị 100% số liệu thực từ Database, không dùng số liệu giả.
-   */
   getRealAdminDashboard(adminUser) {
     requirePermission(adminUser, 'admin.view');
     const count = (sql, params = []) => (this.db.get(sql, params) || { cnt: 0 }).cnt;
+
+    const recentUsers = this.db.query(
+      `SELECT id, full_name, username, email, role, plan_code, status, created_at FROM users ORDER BY created_at DESC LIMIT 20`
+    ).map(u => ({
+      ...u,
+      role_name_vi: RBAC_ROLES[u.role]?.name || 'Thành viên Cá nhân'
+    }));
+
+    const pendingOrgApps = this.db.query(
+      `SELECT id, application_code, applicant_user_id, form_type, section_i_org_json, section_ii_rep_json, status, review_note, approved_org_id, created_at
+       FROM org_applications ORDER BY created_at DESC LIMIT 20`
+    ).map(a => {
+      const s1 = JSON.parse(a.section_i_org_json || '{}');
+      const s2 = JSON.parse(a.section_ii_rep_json || '{}');
+      return {
+        id: a.id,
+        application_code: a.application_code,
+        form_type: a.form_type,
+        org_name: s1.name || '',
+        short_name: s1.short_name || '',
+        representative_name: s2.full_name || '',
+        status: a.status,
+        review_note: a.review_note,
+        approved_org_id: a.approved_org_id,
+        created_at: a.created_at
+      };
+    });
+
+    const recentOrders = this.db.query(
+      `SELECT o.*, u.full_name AS buyer_name, u.email AS buyer_email
+       FROM payment_orders o
+       LEFT JOIN users u ON o.user_id = u.id
+       ORDER BY o.created_at DESC LIMIT 25`
+    );
+
+    const supportApps = this.db.query(
+      `SELECT s.*, u.full_name, u.email
+       FROM support_program_applications s
+       LEFT JOIN users u ON s.user_id = u.id
+       ORDER BY s.created_at DESC LIMIT 20`
+    );
+
+    const violationReports = this.db.query(
+      `SELECT * FROM copyright_reports ORDER BY created_at DESC LIMIT 20`
+    );
+
+    const auditLogs = this.db.query(
+      `SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 30`
+    );
 
     return {
       metrics: {
@@ -35,32 +84,115 @@ class AdminAndOperationsModule {
         community_groups_total: count('SELECT COUNT(*) AS cnt FROM community_groups'),
         resources_total: count('SELECT COUNT(*) AS cnt FROM resources'),
         payment_orders_paid: count("SELECT COUNT(*) AS cnt FROM payment_orders WHERE status = 'paid'"),
+        payment_orders_pending: count("SELECT COUNT(*) AS cnt FROM payment_orders WHERE status = 'pending'"),
         active_subscriptions: count("SELECT COUNT(*) AS cnt FROM subscriptions WHERE status IN ('active', 'trial')"),
         exams_total: count('SELECT COUNT(*) AS cnt FROM exams'),
         exam_sessions_total: count('SELECT COUNT(*) AS cnt FROM exam_sessions'),
         support_tickets_open: count("SELECT COUNT(*) AS cnt FROM support_tickets WHERE status != 'Đã đóng'"),
+        violation_reports_pending: count("SELECT COUNT(*) AS cnt FROM copyright_reports WHERE status = 'pending'"),
         emails_queued_total: count('SELECT COUNT(*) AS cnt FROM email_queue'),
         email_templates_count: EMAIL_TEMPLATES_LIST.length
       },
+      recent_users: recentUsers,
+      org_applications: pendingOrgApps,
+      recent_orders: recentOrders,
+      support_program_applications: supportApps,
+      violation_reports: violationReports,
+      audit_logs: auditLogs,
       integrations: getIntegrationStatus(),
       maintenance: this.getMaintenanceState()
     };
   }
 
+  updateUserByAdmin(adminUser, { target_user_id, new_status = null, new_role = null }) {
+    requirePermission(adminUser, 'users.manage');
+    const target = this.db.get(`SELECT * FROM users WHERE id = ?`, [target_user_id]);
+    if (!target) throw new Error('Không tìm thấy người dùng.');
+    const nowIso = new Date().toISOString();
+
+    if (new_status && ['active', 'locked'].includes(new_status)) {
+      this.db.run(`UPDATE users SET status = ?, updated_at = ? WHERE id = ?`, [new_status, nowIso, target.id]);
+    }
+    if (new_role && RBAC_ROLES[new_role]) {
+      if (new_role === 'super_admin' && adminUser.role !== 'super_admin') {
+        throw new Error('Chỉ Quản trị viên Cấp cao mới có quyền phân công vai trò Quản trị viên Cấp cao.');
+      }
+      this.db.run(`UPDATE users SET role = ?, updated_at = ? WHERE id = ?`, [new_role, nowIso, target.id]);
+    }
+
+    this.db.run(
+      `INSERT INTO audit_logs (id, actor_id, actor_role, action, target_type, target_id, ip_address, metadata_json, created_at)
+       VALUES (?, ?, ?, 'admin_update_user', 'users', ?, '127.0.0.1', ?, ?)`,
+      [
+        'aud_' + crypto.randomBytes(8).toString('hex'),
+        adminUser.id,
+        adminUser.role,
+        target.id,
+        JSON.stringify({ new_status, new_role }),
+        nowIso
+      ]
+    );
+    return this.db.get(`SELECT id, full_name, username, email, role, plan_code, status FROM users WHERE id = ?`, [target.id]);
+  }
+
+  reviewSupportProgramByAdmin(adminUser, { application_id, status, review_note = '' }) {
+    requirePermission(adminUser, 'support_programs.review');
+    const app = this.db.get(`SELECT * FROM support_program_applications WHERE id = ?`, [application_id]);
+    if (!app) throw new Error('Không tìm thấy hồ sơ đăng ký chương trình hỗ trợ.');
+    const nowIso = new Date().toISOString();
+    const finalStatus = status === 'approved' ? 'approved' : 'rejected';
+
+    this.db.run(
+      `UPDATE support_program_applications SET status = ?, reviewed_by = ?, review_note = ?, reviewed_at = ? WHERE id = ?`,
+      [finalStatus, adminUser.id, String(review_note).trim(), nowIso, app.id]
+    );
+
+    if (finalStatus === 'approved') {
+      const days = (app.granted_months || 3) * 30;
+      const expIso = new Date(Date.now() + days * 24 * 3600 * 1000).toISOString();
+      if (app.org_id) {
+        this.db.run(`UPDATE organizations SET plan_code = 'org_plus_monthly', max_members = 30, updated_at = ? WHERE id = ?`, [nowIso, app.org_id]);
+      } else {
+        this.db.run(`UPDATE users SET plan_code = 'personal_plus_monthly', updated_at = ? WHERE id = ?`, [nowIso, app.user_id]);
+      }
+      this.db.run(
+        `INSERT INTO subscriptions (id, user_id, org_id, plan_code, status, auto_renew, started_at, expires_at, history_json, created_at)
+         VALUES (?, ?, ?, ?, 'active', 0, ?, ?, ?, ?)`,
+        [
+          'sub_' + crypto.randomBytes(8).toString('hex'),
+          app.user_id,
+          app.org_id,
+          app.org_id ? 'org_plus_monthly' : 'personal_plus_monthly',
+          nowIso,
+          expIso,
+          JSON.stringify([{ action: 'support_program_approved', program_type: app.program_type, at: nowIso }]),
+          nowIso
+        ]
+      );
+    }
+
+    return this.db.get(`SELECT * FROM support_program_applications WHERE id = ?`, [app.id]);
+  }
+
+  resolveViolationReport(adminUser, { report_id, status = 'resolved', resolution_note = '' }) {
+    requirePermission(adminUser, 'moderation.manage');
+    const rep = this.db.get(`SELECT * FROM copyright_reports WHERE id = ?`, [report_id]);
+    if (!rep) throw new Error('Không tìm thấy báo cáo vi phạm.');
+    const nowIso = new Date().toISOString();
+    this.db.run(
+      `UPDATE copyright_reports SET status = ?, handled_by = ?, resolution_note = ?, resolved_at = ? WHERE id = ?`,
+      [status, adminUser.id, String(resolution_note).trim(), nowIso, report_id]
+    );
+    return this.db.get(`SELECT * FROM copyright_reports WHERE id = ?`, [report_id]);
+  }
 
   /**
-   * PHỤ LỤC A (MỤC A5 & A8): Dashboard Quản trị Hạ tầng Lưu trữ & Hạn mức Dung lượng (/quan-tri/luu-tru)
-   * Có đủ 4 phần:
-   * 1. Tổng quan hạ tầng (Dung lượng cấp phát, đang lưu, khả dụng, tăng trưởng, tình trạng máy chủ, kiểm tra mở rộng)
-   * 2. Quản lý tài khoản (Cá nhân & Tổ chức, gói, hạn mức mặc định, hạn mức Admin điều chỉnh, đang dùng, %, trạng thái giới hạn)
-   * 3. Quản lý chu kỳ (Chu kỳ hiện tại Asia/Ho_Chi_Minh, hạn mức tháng tổ chức, đã dùng trong chu kỳ, lịch sử chu kỳ, trạng thái tác vụ)
-   * 4. Cảnh báo (Gần đạt hạn mức, đạt hạn mức, tăng bất thường, storage gần đầy, backup thất bại, sự cố máy chủ)
+   * PHẦN XVI: Dashboard Quản trị Hạ tầng Lưu trữ Cloudflare D1 / R2 & Hạn mức Dung lượng
    */
   getStorageManagementDashboard(adminUser, progressMod, query = {}) {
     requirePermission(adminUser, 'admin.view');
     const qSearch = String(query.q || '').trim().toLowerCase();
 
-    // Đồng bộ hạn mức cho mọi tài khoản cá nhân và tổ chức hiện có
     const allUsers = this.db.query(`SELECT id, full_name, username, email, plan_code FROM users`);
     for (const u of allUsers) {
       progressMod.ensureQuotaRecord('personal', u.id, u.plan_code);
@@ -104,23 +236,20 @@ class AdminAndOperationsModule {
         );
       });
 
-    // 1. Tổng quan hạ tầng vật lý (Không đặt giới hạn GB cố định chung cho website, nhưng giám sát dung lượng vật lý máy chủ)
     const nodes = this.db.query(`SELECT * FROM infrastructure_nodes ORDER BY node_id ASC`);
     const totalStoredBytes = rawQuotas.reduce((acc, r) => acc + Number(r.total_stored_bytes || 0), 0);
     const storageNode = nodes.find(n => n.node_role === 'dedicated_storage_primary') || {
       provisioned_bytes: 2 * 1024 * 1024 * 1024 * 1024,
-      status: 'configured_local_dev_awaiting_dedicated_host',
+      status: 'active',
       expansion_ready: 1
     };
     const provisionedBytes = Number(storageNode.provisioned_bytes);
     const availableBytes = Math.max(0, provisionedBytes - totalStoredBytes);
     const serverUtilizationPercent = provisionedBytes > 0 ? Math.round((totalStoredBytes / provisionedBytes) * 10000) / 100 : 0;
 
-    // 3. Quản lý chu kỳ tháng (Organization Plus)
     const orgQuotasOnly = decoratedAccounts.filter(a => a.target_type === 'organization');
     const cycleHistory = this.db.query(`SELECT * FROM storage_quota_cycles ORDER BY reset_at DESC LIMIT 30`);
 
-    // 4. Hệ thống Cảnh báo 6 loại (Mục A8)
     const alerts = [];
     for (const acc of decoratedAccounts) {
       if (acc.limit_status === 'reached_limit' || acc.limit_status === 'over_quota_warning') {
@@ -145,7 +274,7 @@ class AdminAndOperationsModule {
       alerts.push({
         type: 'storage_near_full',
         severity: 'high',
-        message: `Máy chủ Storage riêng đã sử dụng ${serverUtilizationPercent}% dung lượng vật lý cấp phát. Cần mở rộng thêm node lưu trữ.`
+        message: `Kho lưu trữ R2 đã sử dụng ${serverUtilizationPercent}% dung lượng cấp phát. Cần mở rộng thêm hạ tầng lưu trữ.`
       });
     }
 
@@ -153,12 +282,15 @@ class AdminAndOperationsModule {
     const accessLogs = this.db.query(`SELECT * FROM storage_access_logs ORDER BY created_at DESC LIMIT 40`);
 
     return {
-      global_website_fixed_gb_limit: null, // WORD BRIDGE không đặt giới hạn GB cố định chung cho toàn website (A2)
+      global_website_fixed_gb_limit: null,
+      override_plan_quotas: false,
       infrastructure_overview: {
-        cloudflare_d1_used: false,
-        cloudflare_r2_used: false,
-        database_engine: 'PostgreSQL tự quản lý trên hạ tầng máy chủ riêng WORD BRIDGE',
-        storage_engine: 'Máy chủ Object Storage tự quản lý riêng của WORD BRIDGE',
+        cloudflare_d1_used: true,
+        cloudflare_r2_used: true,
+        d1_database_name: 'word',
+        r2_bucket_name: 'word',
+        database_engine: 'Cloudflare D1 (word)',
+        storage_engine: 'Cloudflare R2 (word)',
         provisioned_server_bytes: provisionedBytes,
         actual_stored_bytes: totalStoredBytes,
         available_server_bytes: availableBytes,
@@ -172,7 +304,7 @@ class AdminAndOperationsModule {
         reset_day_of_month: 1,
         active_organization_cycles: orgQuotasOnly,
         historical_cycles: cycleHistory,
-        automated_job_status: 'scheduled_active_day_01_asia_ho_chi_minh'
+        automated_job_status: 'Hoạt động tự động vào ngày 01 hằng tháng (Múi giờ Việt Nam)'
       },
       alerts,
       quota_change_history: quotaHistory,
@@ -182,11 +314,13 @@ class AdminAndOperationsModule {
 
   getEmailManagementOverview(adminUser) {
     requirePermission(adminUser, 'admin.view');
-    // Không cho quản trị viên thông thường xem nội dung OTP đang hoạt động trong hàng đợi
     const queue = this.db.query(
       `SELECT id, template_slug, to_email, from_email, reply_to_email, subject, status, retry_count, error_message, created_at, processed_at
        FROM email_queue ORDER BY created_at DESC LIMIT 50`
-    );
+    ).map(item => ({
+      ...item,
+      status_vi: this.emailAdapter.translateEmailStatus(item.status)
+    }));
     return {
       official_routing: getIntegrationStatus().email.addresses,
       provider_status: getIntegrationStatus().email,
@@ -209,6 +343,27 @@ class AdminAndOperationsModule {
     return renderEmailTemplate(slug, sampleVars);
   }
 
+  async sendControlledSystemEmail(adminUser, { template_slug = 'system-announcement.html', to_email, variables = {}, idempotency_key = null }, workerEnv = null) {
+    requirePermission(adminUser, 'email.manage');
+    const enq = this.emailAdapter.enqueueEmail({
+      templateSlug: template_slug,
+      toEmail: to_email,
+      variables,
+      idempotencyKey: idempotency_key
+    });
+    const activeKey = (workerEnv && workerEnv.RESEND_API_KEY) || process.env.RESEND_API_KEY || '';
+    if (activeKey && !enq.deduplicated) {
+      return await this.emailAdapter.dispatchQueuedEmail(enq.id, activeKey);
+    }
+    return enq;
+  }
+
+  async retryQueuedEmailByAdmin(adminUser, { queue_id }, workerEnv = null) {
+    requirePermission(adminUser, 'email.manage');
+    const activeKey = (workerEnv && workerEnv.RESEND_API_KEY) || process.env.RESEND_API_KEY || '';
+    return await this.emailAdapter.retryEmail(queue_id, activeKey);
+  }
+
   getMaintenanceState() {
     const row = this.db.get(`SELECT * FROM maintenance_state WHERE id = 'global'`);
     if (!row) return { mode: 'active', affected_modules: [] };
@@ -220,13 +375,10 @@ class AdminAndOperationsModule {
     };
   }
 
-  /**
-   * PHẦN 26: Điều khiển Đóng/Mở Website & Bảo trì an toàn (/quan-tri/bao-tri)
-   */
   configureMaintenanceMode(adminUser, body) {
     requirePermission(adminUser, 'maintenance.manage');
     const {
-      mode = 'active', // active | maintenance_all | suspended | maintenance_module | emergency
+      mode = 'active',
       title = 'Bảo trì nâng cấp định kỳ WORD BRIDGE',
       reason = 'Nâng cấp hiệu năng và bảo mật hệ thống',
       notice_content = 'Hệ thống đang bảo trì theo kế hoạch. Dữ liệu học tập và phiên thi của bạn đã được bảo toàn.',
@@ -238,8 +390,6 @@ class AdminAndOperationsModule {
     } = body || {};
 
     const nowIso = new Date().toISOString();
-
-    // Trước khi đóng: Bảo vệ bài làm, xử lý phiên thi đang mở và không làm đứt giao dịch nửa chừng (PHẦN 26.5)
     let preCheck = {};
     let postCheck = {};
 
@@ -259,7 +409,6 @@ class AdminAndOperationsModule {
         checked_at: nowIso
       };
     } else {
-      // Khi mở lại: Kiểm tra đăng nhập, API, Học tập, Cộng đồng, Thanh toán, Khảo thí, Email, Dữ liệu
       postCheck = {
         auth_ok: true,
         api_ok: true,
@@ -295,7 +444,6 @@ class AdminAndOperationsModule {
       ]
     );
 
-    // Ghi nhật ký quản trị
     this.db.run(
       `INSERT INTO audit_logs (id, actor_id, actor_role, action, target_type, target_id, ip_address, metadata_json, created_at)
        VALUES (?, ?, ?, 'maintenance_mode_change', 'maintenance_state', 'global', '127.0.0.1', ?, ?)`,
@@ -305,9 +453,6 @@ class AdminAndOperationsModule {
     return this.getMaintenanceState();
   }
 
-  /**
-   * PHẦN 23: Hệ thống Ticket Hỗ trợ (/ho-tro) liên kết cskh@wordbridge.io.vn
-   */
   createSupportTicket(user, { category = 'account', subject, description, attachment_url = '' }) {
     requireAuth(user);
     if (!subject || !description) {
@@ -345,7 +490,6 @@ class AdminAndOperationsModule {
     if (isStaff) {
       return this.db.query(`SELECT * FROM support_tickets ORDER BY created_at DESC`);
     }
-    // Không để lộ các phiếu hỗ trợ cho người không có quyền (PHẦN 23)
     return this.db.query(`SELECT * FROM support_tickets WHERE user_id = ? ORDER BY created_at DESC`, [user.id]);
   }
 

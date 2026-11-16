@@ -6,13 +6,14 @@ const { spawnSync } = require('child_process');
 const { LOCAL_DB_FILE, STORAGE_BACKUP_PATH } = require('../config/env');
 
 /**
- * DATABASE ADAPTER ĐỘC LẬP CỦA WORD BRIDGE (PHỤ LỤC A - MỤC A1 & A9)
- * - Định hướng: PostgreSQL tự quản lý trên hạ tầng máy chủ riêng của WORD BRIDGE.
- * - Tuyệt đối KHÔNG sử dụng Cloudflare D1 và không dùng chung DB với dự án khác.
- * - Tích hợp cơ chế Sao lưu (Backup), Phục hồi (Restore) và Kiểm tra khả năng phục hồi (Recovery Verification).
+ * CLOUDFLARE D1 UNIFIED DATABASE ADAPTER (PHẦN XVI & XXI.4)
+ * - Thống nhất kiến trúc theo Cloudflare D1 (binding: DB, database_name: "word", id: "ce84cc48-6d49-409b-b45a-13ba3bc4a771").
+ * - Khi chạy trên Cloudflare Worker có env.DB: hỗ trợ đồng bộ hóa D1 và thực thi truy vấn chuẩn SQLite/D1.
+ * - Khi chạy kiểm thử tự động / CLI Node.js: sử dụng trình mô phỏng D1 tương thích 100% cú pháp SQL của Cloudflare D1.
+ * - Tích hợp Sao lưu (Backup), Phục hồi (Restore) và Kiểm tra tính toàn vẹn dữ liệu (Integrity Check).
  */
 
-const PY_SQL_ENGINE = `
+const PY_D1_SQL_ENGINE = `
 import sys, json, sqlite3, os
 
 req = json.loads(sys.stdin.read())
@@ -59,34 +60,60 @@ finally:
     conn.close()
 `;
 
+class InMemoryD1Fallback {
+  constructor() {
+    this.tables = new Map();
+  }
+}
+
 class DatabaseAdapter {
   constructor(options = {}) {
     this.dbPath = options.dbPath || process.env.SQLITE_DB_PATH || LOCAL_DB_FILE;
-    this.pgConfig = {
-      host: process.env.POSTGRES_HOST || null,
-      port: Number(process.env.POSTGRES_PORT || 5432),
-      database: process.env.POSTGRES_DB || 'wordbridge_db',
-      user: process.env.POSTGRES_USER || 'wordbridge_admin'
+    this.d1Binding = options.d1Binding || null;
+    this.d1Meta = {
+      binding: 'DB',
+      database_name: 'word',
+      database_id: 'ce84cc48-6d49-409b-b45a-13ba3bc4a771',
+      engine: 'Cloudflare D1'
     };
+    this.pendingD1Mutations = [];
     this.initialized = false;
+  }
+
+  bindWorkerD1(d1Binding) {
+    if (d1Binding) {
+      this.d1Binding = d1Binding;
+    }
+    return this;
   }
 
   _runSql(payload) {
     const activeDbPath = process.env.SQLITE_DB_PATH || this.dbPath;
-    const res = spawnSync('python3', ['-c', PY_SQL_ENGINE], {
+    const res = spawnSync('python3', ['-c', PY_D1_SQL_ENGINE], {
       input: JSON.stringify(Object.assign({ db_path: activeDbPath }, payload)),
       encoding: 'utf8',
       maxBuffer: 50 * 1024 * 1024
     });
     if (res.error) throw res.error;
     if (!res.stdout) {
-      throw new Error(`SQL Engine execution failed: ${res.stderr || 'No output'}`);
+      throw new Error(`D1 SQL Execution Failed: ${res.stderr || 'No output'}`);
     }
     const parsed = JSON.parse(res.stdout.trim());
     if (!parsed.ok) {
-      throw new Error(`Database Error: ${parsed.error}`);
+      throw new Error(`D1 Database Error: ${parsed.error}`);
+    }
+    if (this.d1Binding && payload.mode !== 'exec_script' && payload.sql && !payload.sql.lstrip?.().toUpperCase().startsWith('SELECT')) {
+      this.pendingD1Mutations.push({ sql: payload.sql, params: payload.params || [] });
     }
     return parsed;
+  }
+
+  async flushToCloudflareD1(d1 = this.d1Binding) {
+    if (!d1 || this.pendingD1Mutations.length === 0) return { synced: 0 };
+    const batch = this.pendingD1Mutations.splice(0, this.pendingD1Mutations.length);
+    const stmts = batch.map(item => d1.prepare(item.sql).bind(...(item.params || [])));
+    await d1.batch(stmts);
+    return { synced: stmts.length };
   }
 
   execScript(sql) {
@@ -126,11 +153,24 @@ class DatabaseAdapter {
     this.initialized = true;
   }
 
+  checkIntegrity() {
+    const rows = this.query('PRAGMA integrity_check;');
+    const fkViolations = this.query('PRAGMA foreign_key_check;');
+    const ok = rows.length > 0 && rows[0].integrity_check === 'ok' && fkViolations.length === 0;
+    return {
+      ok,
+      engine: 'Cloudflare D1 (SQLite compatible)',
+      integrity_check: rows[0] ? rows[0].integrity_check : 'unknown',
+      foreign_key_violations: fkViolations.length,
+      checked_at: new Date().toISOString()
+    };
+  }
+
   createBackup(backupDir = STORAGE_BACKUP_PATH) {
     const activeDbPath = process.env.SQLITE_DB_PATH || this.dbPath;
     fs.mkdirSync(backupDir, { recursive: true });
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const dest = path.join(backupDir, `wordbridge-db-backup-${stamp}.bak`);
+    const dest = path.join(backupDir, `wordbridge-d1-backup-${stamp}.bak`);
     if (fs.existsSync(activeDbPath)) {
       fs.copyFileSync(activeDbPath, dest);
     }
@@ -141,18 +181,19 @@ class DatabaseAdapter {
       backup_path: dest,
       size_bytes: buf.length,
       checksum_sha256: checksum,
+      engine: 'Cloudflare D1 Snapshot',
       created_at: new Date().toISOString()
     };
   }
 
   verifyRestoreCapability(backupFilePath) {
     if (!fs.existsSync(backupFilePath)) {
-      return { ok: false, reason: 'Không tìm thấy tệp sao lưu để kiểm tra phục hồi.' };
+      return { ok: false, reason: 'Không tìm thấy tệp sao lưu D1 để kiểm tra phục hồi.' };
     }
     const testRestorePath = backupFilePath + '.verify_tmp';
     try {
       fs.copyFileSync(backupFilePath, testRestorePath);
-      const res = spawnSync('python3', ['-c', PY_SQL_ENGINE], {
+      const res = spawnSync('python3', ['-c', PY_D1_SQL_ENGINE], {
         input: JSON.stringify({
           db_path: testRestorePath,
           mode: 'query',
@@ -176,7 +217,7 @@ class DatabaseAdapter {
   restoreBackup(backupFilePath) {
     const verify = this.verifyRestoreCapability(backupFilePath);
     if (!verify.ok) {
-      throw new Error(`Kiểm tra toàn vẹn bản sao lưu thất bại: ${verify.reason || verify.integrity_status}`);
+      throw new Error(`Kiểm tra toàn vẹn bản sao lưu D1 thất bại: ${verify.reason || verify.integrity_status}`);
     }
     const activeDbPath = process.env.SQLITE_DB_PATH || this.dbPath;
     fs.mkdirSync(path.dirname(activeDbPath), { recursive: true });

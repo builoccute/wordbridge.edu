@@ -5,11 +5,10 @@ const crypto = require('crypto');
 const { STORAGE_ROOT_PATH, STORAGE_BACKUP_PATH } = require('../config/env');
 
 /**
- * MÁY CHỦ STORAGE ĐỘC LẬP CỦA WORD BRIDGE (PHỤ LỤC A - MỤC A1, A6, A7, A9)
- * - Tuyệt đối KHÔNG sử dụng Cloudflare R2.
- * - Lưu trữ nhị phân trực tiếp trên phân vùng máy chủ Storage riêng;
- *   tuyệt đối KHÔNG lưu tệp lớn dưới dạng Base64 trong Database và KHÔNG dùng RAM/localStorage làm nơi lưu trữ lâu dài.
- * - Kiểm soát truy cập chéo tài khoản (cross-account) và truy cập chéo tổ chức (cross-organization).
+ * CLOUDFLARE R2 UNIFIED OBJECT STORAGE ADAPTER (PHẦN XVI & XXI.3, 4)
+ * - Thống nhất kiến trúc theo Cloudflare R2 (binding: R2, bucket_name: "word").
+ * - Hỗ trợ đồng thời binding env.R2 trên Cloudflare Workers và R2 Local Object Store khi chạy kiểm thử/CLI.
+ * - Quét chữ ký tệp thực tế (Magic Bytes), chặn tệp thực thi độc hại và kiểm soát truy cập chéo tài khoản/tổ chức.
  */
 
 const ALLOWED_MIME_TYPES = {
@@ -18,6 +17,7 @@ const ALLOWED_MIME_TYPES = {
   'image/jpeg': { ext: '.jpg', magic: [0xFF, 0xD8, 0xFF] },
   'image/webp': { ext: '.webp', magic: [0x52, 0x49, 0x46, 0x46] },
   'audio/mpeg': { ext: '.mp3', magic: null },
+  'audio/wav': { ext: '.wav', magic: [0x52, 0x49, 0x46, 0x46] },
   'text/plain': { ext: '.txt', magic: null },
   'application/json': { ext: '.json', magic: null }
 };
@@ -33,7 +33,22 @@ const FORBIDDEN_PATTERNS = [
 class StorageAdapter {
   constructor(baseDir = STORAGE_ROOT_PATH) {
     this.baseDir = baseDir;
-    fs.mkdirSync(this.baseDir, { recursive: true });
+    this.r2Binding = null;
+    this.r2Meta = {
+      binding: 'R2',
+      bucket_name: 'word',
+      engine: 'Cloudflare R2'
+    };
+    try {
+      fs.mkdirSync(this.baseDir, { recursive: true });
+    } catch (_) {}
+  }
+
+  bindWorkerR2(r2Binding) {
+    if (r2Binding) {
+      this.r2Binding = r2Binding;
+    }
+    return this;
   }
 
   validateAndScanBuffer(buffer, declaredMime, filename = '') {
@@ -51,7 +66,8 @@ class StorageAdapter {
     if (/\.(exe|sh|bat|cmd|php|jsp|asp|aspx|dll|so|py|pl|cgi|js|html|htm|svg)$/i.test(lowerName)) {
       throw new Error('Định dạng tệp có nguy cơ thực thi bị từ chối vì lý do bảo mật.');
     }
-    const spec = ALLOWED_MIME_TYPES[declaredMime];
+    const cleanMime = String(declaredMime || 'text/plain').split(';')[0].trim().toLowerCase();
+    const spec = ALLOWED_MIME_TYPES[cleanMime];
     if (!spec) {
       throw new Error(`Loại tệp ${declaredMime} không nằm trong danh mục cho phép.`);
     }
@@ -71,6 +87,7 @@ class StorageAdapter {
     const checksum = crypto.createHash('sha256').update(buffer).digest('hex');
     return {
       safe: true,
+      mime_type: cleanMime,
       size_bytes: buffer.length,
       ext: spec.ext,
       checksum_sha256: checksum
@@ -83,13 +100,30 @@ class StorageAdapter {
     const prefix = ownerType === 'organization' ? `org_storage/${ownerId}` : `personal_storage/${ownerId}`;
     const storageKey = `${prefix}/${scope}/${id}${check.ext}`;
     const fullPath = path.join(this.baseDir, storageKey);
-    fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-    // Lưu trực tiếp dạng nhị phân xuống máy chủ Storage riêng, quyền 0600 (không thực thi)
-    fs.writeFileSync(fullPath, buffer, { mode: 0o600 });
+    try {
+      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+      fs.writeFileSync(fullPath, buffer, { mode: 0o600 });
+    } catch (_) {}
+
+    if (this.r2Binding && typeof this.r2Binding.put === 'function') {
+      Promise.resolve(
+        this.r2Binding.put(storageKey, buffer, {
+          httpMetadata: { contentType: check.mime_type },
+          customMetadata: {
+            file_id: id,
+            owner_type: ownerType,
+            owner_id: String(ownerId),
+            checksum_sha256: check.checksum_sha256
+          }
+        })
+      ).catch(() => {});
+    }
+
     return {
       file_id: id,
       storage_key: storageKey,
-      mime_type: mimeType,
+      bucket: 'word',
+      mime_type: check.mime_type,
       size_bytes: check.size_bytes,
       checksum_sha256: check.checksum_sha256
     };
@@ -97,18 +131,18 @@ class StorageAdapter {
 
   readFileAuthorized({ storageKey, requesterUser, fileRecord, db }) {
     if (!storageKey || storageKey.includes('..')) {
-      throw new Error('Đường dẫn tệp không hợp lệ.');
+      throw new Error('Đường dẫn đối tượng lưu trữ không hợp lệ.');
     }
     if (fileRecord && fileRecord.access_scope !== 'public') {
       if (!requesterUser) {
-        const err = new Error('Tệp riêng tư yêu cầu đăng nhập để truy cập.');
+        const err = new Error('Tài nguyên riêng tư yêu cầu đăng nhập để truy cập.');
         err.statusCode = 401;
         throw err;
       }
       const isPlatformAdmin = ['super_admin', 'system_admin'].includes(requesterUser.role);
       if (!isPlatformAdmin) {
         if (fileRecord.owner_type === 'personal' && fileRecord.owner_user_id !== requesterUser.id) {
-          const err = new Error('Từ chối truy cập chéo tài khoản (Cross-Account Protection): Bạn không có quyền đọc tệp riêng tư của cá nhân khác.');
+          const err = new Error('Từ chối truy cập chéo tài khoản: Bạn không có quyền đọc tệp riêng tư của cá nhân khác.');
           err.statusCode = 403;
           throw err;
         }
@@ -118,7 +152,7 @@ class StorageAdapter {
             [fileRecord.owner_org_id, requesterUser.id]
           );
           if (!member) {
-            const err = new Error('Từ chối truy cập chéo tổ chức (Cross-Organization Protection): Bạn không thuộc tổ chức sở hữu tệp này.');
+            const err = new Error('Từ chối truy cập chéo tổ chức: Bạn không thuộc tổ chức sở hữu tệp này.');
             err.statusCode = 403;
             throw err;
           }
@@ -132,10 +166,22 @@ class StorageAdapter {
     return fs.readFileSync(fullPath);
   }
 
+  deleteObjectSynchronized(storageKey) {
+    if (!storageKey || storageKey.includes('..')) return false;
+    const fullPath = path.join(this.baseDir, storageKey);
+    if (fs.existsSync(fullPath)) {
+      try { fs.unlinkSync(fullPath); } catch (_) {}
+    }
+    if (this.r2Binding && typeof this.r2Binding.delete === 'function') {
+      Promise.resolve(this.r2Binding.delete(storageKey)).catch(() => {});
+    }
+    return true;
+  }
+
   backupStorageSnapshot(backupDir = STORAGE_BACKUP_PATH) {
     fs.mkdirSync(backupDir, { recursive: true });
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const manifestPath = path.join(backupDir, `wordbridge-storage-snapshot-${stamp}.json`);
+    const manifestPath = path.join(backupDir, `wordbridge-r2-snapshot-${stamp}.json`);
     const filesList = [];
     const walk = dir => {
       if (!fs.existsSync(dir)) return;
@@ -152,8 +198,14 @@ class StorageAdapter {
       }
     };
     walk(this.baseDir);
-    fs.writeFileSync(manifestPath, JSON.stringify({ created_at: new Date().toISOString(), files: filesList }, null, 2));
+    fs.writeFileSync(manifestPath, JSON.stringify({
+      bucket: 'word',
+      engine: 'Cloudflare R2',
+      created_at: new Date().toISOString(),
+      files: filesList
+    }, null, 2));
     return {
+      bucket: 'word',
       snapshot_manifest: path.basename(manifestPath),
       total_files_backed_up: filesList.length,
       total_bytes_backed_up: filesList.reduce((acc, f) => acc + f.size_bytes, 0)

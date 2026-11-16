@@ -1,5 +1,6 @@
 'use strict';
 const crypto = require('crypto');
+const { RBAC_ROLES } = require('../config/constants');
 const { requireAuth } = require('../security/rbac.middleware');
 
 class UsersModule {
@@ -63,7 +64,7 @@ class UsersModule {
     const now = new Date();
     const nowIso = now.toISOString();
 
-    // PHẦN 16.3: Tài khoản cá nhân mới được dùng thử Personal Plus 07 ngày
+    // PHẦN XVIII: Không tự động cấp quyền Admin cho tài khoản đăng ký đầu tiên (luôn là 'user')
     const trialEnds = new Date(now.getTime() + 7 * 24 * 3600 * 1000).toISOString();
     const defaultPrivacy = {
       show_email: false,
@@ -71,7 +72,10 @@ class UsersModule {
       show_location: false,
       allow_stranger_messages: false,
       profile_visibility: is_minor ? 'members_only' : 'public',
-      online_status: true
+      online_status: true,
+      native_or_support_languages: ['vi'],
+      practice_mode: 'Trực tuyến qua tin nhắn và bài tập nhóm',
+      study_preferences: 'Thực hành phản xạ ngắn mỗi ngày'
     };
 
     this.db.run(
@@ -105,7 +109,7 @@ class UsersModule {
       ]
     );
 
-    // Khởi tạo gói dùng thử 07 ngày Personal Plus
+    // Khởi tạo gói dùng thử 07 ngày Người Dùng bản Plus
     const subId = 'sub_' + crypto.randomBytes(8).toString('hex');
     this.db.run(
       `INSERT INTO subscriptions (id, user_id, org_id, plan_code, status, auto_renew, started_at, expires_at, history_json, created_at)
@@ -120,7 +124,25 @@ class UsersModule {
       ]
     );
 
-    // Khởi tạo tài khoản điểm thành viên thân thiết (Loyalty)
+    // Khởi tạo cài đặt nhận thông báo mặc định
+    this.db.run(
+      `INSERT OR IGNORE INTO notification_preferences (
+        user_id, in_app_enabled, email_system, email_transaction, email_organization,
+        email_connection, email_community, email_security, study_reminder_enabled, updated_at
+      ) VALUES (?, 1, 1, 1, 1, 1, 1, 1, 1, ?)`,
+      [userId, nowIso]
+    );
+
+    // Tạo thông báo chào mừng trong website
+    this.createNotification({
+      userId,
+      category: 'system',
+      title: 'Chào mừng bạn đến với WORD BRIDGE',
+      message: 'Tài khoản của bạn đã được kích hoạt 07 ngày trải nghiệm Người Dùng bản Plus. Hãy bắt đầu bài đánh giá trình độ hoặc thực hành ngay!',
+      linkUrl: '/hoc-tap'
+    });
+
+    // Khởi tạo tài khoản điểm thành viên thân thiết
     const refCode = 'WB' + cleanUsername.slice(0, 4).toUpperCase() + crypto.randomInt(1000, 9999);
     this.db.run(
       `INSERT INTO loyalty_accounts (user_id, points_balance, lifetime_points, tier, referral_code, referred_by_code, updated_at)
@@ -128,7 +150,7 @@ class UsersModule {
       [userId, refCode, nowIso]
     );
 
-    // Gửi email chào mừng & xác minh email từ noreply@wordbridge.io.vn
+    // Đưa email chào mừng và OTP xác minh vào hàng đợi
     this.emailAdapter.enqueueEmail({
       templateSlug: 'welcome.html',
       toEmail: cleanEmail,
@@ -143,7 +165,7 @@ class UsersModule {
 
     const session = this.authService.createSession({
       userId,
-      deviceName: clientMeta.deviceName || 'Web Browser',
+      deviceName: clientMeta.deviceName || 'Trình duyệt Web',
       ipAddress: clientMeta.ipAddress || '127.0.0.1',
       userAgent: clientMeta.userAgent || ''
     });
@@ -164,7 +186,7 @@ class UsersModule {
       throw new Error('Thông tin đăng nhập không chính xác.');
     }
     if (user.status === 'locked') {
-      throw new Error('Tài khoản đang bị tạm khóa. Vui lòng liên hệ CSKH tại cskh@wordbridge.io.vn.');
+      throw new Error('Tài khoản đang bị tạm khóa. Vui lòng liên hệ bộ phận Chăm sóc khách hàng tại cskh@wordbridge.io.vn.');
     }
     if (user.locked_until && new Date(user.locked_until) > new Date()) {
       throw new Error(`Tài khoản đang bị tạm khóa chống dò mật khẩu đến ${user.locked_until}.`);
@@ -187,7 +209,7 @@ class UsersModule {
     this.db.run(`UPDATE users SET failed_login_attempts = 0, locked_until = NULL WHERE id = ?`, [user.id]);
     const session = this.authService.createSession({
       userId: user.id,
-      deviceName: clientMeta.deviceName || 'Web Browser',
+      deviceName: clientMeta.deviceName || 'Trình duyệt Web',
       ipAddress: clientMeta.ipAddress || '127.0.0.1',
       userAgent: clientMeta.userAgent || ''
     });
@@ -197,7 +219,7 @@ class UsersModule {
       toEmail: user.email,
       variables: {
         full_name: user.full_name,
-        device_name: clientMeta.deviceName || 'Web Browser',
+        device_name: clientMeta.deviceName || 'Trình duyệt Web',
         ip_address: clientMeta.ipAddress || '127.0.0.1',
         ref_code: session.session_id.toUpperCase()
       }
@@ -207,6 +229,58 @@ class UsersModule {
       user: this.sanitizeUserForSelf(user),
       session
     };
+  }
+
+  requestPasswordReset({ email }) {
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    const user = this.db.get(`SELECT * FROM users WHERE email = ?`, [cleanEmail]);
+    if (!user) {
+      throw new Error('Không tìm thấy tài khoản gắn với địa chỉ email này.');
+    }
+    const otpInfo = this.authService.issueEmailOtp({
+      email: cleanEmail,
+      userId: user.id,
+      purpose: 'reset_password',
+      fullName: user.full_name
+    });
+    return {
+      ok: true,
+      email: cleanEmail,
+      message: 'Mã xác thực khôi phục mật khẩu đã được tạo và đưa vào hàng đợi gửi email.',
+      otp_verification: otpInfo
+    };
+  }
+
+  resetPasswordWithOtp({ email, otp_code, new_password, confirm_password }) {
+    const cleanEmail = String(email || '').trim().toLowerCase();
+    const user = this.db.get(`SELECT * FROM users WHERE email = ?`, [cleanEmail]);
+    if (!user) {
+      throw new Error('Không tìm thấy tài khoản cần khôi phục mật khẩu.');
+    }
+    this.authService.verifyEmailOtp({
+      email: cleanEmail,
+      purpose: 'reset_password',
+      otpCode: otp_code
+    });
+    const pwdCheck = this.authService.validatePasswordPolicy(new_password, confirm_password);
+    if (!pwdCheck.valid) {
+      throw new Error(pwdCheck.issues.join(' '));
+    }
+    const { salt, hash } = this.authService.hashPassword(new_password);
+    const nowIso = new Date().toISOString();
+    this.db.run(
+      `UPDATE users SET password_hash = ?, password_salt = ?, failed_login_attempts = 0, locked_until = NULL, updated_at = ? WHERE id = ?`,
+      [hash, salt, nowIso, user.id]
+    );
+    // Thu hồi các phiên cũ sau khi đặt lại mật khẩu
+    this.db.run(`UPDATE user_sessions SET is_revoked = 1 WHERE user_id = ?`, [user.id]);
+
+    this.emailAdapter.enqueueEmail({
+      templateSlug: 'password-changed.html',
+      toEmail: user.email,
+      variables: { full_name: user.full_name, ref_code: 'PWDRESET-' + Date.now() }
+    });
+    return { reset: true, password_strength: pwdCheck.strength };
   }
 
   changePassword(user, { current_password, new_password, confirm_password }) {
@@ -240,20 +314,34 @@ class UsersModule {
     const current = this.db.get('SELECT * FROM users WHERE id = ?', [user.id]);
     const currentPrivacy = JSON.parse(current.privacy_settings || '{}');
     const updatedPrivacy = Object.assign({}, currentPrivacy, body.privacy_settings || {});
-    // Bảo vệ người chưa thành niên: Không cho bật công khai vị trí hoặc số điện thoại
+    if (body.native_or_support_languages) {
+      updatedPrivacy.native_or_support_languages = Array.isArray(body.native_or_support_languages)
+        ? body.native_or_support_languages
+        : [String(body.native_or_support_languages)];
+    }
+    if (body.practice_mode) {
+      updatedPrivacy.practice_mode = String(body.practice_mode).trim();
+    }
+    if (body.study_preferences) {
+      updatedPrivacy.study_preferences = String(body.study_preferences).trim();
+    }
+    // Bảo vệ người chưa thành niên & người dùng: Không bao giờ bật công khai vị trí chính xác hoặc tự động công khai SĐT
+    updatedPrivacy.show_location = false;
     if (current.is_minor) {
       updatedPrivacy.show_phone = false;
-      updatedPrivacy.show_location = false;
+      updatedPrivacy.show_email = false;
     }
 
     const fullName = body.full_name ? String(body.full_name).trim() : current.full_name;
     const bio = body.bio !== undefined ? String(body.bio).trim() : current.bio;
     const learningLangs = body.learning_languages
-      ? JSON.stringify(body.learning_languages)
+      ? JSON.stringify(Array.isArray(body.learning_languages) ? body.learning_languages : [body.learning_languages])
       : current.learning_languages;
     const level = body.proficiency_level || current.proficiency_level;
     const goals = body.learning_goals || current.learning_goals;
-    const interests = body.interests ? JSON.stringify(body.interests) : current.interests;
+    const interests = body.interests
+      ? JSON.stringify(Array.isArray(body.interests) ? body.interests : String(body.interests).split(',').map(s => s.trim()).filter(Boolean))
+      : current.interests;
     const hours = body.available_hours || current.available_hours;
     const now = new Date().toISOString();
 
@@ -274,6 +362,29 @@ class UsersModule {
     return this.sanitizeUserForSelf(this.db.get('SELECT * FROM users WHERE id = ?', [user.id]));
   }
 
+  listUserSessions(user, currentSessionId = '') {
+    requireAuth(user);
+    const rows = this.db.query(
+      `SELECT id, device_name, ip_address, user_agent, is_revoked, expires_at, created_at, last_active_at
+       FROM user_sessions WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`,
+      [user.id]
+    );
+    return rows.map(r => ({
+      ...r,
+      is_current: r.id === currentSessionId,
+      is_revoked: Boolean(r.is_revoked)
+    }));
+  }
+
+  revokeSessionById(user, sessionId) {
+    requireAuth(user);
+    this.db.run(
+      `UPDATE user_sessions SET is_revoked = 1 WHERE id = ? AND user_id = ?`,
+      [sessionId, user.id]
+    );
+    return { revoked: true, session_id: sessionId };
+  }
+
   revokeOtherSessions(user, currentSessionId) {
     requireAuth(user);
     this.db.run(
@@ -288,8 +399,108 @@ class UsersModule {
     return { revoked_others: true };
   }
 
+  getNotificationPreferences(user) {
+    requireAuth(user);
+    let pref = this.db.get(`SELECT * FROM notification_preferences WHERE user_id = ?`, [user.id]);
+    if (!pref) {
+      const nowIso = new Date().toISOString();
+      this.db.run(
+        `INSERT INTO notification_preferences (
+          user_id, in_app_enabled, email_system, email_transaction, email_organization,
+          email_connection, email_community, email_security, study_reminder_enabled, updated_at
+        ) VALUES (?, 1, 1, 1, 1, 1, 1, 1, 1, ?)`,
+        [user.id, nowIso]
+      );
+      pref = this.db.get(`SELECT * FROM notification_preferences WHERE user_id = ?`, [user.id]);
+    }
+    return {
+      user_id: pref.user_id,
+      in_app_enabled: Boolean(pref.in_app_enabled),
+      email_system: Boolean(pref.email_system),
+      email_transaction: Boolean(pref.email_transaction),
+      email_organization: Boolean(pref.email_organization),
+      email_connection: Boolean(pref.email_connection),
+      email_community: Boolean(pref.email_community),
+      email_security: true, // Thông báo bảo mật thiết yếu luôn bật
+      study_reminder_enabled: Boolean(pref.study_reminder_enabled),
+      updated_at: pref.updated_at
+    };
+  }
+
+  updateNotificationPreferences(user, body = {}) {
+    requireAuth(user);
+    const current = this.getNotificationPreferences(user);
+    const nowIso = new Date().toISOString();
+    const next = {
+      in_app_enabled: body.in_app_enabled !== undefined ? (body.in_app_enabled ? 1 : 0) : (current.in_app_enabled ? 1 : 0),
+      email_system: body.email_system !== undefined ? (body.email_system ? 1 : 0) : (current.email_system ? 1 : 0),
+      email_transaction: body.email_transaction !== undefined ? (body.email_transaction ? 1 : 0) : (current.email_transaction ? 1 : 0),
+      email_organization: body.email_organization !== undefined ? (body.email_organization ? 1 : 0) : (current.email_organization ? 1 : 0),
+      email_connection: body.email_connection !== undefined ? (body.email_connection ? 1 : 0) : (current.email_connection ? 1 : 0),
+      email_community: body.email_community !== undefined ? (body.email_community ? 1 : 0) : (current.email_community ? 1 : 0),
+      email_security: 1,
+      study_reminder_enabled: body.study_reminder_enabled !== undefined ? (body.study_reminder_enabled ? 1 : 0) : (current.study_reminder_enabled ? 1 : 0)
+    };
+    this.db.run(
+      `UPDATE notification_preferences
+       SET in_app_enabled = ?, email_system = ?, email_transaction = ?, email_organization = ?,
+           email_connection = ?, email_community = ?, email_security = 1, study_reminder_enabled = ?, updated_at = ?
+       WHERE user_id = ?`,
+      [
+        next.in_app_enabled,
+        next.email_system,
+        next.email_transaction,
+        next.email_organization,
+        next.email_connection,
+        next.email_community,
+        next.study_reminder_enabled,
+        nowIso,
+        user.id
+      ]
+    );
+    return this.getNotificationPreferences(user);
+  }
+
+  createNotification({ userId, category = 'system', title, message, linkUrl = '/' }) {
+    if (!userId || !title) return null;
+    const id = 'ntf_' + crypto.randomBytes(8).toString('hex');
+    const nowIso = new Date().toISOString();
+    this.db.run(
+      `INSERT INTO notifications (id, user_id, category, title, message, link_url, is_read, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, 0, ?)`,
+      [id, userId, category, String(title).trim(), String(message || '').trim(), linkUrl, nowIso]
+    );
+    return this.db.get(`SELECT * FROM notifications WHERE id = ?`, [id]);
+  }
+
+  listNotifications(user) {
+    requireAuth(user);
+    return this.db.query(
+      `SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 40`,
+      [user.id]
+    ).map(n => ({ ...n, is_read: Boolean(n.is_read) }));
+  }
+
+  markNotificationRead(user, { notification_id = null, mark_all = false } = {}) {
+    requireAuth(user);
+    if (mark_all) {
+      this.db.run(`UPDATE notifications SET is_read = 1 WHERE user_id = ?`, [user.id]);
+    } else if (notification_id) {
+      this.db.run(`UPDATE notifications SET is_read = 1 WHERE id = ? AND user_id = ?`, [notification_id, user.id]);
+    }
+    return { ok: true, notifications: this.listNotifications(user) };
+  }
+
   sanitizeUserForSelf(row) {
     if (!row) return null;
+    const privacy = JSON.parse(row.privacy_settings || '{}');
+    const planLabelMap = {
+      personal_free: 'Người Dùng bản Miễn Phí',
+      personal_plus_monthly: 'Người Dùng bản Plus – Tháng',
+      personal_plus_yearly: 'Người Dùng bản Plus – Năm',
+      org_plus_monthly: 'Tổ Chức Plus – Tháng',
+      org_plus_yearly: 'Tổ Chức Plus – Năm'
+    };
     return {
       id: row.id,
       full_name: row.full_name,
@@ -305,10 +516,15 @@ class UsersModule {
       learning_goals: row.learning_goals,
       interests: JSON.parse(row.interests || '[]'),
       available_hours: row.available_hours,
-      privacy_settings: JSON.parse(row.privacy_settings || '{}'),
+      native_or_support_languages: privacy.native_or_support_languages || ['vi'],
+      practice_mode: privacy.practice_mode || 'Trực tuyến qua tin nhắn và bài tập nhóm',
+      study_preferences: privacy.study_preferences || 'Thực hành phản xạ ngắn mỗi ngày',
+      privacy_settings: privacy,
       is_minor: Boolean(row.is_minor),
       role: row.role,
+      role_name_vi: RBAC_ROLES[row.role]?.name || 'Thành viên Cá nhân',
       plan_code: row.plan_code,
+      plan_name_vi: planLabelMap[row.plan_code] || row.plan_code,
       status: row.status,
       created_at: row.created_at
     };
@@ -324,12 +540,15 @@ class UsersModule {
       avatar_url: row.avatar_url,
       bio: row.bio,
       learning_languages: JSON.parse(row.learning_languages || '["en"]'),
+      native_or_support_languages: privacy.native_or_support_languages || ['vi'],
       proficiency_level: row.proficiency_level,
       learning_goals: row.learning_goals,
       interests: JSON.parse(row.interests || '[]'),
       available_hours: row.available_hours,
-      email: privacy.show_email ? row.email : undefined,
-      // Không bao giờ công khai vị trí chính xác hoặc tự động công khai SĐT
+      practice_mode: privacy.practice_mode || 'Trực tuyến qua tin nhắn và bài tập nhóm',
+      study_preferences: privacy.study_preferences || 'Thực hành phản xạ ngắn mỗi ngày',
+      // Không bao giờ tự động công khai email, số điện thoại hoặc vị trí chính xác
+      email: undefined,
       phone: undefined,
       exact_location: undefined
     };

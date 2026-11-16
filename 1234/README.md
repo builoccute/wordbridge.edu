@@ -1,43 +1,132 @@
-# WORD BRIDGE – Where Languages Bring People Together. (2026/2027)
+# WORD BRIDGE — Nền tảng Thực hành và Kết nối Cộng đồng Ngoại ngữ (2026–2027)
 
-- **Tên nền tảng:** WORD BRIDGE
-- **Slogan:** Where Languages Bring People Together.
-- **Tên miền chính thức duy nhất:** `https://wordbridge.io.vn`
-- **Mô hình kiến trúc:** Một website duy nhất (Modular Monolith) tích hợp toàn bộ chức năng trên một tên miền. Tuyệt đối không tạo subdomain sản phẩm (`learn`, `portal`, `exam`, `admin`, `help`, `api`, `vipro`), không có mục Sự kiện (`/su-kien`), không dùng thương hiệu Vipro/VIPRO và không sử dụng hình ảnh AI.
-- **Hạ tầng dữ liệu độc lập (Phụ lục A):** Tự xây dựng, triển khai và quản lý **Database PostgreSQL riêng** và **Máy chủ Object Storage riêng** (`docker-compose.yml`). Tuyệt đối **không sử dụng Cloudflare D1 hoặc Cloudflare R2**, không dùng chung database/storage với dự án khác.
+> **Slogan:** *Where Languages Bring People Together.*  
+> **Tên miền chính thức:** `https://wordbridge.io.vn`  
+> **Bốn trụ cột cốt lõi:** `LEARN` • `CONNECT` • `COMMUNITY` • `GROW`  
+> **Năm ngôn ngữ mục tiêu:** Tiếng Trung (`zh`) • Tiếng Anh (`en`) • Tiếng Hàn (`ko`) • Tiếng Nhật (`ja`) • Tiếng Nga (`ru`)
 
----
+## 1. Tổng quan Kiến trúc Hệ thống
 
-## 1. Chính sách Hạn mức Lưu trữ & Chu kỳ Tháng (`/quan-tri/luu-tru` – Phụ lục A)
+**WORD BRIDGE** vận hành trên kiến trúc hợp nhất giữa **Cloudflare Workers** (`src/worker.js` theo cấu hình `wrangler.toml`) và **Node.js HTTP Server** (`src/server.js`) thông qua bộ điều phối nghiệp vụ trung tâm `dispatchApiRequest`:
 
-- **Không giới hạn GB cố định chung cho toàn website:** Hạn mức được cấp theo gói dịch vụ của từng tài khoản/tổ chức hoặc cấu hình riêng của Admin.
-- **Hạn mức mặc định theo gói:**
-  1. `Personal Free`: **1 GB / tài khoản** (không tự động reset hàng tháng).
-  2. `Personal Plus (Tháng / Năm)`: **5 GB / tài khoản** (khi hết gói chuyển về `Personal Free` 1 GB; nếu đang lưu > 1 GB thì cảnh báo và ngăn tải lên tệp mới, **tuyệt đối không tự động xóa dữ liệu cũ**, giữ nguyên quyền đọc & tải xuống).
-  3. `Organization Plus – Gói tháng`: **50 GB / tháng**, tối đa **30 thành viên** (quản lý tập trung trong không gian tổ chức, **không nhân hạn mức theo số thành viên**, tự động làm mới bộ đếm vào ngày `01` hàng tháng theo múi giờ `Asia/Ho_Chi_Minh`, không cộng dồn dung lượng dư, **không xóa dữ liệu đã lưu khi làm mới**).
-  4. `Organization Plus – Gói năm`: **120 GB / tháng**, tối đa **30 thành viên** (quản lý tập trung trong không gian tổ chức, **không nhân hạn mức theo số thành viên**, tự động làm mới bộ đếm vào ngày `01` hàng tháng theo múi giờ `Asia/Ho_Chi_Minh`, không cộng dồn dung lượng dư, **không xóa dữ liệu đã lưu khi làm mới**).
-- **Quyền điều chỉnh của Admin (`/quan-tri/luu-tru`):** Admin có thể tìm kiếm từng tài khoản cá nhân hoặc tổ chức để tăng/giảm/đặt hạn mức riêng theo **GB** hoặc **TB**, chuyển sang **Không giới hạn**, hoặc **Gỡ hạn mức riêng** (lập tức trở về hạn mức mặc định theo gói đang hoạt động). Cấu hình riêng của Admin luôn có độ ưu tiên cao hơn mặc định của gói và được ghi `audit_logs` đầy đủ.
+- **Cơ sở dữ liệu chính thức:** **Cloudflare D1** (`binding = "DB"`, `database_name = "word"`, `database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"`), tương thích đồng bộ với SQLite WAL (`node:sqlite`) khi chạy локал/kiểm thử tự động và hỗ trợ đồng bộ snapshot hai chiều qua `database.adapter.js`.
+- **Lưu trữ đối tượng chính thức:** **Cloudflare R2** (`binding = "R2"`, `bucket_name = "word"`), kiểm tra chữ ký tệp thực tế (Magic Bytes), khóa đối tượng chống đoán đường dẫn, kiểm soát quyền truy cập theo tài khoản/tổ chức và quản lý hạn mức dung lượng theo chu kỳ tháng (`Asia/Ho_Chi_Minh`).
+- **Dịch vụ Email giao dịch:** **Resend API** (`https://api.resend.com/emails`), người gửi mặc định `WORD BRIDGE – Email tự động từ hệ thống <noreply@wordbridge.io.vn>`, chỉ đánh dấu `sent` (`Đã gửi`) sau khi nhận phản hồi xác nhận `id` (`provider_id`) từ Resend.
+- **Bảo mật & Quản trị:**
+  - Tách biệt hoàn toàn phiên người dùng (`sessions`) và phiên Quản trị viên (`admin_sessions`) tại cổng riêng `/quan-tri/dang-nhap`.
+  - Không lưu trữ token nhạy cảm trong `localStorage` (sử dụng cookie `HttpOnly; SameSite=Lax` kết hợp bộ nhớ phiên tạm thời).
+  - Bảo vệ đầy đủ các API trên cả `src/server.js` và `src/worker.js` bằng RBAC, CSRF token, Rate Limiting và nhật ký kiểm toán (`audit_logs`).
 
----
+## 2. Bảng Giá & Hạn Mức Lưu Trữ Đã Phê Duyệt
 
-## 2. Quy chuẩn 04 Địa chỉ Email Chính thức & 29 Mẫu Email HTML
+| Mã gói | Tên gói hiển thị (Tiếng Việt) | Giá niêm yết | Hạn mức lưu trữ mặc định | Quyền lợi & Ghi chú |
+| :--- | :--- | :--- | :--- | :--- |
+| `personal_free` | **Người Dùng bản Miễn Phí** | `0 đồng` | `1 GB / tài khoản` | Học 05 ngôn ngữ, bài tập cơ bản, kết nối & cộng đồng cơ bản |
+| `personal_plus_monthly` | **Người Dùng bản Plus – Tháng** | `129.000 đồng / tháng` | `5 GB / tài khoản` | Dùng thử 07 ngày cho tài khoản mới; mở khóa toàn bộ công cụ luyện tập, AI & thống kê sâu |
+| `personal_plus_yearly` | **Người Dùng bản Plus – Năm** | `1.000.000 đồng / năm` | `5 GB / tài khoản` | Tiết kiệm chi phí năm; đầy đủ quyền lợi Personal Plus |
+| `org_plus_monthly` | **Tổ Chức Plus – Tháng** | `350.000 đồng / tháng` | `50 GB / tổ chức / tháng` | Dùng chung toàn tổ chức, tối đa 30 thành viên (dùng thử 14 ngày tối đa 10 thành viên) |
+| `org_plus_yearly` | **Tổ Chức Plus – Năm** | `3.500.000 đồng / năm` | `120 GB / tổ chức / tháng` | Dùng chung toàn tổ chức, tối đa 30 thành viên, chu kỳ hạn mức làm mới ngày 01 hằng tháng |
 
-| Địa chỉ Email | Vai trò | Phạm vi sử dụng |
-|---|---|---|
-| `noreply@wordbridge.io.vn` | Email gửi tự động từ hệ thống | OTP, xác minh email, cảnh báo bảo mật, hóa đơn, thông báo tự động (`WORD BRIDGE – Email tự động từ hệ thống`) |
-| `wordbridge.education@gmail.com` | Liên hệ chính thức | Liên hệ chung, thông tin chính thức của WORD BRIDGE |
-| `cskh@wordbridge.io.vn` | Chăm sóc khách hàng | Hỗ trợ tài khoản, học tập, thanh toán, khiếu nại, liên kết `/ho-tro` |
-| `contact@wordbridge.io.vn` | Hợp tác & Truyền thông | Hợp tác giáo dục, doanh nghiệp, báo chí, truyền thông, tài trợ |
+*Ghi chú bảo vệ hạn mức:* Biến môi trường `MONTHLY_QUOTA_GB` chỉ đóng vai trò giá trị tham chiếu dự phòng cấp hệ thống (`override_plan_quotas = false`), **tuyệt đối không ghi đè** hạn mức mặc định riêng của từng gói dịch vụ (`1 GB`, `5 GB`, `50 GB`, `120 GB`).
 
----
+## 3. Cấu Trúc Thư Mục Mã Nguồn
 
-## 3. Hướng dẫn Cài đặt, Chạy, Build & Kiểm thử
+```text
+word_bridge/
+├── database/
+│   ├── migrations/
+│   │   ├── 0001_initial_schema.sql
+│   │   ├── 0005_upgrade_2026_2027.sql
+│   │   └── 0006_upgrade_2026_full_features.sql
+│   ├── seeds/
+│   │   └── 01_reference_data.sql
+│   └── schema.sql
+├── docs/
+│   ├── ARCHITECTURE_AND_ADMIN_GUIDE.md
+│   └── TEST_AND_ACCEPTANCE_REPORT.md
+├── scripts/
+│   ├── backup.js
+│   ├── migrate.js
+│   ├── restore.js
+│   ├── seed.js
+│   └── verify-system.js
+├── src/
+│   ├── adapters/
+│   │   ├── ai.adapter.js
+│   │   ├── database.adapter.js
+│   │   ├── email.adapter.js
+│   │   └── storage.adapter.js
+│   ├── config/
+│   │   ├── constants.js
+│   │   └── env.js
+│   ├── frontend/
+│   │   ├── assets/
+│   │   ├── css/
+│   │   │   ├── design-system.css
+│   │   │   └── layouts-responsive.css
+│   │   ├── js/
+│   │   │   ├── app-core.js
+│   │   │   ├── i18n-locales.js
+│   │   │   ├── views-admin-cms.js
+│   │   │   ├── views-commerce-exam.js
+│   │   │   ├── views-community-org.js
+│   │   │   ├── views-learning.js
+│   │   │   └── views-public-auth.js
+│   │   └── index.html
+│   ├── modules/
+│   │   ├── admin.module.js
+│   │   ├── cms.module.js
+│   │   ├── community.module.js
+│   │   ├── connections.module.js
+│   │   ├── exam.module.js
+│   │   ├── learning.module.js
+│   │   ├── organizations.module.js
+│   │   ├── payment.module.js
+│   │   ├── progress.module.js
+│   │   └── users.module.js
+│   ├── security/
+│   │   ├── auth.service.js
+│   │   ├── crypto.utils.js
+│   │   ├── rate-limiter.js
+│   │   └── rbac.middleware.js
+│   ├── utils/
+│   │   ├── http.utils.js
+│   │   └── validator.js
+│   ├── app.js
+│   ├── server.js
+│   └── worker.js
+├── tests/
+│   └── full-system.test.js
+├── .env.example
+├── package.json
+├── README.md
+└── wrangler.toml
+```
+
+## 4. Hướng Dẫn Chạy Cục Bộ & Kiểm Thử
 
 ```bash
-cp .env.example .env
-npm run migrate
-npm run seed
-npm run build
+# 1. Khởi tạo cấu trúc bảng & nạp dữ liệu chuẩn (05 ngôn ngữ, gói dịch vụ, học liệu, bài thi, tin tức)
+npm run setup
+
+# 2. Chạy toàn bộ bộ kiểm thử tự động (10 phân hệ + kiểm thử hồi quy Server & Worker)
 npm test
+
+# 3. Chạy kịch bản xác minh toàn vẹn hệ thống (DB Integrity, Quota, RBAC, Giao diện)
+npm run verify
+
+# 4. Khởi động máy chủ phát triển cục bộ
 npm start
 ```
+
+## 5. Triển Khai Cloudflare Workers, D1 & R2
+
+Xem hướng dẫn chi tiết từng bước trong [`docs/ARCHITECTURE_AND_ADMIN_GUIDE.md`](docs/ARCHITECTURE_AND_ADMIN_GUIDE.md) và báo cáo kiểm thử nghiệm thu trong [`docs/TEST_AND_ACCEPTANCE_REPORT.md`](docs/TEST_AND_ACCEPTANCE_REPORT.md).
+
+## 6. Thông Tin Liên Hệ Chính Thức
+
+- **Email hệ thống tự động:** `noreply@wordbridge.io.vn`
+- **Liên hệ chính thức & chung:** `wordbridge.education@gmail.com`
+- **Chăm sóc khách hàng & Hỗ trợ:** `cskh@wordbridge.io.vn`
+- **Hợp tác & Truyền thông:** `contact@wordbridge.io.vn`
+- **Nhóm sáng lập:** Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như

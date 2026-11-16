@@ -53,3 +53,68 @@ INSERT OR REPLACE INTO infrastructure_nodes (node_id, node_role, node_name, prov
 VALUES ('wb-storage-node-01', 'dedicated_storage_primary', 'WORD BRIDGE Dedicated Object Storage Server 01', 2199023255552, 0, 'configured_local_dev_awaiting_dedicated_host', 1, '2026-11-15T00:00:00.000Z');
 INSERT OR REPLACE INTO infrastructure_nodes (node_id, node_role, node_name, provisioned_bytes, used_bytes, status, expansion_ready, last_health_check_at)
 VALUES ('wb-backup-vault-01', 'backup_vault', 'WORD BRIDGE Dedicated Backup & Recovery Vault', 2199023255552, 0, 'configured_local_dev_awaiting_dedicated_host', 1, '2026-11-15T00:00:00.000Z');
+
+
+-- Cập nhật tên gói dịch vụ sang tiếng Việt chuẩn theo Phần XV.1
+UPDATE service_plans SET name = 'Người Dùng bản Miễn Phí' WHERE code = 'personal_free';
+UPDATE service_plans SET name = 'Người Dùng bản Plus – Tháng' WHERE code = 'personal_plus_monthly';
+UPDATE service_plans SET name = 'Người Dùng bản Plus – Năm' WHERE code = 'personal_plus_yearly';
+UPDATE service_plans SET name = 'Tổ Chức Plus – Tháng' WHERE code = 'org_plus_monthly';
+UPDATE service_plans SET name = 'Tổ Chức Plus – Năm' WHERE code = 'org_plus_yearly';
+
+-- Cập nhật mô tả node hạ tầng thống nhất theo Cloudflare D1 và R2
+INSERT OR REPLACE INTO infrastructure_nodes (node_id, node_role, node_name, provisioned_bytes, used_bytes, status, expansion_ready, last_health_check_at)
+VALUES ('wb-d1-primary-01', 'd1_primary', 'Cloudflare D1 Database (word - ce84cc48-6d49-409b-b45a-13ba3bc4a771)', 536870912000, 0, 'active', 1, '2026-11-15T00:00:00.000Z');
+INSERT OR REPLACE INTO infrastructure_nodes (node_id, node_role, node_name, provisioned_bytes, used_bytes, status, expansion_ready, last_health_check_at)
+VALUES ('wb-storage-node-01', 'dedicated_storage_primary', 'Cloudflare R2 Object Storage Bucket (word)', 2199023255552, 0, 'active', 1, '2026-11-15T00:00:00.000Z');
+INSERT OR REPLACE INTO infrastructure_nodes (node_id, node_role, node_name, provisioned_bytes, used_bytes, status, expansion_ready, last_health_check_at)
+VALUES ('wb-backup-vault-01', 'backup_vault', 'Kho Sao Lưu và Phục Hồi Dữ Liệu WORD BRIDGE', 2199023255552, 0, 'active', 1, '2026-11-15T00:00:00.000Z');
+
+-- Khởi tạo các bài viết hướng dẫn sử dụng nền tảng và cập nhật sản phẩm chính thức tại khu vực Tin tức (PHẦN XIV)
+INSERT OR REPLACE INTO news_articles (id, slug, category, title, summary, html_content, language_code, author_id, status, published_at, created_at, updated_at)
+VALUES (
+  'news_wb_guide_1',
+  'huong-dan-tu-thuc-hanh-5-ngon-ngu-tren-word-bridge',
+  'huong_dan',
+  'Hướng dẫn bắt đầu lộ trình tự thực hành 05 ngoại ngữ trên WORD BRIDGE',
+  'Cách kết hợp 04 công cụ thực hành cốt lõi (Nghe điền từ, Từ vựng & Flashcard, Sắp xếp câu, Đọc hiểu) cùng hệ thống đánh giá trình độ đầu vào.',
+  '<article><h2>Bắt đầu hành trình rèn luyện ngoại ngữ chủ động</h2><p>WORD BRIDGE được xây dựng xoay quanh bốn trụ cột <strong>LEARN – CONNECT – COMMUNITY – GROW</strong>, hỗ trợ người học tự rèn luyện năm ngoại ngữ: Tiếng Trung, Tiếng Anh, Tiếng Hàn, Tiếng Nhật và Tiếng Nga.</p><h3>1. Tách biệt ngôn ngữ giao diện và ngôn ngữ đang học</h3><p>Bạn có thể giữ nguyên ngôn ngữ giao diện Tiếng Việt trong khi chuyển đổi linh hoạt giữa năm ngôn ngữ mục tiêu trong Trung tâm học tập mà không làm xáo trộn hồ sơ cá nhân.</p><h3>2. Quy trình thực hành 4 bước mỗi ngày</h3><ol><li>Làm bài kiểm tra đánh giá trình độ đầu vào để nhận lộ trình tự thực hành phù hợp.</li><li>Luyện nghe từng câu và điền từ khuyết để rèn phản xạ âm thanh.</li><li>Ôn tập thẻ từ vựng hai chiều theo lịch ngắt quãng và lưu lại các từ khó.</li><li>Thực hành sắp xếp câu và đọc hiểu ngữ cảnh để củng cố cấu trúc ngữ pháp.</li></ol></article>',
+  'vi',
+  'system',
+  'published',
+  '2026-11-15T00:00:00.000Z',
+  '2026-11-15T00:00:00.000Z',
+  '2026-11-15T00:00:00.000Z'
+);
+
+INSERT OR REPLACE INTO news_articles (id, slug, category, title, summary, html_content, language_code, author_id, status, published_at, created_at, updated_at)
+VALUES (
+  'news_wb_update_2',
+  'cap-nhat-khong-gian-to-chuc-va-ket-noi-ban-hoc-dong-thuan',
+  'cap_nhat_san_pham',
+  'Cập nhật Không gian Tổ chức và Cơ chế Kết nối Bạn học Đồng thuận Hai bên',
+  'Tăng cường bảo vệ quyền riêng tư cho người học cá nhân, chuẩn hóa sáu vai trò phân quyền trong tổ chức và nâng cấp phòng luyện khảo thí độc lập.',
+  '<article><h2>Bảo vệ quyền riêng tư và nâng cao chất lượng kết nối</h2><p>Hệ thống Tìm bạn thực hành trên WORD BRIDGE áp dụng nguyên tắc đồng thuận hai bên: chỉ khi lời mời kết nối được chấp nhận, phòng nhắn tin trao đổi học tập mới được mở.</p><h3>Phân quyền sáu vai trò trong Không gian Tổ chức</h3><p>Các câu lạc bộ, đội, nhóm và đơn vị giáo dục có thể phân quyền rõ ràng cho Chủ sở hữu tổ chức, Người quản lý, Ban điều hành, Điều phối viên, Người phụ trách nhóm và Thành viên, bảo đảm an toàn dữ liệu nội bộ giữa các đơn vị.</p></article>',
+  'vi',
+  'system',
+  'published',
+  '2026-11-15T00:00:00.000Z',
+  '2026-11-15T00:00:00.000Z',
+  '2026-11-15T00:00:00.000Z'
+);
+
+INSERT OR REPLACE INTO news_articles (id, slug, category, title, summary, html_content, language_code, author_id, status, published_at, created_at, updated_at)
+VALUES (
+  'news_wb_community_3',
+  'phuong-phap-on-tap-tu-vung-ngat-quang-va-luyen-nghe-chep-chinh-ta',
+  'kinh_nghiem',
+  'Phương pháp kết hợp Ôn tập Từ vựng Ngắt quãng và Nghe chép Chính tả',
+  'Kinh nghiệm sử dụng sổ tay câu khó, bộ thẻ từ vựng hai chiều và luyện tập theo nhóm nhỏ cùng mục tiêu ngoại ngữ.',
+  '<article><h2>Ghi nhớ từ vựng sâu qua ngữ cảnh thực tế</h2><p>Thay vì học thuộc lòng danh sách từ rời rạc, người học trên WORD BRIDGE có thể đánh dấu từ khó ngay trong bài đọc hiểu, tạo bộ thẻ Flashcard hai chiều và tham gia thử thách thực hành ngắn hạn cùng các thành viên trong nhóm ngoại ngữ.</p></article>',
+  'vi',
+  'system',
+  'published',
+  '2026-11-15T00:00:00.000Z',
+  '2026-11-15T00:00:00.000Z',
+  '2026-11-15T00:00:00.000Z'
+);

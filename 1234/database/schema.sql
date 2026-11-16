@@ -839,3 +839,190 @@ CREATE TABLE IF NOT EXISTS infrastructure_nodes (
     expansion_ready INTEGER NOT NULL DEFAULT 1,
     last_health_check_at TEXT NOT NULL
 );
+
+
+-- ============================================================================
+-- 10. NÂNG CẤP TOÀN DIỆN 2026–2027 (D1/R2, ADMIN RIÊNG, OAUTH, LỘ TRÌNH, TIN TỨC, TỔ CHỨC)
+-- ============================================================================
+
+CREATE TABLE IF NOT EXISTS admin_sessions (
+    id TEXT PRIMARY KEY,
+    admin_user_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    token_hash TEXT NOT NULL UNIQUE,
+    ip_address TEXT NOT NULL DEFAULT '127.0.0.1',
+    user_agent TEXT NOT NULL DEFAULT '',
+    is_revoked INTEGER NOT NULL DEFAULT 0,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    last_active_at TEXT NOT NULL,
+    FOREIGN KEY (admin_user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS admin_security_state (
+    id TEXT PRIMARY KEY,
+    first_admin_bootstrapped INTEGER NOT NULL DEFAULT 0,
+    security_code_hash TEXT NOT NULL DEFAULT '',
+    security_code_salt TEXT NOT NULL DEFAULT '',
+    failed_attempts INTEGER NOT NULL DEFAULT 0,
+    locked_until TEXT DEFAULT NULL,
+    updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS oauth_states (
+    state TEXT PRIMARY KEY,
+    provider TEXT NOT NULL,
+    code_verifier TEXT NOT NULL,
+    redirect_uri TEXT NOT NULL,
+    user_id TEXT DEFAULT NULL,
+    expires_at TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS placement_assessments (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    language_code TEXT NOT NULL,
+    target_goal TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    max_score INTEGER NOT NULL,
+    estimated_level TEXT NOT NULL,
+    strong_skills_json TEXT NOT NULL DEFAULT '[]',
+    weak_skills_json TEXT NOT NULL DEFAULT '[]',
+    roadmap_id TEXT DEFAULT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS learning_roadmaps (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    language_code TEXT NOT NULL,
+    current_level TEXT NOT NULL,
+    target_level TEXT NOT NULL,
+    target_goal TEXT NOT NULL,
+    daily_minutes_target INTEGER NOT NULL DEFAULT 30,
+    weekly_sessions_target INTEGER NOT NULL DEFAULT 5,
+    skills_to_improve_json TEXT NOT NULL DEFAULT '[]',
+    recommended_exercises_json TEXT NOT NULL DEFAULT '[]',
+    progress_percent INTEGER NOT NULL DEFAULT 0,
+    reassessment_milestone TEXT NOT NULL DEFAULT 'Sau 10 bài thực hành',
+    updated_at TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS saved_learning_items (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    language_code TEXT NOT NULL,
+    item_type TEXT NOT NULL, -- difficult_sentence | wrong_sentence | favorite_reading | favorite_exercise
+    reference_id TEXT NOT NULL,
+    content_json TEXT NOT NULL DEFAULT '{}',
+    note TEXT DEFAULT '',
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS user_achievements (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    badge_code TEXT NOT NULL,
+    badge_name TEXT NOT NULL,
+    description TEXT NOT NULL,
+    earned_at TEXT NOT NULL,
+    UNIQUE(user_id, badge_code),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS notification_preferences (
+    user_id TEXT PRIMARY KEY,
+    in_app_enabled INTEGER NOT NULL DEFAULT 1,
+    email_system INTEGER NOT NULL DEFAULT 1,
+    email_transaction INTEGER NOT NULL DEFAULT 1,
+    email_organization INTEGER NOT NULL DEFAULT 1,
+    email_connection INTEGER NOT NULL DEFAULT 1,
+    email_community INTEGER NOT NULL DEFAULT 1,
+    email_security INTEGER NOT NULL DEFAULT 1,
+    study_reminder_enabled INTEGER NOT NULL DEFAULT 1,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS saved_partners (
+    user_id TEXT NOT NULL,
+    partner_user_id TEXT NOT NULL,
+    note TEXT DEFAULT '',
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (user_id, partner_user_id)
+);
+
+CREATE TABLE IF NOT EXISTS user_blocks (
+    blocker_id TEXT NOT NULL,
+    blocked_id TEXT NOT NULL,
+    reason TEXT DEFAULT '',
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (blocker_id, blocked_id)
+);
+
+CREATE TABLE IF NOT EXISTS community_post_likes (
+    post_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (post_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS community_post_bookmarks (
+    post_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    PRIMARY KEY (post_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS org_join_requests (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    message TEXT DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending', -- pending | approved | rejected
+    reviewed_by TEXT DEFAULT NULL,
+    reviewed_at TEXT DEFAULT NULL,
+    created_at TEXT NOT NULL,
+    UNIQUE(org_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS org_tasks (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    assigned_to_user_id TEXT DEFAULT NULL,
+    assigned_by_user_id TEXT NOT NULL,
+    due_date TEXT DEFAULT NULL,
+    status TEXT NOT NULL DEFAULT 'pending', -- pending | in_progress | completed
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS org_announcements (
+    id TEXT PRIMARY KEY,
+    org_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    author_id TEXT NOT NULL,
+    created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS news_articles (
+    id TEXT PRIMARY KEY,
+    slug TEXT NOT NULL UNIQUE,
+    category TEXT NOT NULL, -- cap_nhat_san_pham | huong_dan | cong_dong | kinh_nghiem
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    html_content TEXT NOT NULL,
+    language_code TEXT NOT NULL DEFAULT 'vi',
+    author_id TEXT NOT NULL DEFAULT 'system',
+    status TEXT NOT NULL DEFAULT 'published', -- draft | published | archived
+    published_at TEXT DEFAULT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);

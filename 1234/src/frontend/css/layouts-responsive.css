@@ -1,12 +1,9 @@
 /* ============================================================================
- * WORD BRIDGE - MULTI-DEVICE RESPONSIVE EXPERIENCE (PHẦN 05)
- * Thiết kế riêng cho:
- * 1. Laptop 13-14 inch, 15-16 inch & Desktop lớn
- * 2. iPad chế độ Dọc (Portrait) & iPad chế độ Ngang (Landscape)
- * 3. Điện thoại Android & iPhone (Mobile)
+ * WORD BRIDGE - MULTI-DEVICE RESPONSIVE EXPERIENCE (PHẦN XX)
+ * Hoạt động mượt mà trên Desktop, Laptop, Máy tính bảng và Điện thoại.
+ * Không tràn ngang, không đè chữ, không mất nút.
  * ============================================================================ */
 
-/* Workspace Layout with Sidebar (Dùng cho Học tập, Tổ chức, Quản trị, Hồ sơ) */
 .wb-workspace-layout {
   display: grid;
   grid-template-columns: 250px 1fr;
@@ -54,74 +51,35 @@
   display: none;
 }
 
-/* 1. Màn hình Desktop lớn (>= 1441px) */
-@media (min-width: 1441px) {
+/* 1. Desktop & Laptop (1025px – 1360px): Giữ chặt 1 hàng trên Header */
+@media (min-width: 1025px) and (max-width: 1320px) {
   .wb-container {
-    max-width: 1340px;
+    padding: 0 16px;
   }
-}
-
-/* 2. Laptop 13–14 inch (1025px – 1440px) */
-@media (min-width: 1025px) and (max-width: 1440px) {
-  .wb-container {
-    max-width: 1200px;
-    padding: 0 20px;
+  .wb-logo-link img {
+    height: 38px;
   }
-  .wb-grid-5 {
+  .wb-nav-link {
+    padding: 7px 9px;
+    font-size: 13px;
+  }
+  .wb-search-box input {
+    width: 85px;
+  }
+  .wb-btn-header {
+    padding: 6px 11px;
+    font-size: 13px;
+  }
+  .wb-explore-9-grid {
     grid-template-columns: repeat(5, 1fr);
   }
 }
 
-/* 3. iPad Chế độ Ngang (Tablet Landscape: 1024px – 1180px) */
-@media (min-width: 900px) and (max-width: 1180px) {
-  .wb-workspace-layout {
-    grid-template-columns: 210px 1fr;
-    gap: 18px;
-  }
-  .wb-grid-5 {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .wb-grid-4 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .wb-footer-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .wb-btn, .wb-nav-link {
-    min-height: 42px;
-  }
-}
-
-/* 4. iPad Chế độ Dọc (Tablet Portrait: 768px – 899px) */
-@media (min-width: 768px) and (max-width: 899px) {
+/* 2. Máy tính bảng chế độ Ngang & Dọc (768px – 1024px) */
+@media (max-width: 1024px) {
   .wb-header-inner {
     flex-wrap: wrap;
     padding: 10px 0;
-  }
-  .wb-workspace-layout {
-    grid-template-columns: 190px 1fr;
-    gap: 16px;
-  }
-  .wb-hero-grid {
-    grid-template-columns: 1fr;
-  }
-  .wb-grid-5,
-  .wb-grid-4,
-  .wb-grid-3 {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .wb-footer-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .wb-btn, .wb-input, .wb-select {
-    min-height: 44px;
-  }
-}
-
-/* 5. Điện thoại Android & iPhone (Mobile <= 767px) */
-@media (max-width: 767px) {
-  .wb-container {
-    padding: 0 14px;
   }
   .wb-mobile-menu-toggle {
     display: inline-flex;
@@ -129,6 +87,7 @@
   .wb-nav {
     display: none;
     width: 100%;
+    order: 4;
     flex-direction: column;
     align-items: stretch;
     background: var(--wb-surface);
@@ -145,8 +104,59 @@
     box-shadow: none;
     margin-top: 6px;
   }
-  .wb-workspace-layout,
+  .wb-pillars-strip {
+    grid-template-columns: repeat(2, 1fr);
+    margin-top: 16px;
+  }
+  .wb-pillar-item {
+    border-right: none;
+    border-bottom: 1px solid #E5EFEF;
+    padding-bottom: 10px;
+  }
+  .wb-user-groups-row {
+    grid-template-columns: 1fr;
+  }
+  .wb-explore-home-row {
+    grid-template-columns: 1fr;
+  }
+  .wb-explore-9-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .wb-workspace-layout {
+    grid-template-columns: 1fr;
+  }
+  .wb-sidebar {
+    position: static;
+  }
+  .wb-grid-5,
+  .wb-grid-4,
+  .wb-grid-3 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .wb-footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 3. Điện thoại di động (<= 767px) */
+@media (max-width: 767px) {
+  .wb-container {
+    padding: 0 14px;
+  }
+  .wb-header-actions {
+    width: 100%;
+    justify-content: space-between;
+    order: 3;
+    padding-top: 6px;
+  }
+  .wb-search-box {
+    flex: 1;
+  }
+  .wb-search-box input {
+    width: 100%;
+  }
   .wb-hero-grid,
+  .wb-pillars-strip,
   .wb-grid-5,
   .wb-grid-4,
   .wb-grid-3,
@@ -154,37 +164,24 @@
   .wb-footer-grid {
     grid-template-columns: 1fr;
   }
-  .wb-sidebar {
-    position: static;
+  .wb-explore-9-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
-  .wb-hero-title {
-    font-size: 25px;
+  .wb-hero-kicker {
+    font-size: 21px;
+  }
+  .wb-hero-brand-line {
+    font-size: 34px;
+  }
+  .wb-cta-join-banner {
+    flex-direction: column;
+    align-items: flex-start;
   }
   .wb-btn,
   .wb-input,
   .wb-select {
-    min-height: 46px;
-    font-size: 15px;
+    min-height: 44px;
   }
-  /* Chuyển bảng thành thẻ dọc dễ thao tác trên di động */
-  .wb-table-responsive-cards thead {
-    display: none;
-  }
-  .wb-table-responsive-cards tr {
-    display: block;
-    border: 1px solid var(--wb-border);
-    border-radius: var(--wb-radius-sm);
-    margin-bottom: 12px;
-    padding: 10px;
-    background: #FFFFFF;
-  }
-  .wb-table-responsive-cards td {
-    display: flex;
-    justify-content: space-between;
-    padding: 6px 4px;
-    border-bottom: 1px dashed #E5EFEF;
-  }
-  /* Đảm bảo bàn phím ảo không che khung nhập tin nhắn và phòng thi */
   .wb-chat-composer,
   .wb-exam-sticky-bar {
     position: sticky;

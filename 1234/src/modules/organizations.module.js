@@ -2,13 +2,18 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
-const { requireAuth, requirePermission, requireOrgAccess } = require('../security/rbac.middleware');
+const { ORG_ROLES } = require('../config/constants');
+const { requireAuth, requirePermission, requireOrgAccess, requireOrgManagementAccess } = require('../security/rbac.middleware');
 
 const ADMIN_UNITS_PATH = path.resolve(process.cwd(), 'database/seeds/02_vn_admin_units.json');
 const ADMIN_UNITS_DATA = JSON.parse(fs.readFileSync(ADMIN_UNITS_PATH, 'utf8'));
 
 /**
- * TỔ CHỨC, CLB, ĐỘI, NHÓM & HỆ THỐNG ĐĂNG KÝ 2 LOẠI / XÉT DUYỆT (PHẦN 14 & 15)
+ * ORGANIZATION – KHÔNG GIAN TỔ CHỨC (PHẦN XI & XXI.7)
+ * 1. Khám phá tổ chức (/cong-dong/to-chuc): Tìm kiếm, lọc theo loại hình & lĩnh vực, xem hồ sơ công khai, xem nhóm công khai, gửi yêu cầu tham gia. Không lộ dữ liệu nội bộ.
+ * 2. Tổ chức & Cộng đồng của tôi (/khong-gian-cua-toi): Chặn ngay khi chưa đăng nhập; hướng dẫn tham gia nếu chưa là thành viên; chỉ hiển thị tổ chức mà tài khoản có tư cách thành viên và trong phạm vi phân quyền.
+ * 3. Không gian Quản lý Tổ chức (/to-chuc): Chỉ dành cho người có quyền quản lý phù hợp (Chủ sở hữu, Người quản lý, Ban điều hành, Điều phối viên, Người phụ trách nhóm). Chặn thành viên thông thường ở cả Frontend và Backend.
+ * 4. Tách biệt 6 vai trò tổ chức: owner/head (Chủ sở hữu tổ chức), manager (Người quản lý), executive (Ban điều hành), coordinator (Điều phối viên), group_leader (Người phụ trách nhóm), member (Thành viên).
  */
 class OrganizationsModule {
   constructor(db, authService, emailAdapter) {
@@ -22,6 +27,7 @@ class OrganizationsModule {
       total_provinces: ADMIN_UNITS_DATA.total_provinces,
       provinces: ADMIN_UNITS_DATA.provinces,
       approved_activity_fields: ADMIN_UNITS_DATA.approved_activity_fields,
+      org_roles: ORG_ROLES,
       allowed_social_platforms: ['Facebook', 'Instagram', 'TikTok', 'YouTube', 'LinkedIn', 'Khác'],
       signature_methods: [
         { code: 'digital_cert', name: 'Chữ ký số hợp lệ (Giá trị pháp lý theo chứng thư số)' },
@@ -29,6 +35,69 @@ class OrganizationsModule {
         { code: 'direct_draw', name: 'Ký trực tiếp bằng chuột, bút cảm ứng hoặc ngón tay' }
       ]
     };
+  }
+
+  /**
+   * PHẦN XI.1: Khám phá tổ chức công khai (Tuyệt đối không lộ dữ liệu nội bộ)
+   */
+  explorePublicOrganizations({ q = '', unit_category = '', field_of_activity = '' } = {}) {
+    const clauses = ["status = 'active'"];
+    const params = [];
+    if (q) {
+      clauses.push('(name LIKE ? OR short_name LIKE ? OR introduction LIKE ?)');
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`);
+    }
+    if (unit_category) {
+      clauses.push('unit_category = ?');
+      params.push(unit_category);
+    }
+    if (field_of_activity) {
+      clauses.push('field_of_activity = ?');
+      params.push(field_of_activity);
+    }
+
+    const orgs = this.db.query(
+      `SELECT id, code, unit_category, name, short_name, logo_url, field_of_activity,
+              founded_date, website, introduction, mission, vision, main_activities,
+              operation_scope, province_name, status, created_at
+       FROM organizations
+       WHERE ${clauses.join(' AND ')}
+       ORDER BY created_at DESC`,
+      params
+    );
+
+    return orgs.map(o => {
+      const publicGroups = this.db.query(
+        `SELECT id, group_category, name, language_code, description, member_count
+         FROM community_groups WHERE org_id = ? AND privacy = 'public'`,
+        [o.id]
+      );
+      return {
+        ...o,
+        public_groups: publicGroups
+      };
+    });
+  }
+
+  requestJoinOrganization(user, { org_id, message = '' }) {
+    requireAuth(user);
+    const org = this.db.get(`SELECT id, name, status FROM organizations WHERE id = ? AND status = 'active'`, [org_id]);
+    if (!org) throw new Error('Không tìm thấy tổ chức đang hoạt động.');
+    const existingMember = this.db.get(
+      `SELECT * FROM org_members WHERE org_id = ? AND user_id = ? AND status = 'active'`,
+      [org_id, user.id]
+    );
+    if (existingMember) {
+      throw new Error('Bạn đã là thành viên chính thức của tổ chức này.');
+    }
+    const id = 'ojr_' + crypto.randomBytes(8).toString('hex');
+    const nowIso = new Date().toISOString();
+    this.db.run(
+      `INSERT OR REPLACE INTO org_join_requests (id, org_id, user_id, message, status, reviewed_by, reviewed_at, created_at)
+       VALUES (?, ?, ?, ?, 'pending', NULL, NULL, ?)`,
+      [id, org_id, user.id, String(message || 'Xin đăng ký tham gia sinh hoạt ngoại ngữ tại đơn vị.').trim(), nowIso]
+    );
+    return this.db.get(`SELECT * FROM org_join_requests WHERE id = ?`, [id]);
   }
 
   lookupLegalEntityByCode(queryCode) {
@@ -74,7 +143,7 @@ class OrganizationsModule {
   submitOrganizationApplication(user, body) {
     requireAuth(user);
     const {
-      form_type, // 1 (Chưa có tư cách pháp nhân độc lập) | 2 (Có tư cách pháp nhân độc lập)
+      form_type,
       section_i,
       section_ii,
       section_iii
@@ -90,7 +159,6 @@ class OrganizationsModule {
       throw new Error('Biểu mẫu địa chỉ hành chính Việt Nam không sử dụng trường Quốc gia.');
     }
 
-    // Kiểm tra thông tin tổ chức (Mục I)
     if (!section_i.name || !section_i.short_name) {
       throw new Error('Mục I: Vui lòng nhập Tên đơn vị và Tên viết tắt.');
     }
@@ -101,7 +169,6 @@ class OrganizationsModule {
       throw new Error('Mục I: Lĩnh vực hoạt động phải nằm trong 05 lựa chọn đã duyệt hoặc Khác.');
     }
 
-    // Kiểm tra nhóm Mạng xã hội gộp duy nhất (ít nhất 1 đường dẫn hợp lệ)
     const socialLinks = Array.isArray(section_i.social_links) ? section_i.social_links : [];
     const validSocials = socialLinks.filter(
       s => s && ['Facebook', 'Instagram', 'TikTok', 'YouTube', 'LinkedIn', 'Khác'].includes(s.platform) && /^https?:\/\/.+/i.test(String(s.url || ''))
@@ -110,7 +177,6 @@ class OrganizationsModule {
       throw new Error('Mục I (Mạng xã hội): Bắt buộc có ít nhất 01 đường dẫn mạng xã hội hợp lệ trong nhóm Mạng xã hội.');
     }
 
-    // Kiểm tra địa chỉ hành chính 34 tỉnh/thành cho Tổ chức
     const orgAddr = this.validateAdministrativeAddress(
       section_i.province_code,
       section_i.commune_name,
@@ -118,7 +184,6 @@ class OrganizationsModule {
       'Mục I (Địa chỉ tổ chức)'
     );
 
-    // Kiểm tra riêng theo Loại 1 & Loại 2
     if (Number(form_type) === 1) {
       if (section_i.has_legal_sponsor) {
         const sp = section_i.legal_sponsor || {};
@@ -130,13 +195,11 @@ class OrganizationsModule {
         }
       }
     } else {
-      // Loại 2: Có tư cách pháp nhân độc lập
       if (!section_i.legal_code) {
         throw new Error('Mục I (Loại 2): Vui lòng nhập Mã số doanh nghiệp / Mã số tổ chức / Mã số pháp lý.');
       }
     }
 
-    // Kiểm tra Mục II: Người đại diện
     if (!section_ii.full_name || !section_ii.birth_date || !section_ii.title || !section_ii.email || !section_ii.phone) {
       throw new Error('Mục II (Người đại diện): Vui lòng nhập đầy đủ Họ tên, Ngày sinh, Chức vụ, Email và Số điện thoại.');
     }
@@ -147,10 +210,9 @@ class OrganizationsModule {
       'Mục II (Địa chỉ người đại diện)'
     );
 
-    // Kiểm tra Mục III: Xem lại & Chữ ký xác nhận
     const sigMethod = section_iii.signature_method;
     if (!['digital_cert', 'upload_image', 'direct_draw'].includes(sigMethod)) {
-      throw new Error('Mục III: Phương thức chữ ký không hợp lệ (Chỉ hỗ trợ: digital_cert, upload_image, direct_draw).');
+      throw new Error('Mục III: Phương thức chữ ký không hợp lệ.');
     }
     if (!section_iii.signature_data || String(section_iii.signature_data).trim().length < 5) {
       throw new Error('Mục III: Vui lòng thực hiện ký xác nhận trước khi nộp hồ sơ.');
@@ -201,7 +263,6 @@ class OrganizationsModule {
       ]
     );
 
-    // Gửi email xác nhận tiếp nhận hồ sơ từ noreply@wordbridge.io.vn
     this.emailAdapter.enqueueEmail({
       templateSlug: 'system-announcement.html',
       toEmail: section_ii.email,
@@ -243,7 +304,6 @@ class OrganizationsModule {
     const nowIso = now.toISOString();
     let approvedOrgId = app.approved_org_id;
 
-    // Chỉ sau khi phê duyệt mới cấp không gian tổ chức chính thức (PHẦN 15.5)
     if ((new_status === 'Đã phê duyệt' || new_status === 'Đã kích hoạt') && !approvedOrgId) {
       approvedOrgId = 'org_' + crypto.randomBytes(8).toString('hex');
       const orgCode = 'ORG-' + crypto.randomInt(1000, 9999);
@@ -257,7 +317,7 @@ class OrganizationsModule {
           address_detail, legal_code, legal_lookup_json, has_legal_sponsor, legal_sponsor_json,
           founder_name, head_name, representative_json, owner_user_id, plan_code, max_members,
           status, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'org_plus_monthly', 10, 'active', ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'org_trial', 10, 'active', ?, ?)`,
         [
           approvedOrgId,
           orgCode,
@@ -297,7 +357,7 @@ class OrganizationsModule {
         ]
       );
 
-      // Cấp quyền Người đứng đầu đơn vị (không cấp quyền quản trị nền tảng)
+      // Cấp quyền Chủ sở hữu tổ chức (head / owner) trong phạm vi đơn vị, tuyệt đối không tự động thành Admin toàn nền tảng
       const memId = 'omem_' + crypto.randomBytes(8).toString('hex');
       this.db.run(
         `INSERT OR REPLACE INTO org_members (id, org_id, user_id, org_role, title, permissions_json, status, joined_at)
@@ -306,17 +366,17 @@ class OrganizationsModule {
           memId,
           approvedOrgId,
           app.applicant_user_id,
-          secII.title || 'Trưởng đơn vị',
+          secII.title || 'Chủ sở hữu tổ chức',
           JSON.stringify(['org.manage', 'org.members.create', 'org.activities.manage', 'org.resources.manage']),
           nowIso
         ]
       );
 
-      // Kích hoạt dùng thử Organization Plus 14 ngày (tối đa 10 thành viên - PHẦN 16.3)
+      // Kích hoạt dùng thử Tổ chức 14 ngày, tối đa 10 thành viên (PHẦN XV.2)
       const trialEnd = new Date(now.getTime() + 14 * 24 * 3600 * 1000).toISOString();
       this.db.run(
         `INSERT INTO subscriptions (id, user_id, org_id, plan_code, status, auto_renew, started_at, expires_at, history_json, created_at)
-         VALUES (?, ?, ?, 'org_plus_monthly', 'trial', 0, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, 'org_trial', 'trial', 0, ?, ?, ?, ?)`,
         [
           'sub_' + crypto.randomBytes(8).toString('hex'),
           app.applicant_user_id,
@@ -350,11 +410,16 @@ class OrganizationsModule {
   }
 
   /**
-   * PHẦN 14.3: Tài khoản chính tổ chức tạo tài khoản thành viên và cấp quyền trong phạm vi đơn vị.
-   * Tuyệt đối không trao quyền quản trị nền tảng cho thành viên tổ chức.
+   * PHẦN XI.3 & XI.4: Tạo/Mời thành viên và phân quyền theo 06 vai trò tổ chức
+   * - Chủ sở hữu tổ chức (owner / head)
+   * - Người quản lý (manager)
+   * - Ban điều hành (executive)
+   * - Điều phối viên (coordinator)
+   * - Người phụ trách nhóm (group_leader)
+   * - Thành viên (member)
    */
   createOrganizationMemberAccount(actorUser, { org_id, full_name, email, phone, password, org_role = 'member', title = 'Thành viên' }) {
-    requireOrgAccess(this.db, actorUser, org_id, ['head', 'executive']);
+    requireOrgAccess(this.db, actorUser, org_id, ['owner', 'head', 'manager', 'executive']);
     const org = this.db.get(`SELECT * FROM organizations WHERE id = ?`, [org_id]);
     if (!org) throw new Error('Không tìm thấy tổ chức.');
 
@@ -363,7 +428,7 @@ class OrganizationsModule {
       [org_id]
     ).cnt;
     if (currentMemberCount >= org.max_members) {
-      throw new Error(`Tổ chức đã đạt giới hạn tối đa ${org.max_members} thành viên của gói hiện tại. Hệ thống không tự thu thêm phí lẻ khi chưa có thỏa thuận nâng gói.`);
+      throw new Error(`Tổ chức đã đạt giới hạn tối đa ${org.max_members} thành viên của gói hiện tại.`);
     }
 
     const pwdCheck = this.authService.validatePasswordPolicy(password, password);
@@ -379,7 +444,7 @@ class OrganizationsModule {
       const { salt, hash } = this.authService.hashPassword(password);
       const newUserId = 'usr_' + crypto.randomBytes(8).toString('hex');
       const uname = cleanEmail.split('@')[0].replace(/[^a-z0-9_]/gi, '').toLowerCase() + '_' + crypto.randomBytes(2).toString('hex');
-      // Role trên nền tảng luôn là 'user', tuyệt đối không cấp 'super_admin' hay admin nền tảng
+      // Role trên toàn nền tảng luôn là 'user', tuyệt đối không tự động trở thành quyền quản trị toàn nền tảng!
       this.db.run(
         `INSERT INTO users (
           id, full_name, username, email, phone, phone_verified, email_verified,
@@ -390,7 +455,9 @@ class OrganizationsModule {
       memberUser = this.db.get(`SELECT * FROM users WHERE id = ?`, [newUserId]);
     }
 
-    const safeOrgRole = ['executive', 'coordinator', 'member'].includes(org_role) ? org_role : 'member';
+    const allowedRoles = ['owner', 'head', 'manager', 'executive', 'coordinator', 'group_leader', 'member'];
+    const safeOrgRole = allowedRoles.includes(org_role) ? org_role : 'member';
+    const roleLabel = ORG_ROLES[safeOrgRole]?.name || title || 'Thành viên';
     const memId = 'omem_' + crypto.randomBytes(8).toString('hex');
     this.db.run(
       `INSERT OR REPLACE INTO org_members (id, org_id, user_id, org_role, title, permissions_json, status, joined_at)
@@ -400,8 +467,21 @@ class OrganizationsModule {
         org_id,
         memberUser.id,
         safeOrgRole,
-        String(title).trim(),
-        JSON.stringify(['view_org', 'join_activities']),
+        String(title || roleLabel).trim(),
+        JSON.stringify(ORG_ROLES[safeOrgRole]?.canManageOrg ? ['org.manage', 'view_org', 'join_activities'] : ['view_org', 'join_activities']),
+        nowIso
+      ]
+    );
+
+    this.db.run(
+      `INSERT INTO audit_logs (id, actor_id, actor_role, action, target_type, target_id, ip_address, metadata_json, created_at)
+       VALUES (?, ?, ?, 'org_member_added', 'organization', ?, '127.0.0.1', ?, ?)`,
+      [
+        'aud_' + crypto.randomBytes(8).toString('hex'),
+        actorUser.id,
+        actorUser.role,
+        org_id,
+        JSON.stringify({ member_user_id: memberUser.id, org_role: safeOrgRole, role_name_vi: roleLabel }),
         nowIso
       ]
     );
@@ -411,21 +491,101 @@ class OrganizationsModule {
       member_user_id: memberUser.id,
       email: memberUser.email,
       org_role: safeOrgRole,
+      org_role_name_vi: roleLabel,
       platform_role: memberUser.role,
-      title
+      title: String(title || roleLabel).trim()
     };
   }
 
+  updateMemberOrgRole(actorUser, { org_id, member_user_id, new_org_role, title = '' }) {
+    requireOrgAccess(this.db, actorUser, org_id, ['owner', 'head', 'manager']);
+    const allowedRoles = ['owner', 'head', 'manager', 'executive', 'coordinator', 'group_leader', 'member'];
+    if (!allowedRoles.includes(new_org_role)) {
+      throw new Error('Vai trò phân quyền trong tổ chức không hợp lệ.');
+    }
+    const member = this.db.get(
+      `SELECT * FROM org_members WHERE org_id = ? AND user_id = ? AND status = 'active'`,
+      [org_id, member_user_id]
+    );
+    if (!member) throw new Error('Không tìm thấy thành viên trong tổ chức.');
 
-  /**
-   * PHỤ LỤC A (MỤC A7): Khi thành viên rời tổ chức:
-   * - Không tự động xóa dữ liệu tổ chức do thành viên đó đã tải lên.
-   * - Không chuyển quyền sở hữu dữ liệu tổ chức cho tài khoản cá nhân một cách tùy tiện.
-   * - Duy trì dữ liệu theo quyền và chính sách lưu trữ của tổ chức.
-   * - Ghi nhật ký thay đổi thành viên (audit_logs).
-   */
+    const roleLabel = ORG_ROLES[new_org_role]?.name || title || member.title;
+    const nowIso = new Date().toISOString();
+    this.db.run(
+      `UPDATE org_members SET org_role = ?, title = ? WHERE id = ?`,
+      [new_org_role, String(title || roleLabel).trim(), member.id]
+    );
+    this.db.run(
+      `INSERT INTO audit_logs (id, actor_id, actor_role, action, target_type, target_id, ip_address, metadata_json, created_at)
+       VALUES (?, ?, ?, 'org_member_role_changed', 'organization', ?, '127.0.0.1', ?, ?)`,
+      [
+        'aud_' + crypto.randomBytes(8).toString('hex'),
+        actorUser.id,
+        actorUser.role,
+        org_id,
+        JSON.stringify({ member_user_id, previous_role: member.org_role, new_org_role }),
+        nowIso
+      ]
+    );
+    return this.db.get(`SELECT * FROM org_members WHERE id = ?`, [member.id]);
+  }
+
+  reviewJoinRequest(actorUser, { org_id, request_id, decision = 'approved' }) {
+    requireOrgAccess(this.db, actorUser, org_id, ['owner', 'head', 'manager', 'executive']);
+    const reqRow = this.db.get(`SELECT * FROM org_join_requests WHERE id = ? AND org_id = ?`, [request_id, org_id]);
+    if (!reqRow) throw new Error('Không tìm thấy yêu cầu tham gia tổ chức.');
+    const nowIso = new Date().toISOString();
+
+    const finalStatus = decision === 'approved' ? 'approved' : 'rejected';
+    this.db.run(
+      `UPDATE org_join_requests SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?`,
+      [finalStatus, actorUser.id, nowIso, request_id]
+    );
+
+    if (finalStatus === 'approved') {
+      const org = this.db.get(`SELECT * FROM organizations WHERE id = ?`, [org_id]);
+      const cnt = this.db.get(`SELECT COUNT(*) AS cnt FROM org_members WHERE org_id = ? AND status = 'active'`, [org_id]).cnt;
+      if (cnt >= org.max_members) {
+        throw new Error(`Tổ chức đã đạt giới hạn ${org.max_members} thành viên.`);
+      }
+      this.db.run(
+        `INSERT OR REPLACE INTO org_members (id, org_id, user_id, org_role, title, permissions_json, status, joined_at)
+         VALUES (?, ?, ?, 'member', 'Thành viên', '["view_org","join_activities"]', 'active', ?)`,
+        ['omem_' + crypto.randomBytes(8).toString('hex'), org_id, reqRow.user_id, nowIso]
+      );
+    }
+
+    return this.db.get(`SELECT * FROM org_join_requests WHERE id = ?`, [request_id]);
+  }
+
+  createOrgTask(actorUser, { org_id, title, description, assigned_to_user_id = null, due_date = null }) {
+    requireOrgAccess(this.db, actorUser, org_id, ['owner', 'head', 'manager', 'executive', 'coordinator', 'group_leader']);
+    if (!title || !description) throw new Error('Vui lòng nhập tiêu đề và nội dung nhiệm vụ.');
+    const id = 'otsk_' + crypto.randomBytes(8).toString('hex');
+    const nowIso = new Date().toISOString();
+    this.db.run(
+      `INSERT INTO org_tasks (id, org_id, title, description, assigned_to_user_id, assigned_by_user_id, due_date, status, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)`,
+      [id, org_id, String(title).trim(), String(description).trim(), assigned_to_user_id, actorUser.id, due_date, nowIso]
+    );
+    return this.db.get(`SELECT * FROM org_tasks WHERE id = ?`, [id]);
+  }
+
+  createOrgAnnouncement(actorUser, { org_id, title, content }) {
+    requireOrgAccess(this.db, actorUser, org_id, ['owner', 'head', 'manager', 'executive', 'coordinator']);
+    if (!title || !content) throw new Error('Vui lòng nhập tiêu đề và nội dung thông báo nội bộ.');
+    const id = 'oann_' + crypto.randomBytes(8).toString('hex');
+    const nowIso = new Date().toISOString();
+    this.db.run(
+      `INSERT INTO org_announcements (id, org_id, title, content, author_id, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [id, org_id, String(title).trim(), String(content).trim(), actorUser.id, nowIso]
+    );
+    return this.db.get(`SELECT * FROM org_announcements WHERE id = ?`, [id]);
+  }
+
   removeOrganizationMember(actorUser, { org_id, member_user_id, reason = 'Thành viên rời tổ chức' }) {
-    requireOrgAccess(this.db, actorUser, org_id, ['head', 'executive']);
+    requireOrgAccess(this.db, actorUser, org_id, ['owner', 'head', 'manager', 'executive']);
     const member = this.db.get(
       `SELECT * FROM org_members WHERE org_id = ? AND user_id = ? AND status = 'active'`,
       [org_id, member_user_id]
@@ -433,18 +593,13 @@ class OrganizationsModule {
     if (!member) {
       throw new Error('Không tìm thấy thành viên đang hoạt động trong tổ chức.');
     }
-    if (member.org_role === 'head') {
-      throw new Error('Không thể xóa trực tiếp Người đứng đầu tổ chức khi chưa bàn giao quyền đại diện.');
+    if (member.org_role === 'head' || member.org_role === 'owner') {
+      throw new Error('Không thể thu hồi trực tiếp quyền của Chủ sở hữu tổ chức khi chưa bàn giao quyền đại diện.');
     }
 
     const nowIso = new Date().toISOString();
-    this.db.run(
-      `UPDATE org_members SET status = 'left' WHERE id = ?`,
-      [member.id]
-    );
+    this.db.run(`UPDATE org_members SET status = 'left' WHERE id = ?`, [member.id]);
 
-    // Đảm bảo toàn bộ tệp do thành viên này từng tải lên trong không gian tổ chức
-    // vẫn thuộc quyền sở hữu của tổ chức (owner_type = 'organization', owner_org_id = org_id) và không bị xóa!
     const preservedFilesCount = this.db.get(
       `SELECT COUNT(*) AS cnt FROM storage_files WHERE owner_org_id = ? AND uploaded_by_user_id = ? AND status = 'active'`,
       [org_id, member_user_id]
@@ -479,15 +634,40 @@ class OrganizationsModule {
     };
   }
 
+  /**
+   * PHẦN XI.2 & XXI.7: Không gian Tổ chức & Cộng đồng của tôi (/khong-gian-cua-toi)
+   * - Chưa đăng nhập: báo lỗi 401
+   * - Đã đăng nhập nhưng chưa là thành viên: trả về has_organization_membership = false kèm hướng dẫn đăng ký/tham gia
+   * - Đã tham gia: chỉ hiển thị các tổ chức mà tài khoản là thành viên đang hoạt động
+   */
   getMySpaceOverview(user) {
     requireAuth(user);
     const orgMemberships = this.db.query(
-      `SELECT m.*, o.name AS org_name, o.short_name, o.unit_category, o.code AS org_code
+      `SELECT m.*, o.name AS org_name, o.short_name, o.unit_category, o.code AS org_code, o.plan_code, o.max_members
        FROM org_members m
        JOIN organizations o ON m.org_id = o.id
-       WHERE m.user_id = ?`,
+       WHERE m.user_id = ? AND m.status = 'active'`,
       [user.id]
-    );
+    ).map(m => ({
+      ...m,
+      org_role_name_vi: ORG_ROLES[m.org_role]?.name || m.title || 'Thành viên',
+      can_manage_org: Boolean(ORG_ROLES[m.org_role]?.canManageOrg)
+    }));
+
+    const orgIds = orgMemberships.map(m => m.org_id);
+    let internalTasks = [];
+    let internalAnnouncements = [];
+    let internalResources = [];
+    let internalActivities = [];
+
+    if (orgIds.length > 0) {
+      const placeholders = orgIds.map(() => '?').join(',');
+      internalTasks = this.db.query(`SELECT * FROM org_tasks WHERE org_id IN (${placeholders}) ORDER BY created_at DESC`, orgIds);
+      internalAnnouncements = this.db.query(`SELECT * FROM org_announcements WHERE org_id IN (${placeholders}) ORDER BY created_at DESC`, orgIds);
+      internalResources = this.db.query(`SELECT * FROM resources WHERE owner_org_id IN (${placeholders}) ORDER BY created_at DESC`, orgIds);
+      internalActivities = this.db.query(`SELECT * FROM group_activities WHERE org_id IN (${placeholders}) ORDER BY created_at DESC`, orgIds);
+    }
+
     const groupMemberships = this.db.query(
       `SELECT gm.*, g.name AS group_name, g.group_category, g.language_code
        FROM group_members gm
@@ -500,10 +680,95 @@ class OrganizationsModule {
        FROM org_applications WHERE applicant_user_id = ? ORDER BY created_at DESC`,
       [user.id]
     );
+
     return {
+      has_organization_membership: orgMemberships.length > 0,
+      has_management_permission: orgMemberships.some(m => m.can_manage_org),
       organizations: orgMemberships,
       groups: groupMemberships,
-      applications: myApplications
+      applications: myApplications,
+      internal_tasks: internalTasks,
+      internal_announcements: internalAnnouncements,
+      internal_resources: internalResources,
+      internal_activities: internalActivities
+    };
+  }
+
+  /**
+   * PHẦN XI.3 & XXI.7: Không gian Quản lý Tổ chức (/to-chuc)
+   * Chặn hoàn toàn người chưa đăng nhập hoặc thành viên thông thường ('member') không có quyền quản lý!
+   */
+  getOrganizationManagementDashboard(user, orgId = null, progressMod = null) {
+    const mgrMembership = requireOrgManagementAccess(this.db, user, orgId);
+    const targetOrgId = orgId || mgrMembership.org_id;
+    const org = this.db.get(`SELECT * FROM organizations WHERE id = ?`, [targetOrgId]);
+    if (!org) {
+      const err = new Error('Không tìm thấy tổ chức cần quản lý.');
+      err.statusCode = 404;
+      throw err;
+    }
+
+    // Kiểm tra lại quyền trên đúng targetOrgId để chống truy cập chéo tổ chức A sang tổ chức B!
+    requireOrgAccess(this.db, user, targetOrgId, ['owner', 'head', 'manager', 'executive', 'coordinator', 'group_leader']);
+
+    const members = this.db.query(
+      `SELECT m.*, u.full_name, u.username, u.email, u.proficiency_level
+       FROM org_members m
+       JOIN users u ON m.user_id = u.id
+       WHERE m.org_id = ? AND m.status = 'active'
+       ORDER BY m.joined_at ASC`,
+      [targetOrgId]
+    ).map(m => ({
+      ...m,
+      org_role_name_vi: ORG_ROLES[m.org_role]?.name || m.title || 'Thành viên'
+    }));
+
+    const joinRequests = this.db.query(
+      `SELECT jr.*, u.full_name, u.username, u.email, u.proficiency_level
+       FROM org_join_requests jr
+       JOIN users u ON jr.user_id = u.id
+       WHERE jr.org_id = ? AND jr.status = 'pending'`,
+      [targetOrgId]
+    );
+
+    const subGroups = this.db.query(`SELECT * FROM community_groups WHERE org_id = ?`, [targetOrgId]);
+    const tasks = this.db.query(`SELECT * FROM org_tasks WHERE org_id = ? ORDER BY created_at DESC`, [targetOrgId]);
+    const announcements = this.db.query(`SELECT * FROM org_announcements WHERE org_id = ? ORDER BY created_at DESC`, [targetOrgId]);
+    const resources = this.db.query(`SELECT * FROM resources WHERE owner_org_id = ? ORDER BY created_at DESC`, [targetOrgId]);
+    const changeHistory = this.db.query(
+      `SELECT * FROM audit_logs WHERE target_type = 'organization' AND target_id = ? ORDER BY created_at DESC LIMIT 30`,
+      [targetOrgId]
+    );
+
+    const memberIds = members.map(m => m.user_id);
+    let totalMemberPracticeAttempts = 0;
+    if (memberIds.length > 0) {
+      const ph = memberIds.map(() => '?').join(',');
+      totalMemberPracticeAttempts = this.db.get(
+        `SELECT COUNT(*) AS cnt FROM practice_attempts WHERE user_id IN (${ph})`,
+        memberIds
+      ).cnt;
+    }
+
+    const storageQuota = progressMod ? progressMod.ensureQuotaRecord('organization', targetOrgId, org.plan_code) : null;
+
+    return {
+      organization: org,
+      viewer_role: mgrMembership.org_role,
+      viewer_role_name_vi: ORG_ROLES[mgrMembership.org_role]?.name || 'Người quản lý',
+      members,
+      join_requests: joinRequests,
+      sub_groups: subGroups,
+      tasks,
+      announcements,
+      resources,
+      practice_report: {
+        active_members_count: members.length,
+        max_members_limit: org.max_members,
+        total_member_practice_attempts: totalMemberPracticeAttempts
+      },
+      storage_quota: storageQuota,
+      change_history: changeHistory
     };
   }
 }

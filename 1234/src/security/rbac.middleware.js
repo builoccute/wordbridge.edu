@@ -1,4 +1,5 @@
-import { RBAC_ROLES, ORG_ROLES } from '../config/constants.js';
+'use strict';
+const { RBAC_ROLES, ORG_ROLES } = require('../config/constants');
 
 function hasPermission(user, requiredPermission) {
   if (!user || !user.role) return false;
@@ -80,5 +81,11 @@ function requireOrgManagementAccess(db, user, orgId = null) {
   return anyManagedOrg;
 }
 
-export { hasPermission, isPlatformAdminRole, requireAuth, requirePermission, requireOrgAccess, requireOrgManagementAccess };
-export default { hasPermission, isPlatformAdminRole, requireAuth, requirePermission, requireOrgAccess, requireOrgManagementAccess };
+module.exports = {
+  hasPermission,
+  isPlatformAdminRole,
+  requireAuth,
+  requirePermission,
+  requireOrgAccess,
+  requireOrgManagementAccess
+};

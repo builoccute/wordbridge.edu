@@ -140,11 +140,15 @@
             <div class="wb-card" style="margin-bottom:20px;">
               <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
                 <div>
-                  <span class="wb-badge wb-badge-teal">QUẢN TRỊ HỆ THỐNG WORD BRIDGE • VAI TRÒ: ${(WB.state.user.role_name_vi || 'Quản trị viên').toUpperCase()}</span>
+                  <div class="wb-dash-header-banner" style="margin-bottom:14px;">
+                  <div>
+                    <span class="wb-badge wb-badge-teal">QUẢN TRỊ HỆ THỐNG WORD BRIDGE • VAI TRÒ: ${(WB.state.user.role_name_vi || 'Quản trị viên').toUpperCase()}</span>
                   <h1 style="margin:6px 0 0 0;color:var(--wb-deep-teal);">Tổng quan Vận hành Toàn Nền tảng</h1>
                 </div>
                 <div style="display:flex;gap:8px;">
-                  <button type="button" class="wb-btn wb-btn-outline" id="wbTriggerBackupBtn">Sao lưu &amp; Kiểm tra Phục hồi</button>
+                  <div style="margin-top:10px;"><button type="button" class="wb-btn wb-btn-outline" id="wbTriggerBackupBtn">Sao lưu &amp; Kiểm tra Phục hồi</button></div>
+                  </div>
+                  <img src="/assets/banners/header-analytics-chart.webp" alt="Báo cáo và Thống kê WORD BRIDGE" class="wb-dash-header-art" />
                 </div>
               </div>
               <div class="wb-grid-4" style="margin-top:16px;">

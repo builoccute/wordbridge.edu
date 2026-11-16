@@ -34,7 +34,14 @@
     root.innerHTML = `
       <div class="wb-container wb-section">
         <div class="wb-card" style="margin-bottom:20px;">
-          <span class="wb-badge wb-badge-teal">GÓI THÀNH VIÊN, CHƯƠNG TRÌNH HỖ TRỢ &amp; THANH TOÁN ĐỐI SOÁT</span>
+          <div class="wb-dash-header-banner" style="margin-bottom:14px;">
+            <div>
+              <span class="wb-badge wb-badge-teal">GÓI THÀNH VIÊN, CHƯƠNG TRÌNH HỖ TRỢ &amp; THANH TOÁN ĐỐI SOÁT</span>
+              <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Gói Dịch vụ Cá nhân, Tổ chức &amp; Chính sách Hỗ trợ</h2>
+              <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Chọn gói dịch vụ phù hợp để mở rộng dung lượng lưu trữ và tính năng quản lý chuyên sâu.</p>
+            </div>
+            <img src="/assets/banners/header-pricing-crown.webp" alt="Gói dịch vụ WORD BRIDGE" class="wb-dash-header-art" />
+          </div>
           <h1 style="margin:8px 0 4px 0;color:var(--wb-deep-teal);">
             ${pathname.startsWith('/thanh-toan') ? 'Thanh toán Chuyển khoản Thủ công &amp; Đối soát QR' : pathname === '/hoa-don' ? 'Tra cứu Hóa đơn Dịch vụ' : 'Bảng giá Gói Thành viên &amp; Chính sách Hỗ trợ'}
           </h1>
@@ -240,7 +247,14 @@
     root.innerHTML = `
       <div class="wb-container wb-section">
         <div class="wb-card" style="margin-bottom:20px;">
-          <span class="wb-badge wb-badge-red">HỆ THỐNG KHẢO THÍ ĐỘC LẬP</span>
+          <div class="wb-visual-banner-card" style="margin-bottom:14px;">
+                <div>
+                  <span class="wb-badge wb-badge-red">HỆ THỐNG KHẢO THÍ ĐỘC LẬP</span>
+                  <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Đánh giá Năng lực Ngoại ngữ Trực tuyến Công bằng &amp; Minh bạch</h2>
+                  <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Kiểm tra thiết bị, đồng hồ đếm ngược, tự động lưu bài làm, chống nộp trùng và phúc khảo kết quả.</p>
+                </div>
+                <img src="/assets/banners/banner-globe-books.webp" alt="Hệ thống Khảo Thí WORD BRIDGE" class="wb-visual-banner-art" />
+              </div>
           <h1 style="margin:8px 0 4px 0;color:var(--wb-deep-teal);">Hệ thống Khảo Thí &amp; Đánh giá Năng lực Ngoại ngữ</h1>
           <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0;">
             Kết quả khảo thí chính thức được tách biệt hoàn toàn với điểm thực hành tại Trung tâm học tập. Hệ thống bảo mật đề thi trên máy chủ, trộn câu hỏi và đáp án, tự động lưu bài làm, chống nộp trùng và hỗ trợ phúc khảo minh bạch.

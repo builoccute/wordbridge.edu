@@ -1,5 +1,6 @@
-import { crypto } from '../config/runtime.js';
-import { CSRF_SECRET } from '../config/env.js';
+'use strict';
+const crypto = require('crypto');
+const { CSRF_SECRET } = require('../config/env');
 
 /**
  * HỆ THỐNG PHÒNG THỦ NHIỀU LỚP & CHỐNG LẠM DỤNG API (PHẦN 27)
@@ -96,5 +97,10 @@ function applySecurityHeaders(res) {
   );
 }
 
-export { checkRateLimit, inspectPayloadWaf, sanitizeHtmlForCms, generateCsrfToken, applySecurityHeaders };
-export default { checkRateLimit, inspectPayloadWaf, sanitizeHtmlForCms, generateCsrfToken, applySecurityHeaders };
+module.exports = {
+  checkRateLimit,
+  inspectPayloadWaf,
+  sanitizeHtmlForCms,
+  generateCsrfToken,
+  applySecurityHeaders
+};

@@ -1,6 +1,7 @@
-import { crypto } from '../config/runtime.js';
-import { PASSWORD_POLICY, ALLOWED_OAUTH_PROVIDERS, RBAC_ROLES } from '../config/constants.js';
-import { getOAuthProvidersStatus } from '../config/env.js';
+'use strict';
+const crypto = require('crypto');
+const { PASSWORD_POLICY, ALLOWED_OAUTH_PROVIDERS, RBAC_ROLES } = require('../config/constants');
+const { getOAuthProvidersStatus } = require('../config/env');
 
 /**
  * DỊCH VỤ XÁC THỰC, TÀI KHOẢN, OAUTH 2.0 THỰC TẾ & QUẢN TRỊ VIÊN RIÊNG BIỆT (PHẦN XVIII & XXIII.1)
@@ -575,5 +576,4 @@ class AuthService {
   }
 }
 
-export { AuthService };
-export default { AuthService };
+module.exports = { AuthService };

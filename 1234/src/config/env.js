@@ -1,52 +1,49 @@
-import { path, getNodeBuiltin } from './runtime.js';
-import { EMAIL_ADDRESSES, TB_BYTES, GB_BYTES, PLAN_DEFAULT_QUOTAS } from './constants.js';
-
-const procEnv = (typeof process !== 'undefined' && process.env) ? process.env : {};
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const { EMAIL_ADDRESSES, TB_BYTES, GB_BYTES, PLAN_DEFAULT_QUOTAS } = require('./constants');
 
 function loadDotEnv() {
-  const fs = getNodeBuiltin('fs');
-  if (!fs) return;
-  try {
-    const envPath = path.resolve(typeof process !== 'undefined' && process.cwd ? process.cwd() : '/', '.env');
-    if (!fs.existsSync(envPath)) return;
-    const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed || trimmed.startsWith('#')) continue;
-      const idx = trimmed.indexOf('=');
-      if (idx === -1) continue;
-      const key = trimmed.slice(0, idx).trim();
-      let val = trimmed.slice(idx + 1).trim();
-      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
-        val = val.slice(1, -1);
-      }
-      if (!(key in procEnv)) {
-        procEnv[key] = val;
-      }
+  const envPath = path.resolve(process.cwd(), '.env');
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const idx = trimmed.indexOf('=');
+    if (idx === -1) continue;
+    const key = trimmed.slice(0, idx).trim();
+    let val = trimmed.slice(idx + 1).trim();
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
     }
-  } catch (_) {}
+    if (!(key in process.env)) {
+      process.env[key] = val;
+    }
+  }
 }
 
 loadDotEnv();
 
-let serverReferenceQuotaGb = Number(procEnv.MONTHLY_QUOTA_GB || 50);
+// Tham số tham chiếu hạ tầng máy chủ (Tuyệt đối KHÔNG ghi đè hạn mức của từng gói dịch vụ - PHẦN XV.2 & XXI.5)
+let serverReferenceQuotaGb = Number(process.env.MONTHLY_QUOTA_GB || 50);
 
-export function getMonthlyQuotaGb() {
+function getMonthlyQuotaGb() {
   return serverReferenceQuotaGb;
 }
 
-export function setMonthlyQuotaGb(newGb) {
+function setMonthlyQuotaGb(newGb) {
   const val = Number(newGb);
   if (!Number.isFinite(val) || val <= 0) {
     throw new Error('Giá trị dung lượng tham chiếu phải là số dương hợp lệ.');
   }
   serverReferenceQuotaGb = val;
-  procEnv.MONTHLY_QUOTA_GB = String(val);
+  process.env.MONTHLY_QUOTA_GB = String(val);
   return serverReferenceQuotaGb;
 }
 
-export function getOAuthProvidersStatus(workerEnv = null) {
-  const envSource = workerEnv || procEnv;
+function getOAuthProvidersStatus(workerEnv = null) {
+  const envSource = workerEnv || process.env;
   return {
     google: {
       provider: 'google',
@@ -75,9 +72,9 @@ export function getOAuthProvidersStatus(workerEnv = null) {
   };
 }
 
-export function getIntegrationStatus(workerEnv = null) {
-  const envSource = workerEnv || procEnv;
-  const resendKey = envSource.RESEND_API_KEY || procEnv.RESEND_API_KEY || '';
+function getIntegrationStatus(workerEnv = null) {
+  const envSource = workerEnv || process.env;
+  const resendKey = envSource.RESEND_API_KEY || process.env.RESEND_API_KEY || '';
   const emailConfigured = Boolean(resendKey);
   const paymentConfigured = Boolean(
     envSource.PAYMENT_BANK_CODE &&
@@ -90,7 +87,7 @@ export function getIntegrationStatus(workerEnv = null) {
   return {
     infrastructure: {
       architecture: 'Cloudflare Workers + Cloudflare D1 + Cloudflare R2',
-      worker_name: 'wordbridge-edu',
+      worker_name: 'wordbridge',
       d1_binding: 'DB',
       d1_database_name: 'word',
       d1_database_id: 'ce84cc48-6d49-409b-b45a-13ba3bc4a771',
@@ -136,14 +133,19 @@ export function getIntegrationStatus(workerEnv = null) {
   };
 }
 
-const cwd = (typeof process !== 'undefined' && typeof process.cwd === 'function') ? process.cwd() : '/';
-export const PORT = Number(procEnv.PORT || 3000);
-export const NODE_ENV = procEnv.NODE_ENV || 'development';
-export const CANONICAL_ORIGIN = procEnv.CANONICAL_ORIGIN || 'https://wordbridge.io.vn';
-export const LOCAL_DB_FILE = procEnv.LOCAL_DB_FILE || procEnv.SQLITE_DB_PATH || path.resolve(cwd, 'data/wordbridge_d1_local.sqlite');
-export const STORAGE_ROOT_PATH = procEnv.STORAGE_ROOT_PATH || path.resolve(cwd, 'data/wordbridge_r2_local');
-export const STORAGE_BACKUP_PATH = procEnv.STORAGE_BACKUP_PATH || path.resolve(cwd, 'data/wordbridge_backups');
-export const STORAGE_SERVER_PROVISIONED_BYTES = Number(procEnv.STORAGE_SERVER_PROVISIONED_BYTES || (2 * TB_BYTES));
-export const SESSION_SECRET = procEnv.SESSION_SECRET || 'wb_dev_session_secret_do_not_use_in_prod_2026';
-export const CSRF_SECRET = procEnv.CSRF_SECRET || 'wb_dev_csrf_secret_do_not_use_in_prod_2026';
-export const ADMIN_BOOTSTRAP_SECRET = procEnv.ADMIN_BOOTSTRAP_SECRET || '';
+module.exports = {
+  PORT: Number(process.env.PORT || 3000),
+  NODE_ENV: process.env.NODE_ENV || 'development',
+  CANONICAL_ORIGIN: process.env.CANONICAL_ORIGIN || 'https://wordbridge.io.vn',
+  LOCAL_DB_FILE: process.env.LOCAL_DB_FILE || process.env.SQLITE_DB_PATH || path.resolve(process.cwd(), 'data/wordbridge_d1_local.sqlite'),
+  STORAGE_ROOT_PATH: process.env.STORAGE_ROOT_PATH || path.resolve(process.cwd(), 'data/wordbridge_r2_local'),
+  STORAGE_BACKUP_PATH: process.env.STORAGE_BACKUP_PATH || path.resolve(process.cwd(), 'data/wordbridge_backups'),
+  STORAGE_SERVER_PROVISIONED_BYTES: Number(process.env.STORAGE_SERVER_PROVISIONED_BYTES || (2 * TB_BYTES)),
+  SESSION_SECRET: process.env.SESSION_SECRET || 'wb_dev_session_secret_do_not_use_in_prod_2026',
+  CSRF_SECRET: process.env.CSRF_SECRET || 'wb_dev_csrf_secret_do_not_use_in_prod_2026',
+  ADMIN_BOOTSTRAP_SECRET: process.env.ADMIN_BOOTSTRAP_SECRET || '',
+  getMonthlyQuotaGb,
+  setMonthlyQuotaGb,
+  getOAuthProvidersStatus,
+  getIntegrationStatus
+};

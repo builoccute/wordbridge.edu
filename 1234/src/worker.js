@@ -7,8 +7,9 @@
  * - Bắt buộc xác thực & kiểm tra RBAC cho toàn bộ API quản trị, R2 upload và gửi email Resend.
  */
 
-import serverModule from './app.dispatcher.js';
-import { EMBEDDED_INDEX_HTML } from './config/embedded-data.js';
+const fs = typeof require === 'function' ? require('fs') : null;
+const path = typeof require === 'function' ? require('path') : null;
+const serverModule = typeof require === 'function' ? require('./server') : null;
 
 const EMBEDDED_SVGS = {
   '/assets/hero-globe-illustration.svg': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 360" width="620" height="360" role="img" aria-label="Minh họa Địa cầu và Sách ngoại ngữ WORD BRIDGE">
@@ -162,9 +163,6 @@ const workerHandler = {
     // 3. Xử lý toàn bộ hệ thống API nghiệp vụ thông qua bộ điều phối thống nhất (dispatchApiRequest)
     if (pathname.startsWith('/api/') && serverModule && typeof serverModule.dispatchApiRequest === 'function') {
       try {
-        if (env && env.DB && serverModule.services && serverModule.services.db) {
-          await serverModule.services.db.syncFromCloudflareD1(env.DB);
-        }
         const headersObj = {};
         if (request.headers && typeof request.headers.forEach === 'function') {
           request.headers.forEach((v, k) => { headersObj[k.toLowerCase()] = v; });
@@ -216,12 +214,24 @@ const workerHandler = {
       if (assetRes.status !== 404) return assetRes;
     }
 
-    return new Response(EMBEDDED_INDEX_HTML, {
+    if (fs && path) {
+      const indexHtmlPath = path.resolve(process.cwd(), 'src/frontend/index.html');
+      if (fs.existsSync(indexHtmlPath)) {
+        return new Response(fs.readFileSync(indexHtmlPath, 'utf8'), {
+          status: 200,
+          headers: { 'Content-Type': 'text/html; charset=utf-8' }
+        });
+      }
+    }
+
+    return new Response('<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/><title>WORD BRIDGE</title></head><body><div id="wbAppRoot"></div></body></html>', {
       status: 200,
       headers: { 'Content-Type': 'text/html; charset=utf-8' }
     });
   }
 };
 
-export const fetch = workerHandler.fetch;
-export default workerHandler;
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = workerHandler;
+  module.exports.default = workerHandler;
+}

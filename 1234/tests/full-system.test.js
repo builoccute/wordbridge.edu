@@ -1,7 +1,8 @@
-import { test, describe, before, after } from 'node:test';
-import assert from 'node:assert/strict';
-import fs from 'node:fs';
-import path from 'node:path';
+'use strict';
+const { test, describe, before, after } = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
 const TEST_DIR = path.resolve(process.cwd(), '.tmp_test_suite_' + process.pid);
 process.env.NODE_ENV = 'test';
@@ -13,8 +14,8 @@ process.env.SESSION_SECRET = 'test-secret-key-wordbridge-2026-2027-secure-token-
 process.env.ADMIN_BOOTSTRAP_SECRET = 'test-bootstrap-admin-secret-2026';
 process.env.MONTHLY_QUOTA_GB = '999'; // Kiểm tra đảm bảo MONTHLY_QUOTA_GB không ghi đè hạn mức mặc định từng gói
 
-const { createAppServer, services } = await import('../src/server.js');
-const workerModule = (await import('../src/worker.js')).default;
+const { createAppServer, services } = require('../src/server');
+const workerModule = require('../src/worker');
 
 describe('WORD BRIDGE 2026–2027 — Bộ Kiểm Thử Toàn Diện 10 Phân Hệ & 16 Điểm Sửa Bắt Buộc', () => {
   let server;
@@ -93,6 +94,31 @@ describe('WORD BRIDGE 2026–2027 — Bộ Kiểm Thử Toàn Diện 10 Phân H�
     // Kiểm tra /su-kien đã bị loại bỏ hoàn toàn
     const eventRes = await api('/su-kien');
     assert.equal(eventRes.status, 404);
+
+    // Kiểm tra bộ 16 hình ảnh minh họa sạch trích xuất từ ẢNH.zip (Không chứa laptop AI hay người AI)
+    const bannerAssets = [
+      'hero-globe-books.webp',
+      'promo-community-card.webp',
+      'banner-globe-books.webp',
+      'banner-community-globe.webp',
+      'lang-zh-landmark.webp',
+      'lang-en-landmark.webp',
+      'lang-ko-landmark.webp',
+      'lang-ja-landmark.webp',
+      'lang-ru-landmark.webp',
+      'header-progress-trophy.webp',
+      'header-pricing-crown.webp',
+      'header-security-shield.webp',
+      'header-org-building.webp',
+      'header-resources-books.webp',
+      'header-roadmap-flag.webp',
+      'header-analytics-chart.webp'
+    ];
+    for (const assetName of bannerAssets) {
+      const assetRes = await api('/assets/banners/' + assetName);
+      assert.equal(assetRes.status, 200, 'Phải phục vụ thành công hình ảnh ' + assetName);
+      assert.equal(assetRes.headers.get('content-type'), 'image/webp', 'MIME type của ' + assetName + ' phải là image/webp');
+    }
   });
 
   // ==========================================================================

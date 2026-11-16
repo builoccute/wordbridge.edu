@@ -1,6 +1,7 @@
-import { crypto } from '../config/runtime.js';
-import { GB_BYTES, PLAN_DEFAULT_QUOTAS } from '../config/constants.js';
-import { requireAuth, requirePermission, requireOrgAccess } from '../security/rbac.middleware.js';
+'use strict';
+const crypto = require('crypto');
+const { GB_BYTES, PLAN_DEFAULT_QUOTAS } = require('../config/constants');
+const { requireAuth, requirePermission, requireOrgAccess } = require('../security/rbac.middleware');
 
 /**
  * PAYMENT CORE, THANH TOÁN CHUYỂN KHOẢN NGÂN HÀNG THỦ CÔNG, ĐỐI SOÁT QR, HÓA ĐƠN & HOÀN TIỀN (PHẦN XV.4, 5 & XXI.14, 15)
@@ -460,5 +461,4 @@ class PaymentModule {
   }
 }
 
-export { PaymentModule };
-export default { PaymentModule };
+module.exports = { PaymentModule };

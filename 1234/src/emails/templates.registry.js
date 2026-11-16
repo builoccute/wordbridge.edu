@@ -1,3 +1,5 @@
+'use strict';
+
 /**
  * BỘ 29 MẪU EMAIL HTML ĐỘC LẬP CỦA WORD BRIDGE (PHẦN 21.7)
  * Mỗi mẫu có thiết kế, cấu trúc nội dung động, mã tham chiếu, CTA và phân luồng
@@ -417,5 +419,8 @@ function renderEmailTemplate(slug, variables = {}) {
   };
 }
 
-export { EMAIL_TEMPLATES_LIST, getTemplateBySlug, renderEmailTemplate };
-export default { EMAIL_TEMPLATES_LIST, getTemplateBySlug, renderEmailTemplate };
+module.exports = {
+  EMAIL_TEMPLATES_LIST,
+  getTemplateBySlug,
+  renderEmailTemplate
+};

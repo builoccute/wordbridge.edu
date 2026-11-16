@@ -17,7 +17,7 @@
             </p>
           </div>
           <div>
-            <img src="/assets/hero-globe-illustration.svg" alt="Khám phá 5 ngôn ngữ WORD BRIDGE" style="width:100%;max-width:440px;border-radius:14px;" />
+            <img src="/assets/banners/banner-globe-books.webp" alt="Khám phá 05 ngôn ngữ WORD BRIDGE" style="width:100%;max-width:540px;border-radius:14px;display:block;" />
           </div>
         </div>
       </section>
@@ -26,8 +26,9 @@
         <h2 class="wb-section-title">Năm ngôn ngữ được hỗ trợ (${langs.length})</h2>
         <div class="wb-grid-5">
           ${langs.map(l => `
-            <div class="wb-card" style="display:flex;flex-direction:column;justify-content:space-between;">
-              <div>
+            <div class="wb-lang-landmark-card">
+              <img src="/assets/banners/lang-${l.code}-landmark.webp" alt="Biểu tượng ${l.name_vi}" class="wb-lang-landmark-img" />
+              <div class="wb-lang-card-body"><div>
                 <span class="wb-badge wb-badge-teal">${l.code.toUpperCase()}</span>
                 <h3 style="margin:10px 0 4px 0;color:var(--wb-deep-teal);">${l.name_vi}</h3>
                 <div style="font-size:16px;font-weight:700;color:var(--wb-vermilion);margin-bottom:6px;font-family:${l.font_family};">${l.native_name}</div>
@@ -45,7 +46,7 @@
                 <button type="button" class="wb-btn wb-btn-outline wb-assess-lang-btn" data-lang="${l.code}" style="width:100%;">
                   Kiểm tra trình độ ${l.name_vi}
                 </button>
-              </div>
+              </div></div>
             </div>
           `).join('')}
         </div>
@@ -87,7 +88,14 @@
     root.innerHTML = `
       <div class="wb-container wb-section">
         <div class="wb-card" style="margin-bottom:20px;">
-          <span class="wb-badge wb-badge-teal">ĐÁNH GIÁ ĐẦU VÀO &amp; LỘ TRÌNH TỰ THỰC HÀNH (PHẦN VII)</span>
+          <div class="wb-dash-header-banner" style="margin-bottom:14px;">
+            <div>
+              <span class="wb-badge wb-badge-teal">ĐÁNH GIÁ ĐẦU VÀO &amp; LỘ TRÌNH TỰ THỰC HÀNH (PHẦN VII)</span>
+              <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Lộ trình Học tập Cá nhân hóa theo Mục tiêu &amp; Trình độ</h2>
+              <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Xây dựng kế hoạch rèn luyện từng bước từ Sơ cấp đến Cao cấp với mốc đánh giá lại định kỳ.</p>
+            </div>
+            <img src="/assets/banners/header-roadmap-flag.webp" alt="Lộ trình học tập WORD BRIDGE" class="wb-dash-header-art" />
+          </div>
           <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Kiểm tra Trình độ &amp; Xây dựng Kế hoạch Tự thực hành Cá nhân</h1>
           <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0 0 12px 0;">
             ${placementData.disclaimer}
@@ -314,7 +322,14 @@
             <div class="wb-card" style="margin-bottom:18px;">
               <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:12px;">
                 <div>
-                  <span class="wb-badge wb-badge-teal">TRUNG TÂM THỰC HÀNH NGOẠI NGỮ</span>
+                  <div class="wb-visual-banner-card" style="margin-bottom:14px;">
+                  <div>
+                    <span class="wb-badge wb-badge-teal">TRUNG TÂM THỰC HÀNH NGOẠI NGỮ</span>
+                    <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Tổng quan Học ngoại ngữ &amp; Rèn luyện Kỹ năng</h2>
+                    <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Bắt đầu hành trình thực hành Nghe – Từ vựng Flashcard – Sắp xếp câu – Đọc hiểu theo trình độ của bạn.</p>
+                  </div>
+                  <img src="/assets/banners/banner-globe-books.webp" alt="Trung tâm học tập WORD BRIDGE" class="wb-visual-banner-art" />
+                </div>
                   <h1 style="margin:6px 0 2px 0;color:var(--wb-deep-teal);">Rèn luyện Phản xạ Chủ động 05 Ngoại ngữ</h1>
                 </div>
                 <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -819,7 +834,14 @@
         <div class="wb-card" style="margin-bottom:20px;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
             <div>
-              <span class="wb-badge wb-badge-teal">DASHBOARD CÁ NHÂN &amp; PHÁT TRIỂN NĂNG LỰC (GROW)</span>
+              <div class="wb-dash-header-banner" style="margin-bottom:14px;">
+                <div>
+                  <span class="wb-badge wb-badge-teal">DASHBOARD CÁ NHÂN &amp; PHÁT TRIỂN NĂNG LỰC (GROW)</span>
+                  <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Tiến độ &amp; Kết quả Rèn luyện Thực tế</h2>
+                  <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Theo dõi quá trình thực hành, chuỗi ngày duy trì, sổ tay lỗi sai và mức độ hoàn thành mục tiêu.</p>
+                </div>
+                <img src="/assets/banners/header-progress-trophy.webp" alt="Tiến độ và Kết quả WORD BRIDGE" class="wb-dash-header-art" />
+              </div>
               <h1 style="margin:8px 0 4px 0;color:var(--wb-deep-teal);">Hồ sơ Năng lực &amp; Tiến độ Rèn luyện của ${overview.full_name || WB.state.user.full_name}</h1>
               <p style="margin:0;font-size:14px;color:var(--wb-text-muted);">
                 Ngoại ngữ đang học: <strong>${(overview.learning_languages || ['en']).join(', ').toUpperCase()}</strong> •
@@ -969,7 +991,14 @@
     root.innerHTML = `
       <div class="wb-container wb-section">
         <div class="wb-card" style="margin-bottom:20px;">
-          <span class="wb-badge wb-badge-teal">THƯ VIỆN TÀI NGUYÊN &amp; HỌC LIỆU TRA CỨU</span>
+          <div class="wb-dash-header-banner" style="margin-bottom:14px;">
+            <div>
+              <span class="wb-badge wb-badge-teal">THƯ VIỆN TÀI NGUYÊN &amp; HỌC LIỆU TRA CỨU</span>
+              <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Quản lý Học liệu, Từ vựng Chủ đề &amp; Tài liệu Thực hành</h2>
+              <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Lưu trữ, phân loại và tra cứu tài liệu học tập gắn liền với bài thực hành tương ứng.</p>
+            </div>
+            <img src="/assets/banners/header-resources-books.webp" alt="Thư viện tài nguyên WORD BRIDGE" class="wb-dash-header-art" />
+          </div>
           <h1 style="margin:8px 0;color:var(--wb-deep-teal);">Kho Tài nguyên Ngoại ngữ &amp; Học liệu Thực hành</h1>
           <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0 0 14px 0;">
             Tài liệu được phân loại theo ngôn ngữ, hiển thị rõ nguồn, tác giả, quyền sử dụng nội dung và liên kết trực tiếp với bài tập thực hành tương ứng.

@@ -1,7 +1,8 @@
-import { crypto } from '../config/runtime.js';
-import { EMAIL_ADDRESSES } from '../config/constants.js';
-import { getIntegrationStatus } from '../config/env.js';
-import { renderEmailTemplate } from '../emails/templates.registry.js';
+'use strict';
+const crypto = require('crypto');
+const { EMAIL_ADDRESSES } = require('../config/constants');
+const { getIntegrationStatus } = require('../config/env');
+const { renderEmailTemplate } = require('../emails/templates.registry');
 
 /**
  * EMAIL ADAPTER TÍCH HỢP RESEND CHÍNH THỨC (PHẦN XVII & XXI.13)
@@ -275,5 +276,4 @@ class EmailAdapter {
   }
 }
 
-export { EmailAdapter };
-export default { EmailAdapter };
+module.exports = { EmailAdapter };

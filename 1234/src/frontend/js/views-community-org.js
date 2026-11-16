@@ -285,7 +285,14 @@
           <div>
             <!-- Thanh chọn 6 cộng đồng ngôn ngữ (5 ngoại ngữ + Cộng đồng đa ngôn ngữ) -->
             <div class="wb-card" style="margin-bottom:18px;">
-              <span class="wb-badge wb-badge-teal">COMMUNITY – CỘNG ĐỒNG 05 NGOẠI NGỮ &amp; ĐA NGÔN NGỮ</span>
+              <div class="wb-visual-banner-card" style="margin-bottom:14px;">
+                <div>
+                  <span class="wb-badge wb-badge-teal">COMMUNITY – CỘNG ĐỒNG 05 NGOẠI NGỮ &amp; ĐA NGÔN NGỮ</span>
+                  <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Cộng đồng WORD BRIDGE — Kết nối Người học Toàn cầu</h2>
+                  <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Không gian chia sẻ kinh nghiệm tự thực hành, thảo luận chủ đề và đồng hành cùng Câu lạc bộ, Đội, Nhóm.</p>
+                </div>
+                <img src="/assets/banners/banner-community-globe.webp" alt="Cộng đồng WORD BRIDGE" class="wb-visual-banner-art" />
+              </div>
               <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Bảng tin Cộng đồng, Nhóm Thực hành &amp; Thử thách Ngắn hạn</h1>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
                 <button type="button" class="wb-btn ${langFilter === '' ? 'wb-btn-primary' : 'wb-btn-outline'} wb-comm-lang-btn" data-lang="">Tất cả cộng đồng</button>
@@ -561,7 +568,14 @@
         <div class="wb-card" style="margin-bottom:20px;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
             <div>
-              <span class="wb-badge wb-badge-teal">KHÁM PHÁ TỔ CHỨC &amp; CÂU LẠC BỘ</span>
+              <div class="wb-visual-banner-card" style="margin-bottom:14px;">
+                <div>
+                  <span class="wb-badge wb-badge-teal">KHÁM PHÁ TỔ CHỨC &amp; CÂU LẠC BỘ</span>
+                  <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Hệ sinh thái Câu lạc bộ, Đội, Nhóm &amp; Tổ chức Giáo dục</h2>
+                  <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Tìm hiểu cơ cấu, lĩnh vực hoạt động, chương trình đồng hành và mạng lưới tổ chức trên WORD BRIDGE.</p>
+                </div>
+                <img src="/assets/banners/banner-globe-books.webp" alt="Khám phá tổ chức WORD BRIDGE" class="wb-visual-banner-art" />
+              </div>
               <h1 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Khám phá Tổ chức, Câu lạc bộ, Đội &amp; Nhóm trên WORD BRIDGE</h1>
               <p style="margin:0;font-size:13.5px;color:var(--wb-text-muted);">
                 Tìm kiếm đơn vị theo loại hình và lĩnh vực hoạt động, xem hồ sơ giới thiệu công khai và gửi yêu cầu tham gia (Không công khai dữ liệu nội bộ của đơn vị).
@@ -827,7 +841,9 @@
         <div class="wb-card" style="margin-bottom:20px;">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
             <div>
-              <span class="wb-badge wb-badge-teal">KHÔNG GIAN QUẢN LÝ TỔ CHỨC • VAI TRÒ: ${ws.viewer_role_name_vi.toUpperCase()}</span>
+              <div class="wb-dash-header-banner" style="margin-bottom:14px;">
+                <div>
+                  <span class="wb-badge wb-badge-teal">KHÔNG GIAN QUẢN LÝ TỔ CHỨC • VAI TRÒ: ${ws.viewer_role_name_vi.toUpperCase()}</span>
               <h1 style="margin:8px 0 4px 0;color:var(--wb-deep-teal);">${org.name} (${org.short_name})</h1>
               <p style="margin:0;font-size:13.5px;color:var(--wb-text-muted);">
                 Mã đơn vị: <strong>${org.code}</strong> • Gói hiện tại: <strong>${org.plan_code}</strong> •
@@ -835,7 +851,10 @@
                 Dung lượng dùng chung: <strong>${quota.metered_used_human || '0 B'} / ${quota.effective_quota_human || '50 GB'}</strong>
               </p>
             </div>
-            <a href="/goi-dich-vu" class="wb-btn wb-btn-accent" data-nav="/goi-dich-vu">Nâng cấp Gói Tổ chức Plus</a>
+            <div style="margin-top:10px;"><a href="/goi-dich-vu" class="wb-btn wb-btn-accent" data-nav="/goi-dich-vu">Nâng cấp Gói Tổ chức Plus</a></div>
+                </div>
+                <img src="/assets/banners/header-org-building.webp" alt="Không gian Quản lý Tổ chức WORD BRIDGE" class="wb-dash-header-art" />
+              </div>
           </div>
         </div>
 
@@ -1063,7 +1082,14 @@
     root.innerHTML = `
       <div class="wb-container wb-section">
         <div class="wb-card" style="margin-bottom:20px;">
-          <span class="wb-badge wb-badge-teal">HỆ THỐNG ĐĂNG KÝ TỔ CHỨC &amp; XÉT DUYỆT</span>
+          <div class="wb-visual-banner-card" style="margin-bottom:14px;">
+            <div>
+              <span class="wb-badge wb-badge-teal">HỆ THỐNG ĐĂNG KÝ TỔ CHỨC &amp; XÉT DUYỆT</span>
+              <h2 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">Đăng ký Câu lạc bộ / Đội / Nhóm &amp; Tổ chức Pháp nhân</h2>
+              <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Xây dựng không gian hoạt động chính thức, quản lý thành viên 06 vai trò và kết nối cộng đồng ngoại ngữ.</p>
+            </div>
+            <img src="/assets/banners/hero-globe-books.webp" alt="Đăng ký tổ chức WORD BRIDGE" class="wb-visual-banner-art" />
+          </div>
           <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Đăng ký Tổ chức / Đơn vị trên WORD BRIDGE</h1>
           <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0 0 14px 0;">
             Biểu mẫu gồm <strong>03 mục chính: I. THÔNG TIN TỔ CHỨC – II. THÔNG TIN NGƯỜI ĐẠI DIỆN – III. XEM LẠI VÀ XÁC NHẬN NỘP HỒ SƠ</strong>, áp dụng dữ liệu hành chính 34 tỉnh/thành phố Việt Nam hiện hành và chữ ký xác nhận.

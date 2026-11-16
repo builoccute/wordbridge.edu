@@ -1,8 +1,9 @@
-import { crypto } from '../config/runtime.js';
-import { RBAC_ROLES } from '../config/constants.js';
-import { requireAuth, requirePermission } from '../security/rbac.middleware.js';
-import { getIntegrationStatus } from '../config/env.js';
-import { EMAIL_TEMPLATES_LIST, renderEmailTemplate } from '../emails/templates.registry.js';
+'use strict';
+const crypto = require('crypto');
+const { RBAC_ROLES } = require('../config/constants');
+const { requireAuth, requirePermission } = require('../security/rbac.middleware');
+const { getIntegrationStatus } = require('../config/env');
+const { EMAIL_TEMPLATES_LIST, renderEmailTemplate } = require('../emails/templates.registry');
 
 /**
  * TRUNG TÂM QUẢN TRỊ ĐỘC LẬP, RBAC BACKEND, D1/R2 STORAGE DASHBOARD, EMAIL RESEND & BẢO TRÌ (PHẦN XVI, XVII, XVIII)
@@ -542,5 +543,4 @@ class AdminAndOperationsModule {
   }
 }
 
-export { AdminAndOperationsModule };
-export default { AdminAndOperationsModule };
+module.exports = { AdminAndOperationsModule };

@@ -1,8 +1,12 @@
-import { crypto } from '../config/runtime.js';
-import { EMBEDDED_ADMIN_UNITS as ADMIN_UNITS_DATA } from '../config/embedded-data.js';
-import { ORG_ROLES } from '../config/constants.js';
-import { requireAuth, requirePermission, requireOrgAccess, requireOrgManagementAccess } from '../security/rbac.middleware.js';
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
+const { ORG_ROLES } = require('../config/constants');
+const { requireAuth, requirePermission, requireOrgAccess, requireOrgManagementAccess } = require('../security/rbac.middleware');
 
+const ADMIN_UNITS_PATH = path.resolve(process.cwd(), 'database/seeds/02_vn_admin_units.json');
+const ADMIN_UNITS_DATA = JSON.parse(fs.readFileSync(ADMIN_UNITS_PATH, 'utf8'));
 
 /**
  * ORGANIZATION – KHÔNG GIAN TỔ CHỨC (PHẦN XI & XXI.7)
@@ -769,5 +773,4 @@ class OrganizationsModule {
   }
 }
 
-export { OrganizationsModule };
-export default { OrganizationsModule };
+module.exports = { OrganizationsModule };

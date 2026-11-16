@@ -1,6 +1,7 @@
-import { crypto } from '../config/runtime.js';
-import { SERVICE_PLANS, ADDON_GROUPS, PLAN_DEFAULT_QUOTAS, GB_BYTES } from '../config/constants.js';
-import { requireAuth, requirePermission } from '../security/rbac.middleware.js';
+'use strict';
+const crypto = require('crypto');
+const { SERVICE_PLANS, ADDON_GROUPS, PLAN_DEFAULT_QUOTAS, GB_BYTES } = require('../config/constants');
+const { requireAuth, requirePermission } = require('../security/rbac.middleware');
 
 /**
  * DỊCH VỤ, GÓI THÀNH VIÊN, 4 CHƯƠNG TRÌNH HỖ TRỢ, KHUYẾN MÃI & LOYALTY (PHẦN 16 & 18)
@@ -243,5 +244,4 @@ class CommerceModule {
   }
 }
 
-export { CommerceModule };
-export default { CommerceModule };
+module.exports = { CommerceModule };

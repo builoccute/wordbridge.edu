@@ -1,5 +1,6 @@
-import { crypto } from '../config/runtime.js';
-import { requireAuth } from '../security/rbac.middleware.js';
+'use strict';
+const crypto = require('crypto');
+const { requireAuth } = require('../security/rbac.middleware');
 
 /**
  * COMMUNITY – CỘNG ĐỒNG NGOẠI NGỮ (PHẦN X)
@@ -247,5 +248,4 @@ class CommunityModule {
   }
 }
 
-export { CommunityModule };
-export default { CommunityModule };
+module.exports = { CommunityModule };

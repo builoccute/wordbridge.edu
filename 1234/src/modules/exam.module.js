@@ -1,5 +1,6 @@
-import { crypto } from '../config/runtime.js';
-import { requireAuth, requirePermission } from '../security/rbac.middleware.js';
+'use strict';
+const crypto = require('crypto');
+const { requireAuth, requirePermission } = require('../security/rbac.middleware');
 
 /**
  * HỆ THỐNG KHẢO THÍ WORD BRIDGE (PHẦN XII & XXI.12)
@@ -511,5 +512,4 @@ class ExamModule {
   }
 }
 
-export { ExamModule };
-export default { ExamModule };
+module.exports = { ExamModule };

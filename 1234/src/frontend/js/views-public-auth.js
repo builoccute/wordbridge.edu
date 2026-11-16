@@ -32,7 +32,7 @@
             </div>
           </div>
           <div>
-            <img src="/assets/hero-globe-illustration.svg" alt="Minh họa Địa cầu và Sách ngoại ngữ WORD BRIDGE" style="width:100%;height:auto;border-radius:18px;display:block;" />
+            <img src="/assets/banners/hero-globe-books.webp" alt="Minh họa Địa cầu và Sách ngoại ngữ WORD BRIDGE" style="width:100%;height:auto;max-height:380px;object-fit:contain;border-radius:18px;display:block;" />
           </div>
         </div>
       </section>
@@ -212,15 +212,16 @@
           </div>
           <div class="wb-grid-5">
             ${langs.map(l => `
-              <div class="wb-card" style="display:flex;flex-direction:column;justify-content:space-between;">
-                <div>
+              <div class="wb-lang-landmark-card">
+                <img src="/assets/banners/lang-${l.code}-landmark.webp" alt="Biểu tượng văn hóa ${l.name_vi}" class="wb-lang-landmark-img" loading="lazy" />
+                <div class="wb-lang-card-body"><div>
                   <span class="wb-badge wb-badge-teal">${l.code.toUpperCase()}</span>
                   <h3 style="margin:10px 0 4px 0;color:var(--wb-deep-teal);">${l.name_vi}</h3>
                   <div style="font-weight:700;font-size:15px;color:var(--wb-vermilion);margin-bottom:8px;">${l.native_name}</div>
                   <p style="font-size:12.5px;color:var(--wb-text-muted);margin:0 0 12px 0;">${l.script_system}</p>
                 </div>
-                <a href="/hoc-tap?lang=${l.code}" class="wb-btn wb-btn-primary" data-nav="/hoc-tap?lang=${l.code}">Thực hành ${l.name_vi}</a>
-              </div>
+                <a href="/hoc-tap?lang=${l.code}" class="wb-btn wb-btn-primary" data-nav="/hoc-tap?lang=${l.code}" style="width:100%;">Thực hành ${l.name_vi}</a>
+                </div></div>
             `).join('')}
           </div>
         </section>
@@ -256,7 +257,15 @@
     root.innerHTML = `
       <div class="wb-container wb-section">
         <div class="wb-card">
-          <span class="wb-badge wb-badge-teal">ĐỀ ÁN KHỞI NGHIỆP WORD BRIDGE (2026–2027)</span>
+          <div class="wb-visual-banner-card" style="margin-bottom:18px;">
+            <div>
+              <span class="wb-badge wb-badge-teal">ĐỀ ÁN KHỞI NGHIỆP WORD BRIDGE (2026–2027)</span>
+              <h2 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Tổng quan Tổ chức &amp; Hệ sinh thái Ngoại ngữ WORD BRIDGE</h2>
+              <p style="margin:0;font-size:13.5px;color:var(--wb-text-muted);">Sứ mệnh kết nối cộng đồng ngoại ngữ thông qua 4 trụ cột LEARN – CONNECT – COMMUNITY – GROW trên 05 ngôn ngữ trọng tâm.</p>
+            </div>
+            <img src="/assets/banners/banner-globe-books.webp" alt="Tổng quan WORD BRIDGE" class="wb-visual-banner-art" />
+          </div>
+          <span class="wb-badge wb-badge-teal">THÔNG TIN CHÍNH THỨC</span>
           <h1 style="color:var(--wb-deep-teal);margin:10px 0;">${pathname === '/gioi-thieu' ? 'Giới thiệu Nền tảng WORD BRIDGE' : 'Khám phá Hệ sinh thái Ngoại ngữ WORD BRIDGE'}</h1>
           <p><strong>Khẩu hiệu:</strong> Where Languages Bring People Together.</p>
           <p><strong>Nhóm sáng lập:</strong> Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như.</p>
@@ -289,7 +298,7 @@
             <img src="/assets/logo-light.svg" alt="WORD BRIDGE" style="height:52px;margin-bottom:14px;" />
             <h1 style="color:var(--wb-deep-teal);margin:0 0 12px 0;">Kết nối – Thực hành – Đồng hành cùng cộng đồng đa ngôn ngữ</h1>
             <p style="color:var(--wb-text-muted);">Sử dụng tài khoản thành viên để truy cập Trung tâm học tập, Theo dõi tiến độ, Tìm bạn thực hành, Cộng đồng ngoại ngữ và Không gian Tổ chức.</p>
-            <img src="/assets/hero-globe-illustration.svg" alt="WORD BRIDGE" style="width:100%;max-width:460px;border-radius:14px;margin-top:12px;" />
+            <img src="/assets/banners/hero-globe-books.webp" alt="WORD BRIDGE Địa cầu và Sách ngoại ngữ" style="width:100%;max-width:500px;border-radius:16px;margin-top:12px;border:1px solid var(--wb-border);display:block;" />
           </div>
 
           <div class="wb-card">
@@ -430,7 +439,19 @@
   WB.registerView('/dang-ky', async function (root) {
     root.innerHTML = `
       <div class="wb-container wb-section">
-        <div class="wb-card" style="max-width:760px;margin:0 auto;">
+        <div class="wb-grid-2" style="align-items:start;">
+          <div class="wb-card" style="background:linear-gradient(135deg,#F2F9F9 0%,#E1F2F1 100%);">
+            <span class="wb-badge wb-badge-teal">CHÀO MỪNG THÀNH VIÊN MỚI</span>
+            <h2 style="color:var(--wb-deep-teal);margin:10px 0 8px 0;">Đăng ký Tài khoản Cá nhân</h2>
+            <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0 0 12px 0;">Tạo tài khoản để thực hành 05 ngoại ngữ, kết nối bạn học đồng hành và tham gia cộng đồng WORD BRIDGE.</p>
+            <img src="/assets/banners/hero-globe-books.webp" alt="Minh họa Địa cầu và Sách ngoại ngữ" style="width:100%;border-radius:14px;margin-bottom:14px;display:block;" />
+            <ul style="list-style:none;padding:0;margin:0;font-size:13.5px;color:var(--wb-text-main);">
+              <li style="margin-bottom:8px;"><strong>✓ Thực hành ngoại ngữ hiệu quả:</strong> Lộ trình cá nhân hóa và 04 công cụ rèn luyện sâu.</li>
+              <li style="margin-bottom:8px;"><strong>✓ Kết nối cộng đồng toàn cầu:</strong> Tìm bạn học đồng thuận hai chiều an toàn.</li>
+              <li><strong>✓ Quà tặng thành viên mới:</strong> Kích hoạt ngay 07 ngày trải nghiệm gói Người Dùng bản Plus.</li>
+            </ul>
+          </div>
+          <div class="wb-card">
           <span class="wb-badge wb-badge-teal">TÀI KHOẢN CÁ NHÂN WORD BRIDGE</span>
           <h1 style="color:var(--wb-deep-teal);margin:8px 0 6px 0;">Đăng ký Tài khoản Cá nhân</h1>
           <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0 0 18px 0;">
@@ -482,6 +503,7 @@
             </div>
             <button type="submit" class="wb-btn wb-btn-accent" style="width:100%;">Hoàn tất Đăng ký Tài khoản</button>
           </form>
+        </div>
         </div>
       </div>
     `;
@@ -551,17 +573,17 @@
           </aside>
 
           <div>
-            <div class="wb-card" style="margin-bottom:20px;">
-              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-                <div>
-                  <span class="wb-badge wb-badge-teal">Gói hiện tại: ${u.plan_name_vi || u.plan_code}</span>
+            <div class="wb-dash-header-banner">
+              <div>
+                <span class="wb-badge wb-badge-teal">Gói hiện tại: ${u.plan_name_vi || u.plan_code}</span>
                   <h1 style="margin:6px 0 4px 0;color:var(--wb-deep-teal);">${u.full_name} (@${u.username})</h1>
                   <div style="font-size:13.5px;color:var(--wb-text-muted);">
                     Email: ${u.email} • Số điện thoại: ${u.phone} (Được bảo vệ ẩn công khai) • Ngoại ngữ đang học: <strong>${(u.learning_languages || []).join(', ').toUpperCase()}</strong>
                   </div>
                 </div>
-                <button type="button" class="wb-btn wb-btn-outline" id="wbRevokeOtherSessionsBtn">Thu hồi phiên thiết bị khác</button>
+                <div style="margin-top:10px;"><button type="button" class="wb-btn wb-btn-outline" id="wbRevokeOtherSessionsBtn">Thu hồi phiên thiết bị khác</button></div>
               </div>
+              <img src="/assets/banners/header-security-shield.webp" alt="Bảo mật và Cài đặt tài khoản" class="wb-dash-header-art" />
             </div>
 
             <div class="wb-grid-2" style="margin-bottom:20px;">
@@ -820,7 +842,15 @@
     root.innerHTML = `
       <div class="wb-container wb-section">
         <div class="wb-card" style="margin-bottom:20px;">
-          <span class="wb-badge wb-badge-teal">TIN TỨC &amp; HƯỚNG DẪN SỬ DỤNG NỀN TẢNG</span>
+          <div class="wb-visual-banner-card" style="margin-bottom:16px;">
+            <div>
+              <span class="wb-badge wb-badge-teal">TIN TỨC &amp; HƯỚNG DẪN SỬ DỤNG NỀN TẢNG</span>
+              <h2 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Bản tin Cập nhật Sản phẩm &amp; Kinh nghiệm Tự thực hành</h2>
+              <p style="margin:0;font-size:13.5px;color:var(--wb-text-muted);">Cập nhật những thông tin mới nhất về WORD BRIDGE, phương pháp rèn luyện 05 ngoại ngữ và hoạt động tiêu biểu của các Câu lạc bộ, Đội, Nhóm.</p>
+            </div>
+            <img src="/assets/banners/banner-globe-books.webp" alt="Tin tức WORD BRIDGE" class="wb-visual-banner-art" />
+          </div>
+          <span class="wb-badge wb-badge-teal">TRA CỨU BÀI VIẾT</span>
           <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Tin tức, Cập nhật Sản phẩm &amp; Kinh nghiệm Thực hành</h1>
           <p style="font-size:14px;color:var(--wb-text-muted);margin:0 0 16px 0;">
             Tổng hợp thông tin cập nhật chính thức từ WORD BRIDGE, tài liệu hướng dẫn rèn luyện năm ngoại ngữ và hoạt động tiêu biểu của cộng đồng.
@@ -1038,7 +1068,15 @@
     root.innerHTML = `
       <div class="wb-container wb-section">
         <div class="wb-card" style="margin-bottom:22px;">
-          <span class="wb-badge wb-badge-teal">TRUNG TÂM TRỢ GIÚP &amp; CHĂM SÓC KHÁCH HÀNG</span>
+          <div class="wb-dash-header-banner" style="margin-bottom:16px;">
+            <div>
+              <span class="wb-badge wb-badge-teal">TRUNG TÂM TRỢ GIÚP &amp; CHĂM SÓC KHÁCH HÀNG</span>
+              <h2 style="margin:8px 0 4px 0;color:var(--wb-deep-teal);">Hỗ trợ Kỹ thuật, Tài khoản, Tổ chức &amp; Đối soát Thanh toán</h2>
+              <p style="margin:0;font-size:13px;color:var(--wb-text-muted);">Đội ngũ Chăm sóc khách hàng WORD BRIDGE luôn sẵn sàng giải đáp và đồng hành cùng bạn.</p>
+            </div>
+            <img src="/assets/banners/header-security-shield.webp" alt="Trung tâm trợ giúp WORD BRIDGE" class="wb-dash-header-art" />
+          </div>
+          <span class="wb-badge wb-badge-teal">LIÊN HỆ CHÍNH THỨC</span>
           <h1 style="margin:8px 0;color:var(--wb-deep-teal);">Hỗ trợ &amp; Giải đáp Thắc mắc WORD BRIDGE</h1>
           <p style="font-size:14px;color:var(--wb-text-muted);margin:0;">
             Chăm sóc khách hàng: <strong>cskh@wordbridge.io.vn</strong> | Liên hệ chính thức: <strong>wordbridge.education@gmail.com</strong> | Hợp tác &amp; truyền thông: <strong>contact@wordbridge.io.vn</strong>

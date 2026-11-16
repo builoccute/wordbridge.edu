@@ -1,5 +1,6 @@
-import { crypto } from '../config/runtime.js';
-import { getIntegrationStatus } from '../config/env.js';
+'use strict';
+const crypto = require('crypto');
+const { getIntegrationStatus } = require('../config/env');
 
 class PaymentAdapter {
   constructor(db) {
@@ -80,5 +81,4 @@ class PaymentAdapter {
   }
 }
 
-export { PaymentAdapter };
-export default { PaymentAdapter };
+module.exports = { PaymentAdapter };

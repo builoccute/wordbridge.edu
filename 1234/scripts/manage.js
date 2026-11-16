@@ -1,7 +1,10 @@
 #!/usr/bin/env node
-import { db } from '../src/adapters/database.adapter.js';
-import { OFFICIAL_ROUTES, EMAIL_ADDRESSES } from '../src/config/constants.js';
-import { EMAIL_TEMPLATES_LIST } from '../src/emails/templates.registry.js';
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const { db } = require('../src/adapters/database.adapter');
+const { OFFICIAL_ROUTES, EMAIL_ADDRESSES } = require('../src/config/constants');
+const { EMAIL_TEMPLATES_LIST } = require('../src/emails/templates.registry');
 
 const cmd = process.argv[2] || 'verify';
 
@@ -10,6 +13,8 @@ if (cmd === 'migrate') {
   console.log('[WORD BRIDGE] Database schema & migrations applied successfully.');
 } else if (cmd === 'seed') {
   db.migrateAndInitialize();
+  const seedPath = path.resolve(process.cwd(), 'database/seeds/01_reference_data.sql');
+  db.execScript(fs.readFileSync(seedPath, 'utf8'));
   console.log('[WORD BRIDGE] Reference data seeded successfully.');
 } else if (cmd === 'backup') {
   const info = db.createBackup();
@@ -23,6 +28,8 @@ if (cmd === 'migrate') {
   console.log('[WORD BRIDGE] Restore result:', db.restoreBackup(target));
 } else if (cmd === 'build' || cmd === 'verify') {
   db.migrateAndInitialize();
+  const seedPath = path.resolve(process.cwd(), 'database/seeds/01_reference_data.sql');
+  db.execScript(fs.readFileSync(seedPath, 'utf8'));
   console.log('[WORD BRIDGE] Build & Structural Verification:');
   console.log(' - Official Routes count:', OFFICIAL_ROUTES.length);
   console.log(' - Has /su-kien route?:', OFFICIAL_ROUTES.some(r => r.path.includes('su-kien')));

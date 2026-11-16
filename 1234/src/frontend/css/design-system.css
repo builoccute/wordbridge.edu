@@ -868,3 +868,150 @@ a:hover {
   font-size: 14px;
   max-width: 380px;
 }
+
+
+/* ============================================================================
+ * VISUAL BANNERS, LANDMARK CARDS & DASHBOARD HEADERS (TÍCH HỢP TỪ ẢNH.zip)
+ * - Đồng bộ tuyệt đối bảng màu thương hiệu (#146466, #C92F1C, #5AABA9, #E2E2C4)
+ * - Chống vỡ giao diện (object-fit, aspect-ratio, responsive grid)
+ * - Tuyệt đối không sử dụng hình ảnh Laptop AI và hình con người AI
+ * ============================================================================ */
+.wb-visual-banner-card {
+  background: linear-gradient(125deg, #F2F9F9 0%, #E0F2F1 58%, #F5F1E1 100%);
+  border: 1px solid #C6E2E0;
+  border-radius: 18px;
+  padding: 22px 26px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1.25fr 0.95fr;
+  gap: 20px;
+  align-items: center;
+  box-shadow: var(--wb-shadow-sm);
+  overflow: hidden;
+}
+
+.wb-visual-banner-art {
+  width: 100%;
+  max-height: 195px;
+  object-fit: contain;
+  border-radius: 12px;
+  display: block;
+  margin-left: auto;
+}
+
+.wb-dash-header-banner {
+  background: linear-gradient(120deg, #FFFFFF 0%, #EAF6F5 65%, #E0F0EF 100%);
+  border: 1px solid var(--wb-border);
+  border-radius: 16px;
+  padding: 18px 22px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr;
+  gap: 16px;
+  align-items: center;
+  box-shadow: var(--wb-shadow-sm);
+  overflow: hidden;
+}
+
+.wb-dash-header-art {
+  width: 100%;
+  max-height: 108px;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+}
+
+.wb-lang-landmark-card {
+  background: #FFFFFF;
+  border: 1px solid var(--wb-border);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--wb-shadow-sm);
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+}
+
+.wb-lang-landmark-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--wb-shadow-md);
+  border-color: var(--wb-light-teal);
+}
+
+.wb-lang-landmark-img {
+  width: 100%;
+  height: 118px;
+  object-fit: cover;
+  display: block;
+  border-bottom: 2px solid var(--wb-deep-teal);
+}
+
+.wb-lang-card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: space-between;
+}
+
+.wb-stats-strip-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1px solid var(--wb-border);
+  border-radius: 14px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  box-shadow: var(--wb-shadow-sm);
+}
+
+.wb-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-right: 1px solid #E6F0F0;
+  padding-right: 10px;
+}
+
+.wb-stat-pill:last-child {
+  border-right: none;
+}
+
+.wb-stat-pill strong {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--wb-deep-teal);
+  line-height: 1.2;
+}
+
+.wb-stat-pill span {
+  font-size: 12px;
+  color: var(--wb-text-muted);
+}
+
+.wb-avatar-initials {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--wb-deep-teal);
+  color: #FFFFFF;
+  font-weight: 800;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+@media (max-width: 992px) {
+  .wb-visual-banner-card,
+  .wb-dash-header-banner {
+    grid-template-columns: 1fr;
+  }
+  .wb-stats-strip-5 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

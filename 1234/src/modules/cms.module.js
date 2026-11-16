@@ -1,7 +1,6 @@
-'use strict';
-const crypto = require('crypto');
-const { requirePermission } = require('../security/rbac.middleware');
-const { sanitizeHtmlForCms } = require('../security/defense.middleware');
+import { crypto } from '../config/runtime.js';
+import { requirePermission } from '../security/rbac.middleware.js';
+import { sanitizeHtmlForCms } from '../security/defense.middleware.js';
 
 /**
  * TRUNG TÂM NỘI DUNG CMS, TIN TỨC CHÍNH THỨC (PHẦN XIV) & TÌM KIẾM TOÀN NỀN TẢNG (PHẦN XIII & XXI.16)
@@ -462,4 +461,5 @@ class CmsModule {
   }
 }
 
-module.exports = { CmsModule };
+export { CmsModule };
+export default { CmsModule };

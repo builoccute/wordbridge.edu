@@ -1,6 +1,5 @@
-'use strict';
-const crypto = require('crypto');
-const { requireAuth } = require('../security/rbac.middleware');
+import { crypto } from '../config/runtime.js';
+import { requireAuth } from '../security/rbac.middleware.js';
 
 /**
  * TRUNG TÂM HỌC TẬP, 05 NGÔN NGỮ, 04 CÔNG CỤ CỐT LÕI CHUYÊN SÂU, CÔNG CỤ MỚI & ĐÁNH GIÁ TRÌNH ĐỘ / LỘ TRÌNH (PHẦN III, VI, VII)
@@ -735,4 +734,5 @@ class LearningModule {
   }
 }
 
-module.exports = { LearningModule };
+export { LearningModule };
+export default { LearningModule };

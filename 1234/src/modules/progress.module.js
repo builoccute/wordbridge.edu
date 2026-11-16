@@ -1,8 +1,7 @@
-'use strict';
-const crypto = require('crypto');
-const { GB_BYTES, TB_BYTES, PLAN_DEFAULT_QUOTAS } = require('../config/constants');
-const { getMonthlyQuotaGb, setMonthlyQuotaGb } = require('../config/env');
-const { requireAuth, requirePermission, requireOrgAccess } = require('../security/rbac.middleware');
+import { crypto } from '../config/runtime.js';
+import { GB_BYTES, TB_BYTES, PLAN_DEFAULT_QUOTAS } from '../config/constants.js';
+import { getMonthlyQuotaGb, setMonthlyQuotaGb } from '../config/env.js';
+import { requireAuth, requirePermission, requireOrgAccess } from '../security/rbac.middleware.js';
 
 /**
  * DASHBOARD CÁ NHÂN & GROW (PHẦN VIII), THƯ VIỆN TÀI NGUYÊN (PHẦN III.2)
@@ -841,8 +840,5 @@ class ProgressAndResourcesModule {
   }
 }
 
-module.exports = {
-  ProgressAndResourcesModule,
-  getCurrentHoChiMinhCycleMonth,
-  formatBytesHuman
-};
+export { ProgressAndResourcesModule, getCurrentHoChiMinhCycleMonth, formatBytesHuman };
+export default { ProgressAndResourcesModule, getCurrentHoChiMinhCycleMonth, formatBytesHuman };

@@ -1,7 +1,6 @@
-'use strict';
-const crypto = require('crypto');
-const { RBAC_ROLES } = require('../config/constants');
-const { requireAuth } = require('../security/rbac.middleware');
+import { crypto } from '../config/runtime.js';
+import { RBAC_ROLES } from '../config/constants.js';
+import { requireAuth } from '../security/rbac.middleware.js';
 
 class UsersModule {
   constructor(db, authService, emailAdapter) {
@@ -555,4 +554,5 @@ class UsersModule {
   }
 }
 
-module.exports = { UsersModule };
+export { UsersModule };
+export default { UsersModule };

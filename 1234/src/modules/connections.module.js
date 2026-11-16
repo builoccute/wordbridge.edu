@@ -1,6 +1,5 @@
-'use strict';
-const crypto = require('crypto');
-const { requireAuth } = require('../security/rbac.middleware');
+import { crypto } from '../config/runtime.js';
+import { requireAuth } from '../security/rbac.middleware.js';
 
 /**
  * CONNECT – TÌM BẠN THỰC HÀNH & NHẮN TIN ĐỒNG THUẬN 02 BÊN (PHẦN IX)
@@ -391,4 +390,5 @@ class ConnectionsAndChatModule {
   }
 }
 
-module.exports = { ConnectionsAndChatModule };
+export { ConnectionsAndChatModule };
+export default { ConnectionsAndChatModule };

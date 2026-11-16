@@ -1,14 +1,11 @@
-'use strict';
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const { STORAGE_ROOT_PATH, STORAGE_BACKUP_PATH } = require('../config/env');
+import { crypto, path, getNodeBuiltin } from '../config/runtime.js';
+import { STORAGE_ROOT_PATH, STORAGE_BACKUP_PATH } from '../config/env.js';
 
 /**
- * CLOUDFLARE R2 UNIFIED OBJECT STORAGE ADAPTER (PHẦN XVI & XXI.3, 4)
+ * CLOUDFLARE R2 UNIFIED OBJECT STORAGE ADAPTER (ES MODULE + EDGE & NODE COMPATIBLE)
  * - Thống nhất kiến trúc theo Cloudflare R2 (binding: R2, bucket_name: "word").
- * - Hỗ trợ đồng thời binding env.R2 trên Cloudflare Workers và R2 Local Object Store khi chạy kiểm thử/CLI.
- * - Quét chữ ký tệp thực tế (Magic Bytes), chặn tệp thực thi độc hại và kiểm soát truy cập chéo tài khoản/tổ chức.
+ * - Không sử dụng bất kỳ lệnh import/require tĩnh nào tới "fs", "path", "crypto".
+ * - Hỗ trợ đồng thời binding env.R2 trên Cloudflare Workers, bộ nhớ đệm Edge và kho lưu trữ cục bộ khi chạy CLI/test.
  */
 
 const ALLOWED_MIME_TYPES = {
@@ -30,18 +27,29 @@ const FORBIDDEN_PATTERNS = [
   /\x7FELF/
 ];
 
-class StorageAdapter {
+function toUint8Array(input) {
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(input)) return input;
+  if (input instanceof Uint8Array) {
+    return typeof Buffer !== 'undefined' ? Buffer.from(input) : input;
+  }
+  const encoded = new TextEncoder().encode(String(input || ''));
+  return typeof Buffer !== 'undefined' ? Buffer.from(encoded) : encoded;
+}
+
+export class StorageAdapter {
   constructor(baseDir = STORAGE_ROOT_PATH) {
     this.baseDir = baseDir;
     this.r2Binding = null;
+    this.memoryObjects = new Map();
     this.r2Meta = {
       binding: 'R2',
       bucket_name: 'word',
       engine: 'Cloudflare R2'
     };
-    try {
-      fs.mkdirSync(this.baseDir, { recursive: true });
-    } catch (_) {}
+    const fs = getNodeBuiltin('fs');
+    if (fs) {
+      try { fs.mkdirSync(this.baseDir, { recursive: true }); } catch (_) {}
+    }
   }
 
   bindWorkerR2(r2Binding) {
@@ -52,14 +60,12 @@ class StorageAdapter {
   }
 
   validateAndScanBuffer(buffer, declaredMime, filename = '') {
-    const maxSingleFileBytes = 50 * 1024 * 1024; // 50MB per single file upload request
-    if (!Buffer.isBuffer(buffer)) {
-      buffer = Buffer.from(String(buffer || ''), 'utf8');
-    }
-    if (buffer.length === 0) {
+    const maxSingleFileBytes = 50 * 1024 * 1024;
+    const bytes = toUint8Array(buffer);
+    if (bytes.length === 0) {
       throw new Error('Tệp tải lên rỗng.');
     }
-    if (buffer.length > maxSingleFileBytes) {
+    if (bytes.length > maxSingleFileBytes) {
       throw new Error('Dung lượng một lần tải tệp vượt quá giới hạn đơn lẻ (50MB).');
     }
     const lowerName = String(filename || '').toLowerCase();
@@ -73,24 +79,26 @@ class StorageAdapter {
     }
     if (spec.magic) {
       for (let i = 0; i < spec.magic.length; i++) {
-        if (buffer[i] !== spec.magic[i]) {
+        if (bytes[i] !== spec.magic[i]) {
           throw new Error('Nội dung thực tế của tệp (Magic Bytes) không khớp với định dạng khai báo.');
         }
       }
     }
-    const sampleText = buffer.slice(0, Math.min(buffer.length, 4096)).toString('utf8');
+    const sampleSlice = bytes.subarray(0, Math.min(bytes.length, 4096));
+    const sampleText = new TextDecoder().decode(sampleSlice);
     for (const pat of FORBIDDEN_PATTERNS) {
       if (pat.test(sampleText)) {
         throw new Error('Phát hiện chữ ký mã độc hoặc mã thực thi bên trong tệp tải lên.');
       }
     }
-    const checksum = crypto.createHash('sha256').update(buffer).digest('hex');
+    const checksum = crypto.createHash('sha256').update(bytes).digest('hex');
     return {
       safe: true,
       mime_type: cleanMime,
-      size_bytes: buffer.length,
+      size_bytes: bytes.length,
       ext: spec.ext,
-      checksum_sha256: checksum
+      checksum_sha256: checksum,
+      bytes
     };
   }
 
@@ -99,15 +107,20 @@ class StorageAdapter {
     const id = 'file_' + crypto.randomBytes(10).toString('hex');
     const prefix = ownerType === 'organization' ? `org_storage/${ownerId}` : `personal_storage/${ownerId}`;
     const storageKey = `${prefix}/${scope}/${id}${check.ext}`;
-    const fullPath = path.join(this.baseDir, storageKey);
-    try {
-      fs.mkdirSync(path.dirname(fullPath), { recursive: true });
-      fs.writeFileSync(fullPath, buffer, { mode: 0o600 });
-    } catch (_) {}
+    this.memoryObjects.set(storageKey, check.bytes);
+
+    const fs = getNodeBuiltin('fs');
+    if (fs) {
+      const fullPath = path.join(this.baseDir, storageKey);
+      try {
+        fs.mkdirSync(path.dirname(fullPath), { recursive: true });
+        fs.writeFileSync(fullPath, check.bytes, { mode: 0o600 });
+      } catch (_) {}
+    }
 
     if (this.r2Binding && typeof this.r2Binding.put === 'function') {
       Promise.resolve(
-        this.r2Binding.put(storageKey, buffer, {
+        this.r2Binding.put(storageKey, check.bytes, {
           httpMetadata: { contentType: check.mime_type },
           customMetadata: {
             file_id: id,
@@ -159,18 +172,28 @@ class StorageAdapter {
         }
       }
     }
-    const fullPath = path.join(this.baseDir, storageKey);
-    if (!fs.existsSync(fullPath)) {
-      return null;
+    if (this.memoryObjects.has(storageKey)) {
+      return this.memoryObjects.get(storageKey);
     }
-    return fs.readFileSync(fullPath);
+    const fs = getNodeBuiltin('fs');
+    if (fs) {
+      const fullPath = path.join(this.baseDir, storageKey);
+      if (fs.existsSync(fullPath)) {
+        return fs.readFileSync(fullPath);
+      }
+    }
+    return null;
   }
 
   deleteObjectSynchronized(storageKey) {
     if (!storageKey || storageKey.includes('..')) return false;
-    const fullPath = path.join(this.baseDir, storageKey);
-    if (fs.existsSync(fullPath)) {
-      try { fs.unlinkSync(fullPath); } catch (_) {}
+    this.memoryObjects.delete(storageKey);
+    const fs = getNodeBuiltin('fs');
+    if (fs) {
+      const fullPath = path.join(this.baseDir, storageKey);
+      if (fs.existsSync(fullPath)) {
+        try { fs.unlinkSync(fullPath); } catch (_) {}
+      }
     }
     if (this.r2Binding && typeof this.r2Binding.delete === 'function') {
       Promise.resolve(this.r2Binding.delete(storageKey)).catch(() => {});
@@ -179,41 +202,33 @@ class StorageAdapter {
   }
 
   backupStorageSnapshot(backupDir = STORAGE_BACKUP_PATH) {
-    fs.mkdirSync(backupDir, { recursive: true });
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const manifestPath = path.join(backupDir, `wordbridge-r2-snapshot-${stamp}.json`);
+    const manifestName = `wordbridge-r2-snapshot-${stamp}.json`;
     const filesList = [];
-    const walk = dir => {
-      if (!fs.existsSync(dir)) return;
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const full = path.join(dir, entry.name);
-        if (entry.isDirectory()) walk(full);
-        else {
-          const st = fs.statSync(full);
-          filesList.push({
-            rel_path: path.relative(this.baseDir, full),
-            size_bytes: st.size
-          });
-        }
-      }
-    };
-    walk(this.baseDir);
-    fs.writeFileSync(manifestPath, JSON.stringify({
-      bucket: 'word',
-      engine: 'Cloudflare R2',
-      created_at: new Date().toISOString(),
-      files: filesList
-    }, null, 2));
+    for (const [k, buf] of this.memoryObjects.entries()) {
+      filesList.push({ rel_path: k, size_bytes: buf.length });
+    }
+    const fs = getNodeBuiltin('fs');
+    if (fs) {
+      try {
+        fs.mkdirSync(backupDir, { recursive: true });
+        const manifestPath = path.join(backupDir, manifestName);
+        fs.writeFileSync(manifestPath, JSON.stringify({
+          bucket: 'word',
+          engine: 'Cloudflare R2',
+          created_at: new Date().toISOString(),
+          files: filesList
+        }, null, 2));
+      } catch (_) {}
+    }
     return {
       bucket: 'word',
-      snapshot_manifest: path.basename(manifestPath),
+      snapshot_manifest: manifestName,
       total_files_backed_up: filesList.length,
       total_bytes_backed_up: filesList.reduce((acc, f) => acc + f.size_bytes, 0)
     };
   }
 }
 
-module.exports = {
-  StorageAdapter,
-  storage: new StorageAdapter()
-};
+export const storage = new StorageAdapter();
+export default { StorageAdapter, storage };

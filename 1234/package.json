@@ -1,5 +1,5 @@
 {
-  "name": "wordbridge",
+  "name": "wordbridge-edu",
   "version": "2026.2.0",
   "description": "WORD BRIDGE - Where Languages Bring People Together. Hệ sinh thái thực hành ngoại ngữ và kết nối cộng đồng trên một tên miền duy nhất https://wordbridge.io.vn",
   "main": "src/worker.js",
@@ -20,5 +20,6 @@
     "node": ">=18.0.0"
   },
   "author": "Bùi Tấn Lộc, Cao Anh Nhựt, Võ Gia Như - WORD BRIDGE Founding Team",
-  "license": "UNLICENSED"
+  "license": "UNLICENSED",
+  "type": "module"
 }

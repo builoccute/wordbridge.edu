@@ -1,5 +1,3 @@
-'use strict';
-
 class RealtimeAdapter {
   constructor() {
     this.clients = new Map(); // userId -> Set<res>
@@ -52,7 +50,6 @@ class RealtimeAdapter {
   }
 }
 
-module.exports = {
-  RealtimeAdapter,
-  realtimeHub: new RealtimeAdapter()
-};
+export const realtimeHub = new RealtimeAdapter();
+export { RealtimeAdapter };
+export default { RealtimeAdapter, realtimeHub };

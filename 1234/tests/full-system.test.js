@@ -1,8 +1,7 @@
-'use strict';
-const { test, describe, before, after } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
+import { test, describe, before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
 const TEST_DIR = path.resolve(process.cwd(), '.tmp_test_suite_' + process.pid);
 process.env.NODE_ENV = 'test';
@@ -14,8 +13,8 @@ process.env.SESSION_SECRET = 'test-secret-key-wordbridge-2026-2027-secure-token-
 process.env.ADMIN_BOOTSTRAP_SECRET = 'test-bootstrap-admin-secret-2026';
 process.env.MONTHLY_QUOTA_GB = '999'; // Kiểm tra đảm bảo MONTHLY_QUOTA_GB không ghi đè hạn mức mặc định từng gói
 
-const { createAppServer, services } = require('../src/server');
-const workerModule = require('../src/worker');
+const { createAppServer, services } = await import('../src/server.js');
+const workerModule = (await import('../src/worker.js')).default;
 
 describe('WORD BRIDGE 2026–2027 — Bộ Kiểm Thử Toàn Diện 10 Phân Hệ & 16 Điểm Sửa Bắt Buộc', () => {
   let server;

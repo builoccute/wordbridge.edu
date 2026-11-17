@@ -3,7 +3,7 @@
  * Chuẩn ES Module Worker (`export default`) tương thích 100% với Cloudflare Wrangler 4.x (`wrangler@4.162.0`):
  * - Worker Name: "wordbridge-edu" (https://wordbridge.io.vn)
  * - Cloudflare D1 Binding: env.DB (database_name = "word", database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771")
- * - Cloudflare R2 Binding: env.R2 (bucket_name = "word")
+ * - Ổ đĩa Lưu trữ Trực tiếp tại Web (Zero-R2 Web Internal Vault, quản trị tại /quan-tri/luu-tru-ma-nguon với mật khẩu 6 số do Admin tự đặt)
  * - Không chứa bất kỳ static import nào của "child_process", "crypto", "fs", "http", "path", "url".
  */
 

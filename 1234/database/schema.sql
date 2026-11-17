@@ -813,6 +813,7 @@ CREATE TABLE IF NOT EXISTS storage_files (
     checksum_sha256 TEXT NOT NULL,
     access_scope TEXT NOT NULL DEFAULT 'private',
     status TEXT NOT NULL DEFAULT 'active', -- active | deleted
+    content_base64 TEXT DEFAULT '',
     created_at TEXT NOT NULL
 );
 
@@ -1026,3 +1027,110 @@ CREATE TABLE IF NOT EXISTS news_articles (
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL
 );
+
+
+-- NÂNG CẤP ZERO-R2 WEB STORAGE VAULT (/quan-tri/luu-tru-ma-nguon) & TIẾNG ANH CHUYÊN NGÀNH GDNN-GDTX
+CREATE TABLE IF NOT EXISTS admin_source_vault_config (
+    id TEXT PRIMARY KEY,
+    pin_configured INTEGER NOT NULL DEFAULT 0,
+    pin_hash TEXT NOT NULL DEFAULT '',
+    pin_salt TEXT NOT NULL DEFAULT '',
+    failed_attempts INTEGER NOT NULL DEFAULT 0,
+    locked_until TEXT DEFAULT NULL,
+    updated_by TEXT DEFAULT 'system',
+    updated_at TEXT NOT NULL
+  );
+
+CREATE TABLE IF NOT EXISTS admin_source_vault_files (
+    id TEXT PRIMARY KEY,
+    file_name TEXT NOT NULL,
+    file_path TEXT NOT NULL UNIQUE,
+    category TEXT NOT NULL DEFAULT 'source_code',
+    version_tag TEXT NOT NULL DEFAULT 'v2026.3',
+    mime_type TEXT NOT NULL DEFAULT 'text/plain',
+    size_bytes INTEGER NOT NULL DEFAULT 0,
+    checksum_sha256 TEXT NOT NULL,
+    content_text TEXT NOT NULL DEFAULT '',
+    content_base64 TEXT NOT NULL DEFAULT '',
+    description TEXT DEFAULT '',
+    uploaded_by TEXT NOT NULL DEFAULT 'system',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+CREATE TABLE IF NOT EXISTS career_scenarios (
+    id TEXT PRIMARY KEY,
+    slug TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL,
+    major TEXT NOT NULL,
+    target_audience TEXT NOT NULL DEFAULT 'Cao đẳng nghề • Trung cấp nghề • GDNN - GDTX',
+    level TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    duration_minutes INTEGER NOT NULL DEFAULT 15,
+    is_free INTEGER NOT NULL DEFAULT 1,
+    vocab_json TEXT NOT NULL DEFAULT '[]',
+    phrases_json TEXT NOT NULL DEFAULT '[]',
+    dialogue_json TEXT NOT NULL DEFAULT '[]',
+    role_a_json TEXT NOT NULL DEFAULT '{}',
+    role_b_json TEXT NOT NULL DEFAULT '{}',
+    rubric_json TEXT NOT NULL DEFAULT '[]',
+    author_name TEXT NOT NULL DEFAULT 'Nhóm sáng lập WORD BRIDGE',
+    reviewed_by_teacher TEXT NOT NULL DEFAULT 'Giáo viên chuyên môn rà soát',
+    source_attribution TEXT NOT NULL DEFAULT '',
+    display_order INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL
+  );
+
+CREATE TABLE IF NOT EXISTS career_practice_sessions (
+    id TEXT PRIMARY KEY,
+    scenario_id TEXT NOT NULL,
+    scenario_slug TEXT NOT NULL,
+    scenario_title TEXT NOT NULL,
+    host_user_id TEXT NOT NULL,
+    host_name TEXT NOT NULL,
+    partner_user_id TEXT DEFAULT NULL,
+    partner_name TEXT DEFAULT '',
+    major TEXT NOT NULL,
+    level TEXT NOT NULL,
+    school_name TEXT NOT NULL DEFAULT 'Trường Cao đẳng nghề Việt Nam - Singapore',
+    class_name TEXT DEFAULT 'T25DH2DA',
+    education_system TEXT NOT NULL DEFAULT 'Cao đẳng nghề / Trung cấp nghề / GDNN - GDTX',
+    slot_label TEXT NOT NULL,
+    scheduled_date TEXT NOT NULL,
+    meeting_room_code TEXT NOT NULL,
+    status TEXT NOT NULL DEFAULT 'OPEN',
+    notes TEXT DEFAULT '',
+    created_at TEXT NOT NULL
+  );
+
+CREATE TABLE IF NOT EXISTS career_rubric_reviews (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    reviewer_user_id TEXT NOT NULL,
+    reviewer_name TEXT NOT NULL,
+    target_user_id TEXT DEFAULT '',
+    scores_json TEXT NOT NULL DEFAULT '{}',
+    overall_score REAL NOT NULL DEFAULT 5.0,
+    satisfaction_rating INTEGER NOT NULL DEFAULT 5,
+    strengths TEXT NOT NULL DEFAULT '',
+    improvements TEXT NOT NULL DEFAULT '',
+    created_at TEXT NOT NULL
+  );
+
+CREATE TABLE IF NOT EXISTS vocational_survey_responses (
+    id TEXT PRIMARY KEY,
+    customer_group TEXT NOT NULL DEFAULT 'N1',
+    education_type TEXT NOT NULL DEFAULT 'Cao đẳng nghề',
+    major TEXT NOT NULL DEFAULT 'Tin học',
+    english_level INTEGER NOT NULL DEFAULT 2,
+    career_relevance_score INTEGER NOT NULL DEFAULT 2,
+    top_difficulties_json TEXT NOT NULL DEFAULT '[]',
+    products_tried_json TEXT NOT NULL DEFAULT '[]',
+    pair_willingness_score INTEGER NOT NULL DEFAULT 4,
+    trial_willing INTEGER NOT NULL DEFAULT 1,
+    trial_email TEXT DEFAULT '',
+    pay_willing INTEGER NOT NULL DEFAULT 1,
+    max_monthly_price_vnd INTEGER NOT NULL DEFAULT 50000,
+    feedback_note TEXT DEFAULT '',
+    created_at TEXT NOT NULL
+  );

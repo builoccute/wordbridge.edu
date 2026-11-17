@@ -91,7 +91,7 @@ describe('WORD BRIDGE 2026–2027 — Bộ Kiểm Thử Toàn Diện 10 Phân H�
     assert.ok(res.text.includes('Kết nối &amp; Tổ chức') || res.text.includes('Kết nối & Tổ chức'), 'Footer cột 2');
     assert.ok(res.text.includes('Dịch vụ &amp; Chính sách') || res.text.includes('Dịch vụ & Chính sách'), 'Footer cột 3');
     assert.ok(res.text.includes('Liên hệ Chính thức'), 'Footer cột 4');
-    assert.ok(res.text.includes('Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như'), 'Thông tin nhóm sáng lập ở Footer');
+    assert.ok(res.text.includes('Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như • Vũ Tiến Anh'), 'Đầy đủ 4 thành viên Nhóm sáng lập ở Footer');
 
     // Không lộ (/ho-tro) hay Trung tâm quản trị (/quan-tri) ở Footer/Header
     assert.ok(!res.text.includes('(/ho-tro)'), 'Không được hiển thị chuỗi kỹ thuật (/ho-tro)');
@@ -832,5 +832,158 @@ describe('WORD BRIDGE 2026–2027 — Bộ Kiểm Thử Toàn Diện 10 Phân H�
         `Tệp ${path.relative(process.cwd(), file)} không được chứa static import của child_process/crypto/fs/http/path/url`
       );
     }
+  });
+
+  // ==========================================================================
+  // 11. KIỂM THỬ Ổ ĐĨA LƯU TRỮ TẠI WEB (ZERO-R2) & KHO MÃ NGUỒN /quan-tri/luu-tru-ma-nguon MẬT KHẨU 6 SỐ
+  // ==========================================================================
+  test('11. Ổ đĩa Lưu trữ tại Web (Không dùng R2) tại /quan-tri/luu-tru-ma-nguon với cơ chế mật khẩu 6 số do Admin tự đặt', async () => {
+    const wranglerRaw = fs.readFileSync(path.resolve(process.cwd(), 'wrangler.toml'), 'utf8');
+    assert.ok(!wranglerRaw.includes('[[r2_buckets]]'), 'wrangler.toml phải gỡ bỏ hoàn toàn [[r2_buckets]] để deploy GitHub Workers không phụ thuộc R2');
+
+    // Kiểm tra trạng thái ban đầu của ổ đĩa mã nguồn
+    const st0 = await api('/api/admin/source-vault/status', { token: adminSession.token });
+    assert.equal(st0.status, 200);
+    assert.equal(st0.json.cloudflare_r2_used, false, 'Không sử dụng R2');
+    assert.equal(st0.json.vault_route, '/quan-tri/luu-tru-ma-nguon');
+
+    // Khi chưa đặt mật khẩu 6 số, gọi mở khóa phải báo lỗi yêu cầu đặt PIN
+    const tryUnlockBeforePin = await api('/api/admin/source-vault/unlock', {
+      method: 'POST',
+      token: adminSession.token,
+      body: { pin: '231026' }
+    });
+    assert.equal(tryUnlockBeforePin.status, 400);
+
+    // Thử đặt mật khẩu không phải 6 chữ số -> Phải bị từ chối
+    const badPinRes = await api('/api/admin/source-vault/pin', {
+      method: 'POST',
+      token: adminSession.token,
+      body: { new_pin: '12345', confirm_pin: '12345' }
+    });
+    assert.equal(badPinRes.status, 400, 'Phải từ chối mã PIN không đủ 6 chữ số');
+
+    // Admin tự đặt mật khẩu 6 số lần đầu (231026)
+    const setPinRes = await api('/api/admin/source-vault/pin', {
+      method: 'POST',
+      token: adminSession.token,
+      body: { new_pin: '231026', confirm_pin: '231026' }
+    });
+    assert.equal(setPinRes.status, 200, `Set 6-digit PIN failed: ${setPinRes.text}`);
+    assert.equal(setPinRes.json.pin_configured, true);
+
+    // Nhập sai mật khẩu 6 số -> Bị chặn 403
+    const wrongPinUnlock = await api('/api/admin/source-vault/unlock', {
+      method: 'POST',
+      token: adminSession.token,
+      body: { pin: '999999' }
+    });
+    assert.equal(wrongPinUnlock.status, 403, 'Nhập sai mật khẩu 6 số phải bị từ chối');
+
+    // Mở khóa ổ đĩa bằng đúng mật khẩu 6 số (231026)
+    const unlockOk = await api('/api/admin/source-vault/unlock', {
+      method: 'POST',
+      token: adminSession.token,
+      body: { pin: '231026' }
+    });
+    assert.equal(unlockOk.status, 200);
+    assert.equal(unlockOk.json.unlocked, true);
+    assert.ok(unlockOk.json.files.length >= 4, 'Phải có sẵn các gói cấu hình và manifest lưu trên ổ đĩa Web');
+
+    // Lưu thêm tệp mã nguồn mới vào ổ đĩa tại /quan-tri/luu-tru-ma-nguon
+    const saveVaultFile = await api('/api/admin/source-vault/files', {
+      method: 'POST',
+      token: adminSession.token,
+      body: {
+        pin: '231026',
+        file_name: 'vocational-esp-module.js',
+        file_path: '/src/modules/vocational-esp-module.js',
+        category: 'source_code',
+        description: 'Module Tiếng Anh chuyên ngành cho học sinh Cao đẳng nghề & GDNN-GDTX',
+        content_text: '// WORD BRIDGE Vocational ESP Module\nmodule.exports = { ready: true };'
+      }
+    });
+    assert.equal(saveVaultFile.status, 201, `Save vault file failed: ${saveVaultFile.text}`);
+    assert.equal(saveVaultFile.json.file.file_name, 'vocational-esp-module.js');
+
+    // Đổi mật khẩu 6 số sang mã mới (686868)
+    const changePinRes = await api('/api/admin/source-vault/pin', {
+      method: 'POST',
+      token: adminSession.token,
+      body: { current_pin: '231026', new_pin: '686868', confirm_pin: '686868' }
+    });
+    assert.equal(changePinRes.status, 200, `Change 6-digit PIN failed: ${changePinRes.text}`);
+
+    const unlockNewPin = await api('/api/admin/source-vault/unlock', {
+      method: 'POST',
+      token: adminSession.token,
+      body: { pin: '686868' }
+    });
+    assert.equal(unlockNewPin.status, 200);
+  });
+
+  // ==========================================================================
+  // 12. KIỂM THỬ TIẾNG ANH CHUYÊN NGÀNH (MỘT TÌNH HUỐNG - BA LỚP), GHÉP CẶP RUBRIC & PHÂN TÍCH ĐỐI THỦ
+  // ==========================================================================
+  test('12. Tiếng Anh chuyên ngành (Cơ chế Một tình huống - Ba lớp), Ghép cặp Rubric, Phân tích đối thủ (Mục V & VI) & Nhóm sáng lập 4 thành viên', async () => {
+    // 1. Kiểm tra danh sách tình huống nghề cho 8 lĩnh vực chuyên ngành
+    const scList = await api('/api/career/scenarios');
+    assert.equal(scList.status, 200);
+    assert.ok(scList.json.scenarios.length >= 20, 'Phải có ít nhất 20 tình huống chuyên ngành 3 lớp');
+    assert.ok(scList.json.majors.includes('Cơ khí') && scList.json.majors.includes('Thiết kế Đồ họa') && scList.json.majors.includes('Công nghệ Ô tô'));
+
+    // 2. Xem chi tiết 1 tình huống 3 lớp (Báo cáo sự cố thiết bị cho khách hàng nước ngoài - ngành Cơ khí)
+    const scDetail = await api('/api/career/scenarios?slug=bao-cao-su-co-thiet-bi-co-khi');
+    assert.equal(scDetail.status, 200);
+    assert.equal(scDetail.json.scenario.major, 'Cơ khí');
+    assert.ok(scDetail.json.scenario.vocab.length >= 5, 'Lớp 1 phải có bộ từ vựng chuyên ngành');
+    assert.ok(scDetail.json.scenario.dialogue.length >= 4, 'Lớp 1 phải có hội thoại mẫu');
+    assert.ok(scDetail.json.scenario.role_a.title && scDetail.json.scenario.role_b.title, 'Lớp 2 phải có kịch bản đóng vai A/B');
+    assert.equal(scDetail.json.scenario.rubric.length, 5, 'Lớp 2 phải có bảng tiêu chí Rubric 5 tiêu chí');
+
+    // 3. Tạo lịch hẹn ghép cặp (Lớp 3), nhận cặp và chấm điểm Rubric
+    const createSes = await api('/api/career/sessions', {
+      method: 'POST',
+      token: learner1.token,
+      body: {
+        scenario_slug: 'bao-cao-su-co-thiet-bi-co-khi',
+        education_system: 'Cao đẳng nghề',
+        school_name: 'Trường Cao đẳng nghề Việt Nam - Singapore',
+        class_name: 'T25DH2DA',
+        slot_label: 'Thứ 3 (19:30 - 20:15)',
+        scheduled_date: '2026-11-26'
+      }
+    });
+    assert.equal(createSes.status, 201);
+    const careerSessionId = createSes.json.session.id;
+
+    const joinSes = await api('/api/career/sessions/join', {
+      method: 'POST',
+      token: learner2.token,
+      body: { session_id: careerSessionId }
+    });
+    assert.equal(joinSes.status, 200);
+    assert.equal(joinSes.json.session.status, 'MATCHED');
+
+    const rubricRes = await api('/api/career/sessions/rubric', {
+      method: 'POST',
+      token: learner2.token,
+      body: {
+        session_id: careerSessionId,
+        scores: { terminology: 5, clarity: 5, task_completion: 5, interaction: 5, professionalism: 5 },
+        strengths: 'Nắm vững thuật ngữ spindle bearing và downtime.',
+        improvements: 'Tốt, duy trì tốc độ nói ổn định.'
+      }
+    });
+    assert.equal(rubricRes.status, 201);
+    assert.equal(rubricRes.json.review.overall_score, 5);
+
+    // 4. Kiểm tra dữ liệu Phân tích Đối thủ (Mục V) & Giá trị Khác biệt (Mục VI) & Nhóm sáng lập 4 người
+    const compRes = await api('/api/career/competitors');
+    assert.equal(compRes.status, 200);
+    assert.equal(compRes.json.brand.FOUNDERS_LINE, 'Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như • Vũ Tiến Anh');
+    assert.equal(compRes.json.competitor_analysis.section_v_details.length, 6, 'Đầy đủ 6 nhóm giải pháp đối thủ ở Mục V');
+    assert.equal(compRes.json.competitor_analysis.comparison_matrix.length, 6, 'Đầy đủ bảng so sánh theo 5 tiêu chí ở Mục V');
+    assert.equal(compRes.json.competitor_analysis.section_vi_innovation.judge_qna.length, 4, 'Đầy đủ 4 câu hỏi phản biện của Ban giám khảo ở Mục VI.4');
   });
 });

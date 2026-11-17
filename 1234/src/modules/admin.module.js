@@ -286,11 +286,12 @@ class AdminAndOperationsModule {
       override_plan_quotas: false,
       infrastructure_overview: {
         cloudflare_d1_used: true,
-        cloudflare_r2_used: true,
+        cloudflare_r2_used: false,
+        web_internal_drive_used: true,
         d1_database_name: 'word',
-        r2_bucket_name: 'word',
+        web_drive_path: '/quan-tri/luu-tru-ma-nguon',
         database_engine: 'Cloudflare D1 (word)',
-        storage_engine: 'Cloudflare R2 (word)',
+        storage_engine: 'Ổ đĩa Lưu trữ Trực tiếp tại Web (Zero-R2 Web Internal Vault)',
         provisioned_server_bytes: provisionedBytes,
         actual_stored_bytes: totalStoredBytes,
         available_server_bytes: availableBytes,
@@ -541,6 +542,550 @@ class AdminAndOperationsModule {
       replies: this.db.query(`SELECT * FROM support_ticket_replies WHERE ticket_id = ? ORDER BY created_at ASC`, [ticket.id])
     };
   }
+
+  // ============================================================================
+  // Ổ ĐĨA LƯU TRỮ TẠI WEB & KHO MÃ NGUỒN QUẢN TRỊ (/quan-tri/luu-tru-ma-nguon)
+  // Cơ chế mật khẩu 6 chữ số do Quản trị viên tự thiết lập & đổi mật khẩu
+  // ============================================================================
+  ensureSourceVaultConfig() {
+    let row = this.db.get(`SELECT * FROM admin_source_vault_config WHERE id = 'singleton'`);
+    if (!row) {
+      const nowIso = new Date().toISOString();
+      this.db.run(
+        `INSERT INTO admin_source_vault_config (id, pin_configured, pin_hash, pin_salt, failed_attempts, locked_until, updated_by, updated_at)
+         VALUES ('singleton', 0, '', '', 0, NULL, 'system', ?)`,
+        [nowIso]
+      );
+      row = this.db.get(`SELECT * FROM admin_source_vault_config WHERE id = 'singleton'`);
+    }
+    return row;
+  }
+
+  hashSixDigitPin(pin, salt) {
+    return crypto.pbkdf2Sync(String(pin), String(salt), 10000, 32, 'sha256').toString('hex');
+  }
+
+  verifySourceVaultPinOrThrow(pinInput) {
+    const cfg = this.ensureSourceVaultConfig();
+    if (!cfg.pin_configured || !cfg.pin_hash) {
+      const err = new Error('Ổ đĩa lưu trữ mã nguồn chưa được thiết lập mật khẩu 6 số. Vui lòng tạo mật khẩu 6 số mới trước khi mở khóa.');
+      err.statusCode = 400;
+      throw err;
+    }
+    if (cfg.locked_until && new Date(cfg.locked_until).getTime() > Date.now()) {
+      const waitSec = Math.ceil((new Date(cfg.locked_until).getTime() - Date.now()) / 1000);
+      const err = new Error(`Ổ đĩa đang tạm khóa bảo vệ do nhập sai mật khẩu 6 số quá số lần cho phép. Vui lòng thử lại sau ${waitSec} giây.`);
+      err.statusCode = 429;
+      throw err;
+    }
+    const cleanPin = String(pinInput || '').trim();
+    if (!/^\d{6}$/.test(cleanPin)) {
+      const err = new Error('Mật khẩu mở khóa ổ đĩa bắt buộc phải gồm đúng 6 chữ số (0–9).');
+      err.statusCode = 400;
+      throw err;
+    }
+    const computed = this.hashSixDigitPin(cleanPin, cfg.pin_salt);
+    if (computed !== cfg.pin_hash) {
+      const fails = Number(cfg.failed_attempts || 0) + 1;
+      const lockUntil = fails >= 5 ? new Date(Date.now() + 5 * 60 * 1000).toISOString() : null;
+      this.db.run(
+        `UPDATE admin_source_vault_config SET failed_attempts = ?, locked_until = ?, updated_at = ? WHERE id = 'singleton'`,
+        [fails, lockUntil, new Date().toISOString()]
+      );
+      const err = new Error(`Mật khẩu 6 số không chính xác (Đã sai ${fails}/5 lần).`);
+      err.statusCode = 403;
+      throw err;
+    }
+    if (cfg.failed_attempts > 0 || cfg.locked_until) {
+      this.db.run(
+        `UPDATE admin_source_vault_config SET failed_attempts = 0, locked_until = NULL, updated_at = ? WHERE id = 'singleton'`,
+        [new Date().toISOString()]
+      );
+    }
+    return true;
+  }
+
+  getSourceVaultStatus(adminUser) {
+    requirePermission(adminUser, 'admin.view');
+    const cfg = this.ensureSourceVaultConfig();
+    const filesCount = (this.db.get(`SELECT COUNT(*) AS cnt FROM admin_source_vault_files`) || { cnt: 0 }).cnt;
+    const totalBytes = (this.db.get(`SELECT COALESCE(SUM(size_bytes), 0) AS total_bytes FROM admin_source_vault_files`) || { total_bytes: 0 }).total_bytes;
+    const userDriveCount = (this.db.get(`SELECT COUNT(*) AS cnt FROM storage_files WHERE status = 'active'`) || { cnt: 0 }).cnt;
+    const userDriveBytes = (this.db.get(`SELECT COALESCE(SUM(size_bytes), 0) AS total_bytes FROM storage_files WHERE status = 'active'`) || { total_bytes: 0 }).total_bytes;
+
+    return {
+      vault_route: '/quan-tri/luu-tru-ma-nguon',
+      storage_engine: 'Ổ đĩa Lưu trữ Trực tiếp tại Web (Zero-R2 Web Internal Storage Drive)',
+      cloudflare_r2_used: false,
+      pin_policy: '6 chữ số (000000 - 999999) do Quản trị viên tự thiết lập',
+      pin_configured: Boolean(cfg.pin_configured),
+      failed_attempts: cfg.failed_attempts || 0,
+      locked_until: cfg.locked_until || null,
+      updated_by: cfg.updated_by || 'system',
+      updated_at: cfg.updated_at,
+      summary: {
+        vault_files_count: filesCount,
+        vault_total_bytes: totalBytes,
+        web_drive_files_count: userDriveCount,
+        web_drive_total_bytes: userDriveBytes
+      }
+    };
+  }
+
+  setupOrChangeSourceVaultPin(adminUser, body = {}) {
+    requirePermission(adminUser, 'admin.view');
+    const cfg = this.ensureSourceVaultConfig();
+    const currentPin = String(body.current_pin || '').trim();
+    const newPin = String(body.new_pin || body.pin || '').trim();
+    const confirmPin = String(body.confirm_pin !== undefined ? body.confirm_pin : newPin).trim();
+
+    if (!/^\d{6}$/.test(newPin)) {
+      throw new Error('Mật khẩu ổ đĩa lưu trữ mã nguồn bắt buộc phải gồm đúng 6 chữ số (ví dụ: 231026).');
+    }
+    if (newPin !== confirmPin) {
+      throw new Error('Mật khẩu 6 số xác nhận không khớp.');
+    }
+
+    if (cfg.pin_configured && cfg.pin_hash) {
+      if (!currentPin) {
+        throw new Error('Ổ đĩa đã có mật khẩu 6 số. Vui lòng nhập mật khẩu 6 số hiện tại để đổi mật khẩu mới.');
+      }
+      this.verifySourceVaultPinOrThrow(currentPin);
+    }
+
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = this.hashSixDigitPin(newPin, salt);
+    const nowIso = new Date().toISOString();
+
+    this.db.run(
+      `UPDATE admin_source_vault_config
+       SET pin_configured = 1, pin_hash = ?, pin_salt = ?, failed_attempts = 0, locked_until = NULL, updated_by = ?, updated_at = ?
+       WHERE id = 'singleton'`,
+      [hash, salt, adminUser.full_name || adminUser.email || adminUser.id, nowIso]
+    );
+
+    this.db.run(
+      `INSERT INTO audit_logs (id, actor_id, actor_role, action, target_type, target_id, ip_address, metadata_json, created_at)
+       VALUES (?, ?, ?, 'source_vault_pin_set', 'admin_source_vault', '/quan-tri/luu-tru-ma-nguon', '127.0.0.1', ?, ?)`,
+      [
+        'aud_' + crypto.randomBytes(8).toString('hex'),
+        adminUser.id,
+        adminUser.role,
+        JSON.stringify({ had_previous_pin: Boolean(cfg.pin_configured), pin_digits: 6 }),
+        nowIso
+      ]
+    );
+
+    return {
+      pin_configured: true,
+      message: cfg.pin_configured
+        ? 'Đã cập nhật mật khẩu 6 số mới cho Ổ đĩa Lưu trữ Mã nguồn (/quan-tri/luu-tru-ma-nguon) thành công!'
+        : 'Đã thiết lập mật khẩu 6 số bảo vệ Ổ đĩa Lưu trữ Mã nguồn (/quan-tri/luu-tru-ma-nguon) thành công!',
+      updated_at: nowIso
+    };
+  }
+
+  unlockAndListSourceVault(adminUser, { pin, category = '', q = '' } = {}) {
+    requirePermission(adminUser, 'admin.view');
+    this.verifySourceVaultPinOrThrow(pin);
+
+    let files = this.db.query(
+      `SELECT id, file_name, file_path, category, version_tag, mime_type, size_bytes, checksum_sha256, content_text, description, uploaded_by, created_at, updated_at
+       FROM admin_source_vault_files ORDER BY updated_at DESC`
+    );
+    if (category) {
+      files = files.filter(f => f.category === category);
+    }
+    if (q) {
+      const kw = String(q).trim().toLowerCase();
+      files = files.filter(f =>
+        f.file_name.toLowerCase().includes(kw) ||
+        f.file_path.toLowerCase().includes(kw) ||
+        (f.description || '').toLowerCase().includes(kw)
+      );
+    }
+
+    const webDriveFiles = this.db.query(
+      `SELECT id, storage_key, owner_type, owner_user_id, owner_org_id, uploaded_by_user_id, original_name, mime_type, size_bytes, checksum_sha256, access_scope, status, created_at
+       FROM storage_files WHERE status = 'active' ORDER BY created_at DESC LIMIT 50`
+    );
+
+    return {
+      unlocked: true,
+      vault_route: '/quan-tri/luu-tru-ma-nguon',
+      storage_engine: 'Ổ đĩa Lưu trữ Trực tiếp tại Web (Zero-R2)',
+      cloudflare_r2_used: false,
+      files,
+      web_drive_files: webDriveFiles
+    };
+  }
+
+  saveFileToSourceVault(adminUser, body = {}) {
+    requirePermission(adminUser, 'admin.view');
+    this.verifySourceVaultPinOrThrow(body.pin);
+
+    const fileName = String(body.file_name || '').trim();
+    const filePath = String(body.file_path || ('/vault/' + fileName)).trim();
+    const category = String(body.category || 'source_code').trim();
+    const versionTag = String(body.version_tag || 'v2026.3-ZeroR2').trim();
+    const mimeType = String(body.mime_type || 'text/plain').trim();
+    const description = String(body.description || 'Tệp lưu trữ trên Ổ đĩa Web Quản trị').trim();
+    const contentText = body.content_text !== undefined
+      ? String(body.content_text)
+      : (body.content_base64 ? Buffer.from(String(body.content_base64), 'base64').toString('utf8') : '');
+
+    if (!fileName) {
+      throw new Error('Vui lòng nhập tên tệp hoặc đường dẫn mã nguồn cần lưu trữ.');
+    }
+    if (!contentText && !body.content_base64) {
+      throw new Error('Nội dung tệp lưu trữ không được để trống.');
+    }
+
+    const buf = body.content_base64
+      ? Buffer.from(String(body.content_base64), 'base64')
+      : Buffer.from(contentText, 'utf8');
+    const checksum = crypto.createHash('sha256').update(buf).digest('hex');
+    const b64 = buf.toString('base64');
+    const nowIso = new Date().toISOString();
+
+    const existing = this.db.get(`SELECT * FROM admin_source_vault_files WHERE file_path = ?`, [filePath]);
+    const id = existing ? existing.id : ('svf_' + crypto.randomBytes(8).toString('hex'));
+
+    if (existing) {
+      this.db.run(
+        `UPDATE admin_source_vault_files
+         SET file_name = ?, category = ?, version_tag = ?, mime_type = ?, size_bytes = ?,
+             checksum_sha256 = ?, content_text = ?, content_base64 = ?, description = ?, uploaded_by = ?, updated_at = ?
+         WHERE id = ?`,
+        [
+          fileName,
+          category,
+          versionTag,
+          mimeType,
+          buf.length,
+          checksum,
+          contentText,
+          b64,
+          description,
+          adminUser.full_name || adminUser.email || adminUser.id,
+          nowIso,
+          id
+        ]
+      );
+    } else {
+      this.db.run(
+        `INSERT INTO admin_source_vault_files (
+          id, file_name, file_path, category, version_tag, mime_type, size_bytes,
+          checksum_sha256, content_text, content_base64, description, uploaded_by, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          id,
+          fileName,
+          filePath,
+          category,
+          versionTag,
+          mimeType,
+          buf.length,
+          checksum,
+          contentText,
+          b64,
+          description,
+          adminUser.full_name || adminUser.email || adminUser.id,
+          nowIso,
+          nowIso
+        ]
+      );
+    }
+
+    this.db.run(
+      `INSERT INTO audit_logs (id, actor_id, actor_role, action, target_type, target_id, ip_address, metadata_json, created_at)
+       VALUES (?, ?, ?, 'source_vault_file_save', 'admin_source_vault_files', ?, '127.0.0.1', ?, ?)`,
+      [
+        'aud_' + crypto.randomBytes(8).toString('hex'),
+        adminUser.id,
+        adminUser.role,
+        id,
+        JSON.stringify({ file_name: fileName, file_path: filePath, size_bytes: buf.length, checksum }),
+        nowIso
+      ]
+    );
+
+    return this.db.get(`SELECT * FROM admin_source_vault_files WHERE id = ?`, [id]);
+  }
+
+  deleteFileFromSourceVault(adminUser, { pin, file_id }) {
+    requirePermission(adminUser, 'admin.view');
+    this.verifySourceVaultPinOrThrow(pin);
+    const existing = this.db.get(`SELECT * FROM admin_source_vault_files WHERE id = ?`, [file_id]);
+    if (!existing) {
+      throw new Error('Không tìm thấy tệp trong ổ đĩa lưu trữ mã nguồn.');
+    }
+    this.db.run(`DELETE FROM admin_source_vault_files WHERE id = ?`, [file_id]);
+    return { deleted: true, file_id, file_name: existing.file_name };
+  }
+
+  // ============================================================================
+  // TIẾNG ANH CHUYÊN NGÀNH (ESP): MỘT TÌNH HUỐNG - BA LỚP, GHÉP CẶP & KHẢO SÁT H1-H6
+  // ============================================================================
+  listCareerScenarios({ major = '', level = '', q = '' } = {}) {
+    let rows = this.db.query(`SELECT * FROM career_scenarios ORDER BY display_order ASC`);
+    if (major && major !== 'Tất cả') {
+      rows = rows.filter(r => r.major === major);
+    }
+    if (level && level !== 'Tất cả') {
+      rows = rows.filter(r => r.level === level);
+    }
+    if (q) {
+      const kw = String(q).trim().toLowerCase();
+      rows = rows.filter(r =>
+        r.title.toLowerCase().includes(kw) ||
+        r.summary.toLowerCase().includes(kw) ||
+        r.major.toLowerCase().includes(kw)
+      );
+    }
+    const allSessions = this.db.query(`SELECT * FROM career_practice_sessions WHERE status = 'OPEN'`);
+    return rows.map(r => ({
+      id: r.id,
+      slug: r.slug,
+      title: r.title,
+      major: r.major,
+      target_audience: r.target_audience,
+      level: r.level,
+      summary: r.summary,
+      duration_minutes: r.duration_minutes,
+      is_free: Boolean(r.is_free),
+      vocab: JSON.parse(r.vocab_json || '[]'),
+      phrases: JSON.parse(r.phrases_json || '[]'),
+      dialogue: JSON.parse(r.dialogue_json || '[]'),
+      role_a: JSON.parse(r.role_a_json || '{}'),
+      role_b: JSON.parse(r.role_b_json || '{}'),
+      rubric: JSON.parse(r.rubric_json || '[]'),
+      author_name: r.author_name,
+      reviewed_by_teacher: r.reviewed_by_teacher,
+      source_attribution: r.source_attribution,
+      open_sessions_count: allSessions.filter(s => s.scenario_slug === r.slug || s.scenario_id === r.id).length
+    }));
+  }
+
+  getCareerScenarioBySlug(slugOrId) {
+    const r = this.db.get(`SELECT * FROM career_scenarios WHERE slug = ? OR id = ?`, [slugOrId, slugOrId]);
+    if (!r) {
+      const err = new Error('Không tìm thấy tình huống chuyên ngành yêu cầu.');
+      err.statusCode = 404;
+      throw err;
+    }
+    const sessions = this.db.query(
+      `SELECT * FROM career_practice_sessions WHERE scenario_slug = ? OR scenario_id = ? ORDER BY created_at DESC`,
+      [r.slug, r.id]
+    );
+    return {
+      scenario: {
+        id: r.id,
+        slug: r.slug,
+        title: r.title,
+        major: r.major,
+        target_audience: r.target_audience,
+        level: r.level,
+        summary: r.summary,
+        duration_minutes: r.duration_minutes,
+        is_free: Boolean(r.is_free),
+        vocab: JSON.parse(r.vocab_json || '[]'),
+        phrases: JSON.parse(r.phrases_json || '[]'),
+        dialogue: JSON.parse(r.dialogue_json || '[]'),
+        role_a: JSON.parse(r.role_a_json || '{}'),
+        role_b: JSON.parse(r.role_b_json || '{}'),
+        rubric: JSON.parse(r.rubric_json || '[]'),
+        author_name: r.author_name,
+        reviewed_by_teacher: r.reviewed_by_teacher,
+        source_attribution: r.source_attribution
+      },
+      sessions
+    };
+  }
+
+  listCareerPracticeSessions({ major = '', status = '' } = {}) {
+    let sessions = this.db.query(`SELECT * FROM career_practice_sessions ORDER BY created_at DESC`);
+    if (major && major !== 'Tất cả') {
+      sessions = sessions.filter(s => s.major === major);
+    }
+    if (status) {
+      sessions = sessions.filter(s => s.status === status);
+    }
+    const reviews = this.db.query(`SELECT * FROM career_rubric_reviews ORDER BY created_at DESC`);
+    return sessions.map(s => ({
+      ...s,
+      rubrics: reviews.filter(rv => rv.session_id === s.id).map(rv => ({
+        ...rv,
+        scores: JSON.parse(rv.scores_json || '{}')
+      }))
+    }));
+  }
+
+  createCareerPracticeSession(user, body = {}) {
+    const scenarioSlugOrId = body.scenario_slug || body.scenario_id;
+    const sc = this.db.get(`SELECT * FROM career_scenarios WHERE slug = ? OR id = ?`, [scenarioSlugOrId, scenarioSlugOrId])
+      || this.db.get(`SELECT * FROM career_scenarios ORDER BY display_order ASC LIMIT 1`);
+    if (!sc) throw new Error('Không tìm thấy tình huống chuyên ngành để tạo lịch hẹn.');
+
+    const id = 'cps_' + crypto.randomBytes(6).toString('hex');
+    const hostName = (user && user.full_name) || String(body.host_name || 'Học viên Cao đẳng / Trung cấp nghề').trim();
+    const hostId = (user && user.id) || 'guest_student';
+    const schoolName = String(body.school_name || 'Trường Cao đẳng nghề Việt Nam - Singapore (VSVC)').trim();
+    const className = String(body.class_name || 'T25DH2DA').trim();
+    const eduSystem = String(body.education_system || 'Cao đẳng nghề / Trung cấp nghề / GDNN - GDTX').trim();
+    const slotLabel = String(body.slot_label || 'Thứ 3 (19:30 - 20:15)').trim();
+    const scheduledDate = String(body.scheduled_date || '2026-11-25').trim();
+    const roomCode = 'WB-' + sc.major.slice(0, 2).toUpperCase() + '-' + Math.floor(100 + Math.random() * 900);
+    const notes = String(body.notes || 'Luyện đóng vai Vai A / Vai B và chấm điểm chéo theo Rubric 5 tiêu chí.').trim();
+    const nowIso = new Date().toISOString();
+
+    this.db.run(
+      `INSERT INTO career_practice_sessions (
+        id, scenario_id, scenario_slug, scenario_title, host_user_id, host_name,
+        partner_user_id, partner_name, major, level, school_name, class_name,
+        education_system, slot_label, scheduled_date, meeting_room_code, status, notes, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, NULL, '', ?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?)`,
+      [
+        id,
+        sc.id,
+        sc.slug,
+        sc.title,
+        hostId,
+        hostName,
+        sc.major,
+        sc.level,
+        schoolName,
+        className,
+        eduSystem,
+        slotLabel,
+        scheduledDate,
+        roomCode,
+        notes,
+        nowIso
+      ]
+    );
+
+    return this.db.get(`SELECT * FROM career_practice_sessions WHERE id = ?`, [id]);
+  }
+
+  joinCareerPracticeSession(user, { session_id, partner_name = '' }) {
+    const ses = this.db.get(`SELECT * FROM career_practice_sessions WHERE id = ?`, [session_id]);
+    if (!ses) throw new Error('Không tìm thấy lịch hẹn ghép cặp.');
+    const pName = (user && user.full_name) || String(partner_name || 'Bạn học cùng ngành').trim();
+    const pId = (user && user.id) || 'partner_student';
+
+    this.db.run(
+      `UPDATE career_practice_sessions SET partner_user_id = ?, partner_name = ?, status = 'MATCHED' WHERE id = ?`,
+      [pId, pName, session_id]
+    );
+    return this.db.get(`SELECT * FROM career_practice_sessions WHERE id = ?`, [session_id]);
+  }
+
+  submitCareerRubricReview(user, body = {}) {
+    const {
+      session_id,
+      reviewer_name = '',
+      scores = { terminology: 5, clarity: 5, task_completion: 5, interaction: 4, professionalism: 5 },
+      satisfaction_rating = 5,
+      strengths = 'Sử dụng đúng thuật ngữ chuyên ngành và hoàn thành tốt nhiệm vụ vai đóng.',
+      improvements = 'Cần luyện thêm ngữ điệu tự nhiên và phản xạ hỏi xác nhận.'
+    } = body;
+
+    const ses = this.db.get(`SELECT * FROM career_practice_sessions WHERE id = ?`, [session_id]);
+    if (!ses) throw new Error('Không tìm thấy phiên luyện tập để gửi phiếu Rubric.');
+
+    const vals = Object.values(scores).map(Number).filter(n => Number.isFinite(n));
+    const avg = vals.length > 0 ? Math.round((vals.reduce((a, b) => a + b, 0) / vals.length) * 10) / 10 : 5.0;
+    const id = 'crr_' + crypto.randomBytes(6).toString('hex');
+    const revName = (user && user.full_name) || String(reviewer_name || 'Bạn cùng luyện').trim();
+    const revId = (user && user.id) || 'reviewer_student';
+    const nowIso = new Date().toISOString();
+
+    this.db.run(
+      `INSERT INTO career_rubric_reviews (
+        id, session_id, reviewer_user_id, reviewer_name, target_user_id,
+        scores_json, overall_score, satisfaction_rating, strengths, improvements, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        session_id,
+        revId,
+        revName,
+        ses.host_user_id || '',
+        JSON.stringify(scores),
+        avg,
+        Number(satisfaction_rating || 5),
+        String(strengths).trim(),
+        String(improvements).trim(),
+        nowIso
+      ]
+    );
+
+    this.db.run(`UPDATE career_practice_sessions SET status = 'COMPLETED' WHERE id = ?`, [session_id]);
+    return {
+      review: this.db.get(`SELECT * FROM career_rubric_reviews WHERE id = ?`, [id]),
+      session: this.db.get(`SELECT * FROM career_practice_sessions WHERE id = ?`, [session_id])
+    };
+  }
+
+  getVocationalSurveyAnalytics() {
+    const rows = this.db.query(`SELECT * FROM vocational_survey_responses ORDER BY created_at DESC`);
+    const total = rows.length;
+    const pct = (c) => total > 0 ? Math.round((c / total) * 1000) / 10 : 0;
+
+    const h1Count = rows.filter(r => Number(r.career_relevance_score) <= 2).length;
+    const h2Count = rows.filter(r => {
+      const d = JSON.parse(r.top_difficulties_json || '[]');
+      return d.some(x => String(x).toLowerCase().includes('luyện nói') || String(x).toLowerCase().includes('sát ngành'));
+    }).length;
+    const h3Count = rows.filter(r => Number(r.pair_willingness_score) >= 4).length;
+    const h4Count = rows.filter(r => Boolean(r.trial_willing)).length;
+    const h5Count = rows.filter(r => Boolean(r.pay_willing)).length;
+
+    return {
+      total_responses: total,
+      hypotheses: [
+        { code: 'H1', title: 'Nội dung hiện tại chưa sát tình huống nghề của HSSV', target_pct: 50, actual_pct: pct(h1Count), passed: pct(h1Count) >= 50 },
+        { code: 'H2', title: 'Thiếu môi trường & bạn luyện nói cùng ngành là rào cản lớn', target_pct: 50, actual_pct: pct(h2Count), passed: pct(h2Count) >= 50 },
+        { code: 'H3', title: 'Sẵn sàng ghép cặp luyện nói cùng ngành có kịch bản & Rubric', target_pct: 40, actual_pct: pct(h3Count), passed: pct(h3Count) >= 40 },
+        { code: 'H4', title: 'Sẵn sàng tham gia thử nghiệm kín tối thiểu 4 tuần', target_pct: 30, actual_pct: pct(h4Count), passed: pct(h4Count) >= 30 },
+        { code: 'H5', title: 'Sẵn sàng trả phí hợp lý cho gói mở rộng chuyên sâu', target_pct: 20, actual_pct: pct(h5Count), passed: pct(h5Count) >= 20 }
+      ],
+      recent_responses: rows.slice(0, 15)
+    };
+  }
+
+  submitVocationalSurvey(body = {}) {
+    const id = 'vsr_' + crypto.randomBytes(6).toString('hex');
+    const nowIso = new Date().toISOString();
+    this.db.run(
+      `INSERT INTO vocational_survey_responses (
+        id, customer_group, education_type, major, english_level,
+        career_relevance_score, top_difficulties_json, products_tried_json,
+        pair_willingness_score, trial_willing, trial_email, pay_willing,
+        max_monthly_price_vnd, feedback_note, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        id,
+        String(body.customer_group || 'N1'),
+        String(body.education_type || 'Cao đẳng nghề'),
+        String(body.major || 'Tin học'),
+        Number(body.english_level || 2),
+        Number(body.career_relevance_score || 2),
+        JSON.stringify(Array.isArray(body.top_difficulties) ? body.top_difficulties : ['Thiếu nội dung sát ngành', 'Thiếu người luyện nói cùng']),
+        JSON.stringify(Array.isArray(body.products_tried) ? body.products_tried : ['Duolingo']),
+        Number(body.pair_willingness_score || 5),
+        body.trial_willing !== false ? 1 : 0,
+        String(body.trial_email || '').trim(),
+        body.pay_willing ? 1 : 0,
+        Number(body.max_monthly_price_vnd || 50000),
+        String(body.feedback_note || '').trim(),
+        nowIso
+      ]
+    );
+    return this.getVocationalSurveyAnalytics();
+  }
+
 }
 
 module.exports = { AdminAndOperationsModule };

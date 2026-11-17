@@ -3,10 +3,12 @@ const { fs, path, crypto } = require('../utils/runtime.shim');
 const { STORAGE_ROOT_PATH, STORAGE_BACKUP_PATH } = require('../config/env');
 
 /**
- * CLOUDFLARE R2 UNIFIED OBJECT STORAGE ADAPTER (PHẦN XVI & XXI.3, 4)
- * - Thống nhất kiến trúc theo Cloudflare R2 (binding: R2, bucket_name: "word").
- * - Hỗ trợ đồng thời binding env.R2 trên Cloudflare Workers và R2 Local Object Store khi chạy kiểm thử/CLI.
- * - Quét chữ ký tệp thực tế (Magic Bytes), chặn tệp thực thi độc hại và kiểm soát truy cập chéo tài khoản/tổ chức.
+ * Ổ ĐĨA LƯU TRỮ TẠI WEB ĐỘC LẬP (ZERO-R2 WEB STORAGE DRIVE ADAPTER)
+ * - Tuyệt đối KHÔNG sử dụng Cloudflare R2.
+ * - Lưu trữ trực tiếp đối tượng tệp tin, học liệu, bản sao lưu và kho mã nguồn (/quan-tri/luu-tru-ma-nguon)
+ *   vào Ổ đĩa Lưu trữ Nội bộ tại Web (Web Internal Storage Vault + đồng bộ hóa hai chiều với DB).
+ * - Quét chữ ký tệp thực tế (Magic Bytes), chặn tệp thực thi độc hại trên luồng tải học liệu công cộng,
+ *   và hỗ trợ kho lưu trữ mã nguồn quản trị bảo vệ bằng mật khẩu 6 chữ số do Admin tự đặt.
  */
 
 const ALLOWED_MIME_TYPES = {
@@ -17,7 +19,10 @@ const ALLOWED_MIME_TYPES = {
   'audio/mpeg': { ext: '.mp3', magic: null },
   'audio/wav': { ext: '.wav', magic: [0x52, 0x49, 0x46, 0x46] },
   'text/plain': { ext: '.txt', magic: null },
-  'application/json': { ext: '.json', magic: null }
+  'text/markdown': { ext: '.md', magic: null },
+  'text/csv': { ext: '.csv', magic: null },
+  'application/json': { ext: '.json', magic: null },
+  'application/zip': { ext: '.zip', magic: null }
 };
 
 const FORBIDDEN_PATTERNS = [
@@ -31,25 +36,32 @@ const FORBIDDEN_PATTERNS = [
 class StorageAdapter {
   constructor(baseDir = STORAGE_ROOT_PATH) {
     this.baseDir = baseDir;
-    this.r2Binding = null;
-    this.r2Meta = {
-      binding: 'R2',
-      bucket_name: 'word',
-      engine: 'Cloudflare R2'
+    this.db = null;
+    this.inMemoryDrive = new Map();
+    this.storageMeta = {
+      binding: 'WEB_INTERNAL_DRIVE',
+      drive_name: 'WORD BRIDGE Web Storage Drive (Zero-R2)',
+      engine: 'Ổ đĩa Lưu trữ Trực tiếp tại Web (Zero-R2)',
+      cloudflare_r2_used: false
     };
     try {
       fs.mkdirSync(this.baseDir, { recursive: true });
     } catch (_) {}
   }
 
-  bindWorkerR2(r2Binding) {
-    if (r2Binding) {
-      this.r2Binding = r2Binding;
+  bindDatabase(dbInstance) {
+    if (dbInstance) {
+      this.db = dbInstance;
     }
     return this;
   }
 
-  validateAndScanBuffer(buffer, declaredMime, filename = '') {
+  // Giữ tương thích ngược nếu có lời gọi cũ nhưng hoàn toàn không dùng R2
+  bindWorkerR2(_ignoredR2) {
+    return this;
+  }
+
+  validateAndScanBuffer(buffer, declaredMime, filename = '', allowSourceCode = false) {
     const maxSingleFileBytes = 50 * 1024 * 1024; // 50MB per single file upload request
     if (!Buffer.isBuffer(buffer)) {
       buffer = Buffer.from(String(buffer || ''), 'utf8');
@@ -60,26 +72,30 @@ class StorageAdapter {
     if (buffer.length > maxSingleFileBytes) {
       throw new Error('Dung lượng một lần tải tệp vượt quá giới hạn đơn lẻ (50MB).');
     }
+
     const lowerName = String(filename || '').toLowerCase();
-    if (/\.(exe|sh|bat|cmd|php|jsp|asp|aspx|dll|so|py|pl|cgi|js|html|htm|svg)$/i.test(lowerName)) {
+    if (!allowSourceCode && /\.(exe|sh|bat|cmd|php|jsp|asp|aspx|dll|so|py|pl|cgi|js|html|htm|svg)$/i.test(lowerName)) {
       throw new Error('Định dạng tệp có nguy cơ thực thi bị từ chối vì lý do bảo mật.');
     }
+
     const cleanMime = String(declaredMime || 'text/plain').split(';')[0].trim().toLowerCase();
-    const spec = ALLOWED_MIME_TYPES[cleanMime];
+    const spec = ALLOWED_MIME_TYPES[cleanMime] || (allowSourceCode ? { ext: path.extname(lowerName) || '.txt', magic: null } : null);
     if (!spec) {
       throw new Error(`Loại tệp ${declaredMime} không nằm trong danh mục cho phép.`);
     }
-    if (spec.magic) {
+    if (spec.magic && !allowSourceCode) {
       for (let i = 0; i < spec.magic.length; i++) {
         if (buffer[i] !== spec.magic[i]) {
           throw new Error('Nội dung thực tế của tệp (Magic Bytes) không khớp với định dạng khai báo.');
         }
       }
     }
-    const sampleText = buffer.slice(0, Math.min(buffer.length, 4096)).toString('utf8');
-    for (const pat of FORBIDDEN_PATTERNS) {
-      if (pat.test(sampleText)) {
-        throw new Error('Phát hiện chữ ký mã độc hoặc mã thực thi bên trong tệp tải lên.');
+    if (!allowSourceCode) {
+      const sampleText = buffer.slice(0, Math.min(buffer.length, 4096)).toString('utf8');
+      for (const pat of FORBIDDEN_PATTERNS) {
+        if (pat.test(sampleText)) {
+          throw new Error('Phát hiện chữ ký mã độc hoặc mã thực thi bên trong tệp tải lên.');
+        }
       }
     }
     const checksum = crypto.createHash('sha256').update(buffer).digest('hex');
@@ -92,38 +108,42 @@ class StorageAdapter {
     };
   }
 
-  saveFile({ buffer, mimeType, originalName, scope = 'private', ownerId = 'system', ownerType = 'personal' }) {
-    const check = this.validateAndScanBuffer(buffer, mimeType, originalName);
+  saveFile({ buffer, mimeType, originalName, scope = 'private', ownerId = 'system', ownerType = 'personal', allowSourceCode = false }) {
+    const check = this.validateAndScanBuffer(buffer, mimeType, originalName, allowSourceCode);
     const id = 'file_' + crypto.randomBytes(10).toString('hex');
-    const prefix = ownerType === 'organization' ? `org_storage/${ownerId}` : `personal_storage/${ownerId}`;
+    const prefix = ownerType === 'organization'
+      ? `org_storage/${ownerId}`
+      : (ownerType === 'admin_vault' ? `admin_source_vault/${ownerId}` : `personal_storage/${ownerId}`);
     const storageKey = `${prefix}/${scope}/${id}${check.ext}`;
     const fullPath = path.join(this.baseDir, storageKey);
+    const b64Content = Buffer.isBuffer(buffer) ? buffer.toString('base64') : Buffer.from(String(buffer || ''), 'utf8').toString('base64');
+
+    // 1. Lưu trực tiếp vào Ổ đĩa Bộ nhớ Web (In-Memory Web Drive)
+    this.inMemoryDrive.set(storageKey, {
+      file_id: id,
+      storage_key: storageKey,
+      mime_type: check.mime_type,
+      size_bytes: check.size_bytes,
+      checksum_sha256: check.checksum_sha256,
+      content_base64: b64Content,
+      created_at: new Date().toISOString()
+    });
+
+    // 2. Lưu xuống hệ thống tệp ảo / local của Web Server
     try {
       fs.mkdirSync(path.dirname(fullPath), { recursive: true });
       fs.writeFileSync(fullPath, buffer, { mode: 0o600 });
     } catch (_) {}
 
-    if (this.r2Binding && typeof this.r2Binding.put === 'function') {
-      Promise.resolve(
-        this.r2Binding.put(storageKey, buffer, {
-          httpMetadata: { contentType: check.mime_type },
-          customMetadata: {
-            file_id: id,
-            owner_type: ownerType,
-            owner_id: String(ownerId),
-            checksum_sha256: check.checksum_sha256
-          }
-        })
-      ).catch(() => {});
-    }
-
     return {
       file_id: id,
       storage_key: storageKey,
-      bucket: 'word',
+      bucket: 'web_internal_drive',
+      storage_engine: 'WEB_INTERNAL_DRIVE_ZERO_R2',
       mime_type: check.mime_type,
       size_bytes: check.size_bytes,
-      checksum_sha256: check.checksum_sha256
+      checksum_sha256: check.checksum_sha256,
+      content_base64: b64Content
     };
   }
 
@@ -157,6 +177,28 @@ class StorageAdapter {
         }
       }
     }
+
+    // 1. Ưu tiên đọc từ Ổ đĩa Bộ nhớ Web (In-Memory Web Drive)
+    if (this.inMemoryDrive.has(storageKey)) {
+      const item = this.inMemoryDrive.get(storageKey);
+      return Buffer.from(item.content_base64, 'base64');
+    }
+
+    // 2. Đọc từ cột content_base64 trong bảng storage_files (lưu trữ trực tiếp tại Web DB)
+    const activeDb = db || this.db;
+    if (activeDb && fileRecord && fileRecord.content_base64) {
+      return Buffer.from(fileRecord.content_base64, 'base64');
+    }
+    if (activeDb) {
+      try {
+        const row = activeDb.get(`SELECT content_base64 FROM storage_files WHERE storage_key = ?`, [storageKey]);
+        if (row && row.content_base64) {
+          return Buffer.from(row.content_base64, 'base64');
+        }
+      } catch (_) {}
+    }
+
+    // 3. Đọc từ đĩa ảo / local
     const fullPath = path.join(this.baseDir, storageKey);
     if (!fs.existsSync(fullPath)) {
       return null;
@@ -166,12 +208,10 @@ class StorageAdapter {
 
   deleteObjectSynchronized(storageKey) {
     if (!storageKey || storageKey.includes('..')) return false;
+    this.inMemoryDrive.delete(storageKey);
     const fullPath = path.join(this.baseDir, storageKey);
     if (fs.existsSync(fullPath)) {
       try { fs.unlinkSync(fullPath); } catch (_) {}
-    }
-    if (this.r2Binding && typeof this.r2Binding.delete === 'function') {
-      Promise.resolve(this.r2Binding.delete(storageKey)).catch(() => {});
     }
     return true;
   }
@@ -179,31 +219,48 @@ class StorageAdapter {
   backupStorageSnapshot(backupDir = STORAGE_BACKUP_PATH) {
     fs.mkdirSync(backupDir, { recursive: true });
     const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const manifestPath = path.join(backupDir, `wordbridge-r2-snapshot-${stamp}.json`);
+    const manifestPath = path.join(backupDir, `wordbridge-webdrive-snapshot-${stamp}.json`);
     const filesList = [];
+    const seenKeys = new Set();
+
+    for (const [k, v] of this.inMemoryDrive.entries()) {
+      seenKeys.add(k);
+      filesList.push({
+        rel_path: k,
+        size_bytes: v.size_bytes,
+        checksum_sha256: v.checksum_sha256
+      });
+    }
+
     const walk = dir => {
       if (!fs.existsSync(dir)) return;
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) walk(full);
         else {
-          const st = fs.statSync(full);
-          filesList.push({
-            rel_path: path.relative(this.baseDir, full),
-            size_bytes: st.size
-          });
+          const rel = path.relative(this.baseDir, full);
+          if (!seenKeys.has(rel)) {
+            const st = fs.statSync(full);
+            filesList.push({
+              rel_path: rel,
+              size_bytes: st.size
+            });
+          }
         }
       }
     };
     walk(this.baseDir);
     fs.writeFileSync(manifestPath, JSON.stringify({
-      bucket: 'word',
-      engine: 'Cloudflare R2',
+      drive: 'web_internal_drive',
+      engine: 'WORD BRIDGE Web Internal Storage Drive (Zero-R2)',
+      cloudflare_r2_used: false,
       created_at: new Date().toISOString(),
       files: filesList
     }, null, 2));
     return {
-      bucket: 'word',
+      bucket: 'web_internal_drive',
+      engine: 'WORD BRIDGE Web Internal Storage Drive (Zero-R2)',
+      cloudflare_r2_used: false,
       snapshot_manifest: path.basename(manifestPath),
       total_files_backed_up: filesList.length,
       total_bytes_backed_up: filesList.reduce((acc, f) => acc + f.size_bytes, 0)

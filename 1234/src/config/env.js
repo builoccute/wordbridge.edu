@@ -80,22 +80,21 @@ function getIntegrationStatus(workerEnv = null) {
     envSource.PAYMENT_BANK_ACCOUNT_NO
   );
   const hasD1Binding = Boolean(workerEnv && workerEnv.DB);
-  const hasR2Binding = Boolean(workerEnv && workerEnv.R2);
   const oauthStatus = getOAuthProvidersStatus(workerEnv);
 
   return {
     infrastructure: {
-      architecture: 'Cloudflare Workers + Cloudflare D1 + Cloudflare R2',
+      architecture: 'Cloudflare Workers + Cloudflare D1 + Ổ đĩa Lưu trữ Trực tiếp tại Web (Zero-R2)',
       worker_name: 'wordbridge-edu',
       d1_binding: 'DB',
       d1_database_name: 'word',
       d1_database_id: 'ce84cc48-6d49-409b-b45a-13ba3bc4a771',
       d1_connected: true,
       d1_runtime_mode: hasD1Binding ? 'cloudflare_d1_binding' : 'd1_compatible_adapter',
-      r2_binding: 'R2',
-      r2_bucket_name: 'word',
-      r2_connected: true,
-      r2_runtime_mode: hasR2Binding ? 'cloudflare_r2_binding' : 'r2_compatible_adapter',
+      cloudflare_r2_used: false,
+      web_internal_drive_enabled: true,
+      source_vault_path: '/quan-tri/luu-tru-ma-nguon',
+      source_vault_pin_policy: '6 chữ số do Quản trị viên tự thiết lập',
       monthly_quota_gb: getMonthlyQuotaGb(),
       monthly_quota_bytes: getMonthlyQuotaGb() * GB_BYTES,
       override_plan_quotas: false,
@@ -108,7 +107,7 @@ function getIntegrationStatus(workerEnv = null) {
         org_plus_yearly_gb: PLAN_DEFAULT_QUOTAS.org_plus_yearly.quota_bytes / GB_BYTES
       },
       database_engine: 'Cloudflare D1 (word)',
-      storage_engine: 'Cloudflare R2 (word)'
+      storage_engine: 'Ổ đĩa Lưu trữ Trực tiếp tại Web (Zero-R2 Web Internal Vault)'
     },
     email: {
       connected: emailConfigured,
@@ -137,7 +136,7 @@ module.exports = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   CANONICAL_ORIGIN: process.env.CANONICAL_ORIGIN || 'https://wordbridge.io.vn',
   LOCAL_DB_FILE: process.env.LOCAL_DB_FILE || process.env.SQLITE_DB_PATH || path.resolve(process.cwd(), 'data/wordbridge_d1_local.sqlite'),
-  STORAGE_ROOT_PATH: process.env.STORAGE_ROOT_PATH || path.resolve(process.cwd(), 'data/wordbridge_r2_local'),
+  STORAGE_ROOT_PATH: process.env.STORAGE_ROOT_PATH || path.resolve(process.cwd(), 'data/wordbridge_web_drive'),
   STORAGE_BACKUP_PATH: process.env.STORAGE_BACKUP_PATH || path.resolve(process.cwd(), 'data/wordbridge_backups'),
   STORAGE_SERVER_PROVISIONED_BYTES: Number(process.env.STORAGE_SERVER_PROVISIONED_BYTES || (2 * TB_BYTES)),
   SESSION_SECRET: process.env.SESSION_SECRET || 'wb_dev_session_secret_do_not_use_in_prod_2026',

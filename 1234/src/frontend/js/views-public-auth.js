@@ -201,6 +201,58 @@
           </div>
         </section>
 
+
+        <!-- TIẾNG ANH CHUYÊN NGÀNH CHO HỌC SINH CAO ĐẲNG NGHỀ, TRUNG CẤP NGHỀ, GDNN - GDTX (MỘT TÌNH HUỐNG - BA LỚP) -->
+        <section class="wb-section">
+          <div class="wb-card" style="border-top:5px solid var(--wb-deep-teal);background:linear-gradient(135deg,#F3F9F9 0%,#FFFDF7 100%);">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:14px;">
+              <div>
+                <span class="wb-badge wb-badge-red">TRỌNG TÂM ĐÀO TẠO NGHỀ • CƠ CHẾ "MỘT TÌNH HUỐNG - BA LỚP"</span>
+                <h2 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Tiếng Anh Chuyên Ngành cho Học sinh Cao đẳng nghề, Trung cấp nghề &amp; GDNN - GDTX</h2>
+                <p style="font-size:14px;color:var(--wb-text-muted);margin:0;">
+                  Tổ chức toàn bộ việc học từ vựng, mẫu câu, đóng vai phản xạ và ghép cặp bạn học quanh một đơn vị duy nhất: <strong>Tình huống nghề nghiệp thực tế</strong> được giáo viên chuyên môn của khoa rà soát.
+                </p>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <a href="/tinh-huong" class="wb-btn wb-btn-primary" data-nav="/tinh-huong">
+                  ${WB.icon('layers', 16)}
+                  <span>Vào Thư viện Tình huống 3 Lớp</span>
+                </a>
+                <a href="/ghep-cap" class="wb-btn wb-btn-accent" data-nav="/ghep-cap">
+                  ${WB.icon('users', 16)}
+                  <span>Ghép cặp Luyện nói &amp; Rubric</span>
+                </a>
+                <a href="/doi-thu-va-gia-tri" class="wb-btn wb-btn-outline" data-nav="/doi-thu-va-gia-tri">
+                  <span>Phân tích Đối thủ &amp; Giá trị Khác biệt</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="wb-grid-3" style="margin-bottom:16px;">
+              <div class="wb-card" style="background:#FFFFFF;">
+                <span class="wb-badge wb-badge-teal">LỚP 1 • LỚP NỘI DUNG</span>
+                <h4 style="margin:8px 0 4px 0;color:var(--wb-deep-teal);">Từ vựng, Mẫu câu &amp; Hội thoại Nghề</h4>
+                <p style="font-size:13px;color:var(--wb-text-muted);margin:0;">Biên soạn sát chương trình đào tạo nghề Việt Nam (Cơ khí, Điện - Điện tử, Tin học, Ô tô, Thiết kế Đồ họa, Kinh tế - Du lịch, Điều dưỡng, Logistics) và được giáo viên chuyên môn rà soát.</p>
+              </div>
+              <div class="wb-card" style="background:#FFFFFF;">
+                <span class="wb-badge wb-badge-red">LỚP 2 • LỚP LUYỆN TẬP</span>
+                <h4 style="margin:8px 0 4px 0;color:var(--wb-deep-teal);">Kịch bản Đóng vai A/B &amp; Rubric 5 Tiêu chí</h4>
+                <p style="font-size:13px;color:var(--wb-text-muted);margin:0;">Thực hành đóng vai 2 người có mục tiêu công việc cụ thể, kèm bảng tiêu chí (Rubric) để người cùng luyện nhận xét có cấu trúc thay cho trò chuyện tự do.</p>
+              </div>
+              <div class="wb-card" style="background:#FFFFFF;">
+                <span class="wb-badge wb-badge-success">LỚP 3 • LỚP CỘNG ĐỒNG</span>
+                <h4 style="margin:8px 0 4px 0;color:var(--wb-deep-teal);">Ghép cặp Cùng Trường, Khoa, Lớp &amp; Ngành</h4>
+                <p style="font-size:13px;color:var(--wb-text-muted);margin:0;">Ghép cặp ngang hàng theo ngành học, trình độ và khung giờ rảnh trong cộng đồng học sinh, sinh viên tin cậy (Cao đẳng nghề, Trung cấp nghề, GDNN - GDTX).</p>
+              </div>
+            </div>
+
+            <div style="font-size:13px;color:var(--wb-deep-teal);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding-top:10px;border-top:1px solid var(--wb-border);">
+              <div><strong>Nhóm sáng lập:</strong> Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như • Vũ Tiến Anh</div>
+              <div><strong>8 Lĩnh vực Chuyên ngành:</strong> Cơ khí • Điện - Điện tử • Tin học • Công nghệ Ô tô • Thiết kế Đồ họa • Kinh tế - Du lịch • Điều dưỡng • Logistics</div>
+            </div>
+          </div>
+        </section>
+
         <!-- NĂM NGÔN NGỮ ĐƯỢC HỖ TRỢ -->
         <section class="wb-section">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
@@ -268,7 +320,8 @@
           <span class="wb-badge wb-badge-teal">THÔNG TIN CHÍNH THỨC</span>
           <h1 style="color:var(--wb-deep-teal);margin:10px 0;">${pathname === '/gioi-thieu' ? 'Giới thiệu Nền tảng WORD BRIDGE' : 'Khám phá Hệ sinh thái Ngoại ngữ WORD BRIDGE'}</h1>
           <p><strong>Khẩu hiệu:</strong> Where Languages Bring People Together.</p>
-          <p><strong>Nhóm sáng lập:</strong> Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như.</p>
+          <p><strong>Nhóm sáng lập:</strong> Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như • Vũ Tiến Anh.</p>
+          <p><strong>Đối tượng người học trọng tâm:</strong> Học sinh, sinh viên Trường Cao đẳng nghề, Trường Trung cấp nghề, Học viên Trung tâm GDNN - GDTX và người đi làm các lĩnh vực chuyên ngành nghề nghiệp.</p>
           <p>WORD BRIDGE là nền tảng thực hành ngoại ngữ và kết nối cộng đồng tích hợp bốn trụ cột <strong>LEARN – CONNECT – COMMUNITY – GROW</strong>, hỗ trợ năm ngoại ngữ (Tiếng Trung, Tiếng Anh, Tiếng Hàn, Tiếng Nhật, Tiếng Nga), tìm bạn thực hành đồng thuận hai bên, vận hành câu lạc bộ/tổ chức và khảo thí trực tuyến.</p>
           <div style="display:flex;gap:12px;margin-top:18px;flex-wrap:wrap;">
             <a href="/ngon-ngu" class="wb-btn wb-btn-primary" data-nav="/ngon-ngu">Khám phá 05 ngôn ngữ</a>
@@ -1183,4 +1236,762 @@
       </div>
     `;
   });
+
+  // ============================================================================
+  // 10. THƯ VIỆN TÌNH HUỐNG TIẾNG ANH CHUYÊN NGÀNH - CƠ CHẾ "MỘT TÌNH HUỐNG - BA LỚP" (/tinh-huong)
+  // ============================================================================
+  WB.registerView('/tinh-huong', async function (root, _pathname, searchParams) {
+    const selectedSlug = searchParams?.get('slug') || '';
+    const filterMajor = searchParams?.get('major') || 'Tất cả';
+    const filterLevel = searchParams?.get('level') || 'Tất cả';
+    const filterQ = searchParams?.get('q') || '';
+
+    const speakEn = (text) => {
+      if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        u.rate = 0.92;
+        window.speechSynthesis.speak(u);
+      }
+    };
+
+    if (selectedSlug) {
+      try {
+        const res = await WB.api('/api/career/scenarios?slug=' + encodeURIComponent(selectedSlug));
+        const sc = res.scenario;
+        const sessions = res.sessions || [];
+        const vocab = sc.vocab || [];
+        const phrases = sc.phrases || [];
+        const dialogue = sc.dialogue || [];
+        const roleA = sc.role_a || { title: 'Vai A', goal: '', tasks: [] };
+        const roleB = sc.role_b || { title: 'Vai B', goal: '', tasks: [] };
+        const rubric = sc.rubric || [];
+
+        root.innerHTML = `
+          <div class="wb-container wb-section">
+            <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+              <a href="/tinh-huong" class="wb-btn wb-btn-outline" data-nav="/tinh-huong">Quay lại Thư viện Tình huống Nghề</a>
+              <div style="display:flex;gap:8px;">
+                <a href="/ghep-cap?scenario=${encodeURIComponent(sc.slug)}" class="wb-btn wb-btn-accent" data-nav="/ghep-cap?scenario=${encodeURIComponent(sc.slug)}">
+                  ${WB.icon('users', 16)}
+                  <span>Ghép cặp Luyện Tình huống Này</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="wb-card" style="margin-bottom:20px;border-top:5px solid var(--wb-deep-teal);">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                <span class="wb-badge wb-badge-teal">NGÀNH: ${sc.major.toUpperCase()}</span>
+                <span class="wb-badge wb-badge-red">TRÌNH ĐỘ: ${sc.level}</span>
+                <span class="wb-badge wb-badge-ivory">${sc.duration_minutes} PHÚT THỰC HÀNH</span>
+                <span class="wb-badge wb-badge-success">ĐỐI TƯỢNG: ${sc.target_audience}</span>
+              </div>
+              <h1 style="margin:6px 0 8px 0;color:var(--wb-deep-teal);">${sc.title}</h1>
+              <p style="font-size:14px;color:var(--wb-text-muted);margin:0 0 12px 0;">${sc.summary}</p>
+              <div style="font-size:12.5px;color:var(--wb-deep-teal);background:var(--wb-bg-soft);padding:10px 14px;border-radius:10px;">
+                <strong>Biên soạn:</strong> ${sc.author_name} • <strong>Rà soát chuyên môn:</strong> ${sc.reviewed_by_teacher} • <strong>Nguồn:</strong> ${sc.source_attribution}
+              </div>
+            </div>
+
+            <!-- BA LỚP NỘI DUNG - LUYỆN TẬP - CỘNG ĐỒNG -->
+            <div class="wb-card" style="margin-bottom:20px;">
+              <span class="wb-badge wb-badge-teal">LỚP 1 • LỚP NỘI DUNG CHUYÊN NGÀNH (DO GIÁO VIÊN KHOA RÀ SOÁT)</span>
+              <h2 style="margin:8px 0 12px 0;color:var(--wb-deep-teal);">1. Bộ Từ vựng Kỹ thuật &amp; Mẫu câu Tình huống Nghề (${sc.major})</h2>
+
+              <div class="wb-grid-2" style="margin-bottom:18px;">
+                <div>
+                  <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">Từ vựng Chuyên ngành Cốt lõi (${vocab.length})</h3>
+                  ${vocab.map((v, i) => `
+                    <div style="padding:10px 12px;border:1px solid var(--wb-border);border-radius:10px;margin-bottom:8px;background:var(--wb-bg-soft);">
+                      <div style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                          <strong style="font-size:15px;color:var(--wb-deep-teal);">${v.word}</strong>
+                          <span style="font-size:12.5px;color:var(--wb-text-muted);margin-left:6px;">${v.phonetic} (${v.pos})</span>
+                        </div>
+                        <button type="button" class="wb-btn wb-btn-outline wb-speak-en-btn" data-text="${v.word.replace(/"/g, '&quot;')}" style="padding:3px 8px;font-size:12px;">
+                          ${WB.icon('volume', 14)} <span>Nghe</span>
+                        </button>
+                      </div>
+                      <div style="font-weight:700;color:var(--wb-vermilion);font-size:13.5px;margin-top:4px;">Nghĩa: ${v.meaning}</div>
+                      <div style="font-size:12.5px;color:var(--wb-text-muted);margin-top:3px;"><em>Ví dụ:</em> ${v.example}</div>
+                    </div>
+                  `).join('')}
+                </div>
+
+                <div>
+                  <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">Mẫu câu Giao tiếp Nghề nghiệp (${phrases.length})</h3>
+                  ${phrases.map(p => `
+                    <div style="padding:10px 12px;border:1px solid var(--wb-border);border-radius:10px;margin-bottom:8px;">
+                      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                        <strong style="color:var(--wb-deep-teal);font-size:14px;">"${p.en}"</strong>
+                        <button type="button" class="wb-btn wb-btn-outline wb-speak-en-btn" data-text="${p.en.replace(/"/g, '&quot;')}" style="padding:3px 8px;font-size:12px;flex-shrink:0;">
+                          ${WB.icon('volume', 14)}
+                        </button>
+                      </div>
+                      <div style="font-size:13px;color:var(--wb-text-main);margin-top:4px;">→ ${p.vi}</div>
+                      <div style="font-size:12px;color:var(--wb-text-muted);margin-top:3px;"><em>Ngữ cảnh áp dụng:</em> ${p.context}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+
+              <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">Hội thoại Mẫu Song ngữ Anh – Việt (${dialogue.length} lượt lời)</h3>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                ${dialogue.map(d => `
+                  <div style="padding:12px 14px;border-radius:12px;border-left:4px solid ${d.role === 'A' ? 'var(--wb-deep-teal)' : 'var(--wb-vermilion)'};background:var(--wb-bg-soft);display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+                    <div>
+                      <span class="wb-badge ${d.role === 'A' ? 'wb-badge-teal' : 'wb-badge-red'}">Vai ${d.role} • ${d.speakerName}</span>
+                      <div style="font-weight:700;font-size:14.5px;color:var(--wb-deep-teal);margin-top:6px;">${d.en}</div>
+                      <div style="font-size:13.5px;color:var(--wb-text-muted);margin-top:3px;">${d.vi}</div>
+                    </div>
+                    <button type="button" class="wb-btn wb-btn-outline wb-speak-en-btn" data-text="${d.en.replace(/"/g, '&quot;')}" style="padding:4px 10px;font-size:12px;flex-shrink:0;">
+                      ${WB.icon('volume', 14)} <span>Phát âm</span>
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- LỚP 2: KỊCH BẢN ĐÓNG VAI 2 NGƯỜI & BẢNG TIÊU CHÍ RUBRIC -->
+            <div class="wb-card" style="margin-bottom:20px;border-top:4px solid var(--wb-vermilion);">
+              <span class="wb-badge wb-badge-red">LỚP 2 • LỚP LUYỆN TẬP ĐÓNG VAI CÓ CẤU TRÚC &amp; RUBRIC CHẤM ĐIỂM</span>
+              <h2 style="margin:8px 0 12px 0;color:var(--wb-deep-teal);">2. Kịch bản Đóng vai Hai Người (Vai A &amp; Vai B) kèm Bảng Tiêu chí Nhận xét (Rubric)</h2>
+
+              <div class="wb-grid-2" style="margin-bottom:18px;">
+                <div class="wb-card" style="background:var(--wb-bg-soft);">
+                  <span class="wb-badge wb-badge-teal">${roleA.title || 'Vai A'}</span>
+                  <p style="font-size:13.5px;margin:8px 0;"><strong>Mục tiêu vai đóng:</strong> ${roleA.goal || ''}</p>
+                  <ul style="padding-left:18px;margin:0;font-size:13px;">
+                    ${(roleA.tasks || []).map(t => `<li style="margin-bottom:5px;">${t}</li>`).join('')}
+                  </ul>
+                </div>
+                <div class="wb-card" style="background:var(--wb-bg-soft);">
+                  <span class="wb-badge wb-badge-red">${roleB.title || 'Vai B'}</span>
+                  <p style="font-size:13.5px;margin:8px 0;"><strong>Mục tiêu vai đóng:</strong> ${roleB.goal || ''}</p>
+                  <ul style="padding-left:18px;margin:0;font-size:13px;">
+                    ${(roleB.tasks || []).map(t => `<li style="margin-bottom:5px;">${t}</li>`).join('')}
+                  </ul>
+                </div>
+              </div>
+
+              <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">Bảng Tiêu chí Nhận xét Chéo (Rubric ${rubric.length} Tiêu chí chuẩn hóa)</h3>
+              <div class="wb-table-wrap">
+                <table class="wb-table">
+                  <thead>
+                    <tr><th>STT</th><th>Tiêu chí đánh giá</th><th>Mô tả chi tiết</th><th>Thang điểm</th></tr>
+                  </thead>
+                  <tbody>
+                    ${rubric.map((r, idx) => `
+                      <tr>
+                        <td><strong>0${idx + 1}</strong></td>
+                        <td><strong>${r.criterion}</strong></td>
+                        <td>${r.description}</td>
+                        <td><span class="wb-badge wb-badge-ivory">1 – ${r.maxScore || 5} điểm</span></td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- LỚP 3: LỚP CỘNG ĐỒNG GHÉP CẶP CÙNG TRƯỜNG, KHOA, LỚP -->
+            <div class="wb-card" style="border-top:4px solid var(--wb-deep-teal);">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+                <div>
+                  <span class="wb-badge wb-badge-success">LỚP 3 • LỚP CỘNG ĐỒNG GHÉP CẶP CÙNG NGÀNH, TRÌNH ĐỘ &amp; LỊCH RẢNH</span>
+                  <h2 style="margin:6px 0 0 0;color:var(--wb-deep-teal);">3. Lịch hẹn Ghép cặp Đang mở cho Tình huống Này (${sessions.length})</h2>
+                </div>
+                <a href="/ghep-cap?scenario=${encodeURIComponent(sc.slug)}" class="wb-btn wb-btn-primary" data-nav="/ghep-cap?scenario=${encodeURIComponent(sc.slug)}">
+                  Tạo hoặc Nhận Lịch Ghép cặp Ngay
+                </a>
+              </div>
+              ${sessions.length === 0 ? `
+                <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0;">Chưa có lịch hẹn mở cho tình huống này. Hãy bấm <strong>"Tạo hoặc Nhận Lịch Ghép cặp Ngay"</strong> để mở phòng luyện cùng bạn học cùng ngành!</p>
+              ` : `
+                <div class="wb-grid-2">
+                  ${sessions.map(s => `
+                    <div class="wb-card" style="background:var(--wb-bg-soft);">
+                      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                        <span class="wb-badge wb-badge-teal">${s.slot_label} (${s.scheduled_date})</span>
+                        <span class="wb-badge ${s.status === 'OPEN' ? 'wb-badge-success' : 'wb-badge-ivory'}">${s.status === 'OPEN' ? 'Đang mở ghép cặp' : 'Đã hoàn thành'}</span>
+                      </div>
+                      <div style="font-weight:700;color:var(--wb-deep-teal);">Bạn tạo lịch: ${s.host_name}</div>
+                      <div style="font-size:12.5px;color:var(--wb-text-muted);margin-top:2px;">Đơn vị: ${s.school_name} • Hệ: ${s.education_system}</div>
+                      <div style="font-size:12.5px;margin-top:6px;">${s.notes || ''}</div>
+                    </div>
+                  `).join('')}
+                </div>
+              `}
+            </div>
+          </div>
+        `;
+
+        root.querySelectorAll('.wb-speak-en-btn').forEach(btn => {
+          btn.onclick = () => speakEn(btn.getAttribute('data-text'));
+        });
+        return;
+      } catch (err) {
+        WB.toast(err.message, 'error');
+      }
+    }
+
+    const data = await WB.api(
+      `/api/career/scenarios?major=${encodeURIComponent(filterMajor)}&level=${encodeURIComponent(filterLevel)}&q=${encodeURIComponent(filterQ)}`
+    );
+    const scenarios = data.scenarios || [];
+    const majors = ['Tất cả', ...(data.majors || ['Cơ khí', 'Điện - Điện tử', 'Tin học', 'Kinh tế - Du lịch', 'Công nghệ Ô tô', 'Thiết kế Đồ họa', 'Điều dưỡng - Y dược', 'Logistics - Xuất nhập khẩu'])];
+    const levels = ['Tất cả', 'Cơ bản (A2)', 'Trung bình (B1)', 'Khá (B2)'];
+
+    root.innerHTML = `
+      <div class="wb-container wb-section">
+        <div class="wb-card" style="margin-bottom:20px;border-top:5px solid var(--wb-deep-teal);">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;">
+            <div style="max-width:760px;">
+              <span class="wb-badge wb-badge-teal">TIẾNG ANH CHUYÊN NGÀNH • CƠ CHẾ "MỘT TÌNH HUỐNG - BA LỚP"</span>
+              <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Thư viện Tình huống Nghề nghiệp (Cao đẳng nghề • Trung cấp nghề • GDNN - GDTX)</h1>
+              <p style="font-size:14px;color:var(--wb-text-muted);margin:0;">
+                Mỗi tình huống nghề nghiệp gồm 3 lớp: <strong>(1) Lớp nội dung</strong> (từ vựng, mẫu câu, hội thoại mẫu do giáo viên chuyên môn rà soát), <strong>(2) Lớp luyện tập</strong> (kịch bản đóng vai A/B kèm bảng tiêu chí Rubric), và <strong>(3) Lớp cộng đồng</strong> (ghép cặp cùng trường, cùng khoa, cùng lớp).
+              </p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <a href="/ghep-cap" class="wb-btn wb-btn-accent" data-nav="/ghep-cap">${WB.icon('users', 16)} <span>Vào Phòng Ghép cặp</span></a>
+              <a href="/doi-thu-va-gia-tri" class="wb-btn wb-btn-outline" data-nav="/doi-thu-va-gia-tri"><span>Phân tích Đối thủ &amp; Giá trị</span></a>
+            </div>
+          </div>
+
+          <form id="wbScenarioFilterForm" class="wb-grid-4" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--wb-border);">
+            <div>
+              <label class="wb-label">Lĩnh vực chuyên ngành</label>
+              <select class="wb-select" name="major">
+                ${majors.map(m => `<option value="${m}" ${m === filterMajor ? 'selected' : ''}>${m}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="wb-label">Trình độ tiếng Anh</label>
+              <select class="wb-select" name="level">
+                ${levels.map(lv => `<option value="${lv}" ${lv === filterLevel ? 'selected' : ''}>${lv}</option>`).join('')}
+              </select>
+            </div>
+            <div>
+              <label class="wb-label">Từ khóa tình huống</label>
+              <input type="search" class="wb-input" name="q" value="${filterQ}" placeholder="Tìm CNC, OBD-II, mạch điện, IT, in ấn..." />
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+              <button type="submit" class="wb-btn wb-btn-primary" style="width:100%;">Lọc Tình huống (${scenarios.length})</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="wb-grid-2">
+          ${scenarios.map(s => `
+            <div class="wb-card" style="display:flex;flex-direction:column;justify-content:space-between;">
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+                  <span class="wb-badge wb-badge-teal">${s.major}</span>
+                  <span class="wb-badge wb-badge-ivory">${s.level} • ${s.duration_minutes} phút</span>
+                </div>
+                <h3 style="margin:6px 0 8px 0;color:var(--wb-deep-teal);">${s.title}</h3>
+                <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0 0 12px 0;">${s.summary}</p>
+                <div style="font-size:12px;color:var(--wb-text-muted);background:var(--wb-bg-soft);padding:8px 10px;border-radius:8px;margin-bottom:12px;">
+                  <div><strong>Biên soạn:</strong> ${s.author_name}</div>
+                  <div><strong>Rà soát:</strong> ${s.reviewed_by_teacher}</div>
+                  <div><strong>Cấu trúc 3 lớp:</strong> ${(s.vocab || []).length} thuật ngữ • ${(s.dialogue || []).length} câu hội thoại • Đóng vai A/B + Rubric 5 tiêu chí</div>
+                </div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding-top:10px;border-top:1px solid var(--wb-border);">
+                <a href="/tinh-huong?slug=${encodeURIComponent(s.slug)}" class="wb-btn wb-btn-primary" data-nav="/tinh-huong?slug=${encodeURIComponent(s.slug)}">
+                  <span>Học &amp; Đóng vai 3 Lớp</span>
+                  ${WB.icon('arrowRight', 15)}
+                </a>
+                <a href="/ghep-cap?scenario=${encodeURIComponent(s.slug)}" class="wb-btn wb-btn-outline" data-nav="/ghep-cap?scenario=${encodeURIComponent(s.slug)}">
+                  Ghép cặp (${s.open_sessions_count} lịch mở)
+                </a>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+
+    document.getElementById('wbScenarioFilterForm').onsubmit = e => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const p = new URLSearchParams();
+      for (const [k, v] of fd.entries()) {
+        if (v && v !== 'Tất cả') p.set(k, String(v));
+      }
+      WB.navigate('/tinh-huong' + (p.toString() ? '?' + p.toString() : ''));
+    };
+  });
+
+  // ============================================================================
+  // 11. PHÒNG GHÉP CẶP LUYỆN NÓI NGANG HÀNG THEO NGÀNH & CHẤM ĐIỂM RUBRIC (/ghep-cap)
+  // ============================================================================
+  WB.registerView('/ghep-cap', async function (root, _pathname, searchParams) {
+    const preSlug = searchParams?.get('scenario') || '';
+    const [scRes, sesRes] = await Promise.all([
+      WB.api('/api/career/scenarios'),
+      WB.api('/api/career/sessions')
+    ]);
+    const scenarios = scRes.scenarios || [];
+    const sessions = sesRes.sessions || [];
+
+    root.innerHTML = `
+      <div class="wb-container wb-section">
+        <div class="wb-card" style="margin-bottom:20px;border-top:5px solid var(--wb-deep-teal);">
+          <span class="wb-badge wb-badge-teal">LỚP 3 • CỘNG ĐỒNG GHÉP CẶP NGANG HÀNG CÓ CẤU TRÚC</span>
+          <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Phòng Ghép cặp Luyện nói Chuyên ngành &amp; Nhận xét Chéo theo Rubric</h1>
+          <p style="font-size:14px;color:var(--wb-text-muted);margin:0;">
+            Khác với trò chuyện tự do trên mạng xã hội mở, WORD BRIDGE ghép cặp <strong>cùng ngành nghề, cùng trình độ, có kịch bản Vai A / Vai B và bảng tiêu chí Rubric 5 mục</strong> trong cộng đồng học sinh, sinh viên tin cậy (Cao đẳng nghề, Trung cấp nghề, GDNN - GDTX).
+          </p>
+        </div>
+
+        <div class="wb-grid-2" style="margin-bottom:22px;">
+          <!-- Biểu mẫu tạo lịch hẹn ghép cặp -->
+          <div class="wb-card">
+            <span class="wb-badge wb-badge-red">TẠO LỊCH HẸN MỚI</span>
+            <h3 style="margin:8px 0 12px 0;color:var(--wb-deep-teal);">Đăng ký Lịch hẹn Ghép cặp Tình huống Nghề</h3>
+            <form id="wbCreateCareerSessionForm">
+              <div class="wb-form-group">
+                <label class="wb-label">Chọn Tình huống Chuyên ngành <span class="req">*</span></label>
+                <select class="wb-select" name="scenario_slug" required>
+                  ${scenarios.map(s => `<option value="${s.slug}" ${s.slug === preSlug ? 'selected' : ''}>[${s.major} - ${s.level}] ${s.title}</option>`).join('')}
+                </select>
+              </div>
+              <div class="wb-grid-2">
+                <div class="wb-form-group">
+                  <label class="wb-label">Họ tên người tạo lịch</label>
+                  <input type="text" class="wb-input" name="host_name" value="${WB.state.user?.full_name || ''}" placeholder="Nhập họ tên học sinh / sinh viên..." required />
+                </div>
+                <div class="wb-form-group">
+                  <label class="wb-label">Hệ đào tạo</label>
+                  <select class="wb-select" name="education_system">
+                    <option value="Cao đẳng nghề">Trường Cao đẳng nghề</option>
+                    <option value="Trung cấp nghề">Trường Trung cấp nghề</option>
+                    <option value="GDNN - GDTX">Trung tâm GDNN - GDTX</option>
+                    <option value="Đại học / Người đi làm">Đại học / Người đi làm chuyên môn</option>
+                  </select>
+                </div>
+              </div>
+              <div class="wb-grid-2">
+                <div class="wb-form-group">
+                  <label class="wb-label">Trường / Trung tâm</label>
+                  <input type="text" class="wb-input" name="school_name" value="Trường Cao đẳng nghề Việt Nam - Singapore (VSVC)" required />
+                </div>
+                <div class="wb-form-group">
+                  <label class="wb-label">Lớp / Khoa</label>
+                  <input type="text" class="wb-input" name="class_name" value="T25DH2DA" required />
+                </div>
+              </div>
+              <div class="wb-grid-2">
+                <div class="wb-form-group">
+                  <label class="wb-label">Khung giờ rảnh cố định</label>
+                  <select class="wb-select" name="slot_label">
+                    <option value="Thứ 2 (19:00 - 19:45)">Thứ 2 (19:00 - 19:45)</option>
+                    <option value="Thứ 3 (19:30 - 20:15)">Thứ 3 (19:30 - 20:15)</option>
+                    <option value="Thứ 4 (19:00 - 19:45)">Thứ 4 (19:00 - 19:45)</option>
+                    <option value="Thứ 5 (19:30 - 20:15)">Thứ 5 (19:30 - 20:15)</option>
+                    <option value="Thứ 6 (19:00 - 19:45)">Thứ 6 (19:00 - 19:45)</option>
+                    <option value="Thứ 7 (09:00 - 09:45)">Thứ 7 (09:00 - 09:45)</option>
+                    <option value="Chủ nhật (20:00 - 20:45)">Chủ nhật (20:00 - 20:45)</option>
+                  </select>
+                </div>
+                <div class="wb-form-group">
+                  <label class="wb-label">Ngày thực hành</label>
+                  <input type="date" class="wb-input" name="scheduled_date" value="2026-11-25" required />
+                </div>
+              </div>
+              <div class="wb-form-group">
+                <label class="wb-label">Ghi chú vai đóng mong muốn (Vai A / Vai B)</label>
+                <input type="text" class="wb-input" name="notes" placeholder="Ví dụ: Mình đóng Vai A (Kỹ thuật viên), tìm bạn đóng Vai B..." />
+              </div>
+              <button type="submit" class="wb-btn wb-btn-primary" style="width:100%;">Đăng Lịch hẹn Ghép cặp Cùng Ngành</button>
+            </form>
+          </div>
+
+          <!-- Biểu mẫu chấm điểm Rubric sau buổi luyện -->
+          <div class="wb-card">
+            <span class="wb-badge wb-badge-teal">PHIẾU NHẬN XÉT CHÉO RUBRIC 5 TIÊU CHÍ</span>
+            <h3 style="margin:8px 0 12px 0;color:var(--wb-deep-teal);">Chấm điểm &amp; Nhận xét Bạn Cùng Luyện</h3>
+            <form id="wbSubmitRubricForm">
+              <div class="wb-form-group">
+                <label class="wb-label">Chọn Phiên Ghép cặp cần chấm điểm <span class="req">*</span></label>
+                <select class="wb-select" name="session_id" required>
+                  ${sessions.map(s => `<option value="${s.id}">[${s.major}] ${s.scenario_title} — ${s.host_name}</option>`).join('')}
+                </select>
+              </div>
+              <div class="wb-grid-2">
+                <div class="wb-form-group">
+                  <label class="wb-label">1. Thuật ngữ chuyên ngành (1–5)</label>
+                  <input type="number" class="wb-input" name="terminology" min="1" max="5" value="5" required />
+                </div>
+                <div class="wb-form-group">
+                  <label class="wb-label">2. Phát âm &amp; Độ rõ ý (1–5)</label>
+                  <input type="number" class="wb-input" name="clarity" min="1" max="5" value="5" required />
+                </div>
+              </div>
+              <div class="wb-grid-3">
+                <div class="wb-form-group">
+                  <label class="wb-label">3. Đúng trọng tâm vai (1–5)</label>
+                  <input type="number" class="wb-input" name="task_completion" min="1" max="5" value="5" required />
+                </div>
+                <div class="wb-form-group">
+                  <label class="wb-label">4. Phản xạ xác nhận (1–5)</label>
+                  <input type="number" class="wb-input" name="interaction" min="1" max="5" value="4" required />
+                </div>
+                <div class="wb-form-group">
+                  <label class="wb-label">5. Thái độ nghề nghiệp (1–5)</label>
+                  <input type="number" class="wb-input" name="professionalism" min="1" max="5" value="5" required />
+                </div>
+              </div>
+              <div class="wb-form-group">
+                <label class="wb-label">Điểm mạnh của bạn cùng luyện <span class="req">*</span></label>
+                <input type="text" class="wb-input" name="strengths" required placeholder="Ví dụ: Dùng chuẩn các thuật ngữ kỹ thuật, giọng rõ ràng..." />
+              </div>
+              <div class="wb-form-group">
+                <label class="wb-label">Điểm cần cải thiện <span class="req">*</span></label>
+                <input type="text" class="wb-input" name="improvements" required placeholder="Ví dụ: Chú ý thêm âm cuối -s/-ed và tốc độ nói..." />
+              </div>
+              <button type="submit" class="wb-btn wb-btn-accent" style="width:100%;">Gửi Phiếu Nhận xét Rubric</button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Danh sách phiên ghép cặp -->
+        <div class="wb-card">
+          <h2 style="margin:0 0 12px 0;color:var(--wb-deep-teal);">Danh sách Phiên Ghép cặp Luyện nói Theo Ngành (${sessions.length})</h2>
+          <div class="wb-grid-2">
+            ${sessions.map(s => `
+              <div class="wb-card" style="background:var(--wb-bg-soft);display:flex;flex-direction:column;justify-content:space-between;">
+                <div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
+                    <span class="wb-badge wb-badge-teal">${s.major} • ${s.level}</span>
+                    <span class="wb-badge ${s.status === 'OPEN' ? 'wb-badge-success' : 'wb-badge-ivory'}">${s.status === 'OPEN' ? 'Đang mở nhận cặp' : (s.status === 'MATCHED' ? 'Đã ghép cặp' : 'Đã hoàn thành Rubric')}</span>
+                  </div>
+                  <h4 style="margin:4px 0 6px 0;color:var(--wb-deep-teal);">${s.scenario_title}</h4>
+                  <div style="font-size:13px;color:var(--wb-text-main);">
+                    • <strong>Người tạo (Vai A):</strong> ${s.host_name}<br/>
+                    • <strong>Bạn cùng luyện (Vai B):</strong> ${s.partner_name || '<em>Đang chờ bạn cùng ngành nhận lịch</em>'}<br/>
+                    • <strong>Trường / Hệ:</strong> ${s.school_name} (${s.education_system} – Lớp ${s.class_name})<br/>
+                    • <strong>Khung giờ:</strong> ${s.slot_label} • Ngày: ${s.scheduled_date} • Mã phòng: <code>${s.meeting_room_code}</code>
+                  </div>
+                  ${(s.rubrics || []).map(rv => `
+                    <div style="margin-top:8px;padding:8px 10px;background:#FFFFFF;border-left:3px solid var(--wb-deep-teal);border-radius:6px;font-size:12.5px;">
+                      <strong>Kết quả Rubric (${rv.overall_score}/5.0):</strong> ${rv.strengths}<br/>
+                      <span style="color:var(--wb-text-muted);">Góp ý: ${rv.improvements}</span>
+                    </div>
+                  `).join('')}
+                </div>
+                <div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--wb-border);display:flex;justify-content:space-between;align-items:center;">
+                  <a href="/tinh-huong?slug=${encodeURIComponent(s.scenario_slug)}" class="wb-btn wb-btn-outline" data-nav="/tinh-huong?slug=${encodeURIComponent(s.scenario_slug)}" style="padding:5px 10px;font-size:12px;">Xem kịch bản 3 lớp</a>
+                  ${s.status === 'OPEN' ? `
+                    <button type="button" class="wb-btn wb-btn-primary wb-join-career-ses-btn" data-id="${s.id}" style="padding:5px 12px;font-size:12px;">Nhận Ghép cặp Ngay</button>
+                  ` : ''}
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('wbCreateCareerSessionForm').onsubmit = async e => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      try {
+        await WB.api('/api/career/sessions', { method: 'POST', body: Object.fromEntries(fd.entries()) });
+        WB.toast('Đã đăng lịch hẹn ghép cặp chuyên ngành thành công!', 'success');
+        WB.navigate('/ghep-cap');
+      } catch (err) {
+        WB.toast(err.message, 'error');
+      }
+    };
+
+    document.getElementById('wbSubmitRubricForm').onsubmit = async e => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const raw = Object.fromEntries(fd.entries());
+      try {
+        await WB.api('/api/career/sessions/rubric', {
+          method: 'POST',
+          body: {
+            session_id: raw.session_id,
+            scores: {
+              terminology: Number(raw.terminology || 5),
+              clarity: Number(raw.clarity || 5),
+              task_completion: Number(raw.task_completion || 5),
+              interaction: Number(raw.interaction || 4),
+              professionalism: Number(raw.professionalism || 5)
+            },
+            strengths: raw.strengths,
+            improvements: raw.improvements
+          }
+        });
+        WB.toast('Đã lưu phiếu chấm điểm Rubric 5 tiêu chí thành công!', 'success');
+        WB.navigate('/ghep-cap');
+      } catch (err) {
+        WB.toast(err.message, 'error');
+      }
+    };
+
+    root.querySelectorAll('.wb-join-career-ses-btn').forEach(btn => {
+      btn.onclick = async () => {
+        try {
+          await WB.api('/api/career/sessions/join', {
+            method: 'POST',
+            body: {
+              session_id: btn.getAttribute('data-id'),
+              partner_name: WB.state.user?.full_name || 'Bạn học cùng ngành (VSVC)'
+            }
+          });
+          WB.toast('Đã nhận lịch ghép cặp thành công! Hãy chuẩn bị kịch bản Vai B.', 'success');
+          WB.navigate('/ghep-cap');
+        } catch (err) {
+          WB.toast(err.message, 'error');
+        }
+      };
+    });
+  });
+
+  // ============================================================================
+  // 12. PHÂN TÍCH ĐỐI THỦ, GIẢI PHÁP THAY THẾ & GIÁ TRỊ KHÁC BIỆT (MỤC V & VI - /doi-thu-va-gia-tri, /de-an)
+  // ============================================================================
+  const renderCompetitorAndInnovation = async function (root) {
+    const res = await WB.api('/api/career/competitors');
+    const comp = res.competitor_analysis;
+    const brand = res.brand;
+
+    root.innerHTML = `
+      <div class="wb-container wb-section">
+        <!-- HEADER ĐỀ ÁN & NHÓM SÁNG LẬP -->
+        <div class="wb-card" style="margin-bottom:20px;border-top:5px solid var(--wb-deep-teal);">
+          <span class="wb-badge wb-badge-teal">HỒ SƠ ĐỀ ÁN WORD BRIDGE • TIẾNG ANH CHUYÊN NGÀNH CHO GDNN - GDTX</span>
+          <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">V. Phân tích Đối thủ &amp; VI. Tính mới và Giá trị Khác biệt</h1>
+          <p style="font-size:14px;color:var(--wb-text-muted);margin:0 0 12px 0;">
+            Định vị dành riêng cho <strong>Học sinh, sinh viên trường Cao đẳng nghề, Trung cấp nghề, GDNN - GDTX</strong> với các môn tiếng Anh chuyên ngành thuộc nhiều lĩnh vực nghề nghiệp.
+          </p>
+          <div class="wb-grid-4">
+            ${(brand.FOUNDING_TEAM || []).map(m => `
+              <div style="background:var(--wb-bg-soft);padding:12px;border-radius:10px;border-left:3px solid var(--wb-deep-teal);">
+                <div style="font-weight:800;color:var(--wb-deep-teal);font-size:14.5px;">${m.name}</div>
+                <div style="font-size:12px;color:var(--wb-vermilion);font-weight:700;margin-top:2px;">${m.role}</div>
+                <div style="font-size:12px;color:var(--wb-text-muted);margin-top:4px;">${m.unit}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- V. PHÂN TÍCH ĐỐI THỦ VÀ GIẢI PHÁP THAY THẾ -->
+        <div class="wb-card" style="margin-bottom:20px;">
+          <span class="wb-badge wb-badge-red">MỤC V • PHÂN TÍCH ĐỐI THỦ VÀ GIẢI PHÁP THAY THẾ</span>
+          <h2 style="margin:8px 0 12px 0;color:var(--wb-deep-teal);">1. Điểm mạnh &amp; Hạn chế của các Giải pháp Hiện có đối với Học sinh, Sinh viên Nghề</h2>
+          <div class="wb-table-wrap" style="margin-bottom:20px;">
+            <table class="wb-table">
+              <thead>
+                <tr>
+                  <th style="width:24%;">Giải pháp</th>
+                  <th style="width:38%;">Điểm mạnh</th>
+                  <th style="width:38%;">Hạn chế với nhóm khách hàng của dự án</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${comp.section_v_details.map(r => `
+                  <tr>
+                    <td><strong>${r.solution}</strong></td>
+                    <td>${r.strengths}</td>
+                    <td style="color:var(--wb-vermilion);">${r.limitations}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+
+          <h2 style="margin:0 0 12px 0;color:var(--wb-deep-teal);">2. Bảng So sánh theo Tiêu chí (Đánh giá ban đầu của nhóm)</h2>
+          <div class="wb-table-wrap">
+            <table class="wb-table">
+              <thead>
+                <tr>
+                  <th>Giải pháp</th>
+                  <th>Nội dung theo ngành nghề</th>
+                  <th>Luyện nói với người thật</th>
+                  <th>Cộng đồng cùng ngành</th>
+                  <th>Chi phí thấp cho HSSV</th>
+                  <th>Giao diện tiếng Việt</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${comp.comparison_matrix.map(row => `
+                  <tr style="${row.is_wordbridge ? 'background:#E6F4F3;font-weight:700;' : ''}">
+                    <td><strong style="color:${row.is_wordbridge ? 'var(--wb-deep-teal)' : 'inherit'};">${row.solution}</strong></td>
+                    <td><span class="wb-badge ${row.career_content === 'Có' ? 'wb-badge-success' : (row.career_content === 'Không' ? 'wb-badge-ivory' : 'wb-badge-teal')}">${row.career_content}</span></td>
+                    <td><span class="wb-badge ${row.real_person_speaking.startsWith('Có') ? 'wb-badge-success' : 'wb-badge-ivory'}">${row.real_person_speaking}</span></td>
+                    <td><span class="wb-badge ${row.same_major_community === 'Có' ? 'wb-badge-success' : 'wb-badge-ivory'}">${row.same_major_community}</span></td>
+                    <td><span class="wb-badge ${row.low_cost_for_students === 'Có' ? 'wb-badge-success' : 'wb-badge-ivory'}">${row.low_cost_for_students}</span></td>
+                    <td><span class="wb-badge ${row.vietnamese_ui === 'Có' ? 'wb-badge-success' : 'wb-badge-ivory'}">${row.vietnamese_ui}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VI. TÍNH MỚI VÀ GIÁ TRỊ KHÁC BIỆT -->
+        <div class="wb-card" style="margin-bottom:20px;border-top:4px solid var(--wb-deep-teal);">
+          <span class="wb-badge wb-badge-teal">MỤC VI • TÍNH MỚI VÀ GIÁ TRỊ KHÁC BIỆT</span>
+          <h2 style="margin:8px 0 8px 0;color:var(--wb-deep-teal);">Tổ chức Xoay Quanh Một Đơn vị Duy nhất: Tình huống Nghề nghiệp</h2>
+          <p style="font-size:14px;color:var(--wb-text-muted);margin:0 0 16px 0;">${comp.section_vi_innovation.intro}</p>
+
+          <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">1. Cơ chế "Một tình huống - Ba lớp"</h3>
+          <div class="wb-grid-3" style="margin-bottom:18px;">
+            ${comp.section_vi_innovation.three_layers_mechanism.map(l => `
+              <div class="wb-card" style="background:var(--wb-bg-soft);">
+                <span class="wb-badge wb-badge-teal">${l.layer}</span>
+                <p style="font-size:13.5px;margin:10px 0 0 0;line-height:1.6;">${l.description}</p>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="wb-grid-2" style="margin-bottom:18px;">
+            <div class="wb-card" style="background:var(--wb-bg-soft);">
+              <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">2. Ba Điểm Khác biệt so với Đối thủ</h3>
+              <ul style="padding-left:18px;margin:0;font-size:13.5px;line-height:1.65;">
+                ${comp.section_vi_innovation.three_differentiators.map(d => `<li style="margin-bottom:6px;">${d}</li>`).join('')}
+              </ul>
+            </div>
+            <div class="wb-card" style="background:var(--wb-bg-soft);">
+              <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">3. Điều Nhóm Thừa nhận Minh bạch</h3>
+              <p style="font-size:13.5px;line-height:1.65;margin:0;">${comp.section_vi_innovation.candid_acknowledgment}</p>
+              <div style="margin-top:12px;">
+                <a href="/khao-sat" class="wb-btn wb-btn-outline" data-nav="/khao-sat">Xem &amp; Thực hiện Khảo sát Kiểm chứng H1–H6</a>
+              </div>
+            </div>
+          </div>
+
+          <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">4. Những Câu hỏi Ban Giám khảo có thể Đặt ra &amp; Trả lời của Nhóm</h3>
+          <div class="wb-table-wrap">
+            <table class="wb-table">
+              <thead>
+                <tr>
+                  <th style="width:32%;">Câu hỏi của Ban Giám khảo</th>
+                  <th style="width:68%;">Trả lời của Nhóm sáng lập WORD BRIDGE</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${comp.section_vi_innovation.judge_qna.map(qa => `
+                  <tr>
+                    <td><strong style="color:var(--wb-deep-teal);">${qa.question}</strong></td>
+                    <td>${qa.answer}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+  };
+  WB.registerView('/doi-thu-va-gia-tri', renderCompetitorAndInnovation);
+  WB.registerView('/de-an', renderCompetitorAndInnovation);
+
+  // ============================================================================
+  // 13. KHẢO SÁT NHU CẦU H1–H6 CHO HỌC SINH TRƯỜNG NGHỀ & GDNN - GDTX (/khao-sat)
+  // ============================================================================
+  WB.registerView('/khao-sat', async function (root) {
+    const data = await WB.api('/api/career/surveys');
+    const hyps = data.hypotheses || [];
+
+    root.innerHTML = `
+      <div class="wb-container wb-section">
+        <div class="wb-card" style="margin-bottom:20px;border-top:5px solid var(--wb-deep-teal);">
+          <span class="wb-badge wb-badge-teal">KIỂM CHỨNG GIẢ THUYẾT H1–H6 • KHẢO SÁT THỰC TẾ (${data.total_responses} PHẢN HỒI)</span>
+          <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Khảo sát Nhu cầu Tiếng Anh Chuyên ngành (Cao đẳng nghề • Trung cấp nghề • GDNN - GDTX)</h1>
+          <p style="font-size:14px;color:var(--wb-text-muted);margin:0;">
+            Số liệu thu thập trực tiếp để kiểm chứng 5 giả thuyết cốt lõi về nhu cầu học từ vựng và luyện nói theo tình huống nghề nghiệp.
+          </p>
+        </div>
+
+        <div class="wb-grid-2">
+          <div class="wb-card">
+            <h3 style="margin:0 0 12px 0;color:var(--wb-deep-teal);">Gửi Phản hồi Khảo sát Nhanh (Ẩn danh)</h3>
+            <form id="wbVocationalSurveyForm">
+              <div class="wb-grid-2">
+                <div class="wb-form-group">
+                  <label class="wb-label">Hệ đào tạo của bạn</label>
+                  <select class="wb-select" name="education_type">
+                    <option value="Cao đẳng nghề">Trường Cao đẳng nghề</option>
+                    <option value="Trung cấp nghề">Trường Trung cấp nghề</option>
+                    <option value="GDNN - GDTX">Trung tâm GDNN - GDTX</option>
+                    <option value="Sinh viên / Người đi làm">Sinh viên ĐH / Người đi làm</option>
+                  </select>
+                </div>
+                <div class="wb-form-group">
+                  <label class="wb-label">Ngành nghề theo học</label>
+                  <select class="wb-select" name="major">
+                    <option value="Cơ khí">Cơ khí</option>
+                    <option value="Điện - Điện tử">Điện - Điện tử</option>
+                    <option value="Tin học">Tin học / CNTT</option>
+                    <option value="Công nghệ Ô tô">Công nghệ Ô tô</option>
+                    <option value="Thiết kế Đồ họa">Thiết kế Đồ họa</option>
+                    <option value="Kinh tế - Du lịch">Kinh tế - Du lịch</option>
+                    <option value="Điều dưỡng - Y dược">Điều dưỡng - Y dược</option>
+                    <option value="Logistics - Xuất nhập khẩu">Logistics - Xuất nhập khẩu</option>
+                  </select>
+                </div>
+              </div>
+              <div class="wb-form-group">
+                <label class="wb-label">Mức độ sát ngành của các ứng dụng bạn từng học (1 = Rất chưa sát, 5 = Rất sát)</label>
+                <select class="wb-select" name="career_relevance_score">
+                  <option value="1">1 - Rất chưa sát ngành nghề đang học</option>
+                  <option value="2" selected>2 - Chưa sát tình huống thực hành xưởng/công việc</option>
+                  <option value="3">3 - Bình thường</option>
+                  <option value="4">4 - Khá sát</option>
+                  <option value="5">5 - Rất sát</option>
+                </select>
+              </div>
+              <div class="wb-form-group">
+                <label class="wb-label">Mức độ sẵn sàng ghép cặp luyện nói cùng ngành theo kịch bản &amp; Rubric (1–5)</label>
+                <select class="wb-select" name="pair_willingness_score">
+                  <option value="5" selected>5 - Rất sẵn sàng tham gia hàng tuần</option>
+                  <option value="4">4 - Sẵn sàng</option>
+                  <option value="3">3 - Phân vân</option>
+                  <option value="2">2 - Ít sẵn sàng</option>
+                </select>
+              </div>
+              <div class="wb-form-group">
+                <label class="wb-label">Góp ý tình huống nghề bạn muốn bổ sung thêm</label>
+                <textarea class="wb-textarea" name="feedback_note" rows="3" placeholder="Ví dụ: Cần thêm tình huống đọc bản vẽ AutoCAD 2D, giao tiếp xưởng hàn..."></textarea>
+              </div>
+              <button type="submit" class="wb-btn wb-btn-primary" style="width:100%;">Gửi Khảo sát &amp; Cập nhật Chỉ số H1–H5</button>
+            </form>
+          </div>
+
+          <div class="wb-card">
+            <h3 style="margin:0 0 12px 0;color:var(--wb-deep-teal);">Kết quả Kiểm chứng Giả thuyết Trực tiếp (${data.total_responses} mẫu)</h3>
+            ${hyps.map(h => `
+              <div style="padding:10px 12px;border:1px solid var(--wb-border);border-radius:10px;margin-bottom:10px;background:var(--wb-bg-soft);">
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <strong style="color:var(--wb-deep-teal);">${h.code}: ${h.title}</strong>
+                  <span class="wb-badge ${h.passed ? 'wb-badge-success' : 'wb-badge-ivory'}">${h.actual_pct}% (Ngưỡng ≥ ${h.target_pct}%)</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('wbVocationalSurveyForm').onsubmit = async e => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      try {
+        await WB.api('/api/career/surveys', { method: 'POST', body: Object.fromEntries(fd.entries()) });
+        WB.toast('Cảm ơn bạn! Phản hồi khảo sát đã được ghi nhận vào hệ thống.', 'success');
+        WB.navigate('/khao-sat');
+      } catch (err) {
+        WB.toast(err.message, 'error');
+      }
+    };
+  });
+
 })(window.WB);

@@ -42,6 +42,9 @@ class ProgressAndResourcesModule {
   constructor(db, storageAdapter) {
     this.db = db;
     this.storageAdapter = storageAdapter;
+    if (this.storageAdapter && typeof this.storageAdapter.bindDatabase === "function") {
+      this.storageAdapter.bindDatabase(db);
+    }
   }
 
   /**
@@ -713,8 +716,8 @@ class ProgressAndResourcesModule {
       `INSERT INTO storage_files (
         id, storage_key, owner_type, owner_user_id, owner_org_id,
         uploaded_by_user_id, original_name, mime_type, size_bytes,
-        checksum_sha256, access_scope, status, created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?)`,
+        checksum_sha256, access_scope, status, content_base64, created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'active', ?, ?)`,
       [
         stored.file_id,
         stored.storage_key,
@@ -727,6 +730,7 @@ class ProgressAndResourcesModule {
         effectiveSizeBytes,
         stored.checksum_sha256,
         owner_org_id ? 'organization' : access_scope,
+        stored.content_base64 || '',
         now
       ]
     );
@@ -764,7 +768,7 @@ class ProgressAndResourcesModule {
         targetType,
         targetId,
         effectiveSizeBytes,
-        `Tải lên học liệu '${title}' (${formatBytesHuman(effectiveSizeBytes)}) lên Cloudflare R2`,
+        `Tải lên học liệu '${title}' (${formatBytesHuman(effectiveSizeBytes)}) lên Ổ đĩa Lưu trữ Trực tiếp tại Web (Zero-R2)`,
         now
       ]
     );

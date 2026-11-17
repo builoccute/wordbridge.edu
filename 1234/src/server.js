@@ -1,7 +1,7 @@
 'use strict';
 const { fs, path, getNodeBuiltin } = require('./utils/runtime.shim');
 
-const { BRAND, EMAIL_ADDRESSES, OFFICIAL_ROUTES, RBAC_ROLES } = require('./config/constants');
+const { BRAND, COMPETITOR_ANALYSIS_DATA, EMAIL_ADDRESSES, OFFICIAL_ROUTES, RBAC_ROLES } = require('./config/constants');
 const { PORT, getIntegrationStatus, getMonthlyQuotaGb } = require('./config/env');
 const { db } = require('./adapters/database.adapter');
 const { storage } = require('./adapters/storage.adapter');
@@ -165,7 +165,7 @@ async function dispatchApiRequest({ method, pathname, query = {}, body = {}, aut
     db.bindWorkerD1(workerEnv.DB);
     await db.ensureWorkerD1Hydrated(workerEnv.DB);
   }
-  if (workerEnv && workerEnv.R2) storage.bindWorkerR2(workerEnv.R2);
+  if (typeof storage.bindDatabase === 'function') storage.bindDatabase(db);
 
   const authCtx = authInfo ? authInfo.authCtx : null;
   const currentUser = authCtx ? authCtx.user : null;
@@ -174,7 +174,7 @@ async function dispatchApiRequest({ method, pathname, query = {}, body = {}, aut
   const isTechAdmin = currentUser && ['super_admin', 'system_admin'].includes(currentUser.role);
 
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    const allowRichHtml = (pathname === '/api/cms/pages' || pathname === '/api/news') && isTechAdmin;
+    const allowRichHtml = (pathname === '/api/cms/pages' || pathname === '/api/news' || pathname.startsWith('/api/admin/source-vault')) && (isTechAdmin || (currentUser && RBAC_ROLES[currentUser.role]?.isAdmin));
     const wafCheck = inspectPayloadWaf(body, allowRichHtml);
     if (wafCheck.blocked) {
       return {
@@ -204,7 +204,11 @@ async function dispatchApiRequest({ method, pathname, query = {}, body = {}, aut
         is_admin_session: Boolean(authCtx && authCtx.isAdminSession),
         languages: learningMod.listLanguages(),
         pricing: commerceMod.getPricingCatalog(),
-        admin_catalog: orgsMod.getAdministrativeCatalog()
+        admin_catalog: orgsMod.getAdministrativeCatalog(),
+        competitor_analysis: COMPETITOR_ANALYSIS_DATA,
+        vocational_majors: BRAND.VOCATIONAL_MAJORS,
+        founding_team: BRAND.FOUNDING_TEAM,
+        target_learners: BRAND.TARGET_LEARNERS
       }
     };
   }
@@ -468,7 +472,7 @@ async function dispatchApiRequest({ method, pathname, query = {}, body = {}, aut
   }
 
   // Protected R2 Object Upload API (PHẦN XXI.3 - Bắt buộc xác thực và kiểm tra hạn mức/tệp)
-  if (pathname === '/api/r2/upload' && method === 'POST') {
+  if ((pathname === '/api/storage/upload' || pathname === '/api/r2/upload') && method === 'POST') {
     requireAuth(currentUser);
     const out = progressMod.uploadResource(currentUser, {
       title: body.title || body.filename || 'Tệp tải lên R2',
@@ -486,7 +490,9 @@ async function dispatchApiRequest({ method, pathname, query = {}, body = {}, aut
         ok: true,
         storage_key: out.storage_key,
         file_id: out.file_id,
-        bucket: 'word',
+        bucket: 'web_internal_drive',
+        storage_engine: 'WEB_INTERNAL_DRIVE_ZERO_R2',
+        cloudflare_r2_used: false,
         quota_after_upload: out.quota_after_upload
       }
     };
@@ -791,6 +797,74 @@ async function dispatchApiRequest({ method, pathname, query = {}, body = {}, aut
   }
   if (pathname === '/api/support/tickets/reply' && method === 'POST') {
     return { statusCode: 200, payload: { ok: true, ...adminMod.replyAndUpdateTicket(currentUser, body) } };
+  }
+
+
+  // 11. Ổ đĩa Lưu trữ Mã nguồn tại Web (/quan-tri/luu-tru-ma-nguon - Cơ chế mật khẩu 6 số do Admin tự đặt)
+  if (pathname === '/api/admin/source-vault/status' && method === 'GET') {
+    return { statusCode: 200, payload: { ok: true, ...adminMod.getSourceVaultStatus(currentUser) } };
+  }
+  if (pathname === '/api/admin/source-vault/pin' && method === 'POST') {
+    return { statusCode: 200, payload: { ok: true, ...adminMod.setupOrChangeSourceVaultPin(currentUser, body) } };
+  }
+  if (pathname === '/api/admin/source-vault/unlock' && method === 'POST') {
+    return { statusCode: 200, payload: { ok: true, ...adminMod.unlockAndListSourceVault(currentUser, body) } };
+  }
+  if (pathname === '/api/admin/source-vault/files' && method === 'POST') {
+    return { statusCode: 201, payload: { ok: true, file: adminMod.saveFileToSourceVault(currentUser, body) } };
+  }
+  if (pathname === '/api/admin/source-vault/files/delete' && method === 'POST') {
+    return { statusCode: 200, payload: { ok: true, ...adminMod.deleteFileFromSourceVault(currentUser, body) } };
+  }
+
+  // 12. Tiếng Anh Chuyên Ngành (ESP): Tình huống 3 Lớp, Ghép cặp Ngang hàng + Rubric & Phân tích Đối thủ / Khảo sát H1-H6
+  if (pathname === '/api/career/scenarios' && method === 'GET') {
+    if (query.slug || query.id) {
+      return { statusCode: 200, payload: { ok: true, ...adminMod.getCareerScenarioBySlug(query.slug || query.id) } };
+    }
+    return {
+      statusCode: 200,
+      payload: {
+        ok: true,
+        majors: BRAND.VOCATIONAL_MAJORS,
+        target_learners: BRAND.TARGET_LEARNERS,
+        scenarios: adminMod.listCareerScenarios(query)
+      }
+    };
+  }
+  if (pathname === '/api/career/sessions' && method === 'GET') {
+    return {
+      statusCode: 200,
+      payload: {
+        ok: true,
+        sessions: adminMod.listCareerPracticeSessions(query)
+      }
+    };
+  }
+  if (pathname === '/api/career/sessions' && method === 'POST') {
+    return { statusCode: 201, payload: { ok: true, session: adminMod.createCareerPracticeSession(currentUser, body) } };
+  }
+  if (pathname === '/api/career/sessions/join' && method === 'POST') {
+    return { statusCode: 200, payload: { ok: true, session: adminMod.joinCareerPracticeSession(currentUser, body) } };
+  }
+  if (pathname === '/api/career/sessions/rubric' && method === 'POST') {
+    return { statusCode: 201, payload: { ok: true, ...adminMod.submitCareerRubricReview(currentUser, body) } };
+  }
+  if (pathname === '/api/career/competitors' && method === 'GET') {
+    return {
+      statusCode: 200,
+      payload: {
+        ok: true,
+        brand: BRAND,
+        competitor_analysis: COMPETITOR_ANALYSIS_DATA
+      }
+    };
+  }
+  if (pathname === '/api/career/surveys' && method === 'GET') {
+    return { statusCode: 200, payload: { ok: true, ...adminMod.getVocationalSurveyAnalytics() } };
+  }
+  if (pathname === '/api/career/surveys' && method === 'POST') {
+    return { statusCode: 201, payload: { ok: true, ...adminMod.submitVocationalSurvey(body) } };
   }
 
   return { statusCode: 404, payload: { ok: false, error: 'Không tìm thấy đường dẫn xử lý yêu cầu.' } };

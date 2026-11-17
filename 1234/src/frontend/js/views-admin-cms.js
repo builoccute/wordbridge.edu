@@ -129,6 +129,7 @@
             <ul class="wb-sidebar-menu">
               <li><a class="wb-sidebar-link ${pathname === '/quan-tri' ? 'active' : ''}" data-nav="/quan-tri">${WB.icon('chart', 16)} <span>Tổng quan &amp; Nghiệp vụ</span></a></li>
               <li><a class="wb-sidebar-link ${pathname === '/quan-tri/luu-tru' ? 'active' : ''}" data-nav="/quan-tri/luu-tru">${WB.icon('database', 16)} <span>Quản lý Dung lượng</span></a></li>
+              <li><a class="wb-sidebar-link ${pathname === '/quan-tri/luu-tru-ma-nguon' ? 'active' : ''}" data-nav="/quan-tri/luu-tru-ma-nguon">${WB.icon('folder', 16)} <span>Lưu trữ Mã nguồn (6 số)</span></a></li>
               <li><a class="wb-sidebar-link ${pathname === '/quan-tri/cms' ? 'active' : ''}" data-nav="/quan-tri/cms">${WB.icon('news', 16)} <span>Nội dung &amp; Tin tức</span></a></li>
               <li><a class="wb-sidebar-link ${pathname === '/quan-tri/email' ? 'active' : ''}" data-nav="/quan-tri/email">${WB.icon('mail', 16)} <span>Quản lý Email</span></a></li>
               <li><a class="wb-sidebar-link ${pathname === '/quan-tri/bao-tri' ? 'active' : ''}" data-nav="/quan-tri/bao-tri">${WB.icon('settings', 16)} <span>Bảo trì &amp; Sao lưu</span></a></li>
@@ -233,7 +234,7 @@
 
             <!-- 3. QUẢN LÝ HẠ TẦNG D1/R2 & HẠN MỨC DUNG LƯỢNG -->
             <div class="wb-card" style="margin-bottom:20px;border-top:4px solid var(--wb-deep-teal);">
-              <span class="wb-badge wb-badge-red">HẠ TẦNG CLOUDFLARE D1 &amp; R2 • QUẢN LÝ HẠN MỨC DUNG LƯỢNG</span>
+              <span class="wb-badge wb-badge-red">HẠ TẦNG CLOUDFLARE D1 &amp; Ổ ĐĨA LƯU TRỮ TẠI WEB (ZERO-R2) • QUẢN LÝ HẠN MỨC DUNG LƯỢNG</span>
               <h2 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Quản lý Dung lượng Lưu trữ theo Gói &amp; Chu kỳ Tháng</h2>
               <p style="font-size:13px;color:var(--wb-text-muted);margin:0 0 14px 0;">
                 • <strong>Kiến trúc sản xuất thống nhất:</strong> Cơ sở dữ liệu ${infra.database_engine} và Lưu trữ đối tượng ${infra.storage_engine}.<br/>
@@ -665,8 +666,421 @@
     };
   };
 
+
+  // 3. Ổ ĐĨA LƯU TRỮ TẠI WEB & KHO LƯU TRỮ MÃ NGUỒN (/quan-tri/luu-tru-ma-nguon)
+  // Bảo vệ bằng cơ chế mật khẩu 6 chữ số do Quản trị viên tự thiết lập & quản lý trực tiếp
+  const renderAdminSourceVault = async function (root) {
+    if (!WB.state.user) {
+      return WB.navigate('/quan-tri/dang-nhap');
+    }
+
+    let statusData = null;
+    try {
+      statusData = await WB.api('/api/admin/source-vault/status');
+    } catch (err) {
+      root.innerHTML = `
+        <div class="wb-container wb-section">
+          <div class="wb-card" style="border-top:4px solid var(--wb-vermilion);">
+            <span class="wb-badge wb-badge-red">KIỂM SOÁT PHÂN QUYỀN QUẢN TRỊ</span>
+            <h2 style="color:var(--wb-vermilion);margin:10px 0;">Từ chối Truy cập Ổ đĩa Lưu trữ Mã nguồn</h2>
+            <p>${err.message}</p>
+            <a href="/quan-tri/dang-nhap" class="wb-btn wb-btn-primary" data-nav="/quan-tri/dang-nhap">Đăng nhập Quản trị viên</a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const unlockedPin = WB.state.sourceVaultPin || '';
+    let unlockedVault = null;
+    if (unlockedPin && statusData.pin_configured) {
+      try {
+        unlockedVault = await WB.api('/api/admin/source-vault/unlock', {
+          method: 'POST',
+          body: { pin: unlockedPin }
+        });
+      } catch (_) {
+        WB.state.sourceVaultPin = '';
+      }
+    }
+
+    const sum = statusData.summary || { vault_files_count: 0, vault_total_bytes: 0, web_drive_files_count: 0, web_drive_total_bytes: 0 };
+    const fmtKb = (b) => b >= 1048576 ? (b / 1048576).toFixed(2) + ' MB' : (b / 1024).toFixed(2) + ' KB';
+
+    root.innerHTML = `
+      <div class="wb-container wb-section">
+        <div class="wb-workspace-layout">
+          <aside class="wb-sidebar">
+            <div style="font-weight:800;color:var(--wb-deep-teal);margin-bottom:10px;">BẢNG ĐIỀU KHIỂN QUẢN TRỊ</div>
+            <ul class="wb-sidebar-menu">
+              <li><a class="wb-sidebar-link" data-nav="/quan-tri">${WB.icon('chart', 16)} <span>Tổng quan &amp; Nghiệp vụ</span></a></li>
+              <li><a class="wb-sidebar-link" data-nav="/quan-tri/luu-tru">${WB.icon('database', 16)} <span>Quản lý Dung lượng</span></a></li>
+              <li><a class="wb-sidebar-link active" data-nav="/quan-tri/luu-tru-ma-nguon">${WB.icon('folder', 16)} <span>Lưu trữ Mã nguồn (6 số)</span></a></li>
+              <li><a class="wb-sidebar-link" data-nav="/quan-tri/cms">${WB.icon('news', 16)} <span>Nội dung &amp; Tin tức</span></a></li>
+              <li><a class="wb-sidebar-link" data-nav="/quan-tri/email">${WB.icon('mail', 16)} <span>Quản lý Email</span></a></li>
+              <li><a class="wb-sidebar-link" data-nav="/quan-tri/bao-tri">${WB.icon('settings', 16)} <span>Bảo trì &amp; Sao lưu</span></a></li>
+            </ul>
+          </aside>
+
+          <div>
+            <!-- HEADER Ổ ĐĨA LƯU TRỮ TẠI WEB (ZERO-R2) -->
+            <div class="wb-card" style="margin-bottom:20px;border-top:5px solid var(--wb-deep-teal);">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;">
+                <div>
+                  <span class="wb-badge wb-badge-teal">Ổ ĐĨA LƯU TRỮ TẠI WEB (ZERO-R2) • BẢO MẬT MẬT KHẨU 6 SỐ DO ADMIN TỰ ĐẶT</span>
+                  <h1 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">Kho Lưu trữ Mã nguồn &amp; Ổ đĩa Nội bộ Web</h1>
+                  <p style="font-size:13.5px;color:var(--wb-text-muted);margin:0;">
+                    • <strong>Kiến trúc độc lập:</strong> Không sử dụng Cloudflare R2. Toàn bộ tệp mã nguồn, cấu hình triển khai GitHub Workers và tài nguyên hệ thống được lưu trữ trực tiếp tại ổ đĩa nội bộ của Web.<br/>
+                    • <strong>Cơ chế bảo vệ 2 lớp:</strong> Yêu cầu phiên Quản trị viên hợp lệ kết hợp <strong>Mật khẩu 6 chữ số (PIN 6 số)</strong> do chính Quản trị viên tự thiết lập.
+                  </p>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <span class="wb-badge ${statusData.pin_configured ? 'wb-badge-success' : 'wb-badge-red'}">
+                    ${statusData.pin_configured ? 'Đã thiết lập mật khẩu 6 số' : 'Chưa đặt mật khẩu 6 số (Cần thiết lập)'}
+                  </span>
+                  ${unlockedVault ? `<button type="button" class="wb-btn wb-btn-outline" id="wbLockVaultNowBtn">${WB.icon('lock', 15)} <span>Khóa ổ đĩa ngay</span></button>` : ''}
+                </div>
+              </div>
+
+              <div class="wb-grid-4" style="margin-top:16px;">
+                <div style="background:var(--wb-bg-soft);padding:12px;border-radius:10px;">
+                  <div style="font-size:12px;color:var(--wb-text-muted);">Hạ tầng Lưu trữ</div>
+                  <div style="font-size:16px;font-weight:800;color:var(--wb-deep-teal);">Ổ đĩa Web (Zero-R2)</div>
+                </div>
+                <div style="background:var(--wb-bg-soft);padding:12px;border-radius:10px;">
+                  <div style="font-size:12px;color:var(--wb-text-muted);">Tệp trong Kho Mã nguồn</div>
+                  <div style="font-size:20px;font-weight:800;color:var(--wb-deep-teal);">${sum.vault_files_count} tệp (${fmtKb(sum.vault_total_bytes)})</div>
+                </div>
+                <div style="background:var(--wb-bg-soft);padding:12px;border-radius:10px;">
+                  <div style="font-size:12px;color:var(--wb-text-muted);">Tệp Ổ đĩa Học liệu Web</div>
+                  <div style="font-size:20px;font-weight:800;color:var(--wb-deep-teal);">${sum.web_drive_files_count} tệp (${fmtKb(sum.web_drive_total_bytes)})</div>
+                </div>
+                <div style="background:var(--wb-bg-soft);padding:12px;border-radius:10px;">
+                  <div style="font-size:12px;color:var(--wb-text-muted);">Trạng thái Mở khóa</div>
+                  <div style="font-size:16px;font-weight:800;color:${unlockedVault ? 'var(--wb-success)' : 'var(--wb-vermilion)'};">
+                    ${unlockedVault ? 'Đang mở khóa phiên' : 'Đang khóa bảo vệ 6 số'}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- KHU VỰC THIẾT LẬP MẬT KHẨU 6 SỐ HOẶC MỞ KHÓA Ổ ĐĨA -->
+            <div class="wb-grid-2" style="margin-bottom:20px;">
+              <!-- Cột 1: Mở khóa bằng 6 số (Nếu đã đặt PIN) hoặc Thiết lập lần đầu -->
+              <div class="wb-card" style="border-top:4px solid var(--wb-vermilion);">
+                <span class="wb-badge wb-badge-red">XÁC THỰC MẬT KHẨU 6 SỐ</span>
+                <h3 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">
+                  ${statusData.pin_configured ? 'Nhập Mật khẩu 6 Số để Mở khóa Ổ đĩa Mã nguồn' : 'Bước 1: Admin Tự Đặt Mật khẩu 6 Số Lần Đầu'}
+                </h3>
+                <p style="font-size:13px;color:var(--wb-text-muted);margin:0 0 14px 0;">
+                  ${statusData.pin_configured
+                    ? 'Nhập đúng 6 chữ số (0–9) do Admin đã thiết lập để truy cập, tải lên, chỉnh sửa và tải xuống các gói mã nguồn.'
+                    : 'Ổ đĩa hiện chưa có mật khẩu. Quản trị viên vui lòng tự đặt mật khẩu gồm đúng 6 chữ số (0–9) ở biểu mẫu bên cạnh để kích hoạt kho lưu trữ.'}
+                </p>
+
+                ${statusData.pin_configured ? `
+                  <form id="wbUnlockSourceVaultForm">
+                    <div class="wb-form-group">
+                      <label class="wb-label">Mật khẩu 6 chữ số mở khóa ổ đĩa <span class="req">*</span></label>
+                      <input
+                        type="password"
+                        inputmode="numeric"
+                        pattern="[0-9]{6}"
+                        maxlength="6"
+                        class="wb-input"
+                        name="pin"
+                        value="${unlockedPin}"
+                        required
+                        placeholder="Nhập 6 chữ số (Ví dụ: 231026)"
+                        style="font-size:20px;letter-spacing:0.35em;font-weight:800;text-align:center;"
+                      />
+                    </div>
+                    <button type="submit" class="wb-btn wb-btn-primary" style="width:100%;">
+                      ${WB.icon('lock', 16)}
+                      <span>${unlockedVault ? 'Xác nhận lại / Làm mới Ổ đĩa' : 'Mở khóa Ổ đĩa Lưu trữ Mã nguồn'}</span>
+                    </button>
+                  </form>
+                ` : `
+                  <div style="padding:14px;background:var(--wb-bg-soft);border-radius:10px;font-size:13px;color:var(--wb-deep-teal);">
+                    <strong>Hướng dẫn:</strong> Hãy nhập 6 chữ số bất kỳ vào khung <em>"Admin Tự Đặt / Đổi Mật khẩu 6 Số"</em> bên phải và bấm lưu để mở khóa ngay.
+                  </div>
+                `}
+              </div>
+
+              <!-- Cột 2: Admin tự đặt / đổi mật khẩu 6 số -->
+              <div class="wb-card" style="border-top:4px solid var(--wb-deep-teal);">
+                <span class="wb-badge wb-badge-teal">CƠ CHẾ ADMIN TỰ ĐẶT MẬT KHẨU 6 SỐ</span>
+                <h3 style="margin:8px 0 6px 0;color:var(--wb-deep-teal);">
+                  ${statusData.pin_configured ? 'Đổi Mật khẩu 6 Số Bảo vệ Ổ đĩa' : 'Thiết lập Mật khẩu 6 Số Cho Ổ đĩa'}
+                </h3>
+                <form id="wbSetSourceVaultPinForm">
+                  ${statusData.pin_configured ? `
+                    <div class="wb-form-group">
+                      <label class="wb-label">Mật khẩu 6 số hiện tại <span class="req">*</span></label>
+                      <input type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="wb-input" name="current_pin" required placeholder="Nhập 6 số hiện tại" />
+                    </div>
+                  ` : ''}
+                  <div class="wb-grid-2">
+                    <div class="wb-form-group">
+                      <label class="wb-label">Mật khẩu 6 số mới (0–9) <span class="req">*</span></label>
+                      <input type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="wb-input" name="new_pin" required placeholder="6 chữ số (VD: 231026)" />
+                    </div>
+                    <div class="wb-form-group">
+                      <label class="wb-label">Xác nhận lại 6 số <span class="req">*</span></label>
+                      <input type="password" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="wb-input" name="confirm_pin" required placeholder="Nhập lại 6 chữ số" />
+                    </div>
+                  </div>
+                  <button type="submit" class="wb-btn wb-btn-accent" style="width:100%;">
+                    ${statusData.pin_configured ? 'Cập nhật Mật khẩu 6 Số Mới' : 'Lưu Mật khẩu 6 Số &amp; Kích hoạt Ổ đĩa'}
+                  </button>
+                </form>
+              </div>
+            </div>
+
+            <!-- NỘI DUNG Ổ ĐĨA KHI ĐÃ MỞ KHÓA BẰNG MẬT KHẨU 6 SỐ -->
+            ${unlockedVault ? `
+              <div class="wb-card" style="margin-bottom:20px;">
+                <span class="wb-badge wb-badge-success">ĐÃ MỞ KHÓA BẰNG MẬT KHẨU 6 SỐ</span>
+                <h2 style="margin:8px 0 12px 0;color:var(--wb-deep-teal);">Tải lên / Lưu Tệp Mã nguồn Mới vào Ổ đĩa Web</h2>
+                <form id="wbSaveVaultFileForm" style="background:var(--wb-bg-soft);padding:16px;border-radius:12px;">
+                  <div class="wb-grid-4">
+                    <div class="wb-form-group">
+                      <label class="wb-label">Tên tệp mã nguồn <span class="req">*</span></label>
+                      <input type="text" class="wb-input" name="file_name" id="wbVaultFileName" required placeholder="Ví dụ: worker-config.js" />
+                    </div>
+                    <div class="wb-form-group">
+                      <label class="wb-label">Đường dẫn lưu trên Ổ đĩa Web</label>
+                      <input type="text" class="wb-input" name="file_path" id="wbVaultFilePath" placeholder="/src/worker-config.js" />
+                    </div>
+                    <div class="wb-form-group">
+                      <label class="wb-label">Phân nhóm lưu trữ</label>
+                      <select class="wb-select" name="category">
+                        <option value="source_code">Mã nguồn hệ thống (Source Code)</option>
+                        <option value="infrastructure">Cấu hình Cloudflare Workers / GitHub</option>
+                        <option value="curriculum">Dữ liệu Tiếng Anh Chuyên Ngành</option>
+                        <option value="architecture">Tài liệu Kiến trúc &amp; Bản quyền</option>
+                        <option value="backup_snapshot">Bản chụp Sao lưu (Snapshot)</option>
+                      </select>
+                    </div>
+                    <div class="wb-form-group">
+                      <label class="wb-label">Phiên bản (Version Tag)</label>
+                      <input type="text" class="wb-input" name="version_tag" value="v2026.3-ZeroR2" />
+                    </div>
+                  </div>
+                  <div class="wb-grid-2">
+                    <div class="wb-form-group">
+                      <label class="wb-label">Mô tả tệp mã nguồn</label>
+                      <input type="text" class="wb-input" name="description" placeholder="Ghi chú chức năng hoặc thay đổi của tệp..." />
+                    </div>
+                    <div class="wb-form-group">
+                      <label class="wb-label">Chọn tệp từ máy tính (Tự động đọc vào ổ đĩa Web)</label>
+                      <input type="file" class="wb-input" id="wbVaultLocalFilePicker" />
+                    </div>
+                  </div>
+                  <div class="wb-form-group">
+                    <label class="wb-label">Nội dung Mã nguồn / Cấu hình lưu trực tiếp tại Web <span class="req">*</span></label>
+                    <textarea class="wb-textarea" name="content_text" id="wbVaultFileContent" rows="6" required placeholder="Dán mã nguồn hoặc chọn tệp từ máy tính..." style="font-family:monospace;font-size:12.5px;"></textarea>
+                  </div>
+                  <button type="submit" class="wb-btn wb-btn-primary">Lưu vào Ổ đĩa Mã nguồn Web</button>
+                </form>
+              </div>
+
+              <div class="wb-card" style="margin-bottom:20px;">
+                <h2 style="margin:0 0 12px 0;color:var(--wb-deep-teal);">Danh sách Tệp trong Ổ đĩa Lưu trữ Mã nguồn (${(unlockedVault.files || []).length})</h2>
+                <div class="wb-table-wrap">
+                  <table class="wb-table">
+                    <thead>
+                      <tr>
+                        <th>Tên tệp &amp; Đường dẫn</th>
+                        <th>Phân nhóm</th>
+                        <th>Phiên bản</th>
+                        <th>Dung lượng &amp; SHA-256</th>
+                        <th>Người lưu</th>
+                        <th>Thao tác</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${(unlockedVault.files || []).map((f, idx) => `
+                        <tr>
+                          <td>
+                            <strong>${f.file_name}</strong><br/>
+                            <code style="font-size:11.5px;color:var(--wb-deep-teal);">${f.file_path}</code>
+                            <div style="font-size:12px;color:var(--wb-text-muted);margin-top:2px;">${f.description || ''}</div>
+                          </td>
+                          <td><span class="wb-badge wb-badge-teal">${f.category}</span></td>
+                          <td><span class="wb-badge wb-badge-ivory">${f.version_tag}</span></td>
+                          <td style="font-size:12px;">
+                            <strong>${f.size_bytes.toLocaleString('vi-VN')} bytes</strong><br/>
+                            <span style="color:var(--wb-text-muted);">SHA256: ${(f.checksum_sha256 || '').slice(0, 14)}...</span>
+                          </td>
+                          <td style="font-size:12.5px;">${f.uploaded_by}<br/><span style="color:var(--wb-text-muted);">${(f.updated_at || '').slice(0, 10)}</span></td>
+                          <td>
+                            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                              <button type="button" class="wb-btn wb-btn-outline wb-vault-view-btn" data-idx="${idx}" style="padding:4px 8px;font-size:12px;">Xem / Sửa</button>
+                              <button type="button" class="wb-btn wb-btn-primary wb-vault-dl-btn" data-idx="${idx}" style="padding:4px 8px;font-size:12px;">Tải về</button>
+                              <button type="button" class="wb-btn wb-btn-outline wb-vault-del-btn" data-id="${f.id}" style="padding:4px 8px;font-size:12px;color:var(--wb-vermilion);">Xóa</button>
+                            </div>
+                          </td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="wb-card">
+                <h3 style="margin:0 0 10px 0;color:var(--wb-deep-teal);">Tệp Học liệu &amp; Tài nguyên Người dùng trên Ổ đĩa Web Nội bộ (${(unlockedVault.web_drive_files || []).length})</h3>
+                ${(unlockedVault.web_drive_files || []).length === 0 ? `<p style="font-size:13px;color:var(--wb-text-muted);">Chưa có tệp học liệu phát sinh.</p>` : `
+                  <div class="wb-table-wrap">
+                    <table class="wb-table">
+                      <thead>
+                        <tr><th>Tên gốc</th><th>Khóa lưu trữ nội bộ</th><th>Định dạng</th><th>Dung lượng</th><th>Phạm vi</th></tr>
+                      </thead>
+                      <tbody>
+                        ${unlockedVault.web_drive_files.map(wf => `
+                          <tr>
+                            <td><strong>${wf.original_name}</strong></td>
+                            <td><code style="font-size:11.5px;">${wf.storage_key}</code></td>
+                            <td>${wf.mime_type}</td>
+                            <td>${Number(wf.size_bytes).toLocaleString('vi-VN')} bytes</td>
+                            <td><span class="wb-badge wb-badge-teal">${wf.access_scope}</span></td>
+                          </tr>
+                        `).join('')}
+                      </tbody>
+                    </table>
+                  </div>
+                `}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+
+    const setPinForm = document.getElementById('wbSetSourceVaultPinForm');
+    if (setPinForm) {
+      setPinForm.onsubmit = async e => {
+        e.preventDefault();
+        const fd = new FormData(setPinForm);
+        const body = Object.fromEntries(fd.entries());
+        try {
+          const res = await WB.api('/api/admin/source-vault/pin', { method: 'POST', body });
+          WB.state.sourceVaultPin = String(body.new_pin).trim();
+          WB.toast(res.message, 'success');
+          renderAdminSourceVault(root);
+        } catch (err) {
+          WB.toast(err.message, 'error');
+        }
+      };
+    }
+
+    const unlockForm = document.getElementById('wbUnlockSourceVaultForm');
+    if (unlockForm) {
+      unlockForm.onsubmit = async e => {
+        e.preventDefault();
+        const fd = new FormData(unlockForm);
+        const pin = String(fd.get('pin') || '').trim();
+        try {
+          await WB.api('/api/admin/source-vault/unlock', { method: 'POST', body: { pin } });
+          WB.state.sourceVaultPin = pin;
+          WB.toast('Đã mở khóa Ổ đĩa Lưu trữ Mã nguồn thành công!', 'success');
+          renderAdminSourceVault(root);
+        } catch (err) {
+          WB.toast(err.message, 'error');
+        }
+      };
+    }
+
+    const lockBtn = document.getElementById('wbLockVaultNowBtn');
+    if (lockBtn) {
+      lockBtn.onclick = () => {
+        WB.state.sourceVaultPin = '';
+        WB.toast('Đã khóa Ổ đĩa Lưu trữ Mã nguồn.', 'info');
+        renderAdminSourceVault(root);
+      };
+    }
+
+    const filePicker = document.getElementById('wbVaultLocalFilePicker');
+    if (filePicker) {
+      filePicker.onchange = e => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        document.getElementById('wbVaultFileName').value = f.name;
+        document.getElementById('wbVaultFilePath').value = '/vault/' + f.name;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          document.getElementById('wbVaultFileContent').value = String(ev.target.result || '');
+        };
+        reader.readAsText(f);
+      };
+    }
+
+    const saveFileForm = document.getElementById('wbSaveVaultFileForm');
+    if (saveFileForm) {
+      saveFileForm.onsubmit = async e => {
+        e.preventDefault();
+        const fd = new FormData(saveFileForm);
+        const payload = Object.fromEntries(fd.entries());
+        payload.pin = WB.state.sourceVaultPin;
+        try {
+          await WB.api('/api/admin/source-vault/files', { method: 'POST', body: payload });
+          WB.toast('Đã lưu tệp mã nguồn trực tiếp vào Ổ đĩa Web thành công!', 'success');
+          renderAdminSourceVault(root);
+        } catch (err) {
+          WB.toast(err.message, 'error');
+        }
+      };
+    }
+
+    if (unlockedVault && Array.isArray(unlockedVault.files)) {
+      root.querySelectorAll('.wb-vault-view-btn').forEach(btn => {
+        btn.onclick = () => {
+          const item = unlockedVault.files[Number(btn.getAttribute('data-idx'))];
+          if (!item) return;
+          document.getElementById('wbVaultFileName').value = item.file_name;
+          document.getElementById('wbVaultFilePath').value = item.file_path;
+          document.getElementById('wbVaultFileContent').value = item.content_text || '';
+          window.scrollTo({ top: 320, behavior: 'smooth' });
+          WB.toast(`Đã nạp tệp "${item.file_name}" lên khung trình soạn thảo mã nguồn.`, 'info');
+        };
+      });
+
+      root.querySelectorAll('.wb-vault-dl-btn').forEach(btn => {
+        btn.onclick = () => {
+          const item = unlockedVault.files[Number(btn.getAttribute('data-idx'))];
+          if (!item) return;
+          const blob = new Blob([item.content_text || ''], { type: 'text/plain;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = item.file_name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        };
+      });
+
+      root.querySelectorAll('.wb-vault-del-btn').forEach(btn => {
+        btn.onclick = async () => {
+          try {
+            await WB.api('/api/admin/source-vault/files/delete', {
+              method: 'POST',
+              body: { pin: WB.state.sourceVaultPin, file_id: btn.getAttribute('data-id') }
+            });
+            WB.toast('Đã xóa tệp khỏi Ổ đĩa Lưu trữ Mã nguồn.', 'success');
+            renderAdminSourceVault(root);
+          } catch (err) {
+            WB.toast(err.message, 'error');
+          }
+        };
+      });
+    }
+  };
+
   WB.registerView('/quan-tri', renderAdminCenter);
   WB.registerView('/quan-tri/luu-tru', renderAdminCenter);
+  WB.registerView('/quan-tri/luu-tru-ma-nguon', renderAdminSourceVault);
   WB.registerView('/quan-tri/cms', renderAdminCenter);
   WB.registerView('/quan-tri/email', renderAdminCenter);
   WB.registerView('/quan-tri/bao-tri', renderAdminCenter);

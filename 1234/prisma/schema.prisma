@@ -1,0 +1,514 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    String                @id @default(cuid())
+  email                 String                @unique
+  name                  String
+  passwordHash          String?
+  avatarUrl             String?
+  role                  String                @default("USER")
+  xp                    Int                   @default(0)
+  streakDays            Int                   @default(0)
+  lastActiveDate        DateTime?
+  targetScore           Int                   @default(650)
+  dateOfBirth           DateTime?
+  ageGroup              String                @default("ADULT_18_PLUS")
+  studentGroup          String                @default("GROUP_C")
+  institutionType       String                @default("Trường Cao đẳng nghề")
+  school                String                @default("Trường Cao đẳng nghề Việt Nam - Singapore")
+  faculty               String                @default("Khoa Công nghệ thông tin")
+  major                 String                @default("Công nghệ thông tin")
+  specialty             String                @default("Phát triển website")
+  targetCareerRole      String                @default("Kỹ thuật viên / Lập trình viên")
+  studyYear             String                @default("Năm 1")
+  selfLevel             String                @default("Cơ bản (A2)")
+  englishGoal           String                @default("Giao tiếp thực hành nghề, đọc tài liệu kỹ thuật và chuẩn bị thực tập")
+  followedSpecialtiesJson String              @default("[]")
+  availableSlotsJson    String                @default("[]")
+  inviteCodeUsed        String?
+  approvalStatus        String                @default("APPROVED")
+  phoneVerified         Boolean               @default(false)
+  parentConsentRequired Boolean               @default(false)
+  parentConsentStatus   String                @default("NOT_REQUIRED")
+  guardianName          String?
+  guardianRelation      String?
+  guardianContact       String?
+  parentMonitorCode     String?               @unique
+  betaRulesAcceptedAt   DateTime?
+  dataConsentAcceptedAt DateTime?
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  savedDocuments        UserSavedDocument[]
+  grammarResults        UserGrammarProgress[]
+  examAttempts          ExamAttempt[]
+  xpLogs                XpLedger[]
+  vocabWords            UserVocabWord[]
+  communityPosts        CommunityPost[]
+  communityLikes        CommunityPostLike[]
+  communityVotes        CommunityPollVote[]
+  communityComments     CommunityComment[]
+  hostedSessions        PracticeSession[]     @relation("SessionHost")
+  joinedSessions        PracticeSession[]     @relation("SessionPartner")
+  rubricsGiven          PeerRubricReview[]    @relation("RubricReviewer")
+  rubricsReceived       PeerRubricReview[]    @relation("RubricTarget")
+  blocksInitiated       UserBlock[]           @relation("Blocker")
+  blocksReceived        UserBlock[]           @relation("Blocked")
+  reportsFiled          SafetyReport[]        @relation("Reporter")
+  reportsAgainst        SafetyReport[]        @relation("ReportedUser")
+  parentConsents        ParentConsent[]
+}
+
+model OtpToken {
+  id        String    @id @default(cuid())
+  email     String
+  codeHash  String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([email])
+}
+
+model DocumentCategory {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  name        String
+  description String
+  icon        String
+  order       Int        @default(0)
+  documents   Document[]
+}
+
+model Document {
+  id             String              @id @default(cuid())
+  slug           String              @unique
+  title          String
+  description    String
+  categoryId     String
+  category       DocumentCategory    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  level          String              @default("Mọi trình độ")
+  fileType       String              @default("PDF")
+  pageCount      Int                 @default(24)
+  fileSizeLabel  String              @default("2.4 MB")
+  isFree         Boolean             @default(true)
+  priceVnd       Int                 @default(0)
+  externalUrl    String?
+  previewContent String
+  tagsJson       String              @default("[]")
+  viewCount      Int                 @default(0)
+  downloadCount  Int                 @default(0)
+  isFeatured     Boolean             @default(false)
+  createdAt      DateTime            @default(now())
+  savedBy        UserSavedDocument[]
+
+  @@index([categoryId])
+}
+
+model UserSavedDocument {
+  id         String   @id @default(cuid())
+  userId     String
+  documentId String
+  createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, documentId])
+}
+
+model GrammarTopic {
+  id               String          @id @default(cuid())
+  slug             String          @unique
+  title            String
+  description      String
+  targetLevel      String          @default("450+")
+  order            Int             @default(0)
+  estimatedMinutes Int             @default(20)
+  lessons          GrammarLesson[]
+}
+
+model GrammarLesson {
+  id            String                @id @default(cuid())
+  topicId       String
+  topic         GrammarTopic          @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  slug          String                @unique
+  title         String
+  order         Int                   @default(0)
+  knowledgeJson String
+  vocabJson     String
+  testsJson     String
+  summaryJson   String
+  progress      UserGrammarProgress[]
+
+  @@index([topicId])
+}
+
+model UserGrammarProgress {
+  id             String        @id @default(cuid())
+  userId         String
+  lessonId       String
+  completed      Boolean       @default(false)
+  bestScore      Int           @default(0)
+  totalQuestions Int           @default(0)
+  updatedAt      DateTime      @updatedAt
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson         GrammarLesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+}
+
+model ExamSet {
+  id          String     @id @default(cuid())
+  slug        String     @unique
+  title       String
+  badge       String?
+  description String
+  order       Int        @default(0)
+  tests       ExamTest[]
+}
+
+model ExamTest {
+  id              String         @id @default(cuid())
+  examSetId       String
+  examSet         ExamSet        @relation(fields: [examSetId], references: [id], onDelete: Cascade)
+  slug            String         @unique
+  title           String
+  description     String
+  durationMinutes Int            @default(25)
+  totalQuestions  Int            @default(20)
+  listeningCount  Int            @default(10)
+  readingCount    Int            @default(10)
+  difficulty      String         @default("Trung cấp 600+")
+  isHot           Boolean        @default(false)
+  order           Int            @default(0)
+  questions       ExamQuestion[]
+  attempts        ExamAttempt[]
+
+  @@index([examSetId])
+}
+
+model ExamQuestion {
+  id           String   @id @default(cuid())
+  examTestId   String
+  examTest     ExamTest @relation(fields: [examTestId], references: [id], onDelete: Cascade)
+  number       Int
+  part         Int
+  groupKey     String?
+  promptText   String
+  passageTitle String?
+  passageHtml  String?
+  audioScript  String?
+  imageScene   String?
+  optionsJson  String
+  correctIndex Int
+  explanation  String
+
+  @@unique([examTestId, number])
+}
+
+model ExamAttempt {
+  id               String   @id @default(cuid())
+  userId           String
+  examTestId       String
+  mode             String   @default("FULL")
+  answersJson      String
+  listeningCorrect Int      @default(0)
+  readingCorrect   Int      @default(0)
+  listeningScore   Int      @default(5)
+  readingScore     Int      @default(5)
+  totalScore       Int      @default(10)
+  durationSeconds  Int      @default(0)
+  completedAt      DateTime @default(now())
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  examTest         ExamTest @relation(fields: [examTestId], references: [id], onDelete: Cascade)
+
+  @@index([userId, completedAt])
+}
+
+model DonationRecord {
+  id        String    @id @default(cuid())
+  orderCode String    @unique
+  amountVnd Int
+  donorName String    @default("Bạn học ẩn danh")
+  message   String?
+  status    String    @default("PENDING")
+  sepayTxId String?   @unique
+  createdAt DateTime  @default(now())
+  paidAt    DateTime?
+}
+
+model XpLedger {
+  id        String   @id @default(cuid())
+  userId    String
+  source    String
+  refId     String
+  points    Int
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model UserVocabWord {
+  id             String    @id @default(cuid())
+  userId         String
+  sourceKey      String
+  word           String
+  phonetic       String    @default("/.../")
+  pos            String    @default("noun")
+  meaning        String
+  example        String    @default("")
+  deck           String    @default("Sổ tay cá nhân")
+  status         String    @default("due")
+  reviewCount    Int       @default(0)
+  lastReviewedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, sourceKey])
+  @@index([userId, status])
+}
+
+model CommunityPost {
+  id          String              @id @default(cuid())
+  userId      String
+  group       String              @default("Hỏi bài - Giải đáp")
+  title       String
+  content     String
+  authorBadge String?
+  isPinned    Boolean             @default(false)
+  pollJson    String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  user        User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  likes       CommunityPostLike[]
+  votes       CommunityPollVote[]
+  comments    CommunityComment[]
+
+  @@index([group, createdAt])
+  @@index([createdAt])
+}
+
+model CommunityPostLike {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime      @default(now())
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model CommunityPollVote {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  optionKey String
+  createdAt DateTime      @default(now())
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+}
+
+model CommunityComment {
+  id        String        @id @default(cuid())
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime      @default(now())
+  post      CommunityPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+}
+
+model InviteCode {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  school      String   @default("Trường Cao đẳng nghề Việt Nam - Singapore")
+  major       String   @default("Tất cả ngành")
+  teacherName String
+  maxUses     Int      @default(200)
+  usedCount   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model ParentConsent {
+  id                      String    @id @default(cuid())
+  userId                  String
+  studentName             String
+  studentAgeGroup         String
+  guardianName            String
+  guardianRelation        String
+  guardianPhone           String
+  guardianEmail           String?
+  agreedRules             Boolean   @default(false)
+  agreedDataPolicy        Boolean   @default(false)
+  agreedUnder18Protection Boolean   @default(false)
+  status                  String    @default("PENDING")
+  reviewedBy              String?
+  reviewedAt              DateTime?
+  createdAt               DateTime  @default(now())
+  user                    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+model CareerScenario {
+  id                String            @id @default(cuid())
+  slug              String            @unique
+  title             String
+  major             String
+  level             String
+  summary           String
+  durationMinutes   Int               @default(15)
+  isFree            Boolean           @default(true)
+  isClosedBeta      Boolean           @default(true)
+  vocabJson         String
+  phrasesJson       String
+  dialogueJson      String
+  roleAJson         String
+  roleBJson         String
+  rubricJson        String
+  authorName        String
+  reviewedByTeacher String
+  sourceAttribution String
+  order             Int               @default(0)
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  sessions          PracticeSession[]
+
+  @@index([major, level])
+}
+
+model PracticeSession {
+  id                       String             @id @default(cuid())
+  scenarioId               String
+  hostId                   String
+  partnerId                String?
+  major                    String
+  level                    String
+  school                   String
+  ageGroupScope            String
+  scheduledAt              DateTime
+  slotLabel                String
+  meetingUrl               String
+  status                   String             @default("OPEN")
+  hostConfirmedComplete    Boolean            @default(false)
+  partnerConfirmedComplete Boolean            @default(false)
+  noRecordingConfirmed     Boolean            @default(true)
+  notes                    String?
+  createdAt                DateTime           @default(now())
+  updatedAt                DateTime           @updatedAt
+  scenario                 CareerScenario     @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  host                     User               @relation("SessionHost", fields: [hostId], references: [id], onDelete: Cascade)
+  partner                  User?              @relation("SessionPartner", fields: [partnerId], references: [id], onDelete: SetNull)
+  rubrics                  PeerRubricReview[]
+
+  @@index([status, ageGroupScope, major])
+  @@index([hostId, scheduledAt])
+  @@index([partnerId, scheduledAt])
+}
+
+model PeerRubricReview {
+  id                 String          @id @default(cuid())
+  sessionId          String
+  reviewerId         String
+  targetUserId       String
+  scoresJson         String
+  overallScore       Float
+  satisfactionRating Int             @default(5)
+  strengths          String
+  improvements       String
+  mentorReviewed     Boolean         @default(false)
+  mentorNote         String?
+  createdAt          DateTime        @default(now())
+  session            PracticeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  reviewer           User            @relation("RubricReviewer", fields: [reviewerId], references: [id], onDelete: Cascade)
+  targetUser         User            @relation("RubricTarget", fields: [targetUserId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, reviewerId])
+  @@index([targetUserId])
+}
+
+model UserBlock {
+  id        String   @id @default(cuid())
+  blockerId String
+  blockedId String
+  reason    String?
+  createdAt DateTime @default(now())
+  blocker   User     @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked   User     @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+}
+
+model SafetyReport {
+  id             String   @id @default(cuid())
+  reporterId     String
+  reportedUserId String?
+  targetType     String
+  targetId       String
+  category       String
+  description    String
+  status         String   @default("OPEN")
+  resolutionNote String?
+  handledBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  reporter       User     @relation("Reporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reportedUser   User?    @relation("ReportedUser", fields: [reportedUserId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
+}
+
+model SurveyResponse {
+  id                      String   @id @default(cuid())
+  customerGroup           String
+  major                   String
+  ageGroup                String
+  under18GuardianConsent  Boolean  @default(false)
+  englishLevel            Int
+  purposesJson            String
+  currentMethodsJson      String
+  weeklyFrequency         String
+  careerRelevanceScore    Int
+  topDifficultiesJson     String
+  hasDroppedBefore        Boolean  @default(false)
+  dropReason              String?
+  productsTriedJson       String
+  productFeedback         String?
+  pairWillingnessScore    Int
+  preferredFormat         String
+  privacyConcerns         String?
+  trialWilling            Boolean  @default(false)
+  trialEmail              String?
+  payWilling              Boolean  @default(false)
+  desiredPaidFeaturesJson String
+  maxMonthlyPriceVnd      Int      @default(0)
+  phoneType               String
+  preferPlatform          String
+  createdAt               DateTime @default(now())
+
+  @@index([customerGroup, createdAt])
+}
+
+model DataDeletionRequest {
+  id          String   @id @default(cuid())
+  userId      String?
+  emailHash   String
+  reason      String?
+  requestedBy String   @default("USER")
+  status      String   @default("COMPLETED")
+  createdAt   DateTime @default(now())
+}

@@ -1,33 +1,13 @@
-name = "wordbridge-edu"
-main = "src/worker.js"
-compatibility_date = "2026-11-01"
+name = "wordbridge"
+compatibility_date = "2026-11-15"
 compatibility_flags = ["nodejs_compat"]
 
-[assets]
-directory = "./src/frontend"
-binding = "ASSETS"
-not_found_handling = "single-page-application"
+# ============================================================================
+# WORD BRIDGE - CẤU HÌNH CLOUDFLARE WORKERS (KHÔNG SỬ DỤNG R2 / KHÔNG SỬ DỤNG D1)
+# Phân hệ Lưu trữ mã nguồn (/luu-tru-ma-nguon) kết nối qua HTTPS/HTTP tới
+# Dịch vụ lưu trữ SQLite BLOB độc lập (storage-service/server.py).
+# ============================================================================
 
 [vars]
-APP_NAME = "WORD BRIDGE"
-APP_SLOGAN = "Where Languages Bring People Together."
-CANONICAL_ORIGIN = "https://wordbridge.io.vn"
-DEFAULT_LOCALE = "vi-VN"
-TIMEZONE = "Asia/Ho_Chi_Minh"
-MONTHLY_QUOTA_GB = "50"
-STORAGE_ENGINE_MODE = "WEB_INTERNAL_VAULT_ZERO_R2"
-EMAIL_FROM_NOREPLY = "noreply@wordbridge.io.vn"
-EMAIL_FROM_NAME = "WORD BRIDGE – Email tự động từ hệ thống"
-EMAIL_OFFICIAL_CONTACT = "wordbridge.education@gmail.com"
-EMAIL_CSKH = "cskh@wordbridge.io.vn"
-EMAIL_PARTNERSHIP = "contact@wordbridge.io.vn"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "word"
-database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
-migrations_dir = "database/migrations"
-
-# LƯU TRỮ ĐỘC LẬP TẠI WEB (ZERO-R2):
-# Không sử dụng Cloudflare R2. Toàn bộ tệp tin, học liệu và kho lưu trữ mã nguồn (/quan-tri/luu-tru-ma-nguon)
-# được lưu trữ trực tiếp trên Ổ đĩa Lưu trữ Nội bộ tại Web (Web Internal Storage Vault + D1/In-Memory Sync).
+NEXT_PUBLIC_SITE_URL = "https://wordbridge.io.vn"
+WB_STORAGE_SERVICE_URL = "https://storage-internal.wordbridge.io.vn"

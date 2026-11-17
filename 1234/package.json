@@ -1,24 +1,40 @@
 {
-  "name": "wordbridge",
-  "version": "2026.3.0",
-  "description": "WORD BRIDGE - Where Languages Bring People Together. Nền tảng Tiếng Anh chuyên ngành (Cơ chế Một tình huống - Ba lớp) cho Học sinh Cao đẳng nghề, Trung cấp nghề, GDNN - GDTX & Lưu trữ độc lập tại Web (Zero-R2).",
-  "main": "src/worker.js",
+  "name": "sitelocphuho",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "npx wrangler dev",
-    "deploy": "npx wrangler deploy",
-    "d1:migrate": "npx wrangler d1 execute word --remote --file=./database/schema.sql && npx wrangler d1 execute word --remote --file=./database/seeds/01_reference_data.sql",
-    "migrate": "node scripts/manage.js migrate",
-    "seed": "node scripts/manage.js seed",
-    "build": "node scripts/manage.js build",
-    "backup": "node scripts/manage.js backup",
-    "restore": "node scripts/manage.js restore",
-    "test": "node tests/full-system.test.js",
-    "verify": "node scripts/manage.js verify"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "db:push": "prisma db push",
+    "db:seed": "tsx prisma/seed.ts"
   },
-  "engines": {
-    "node": ">=18.0.0"
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
-  "author": "Bùi Tấn Lộc • Cao Anh Nhựt • Võ Gia Như • Vũ Tiến Anh - WORD BRIDGE Founding Team",
-  "license": "UNLICENSED"
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "@types/three": "^0.187.0",
+    "clsx": "^2.1.1",
+    "jose": "^6.2.17",
+    "lucide-react": "^1.73.0",
+    "next": "16.4.6",
+    "prisma": "^6.19.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "tailwind-merge": "^3.7.0",
+    "three": "^0.187.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "4.3.3",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.6",
+    "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5"
+  }
 }

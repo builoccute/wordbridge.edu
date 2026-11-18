@@ -1,0 +1,42 @@
+name = "wordbridge-translation"
+main = "src/worker.js"
+compatibility_date = "2026-11-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+# Định tuyến tên miền chính thức của Dịch thuật Word Bridge
+routes = [
+  { pattern = "dichthuat.wordbridge.io.vn/*", zone_name = "wordbridge.io.vn" }
+]
+
+[vars]
+APP_NAME = "Dịch thuật Word Bridge"
+APP_NAME_EN = "Word Bridge Translation"
+SERVICE_CODE = "Trans"
+PUBLIC_DOMAIN = "https://dichthuat.wordbridge.io.vn"
+ECOSYSTEM_DOMAIN = "https://wordbridge.io.vn"
+ZERO_USER_DATA_STORAGE = "true"
+MAX_TEXT_LENGTH = "15000"
+MAX_DOCUMENT_BYTES = "10485760"
+MAX_IMAGE_BYTES = "5242880"
+MAX_DOCUMENT_PAGES = "50"
+DEFAULT_PROVIDER_MODE = "workers_ai"
+
+# Bảo toàn tuyệt đối hạ tầng Cloudflare D1 hiện có của hệ sinh thái Word Bridge
+# Mục đích duy nhất trong dự án Trans: Lưu tổng số lượt truy cập website (site_metrics.total_accesses)
+[[d1_databases]]
+binding = "DB"
+database_name = "word"
+database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
+migrations_dir = "migrations"
+
+# Bảo toàn tuyệt đối hạ tầng Cloudflare R2 hiện có của hệ sinh thái Word Bridge
+# Chú ý: R2ZeroStorageGuard trong Backend chặn 100% thao tác ghi tệp người dùng lên bucket này
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "word"
+
+# Bật mặc định Cloudflare Workers AI (@cf/meta/m2m100-1.2b & Vision OCR)
+# Chạy trực tiếp trên GPU biên của Cloudflare (Zero Data Retention, không cần thuê VPS riêng)
+[ai]
+binding = "AI"

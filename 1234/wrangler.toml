@@ -1,12 +1,18 @@
 name = "wordbridge"
+main = "src/worker.ts"
 compatibility_date = "2026-11-15"
 compatibility_flags = ["nodejs_compat"]
 
 # ============================================================================
 # WORD BRIDGE - CẤU HÌNH CLOUDFLARE WORKERS (KHÔNG SỬ DỤNG R2 / KHÔNG SỬ DỤNG D1)
-# Phân hệ Lưu trữ mã nguồn (/luu-tru-ma-nguon) kết nối qua HTTPS/HTTP tới
-# Dịch vụ lưu trữ SQLite BLOB độc lập (storage-service/server.py).
+# Có đầy đủ entry-point `main = "src/worker.ts"` và `[assets]` để `npx wrangler deploy`
+# build và triển khai thành công ngay lập tức.
 # ============================================================================
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
 
 [vars]
 NEXT_PUBLIC_SITE_URL = "https://wordbridge.io.vn"

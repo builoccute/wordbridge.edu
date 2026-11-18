@@ -26,7 +26,7 @@ export function renderApplicationHtml(designCss = '') {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WORD BRIDGE — Where Languages Bring People Together | Nền tảng Ngoại ngữ Trung – Anh – Nga</title>
   <meta name="description" content="WORD BRIDGE — Nền tảng học tập, thực hành, khảo thí và trí tuệ ngôn ngữ trực tuyến cho Tiếng Trung, Tiếng Anh và Tiếng Nga.">
-  <style>${designCss}</style>
+  ${designCss ? `<style>${designCss}</style>` : `<link rel="stylesheet" href="/assets/design-system.css">`}
 </head>
 <body>
   <a href="#main-content" class="skip-link">Chuyển đến nội dung chính</a>

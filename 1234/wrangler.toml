@@ -11,8 +11,11 @@ main = "src/worker.mjs"
 compatibility_date = "2026-11-01"
 workers_dev = true
 
+[build]
+command = "npm run build"
+
 [assets]
-directory = "./dist/public"
+directory = "./public"
 binding = "ASSETS"
 
 [[d1_databases]]

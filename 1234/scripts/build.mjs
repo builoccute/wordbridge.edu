@@ -27,6 +27,8 @@ fs.writeFileSync(path.join(distPublic, 'index.html'), htmlOutput, 'utf-8');
 
 // 2. Copy client script
 const clientJsPath = path.join(rootDir, 'public', 'assets', 'app-client.js');
+fs.copyFileSync(cssPath, path.join(rootDir, 'public', 'assets', 'design-system.css'));
+fs.copyFileSync(cssPath, path.join(distAssets, 'design-system.css'));
 fs.copyFileSync(clientJsPath, path.join(distAssets, 'app-client.js'));
 
 // 3. Validate all SQL migration files for additive safety

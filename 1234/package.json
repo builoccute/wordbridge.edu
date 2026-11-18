@@ -1,0 +1,36 @@
+{
+  "name": "word-bridge-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "WORD BRIDGE — Where Languages Bring People Together (Chinese - English - Russian Online Learning & Practice Platform on Cloudflare Workers, D1 & R2)",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/dev-server.mjs",
+    "build": "node scripts/build.mjs",
+    "test": "node --experimental-global-webcrypto --test tests/unit/*.test.mjs tests/integration/*.test.mjs tests/security/*.test.mjs tests/e2e/*.test.mjs",
+    "test:unit": "node --experimental-global-webcrypto --test tests/unit/*.test.mjs",
+    "test:integration": "node --experimental-global-webcrypto --test tests/integration/*.test.mjs",
+    "test:security": "node --experimental-global-webcrypto --test tests/security/*.test.mjs",
+    "test:e2e": "node --experimental-global-webcrypto --test tests/e2e/*.test.mjs",
+    "db:migrate:local": "wrangler d1 migrations apply word --local",
+    "db:migrate:prod": "wrangler d1 migrations apply word --remote",
+    "db:inspect": "wrangler d1 execute word --command \"SELECT name FROM sqlite_master WHERE type='table';\"",
+    "deploy:staging": "wrangler deploy --env staging",
+    "deploy:production": "wrangler deploy --env production"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "word-bridge",
+    "language-learning",
+    "chinese",
+    "english",
+    "russian",
+    "cloudflare-workers",
+    "cloudflare-d1",
+    "cloudflare-r2"
+  ],
+  "author": "WORD BRIDGE Engineering Team",
+  "license": "UNLICENSED"
+}

@@ -1,73 +1,40 @@
-# ==============================================================================
-# WORD BRIDGE — Cloudflare Workers, D1 & R2 Configuration
-# Website chính: https://www.wordbridge.vn/
-# Ứng dụng PDF Reader độc lập (SSO): https://reader.wordbridge.vn/
-# Database: Cloudflare D1 - word (ce84cc48-6d49-409b-b45a-13ba3bc4a771)
-# Object Storage: Cloudflare R2 - word
-# ==============================================================================
-
 name = "word-bridge"
-main = "src/worker.mjs"
+main = "src/index.js"
 compatibility_date = "2026-11-01"
-workers_dev = true
+compatibility_flags = ["nodejs_compat"]
 
-[build]
-command = "npm run build"
+[vars]
+APP_NAME = "WORD BRIDGE"
+APP_TAGLINE = "Where Languages Bring People Together."
+APP_BASE_URL = "https://www.wordbridge.vn"
+PDF_READER_BASE_URL = "https://reader.wordbridge.vn"
+EMAIL_FROM_NOREPLY = "WORD BRIDGE <noreply@wordbridge.vn>"
+EMAIL_FROM_CSKH = "WORD BRIDGE <cskh@wordbridge.vn>"
+EMAIL_FROM_CONTACT = "WORD BRIDGE <contact@wordbridge.vn>"
+EMAIL_REPLY_TO_SYSTEM = "cskh@wordbridge.vn"
+EMAIL_PROVIDER = "unconfigured"
+LEARNER_MEET_PROVIDER = "unconfigured"
+LOGO_SVG_STATUS = "pending_official_svg"
+ENVIRONMENT = "production"
 
-[assets]
-directory = "./public"
-binding = "ASSETS"
-
+# Cloudflare D1 — TUYỆT ĐỐI KHÔNG ĐỔI DATABASE NAME HOẶC DATABASE ID
 [[d1_databases]]
 binding = "DB"
 database_name = "word"
 database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
 migrations_dir = "database/migrations"
 
+# Cloudflare R2 — TUYỆT ĐỐI KHÔNG ĐỔI BUCKET NAME
 [[r2_buckets]]
-binding = "STORAGE"
+binding = "R2"
 bucket_name = "word"
 
-[vars]
-APP_NAME = "WORD BRIDGE"
-APP_TAGLINE = "Where Languages Bring People Together."
-APP_URL = "https://www.wordbridge.vn"
-PDF_READER_SSO_URL = "https://reader.wordbridge.vn"
-EMAIL_FROM_NOREPLY = "WORD BRIDGE <noreply@wordbridge.vn>"
-EMAIL_REPLY_TO_CSKH = "cskh@wordbridge.vn"
-EMAIL_FROM_CSKH = "WORD BRIDGE CSKH <cskh@wordbridge.vn>"
-EMAIL_FROM_CONTACT = "WORD BRIDGE Contact <contact@wordbridge.vn>"
-STUDENT_PROMO_MONTHS = "3"
-ENVIRONMENT = "development"
-
-[env.staging]
-name = "word-bridge-staging"
-vars = { ENVIRONMENT = "staging", APP_URL = "https://staging.wordbridge.vn", PDF_READER_SSO_URL = "https://reader.wordbridge.vn" }
-
-[[env.staging.d1_databases]]
-binding = "DB"
-database_name = "word"
-database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
-migrations_dir = "database/migrations"
-
-[[env.staging.r2_buckets]]
-binding = "STORAGE"
-bucket_name = "word"
-
-[env.production]
-name = "word-bridge"
-routes = [
-  { pattern = "www.wordbridge.vn/*", zone_name = "wordbridge.vn" },
-  { pattern = "wordbridge.vn/*", zone_name = "wordbridge.vn" }
+# Tác vụ tự động định kỳ (Cron Triggers)
+[triggers]
+crons = [
+  "*/15 * * * *",
+  "0 1 * * *"
 ]
-vars = { ENVIRONMENT = "production", APP_URL = "https://www.wordbridge.vn", PDF_READER_SSO_URL = "https://reader.wordbridge.vn" }
 
-[[env.production.d1_databases]]
-binding = "DB"
-database_name = "word"
-database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
-migrations_dir = "database/migrations"
-
-[[env.production.r2_buckets]]
-binding = "STORAGE"
-bucket_name = "word"
+[observability]
+enabled = true

@@ -1,52 +1,35 @@
-# TÀI LIỆU KỸ THUẬT API WORD BRIDGE (`docs/API-DOCUMENTATION.md`)
+# Tài liệu API WORD BRIDGE (`/api/v1/*`)
 
-## 1. Quy ước Chung & Bảo mật API
-- **Base URL:** `https://www.wordbridge.vn/api`
-- **Định dạng dữ liệu:** `application/json; charset=utf-8`
-- **Xác thực:** Sử dụng `Authorization: Bearer <sessionToken>` hoặc Cookie `wb_session` (`HttpOnly; Secure; SameSite=Lax`) kèm header `X-CSRF-Token`.
-- **Nguyên tắc Công khai xem – Đăng nhập mới được sử dụng (PHẦN IV Mục 13):**
-  - Khách chưa đăng nhập chỉ gọi được các endpoint công khai (`/api/health`, `/api/public/catalog`).
-  - Mọi thao tác bắt đầu bài học, tra cứu từ điển tương tác, lưu từ vựng, làm bài tập, làm bài thi, tham gia Learner Meet và chạy 15 hệ thống trí tuệ ngôn ngữ đều kiểm tra phiên đăng nhập hợp lệ tại Backend (trả về `401 Unauthorized` nếu chưa đăng nhập).
+Tài liệu OpenAPI 3.1 động có sẵn tại `GET /api/v1/openapi.json`.
 
-## 2. Danh mục Endpoint Chi tiết
-
-### A. Công khai & Sức khỏe Hệ thống
-- `GET /api/health`: Kiểm tra trạng thái hoạt động, kết nối D1 `word`, R2 `word`, 3 ngôn ngữ hỗ trợ và các tính năng bị cấm.
-- `GET /api/public/catalog?lang=zh|en|ru`: Lấy danh mục công khai (chương trình, khóa học, bài học xem trước, mục từ điển công khai, đề bài tập, thông tin kỳ thi và danh sách 15 hệ thống khác biệt).
-
-### B. Tài khoản Cá nhân, Xác thực, OAuth, Passkey & Trung tâm Bảo mật
-- `POST /api/auth/register`: Đăng ký tài khoản cá nhân với **8 trường bắt buộc** (`fullName`, `dateOfBirth`, `phoneNumber`, `email`, `password`, `confirmPassword`, `schoolName`, `workplaceName`). Tạo tài khoản `PENDING_VERIFICATION` và phát hành liên kết xác minh email (Không dùng OTP). Từ chối mọi yêu cầu tạo tài khoản tổ chức.
-- `GET|POST /api/auth/verify-email?token=<token>`: Xác minh liên kết email hợp lệ, chuyển trạng thái tài khoản sang `ACTIVE` và **tự động đăng nhập** trả về `sessionToken` + `Set-Cookie`.
-- `POST /api/auth/login`: Đăng nhập bằng email & mật khẩu. Khóa bảo vệ chống dò mật khẩu (Brute-force lockout 15 phút) sau 5 lần nhập sai liên tiếp (`423 Locked`).
-- `POST /api/auth/oauth/callback`: Xác thực liên kết Google, Facebook, Microsoft, Apple. **Không tự động liên kết tài khoản chỉ vì trùng email** (`409 Conflict`). Yêu cầu bổ sung các trường hồ sơ bắt buộc còn thiếu sau khi xác thực. Không yêu cầu OTP số điện thoại.
-- `POST /api/account/profile/complete`: Hoàn tất hoặc cập nhật hồ sơ cá nhân (bắt buộc tách riêng Trường học và Nơi làm việc).
-- `GET /api/account/security-center`: Truy xuất toàn bộ dữ liệu Trung tâm bảo mật (hồ sơ, gói dịch vụ, danh sách Passkey, tài khoản OAuth liên kết, phiên đăng nhập thiết bị, lịch sử sự kiện bảo mật và trạng thái SSO PDF Reader).
-- `POST /api/account/passkeys`: Đăng ký khóa bảo mật WebAuthn/FIDO2 (chỉ nhận `credentialId` và `publicKeySpki`, từ chối mọi trường dữ liệu sinh trắc học hoặc private key).
-- `PATCH /api/account/passkeys/:id`: Đổi tên gợi nhớ của Passkey (có kiểm tra quyền sở hữu chống IDOR).
-- `DELETE /api/account/passkeys/:id`: Thu hồi một Passkey cụ thể (có kiểm tra quyền sở hữu chống IDOR).
-- `POST /api/account/deletion-request`: Gửi yêu cầu xóa tài khoản cá nhân và dữ liệu liên quan.
-
-### C. Gói Dịch vụ & Chính sách Hỗ trợ Sinh viên 03 Tháng
-- `POST /api/subscription/student-benefit`: Kích hoạt gói **Personal Plus miễn phí 03 tháng** (hưởng 1 lần duy nhất) khi xác minh bằng email sinh viên do trường cấp (`.edu.vn`, `.edu`, `.ac.*`). Từ chối tuyệt đối việc tải ảnh thẻ sinh viên hoặc giấy tờ thay thế.
-
-### D. Học tập, Từ điển, Luyện tập, Khảo thí & Learner Meet (Yêu cầu Đăng nhập)
-- `POST /api/learning/lessons/start`: Bắt đầu bài học và ghi nhận tiến độ vào bảng `learner_progress`.
-- `GET /api/dictionary/search?q=<keyword>&lang=zh|en|ru&specialized=0|1`: Tra cứu từ điển đa ngôn ngữ và thuật ngữ chuyên ngành Trung – Anh (trả về lỗi `400` nếu truy vấn chuyên ngành tiếng Nga).
-- `POST /api/dictionary/vocabulary/save`: Lưu từ vựng vào sổ từ cá nhân và tính toán chu kỳ ôn tập ngắt quãng SM-2 (`next_review_at`).
-- `POST /api/practice/exercises/submit`: Nộp bài tập luyện 4 kỹ năng (Listening, Speaking, Reading, Writing), chấm điểm tự động và lưu lịch sử.
-- `POST /api/examinations/submit`: Nộp bài thi khảo thí (HSK, CEFR, TORFL/ТРКИ), chấm điểm theo phân môn và trả về báo cáo chẩn đoán năng lực (`certificate_issued: false`).
-- `GET /api/learner-meet/rooms`: Lấy danh sách phòng thực hành trực tiếp kèm tuyên bố quyền riêng tư.
-- `POST /api/learner-meet/rooms`: Tạo phiên thực hành 1–1 hoặc Nhóm bằng âm thanh/video trực tiếp.
-- `POST /api/learner-meet/action`: Thực hiện thao tác trong phiên (`JOIN_SESSION`, `TOGGLE_MIC`, `TOGGLE_CAMERA`, `LEAVE_SESSION`, `END_SESSION`). Mọi thao tác bị cấm (`SEND_CHAT_MESSAGE`, `UPLOAD_CHAT_FILE`, `START_RECORDING`, `START_SCREEN_SHARE`) bị chặn với mã `403 Forbidden`.
-
-### E. 15 Hệ thống Trí tuệ Ngôn ngữ Khác biệt
-- `GET /api/language-intelligence/systems`: Danh mục cấu hình và trạng thái của 15 hệ thống.
-- `POST /api/language-intelligence/evaluate/:slug`: Thực thi tính toán cho từng hệ thống từ #1 (`language-dna`) đến #15 (`personal-language-observatory`).
-
-### F. Lưu trữ Cloudflare R2 & Quản trị Tiếng Việt (RBAC)
-- `POST /api/storage/upload`: Kiểm tra tiền tố, MIME type, kích thước và tải tệp lên R2 bucket `word`.
-- `GET /api/storage/object?key=<objectKey>`: Kiểm tra quyền truy cập (`PUBLIC`, `AUTHENTICATED`, `PRIVATE`) và truy xuất đối tượng R2.
-- `GET /api/admin/overview`: Bảng điều khiển quản trị tiếng Việt, 5 nhóm phân hệ, 7 trung tâm chuyên sâu, số liệu thời gian thực và báo cáo quét tệp mồ côi R2.
-- `POST /api/admin/rbac/assign`: Cấp quyền RBAC (chỉ dành cho `SUPER_ADMIN` và `SECURITY_ADMIN`) kèm ghi nhật ký kiểm toán bắt buộc vào `audit_logs`.
-- `POST /api/admin/editorial/lessons`: Tạo mới, cập nhật và phát hành phiên bản bài học tại Trung tâm biên tập học liệu.
-- `POST /api/admin/infrastructure/backup`: Tạo bản chụp sao lưu (Backup Manifest) cho D1 và R2.
+| Method | Endpoint | Xác thực | Mô tả |
+| :--- | :--- | :--- | :--- |
+| GET | `/api/v1/health` | Công khai | Kiểm tra kết nối D1 và trạng thái tích hợp |
+| GET | `/api/v1/languages` | Công khai | Trả về 3 ngôn ngữ chính thức (`zh`, `en`, `ru`) |
+| GET | `/api/v1/programs` | Công khai | Lọc chương trình theo ngôn ngữ/loại (chặn `ja`/`ko` và chuyên ngành `ru`) |
+| GET | `/api/v1/dictionary/search` | Công khai | Tra cứu từ điển theo từ khóa, ngôn ngữ, trình độ, từ loại, chủ đề, ngành |
+| GET | `/api/v1/specialized/domains` | Công khai | Danh sách chuyên ngành (`zh`, `en`; trả 400 nếu truyền `ru`) |
+| POST | `/api/v1/support/tickets` | Công khai | Gửi yêu cầu CSKH (`cskh@`) hoặc Liên hệ hợp tác (`contact@`) |
+| POST | `/api/v1/auth/register` | Công khai | Đăng ký cá nhân 8 trường bắt buộc + tạo token xác minh email 1 lần |
+| POST | `/api/v1/auth/verify-email` | Công khai | Xác minh token 1 lần + tự động tạo phiên đăng nhập |
+| POST | `/api/v1/auth/login` | Công khai | Đăng nhập + chống brute-force (khóa 15 phút sau 5 lần sai) |
+| POST | `/api/v1/auth/logout` | Đăng nhập | Thu hồi phiên hiện tại & xóa cookie |
+| POST | `/api/v1/auth/forgot-password` | Công khai | Gửi liên kết khôi phục mật khẩu |
+| GET | `/api/v1/auth/me` | Đăng nhập | Lấy thông tin tài khoản, gói và vai trò RBAC |
+| POST | `/api/v1/account/passkeys` | Đăng nhập | Đăng ký WebAuthn Passkey (chỉ credential ID & public key COSE) |
+| POST | `/api/v1/student-benefit/request` | Đăng nhập | Yêu cầu xác minh sinh viên (chỉ chấp nhận `school_email_only`) |
+| POST | `/api/v1/student-benefit/confirm` | Công khai | Kích hoạt 03 tháng PERSONAL PLUS một lần duy nhất |
+| POST | `/api/v1/learning/progress` | Đăng nhập | Ghi nhận tiến độ & hoàn thành bài học |
+| GET/POST | `/api/v1/vocabulary/notebook` | Đăng nhập | Xem/lưu từ vào sổ cá nhân |
+| POST | `/api/v1/vocabulary/review` | Đăng nhập | Cập nhật lịch ôn tập ngắt quãng SM-2 |
+| POST | `/api/v1/practice/submit` | Đăng nhập | Nộp bài luyện tập 4 kỹ năng (không chấm điểm giả cho tự luận) |
+| POST | `/api/v1/examinations/start` | Đăng nhập | Bắt đầu lượt khảo thí |
+| PUT | `/api/v1/examination-attempts/:id/draft` | Đăng nhập | Lưu nháp câu trả lời tự động |
+| POST | `/api/v1/examination-attempts/:id/submit` | Đăng nhập | Nộp bài & chấm điểm (`certificateIssued: false`) |
+| POST | `/api/v1/learner-meet/sessions` | Đăng nhập | Tạo phiên Learner Meet (khóa chat/ghi hình) |
+| POST | `/api/v1/learner-meet/join` | Đăng nhập | Tham gia phiên bằng mã phiên |
+| POST | `/api/v1/intelligence/:slug/run` | Đăng nhập | Chạy 1 trong 15 hệ thống trí tuệ ngôn ngữ và lưu lịch sử D1 |
+| POST | `/api/v1/webhooks/email` | Provider | Cập nhật trạng thái gửi email thật (`DELIVERED`, `BOUNCED`, `COMPLAINED`) |
+| GET | `/api/v1/admin/dashboard` | RBAC Admin | Chỉ số vận hành & 7 trung tâm quản trị |
+| POST | `/api/v1/admin/roles/assign` | `rbac:manage` | Gán vai trò RBAC + ghi audit log |
+| POST | `/api/v1/admin/jobs/action` | `infrastructure:manage` | Chạy/tạm dừng/kích hoạt tác vụ nền |

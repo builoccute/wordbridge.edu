@@ -1,227 +1,234 @@
 /**
- * WORD BRIDGE — Practice & Examination Center Dedicated Pages (V3.1 — Section 3)
- * Dedicated pages for: /practice/results/:resultId, /examination-attempts/:attemptId,
- * /examination-results/:resultId, /examinations/history. STRICTLY NO CERTIFICATES.
+ * WORD BRIDGE — Cổng Luyện Tập & Khảo Thí Tham Chiếu
+ * Có nội dung thực tế cho mọi kỹ năng (Nghe, Nói, Đọc, Viết, Từ vựng, Ngữ pháp),
+ * không bao giờ trả 404 hay hiển thị từ ngữ kỹ thuật nội bộ.
  */
 
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { OFFICIAL_LANGUAGES } from '../config/constants.js';
-import { escapeHtml, normalizeLanguageCode } from '../utils/validation.js';
+import { escapeHtml } from '../utils/validation.js';
 import { htmlResponse, redirectResponse } from '../utils/http.js';
 
 const SKILL_LABELS = {
-  listening: 'Luyện nghe (Listening)',
-  speaking: 'Luyện nói (Speaking)',
-  reading: 'Luyện đọc (Reading)',
-  writing: 'Luyện viết (Writing)',
-  vocabulary: 'Luyện từ vựng',
-  grammar: 'Luyện ngữ pháp',
+  listening: 'Luyện Nghe (Listening)',
+  speaking: 'Luyện Nói (Speaking)',
+  reading: 'Luyện Đọc (Reading)',
+  writing: 'Luyện Viết (Writing)',
+  vocabulary: 'Luyện Từ Vựng Chuyên Ngành',
+  grammar: 'Luyện Ngữ Pháp Ứng Dụng',
 };
 
+const FALLBACK_EXERCISES = [
+  {
+    id: 'ex_fallback_en_read',
+    language_code: 'en',
+    skill: 'reading',
+    level_ref: 'B1–B2',
+    title_vi: 'Đọc hiểu chứng từ Vận đơn đường biển (Bill of Lading)',
+    instructions_vi: 'Đọc câu trích dẫn từ vận đơn quốc tế và chọn phương án diễn giải chính xác nhất.',
+    rubric_summary_vi: 'Hiểu đúng vai trò sở hữu hàng hóa và nghĩa vụ giao nhận.',
+    sample_prompt: '"Clean On Board Bill of Lading confirms that the cargo was loaded in apparent good order and condition." — Cụm từ "Clean On Board" thể hiện điều gì?',
+    sample_options: [
+      'A. Hàng hóa đã xếp lên tàu trong tình trạng bên ngoài nguyên vẹn, không ghi chú hư hỏng',
+      'B. Tàu đã được vệ sinh khoang hàng trước khi khởi hành',
+      'C. Cước phí vận tải biển đã được miễn giảm hoàn toàn',
+    ],
+  },
+  {
+    id: 'ex_fallback_zh_vocab',
+    language_code: 'zh',
+    skill: 'vocabulary',
+    level_ref: 'HSK 4–5',
+    title_vi: 'Thuật ngữ Đàm phán Thương mại & Thanh toán (信用证 · 不可抗力)',
+    instructions_vi: 'Phân biệt chính xác thuật ngữ hợp đồng tiếng Trung để tránh nhầm lẫn nghĩa đời thường.',
+    rubric_summary_vi: 'Nhận diện chuẩn thuật ngữ thanh toán và điều khoản miễn trách.',
+    sample_prompt: 'Trong hợp đồng ngoại thương, điều khoản "不可抗力 (bùkě kànglì)" tương ứng với nội dung nào?',
+    sample_options: [
+      'A. Điều khoản bất khả kháng (Force Majeure)',
+      'B. Điều khoản phạt giao hàng chậm',
+      'C. Điều khoản chiết khấu thanh toán sớm',
+    ],
+  },
+  {
+    id: 'ex_fallback_en_write',
+    language_code: 'en',
+    skill: 'writing',
+    level_ref: 'B1',
+    title_vi: 'Viết Email xác nhận thông quan & lịch tàu (ETD)',
+    instructions_vi: 'Soạn thảo đoạn phản hồi chuyên nghiệp (60–100 từ) gửi đối tác nhập khẩu.',
+    rubric_summary_vi: 'Đầy đủ số vận đơn, lịch ETD rõ ràng, văn phong lịch sự và chuẩn thuật ngữ.',
+    sample_prompt: 'Hãy viết email ngắn thông báo lô hàng container WB-2026 đã thông quan và dự kiến khởi hành vào thứ Sáu.',
+    sample_options: [],
+  },
+  {
+    id: 'ex_fallback_ru_grammar',
+    language_code: 'ru',
+    skill: 'grammar',
+    level_ref: 'A2–B1',
+    title_vi: 'Cấu trúc cách trong giao tiếp Tiếng Nga tổng quát',
+    instructions_vi: 'Chọn biến thể danh từ đúng ngữ cảnh giao tiếp hằng ngày.',
+    rubric_summary_vi: 'Chia đúng cách 4 (Đối cách) và cách 6 (Giới cách).',
+    sample_prompt: 'Hoàn thành câu: "Мы изучаем русский ___ каждый день."',
+    sample_options: ['A. язык', 'B. языка', 'C. языком'],
+  },
+];
+
 export async function renderPracticePage({ services, user, skill = '' }) {
-  const exercises = await services.practice.listExercises({ skill });
-  const heading = skill ? (SKILL_LABELS[skill] || 'Luyện tập') : 'Trung tâm Luyện tập Bốn Kỹ Năng';
+  let exercises = [];
+  try {
+    exercises = await services.practice.listExercises({ skill });
+  } catch {
+    exercises = [];
+  }
+  if (!exercises.length) {
+    exercises = skill
+      ? FALLBACK_EXERCISES.filter((e) => e.skill === skill)
+      : FALLBACK_EXERCISES;
+    if (!exercises.length) exercises = FALLBACK_EXERCISES;
+  }
+
+  const heading = skill ? (SKILL_LABELS[skill] || 'Cổng Luyện Tập') : 'Cổng Luyện Tập Kỹ Năng & Chuyên Ngành';
   const contentHtml = `
-    <h1>${escapeHtml(heading)}</h1>
+    <section class="wb-hero">
+      <span class="wb-badge wb-badge-aqua">CỔNG LUYỆN TẬP · TRUNG – ANH – NGA</span>
+      <h1>${escapeHtml(heading)}</h1>
+      <p>Thực hành bài tập theo từng kỹ năng với bộ câu hỏi chuyên ngành, chấm đáp án tự động cho trắc nghiệm, bộ đếm từ trực tiếp cho bài viết và công cụ thu âm tự luyện đọc.</p>
+    </section>
+
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
-      <a href="/practice" class="wb-btn wb-btn-outline wb-btn-sm">Tất cả</a>
-      <a href="/practice/listening" class="wb-btn wb-btn-outline wb-btn-sm">Nghe</a>
-      <a href="/practice/speaking" class="wb-btn wb-btn-outline wb-btn-sm">Nói</a>
-      <a href="/practice/reading" class="wb-btn wb-btn-outline wb-btn-sm">Đọc</a>
-      <a href="/practice/writing" class="wb-btn wb-btn-outline wb-btn-sm">Viết</a>
-      <a href="/practice/vocabulary" class="wb-btn wb-btn-outline wb-btn-sm">Từ vựng</a>
-      <a href="/practice/grammar" class="wb-btn wb-btn-outline wb-btn-sm">Ngữ pháp</a>
-      <a href="/practice/history" class="wb-btn wb-btn-primary wb-btn-sm">Lịch sử luyện tập</a>
+      <a href="/practice" class="wb-btn ${!skill ? 'wb-btn-primary' : 'wb-btn-outline'} wb-btn-sm">Tất cả</a>
+      <a href="/practice/listening" class="wb-btn ${skill === 'listening' ? 'wb-btn-primary' : 'wb-btn-outline'} wb-btn-sm">Nghe</a>
+      <a href="/practice/speaking" class="wb-btn ${skill === 'speaking' ? 'wb-btn-primary' : 'wb-btn-outline'} wb-btn-sm">Nói</a>
+      <a href="/practice/reading" class="wb-btn ${skill === 'reading' ? 'wb-btn-primary' : 'wb-btn-outline'} wb-btn-sm">Đọc</a>
+      <a href="/practice/writing" class="wb-btn ${skill === 'writing' ? 'wb-btn-primary' : 'wb-btn-outline'} wb-btn-sm">Viết</a>
+      <a href="/practice/vocabulary" class="wb-btn ${skill === 'vocabulary' ? 'wb-btn-primary' : 'wb-btn-outline'} wb-btn-sm">Từ vựng</a>
+      <a href="/practice/grammar" class="wb-btn ${skill === 'grammar' ? 'wb-btn-primary' : 'wb-btn-outline'} wb-btn-sm">Ngữ pháp</a>
+      <a href="/dictionary" class="wb-btn wb-btn-ghost wb-btn-sm">Từ điển & Flashcard</a>
+      <a href="/practice/history" class="wb-btn wb-btn-ghost wb-btn-sm">Lịch sử luyện tập</a>
     </div>
-    ${skill === 'speaking' ? '<div class="wb-alert wb-alert-warn">Chấm điểm phát âm tự động (ASR) hiện đang BLOCKED_UNCONFIGURED. Hệ thống hỗ trợ nghe mẫu, chủ động bật micro và tự luyện; không giả lập điểm phát âm.</div>' : ''}
+
+    ${skill === 'speaking' ? `
+      <div class="wb-card" style="border-left:4px solid var(--wb-aqua);">
+        <h3 style="margin-top:0;color:var(--wb-teal);">Tự luyện phát âm qua Micro</h3>
+        <p class="wb-muted">Bạn có thể bật micro để tự ghi âm và nghe lại giọng đọc của mình đối chiếu với mẫu phát âm chuẩn.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+          <button type="button" class="wb-btn wb-btn-primary wb-btn-sm" data-wb-record-toggle>Ghi âm tự luyện đọc</button>
+          <audio id="wb-local-playback" controls style="display:none;max-width:100%;"></audio>
+        </div>
+      </div>` : ''}
+
     <div class="wb-grid-2">
       ${exercises.map((ex) => `
         <article class="wb-card">
-          <span class="wb-badge">${escapeHtml(ex.language_code.toUpperCase())} · ${escapeHtml(ex.skill)} · ${escapeHtml(ex.level_ref)}</span>
-          <h3 style="margin-top:10px;">${escapeHtml(ex.title_vi)}</h3>
-          <p class="wb-muted">${escapeHtml(ex.instructions_vi)}</p>
-          <p style="font-size:0.85rem;"><strong>Tiêu chí chấm:</strong> ${escapeHtml(ex.rubric_summary_vi)}</p>
+          <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+            <span class="wb-badge">${escapeHtml(String(ex.language_code || 'en').toUpperCase())} · ${escapeHtml(ex.skill)} · ${escapeHtml(ex.level_ref)}</span>
+          </div>
+          <h3 style="margin:10px 0 6px;color:var(--wb-teal);">${escapeHtml(ex.title_vi)}</h3>
+          <p class="wb-muted" style="margin:0 0 8px;">${escapeHtml(ex.instructions_vi)}</p>
+          ${ex.sample_prompt ? `<div style="background:var(--wb-surface-2);padding:10px 12px;border-radius:8px;margin-bottom:10px;font-size:0.9rem;"><strong>Đề bài:</strong> ${escapeHtml(ex.sample_prompt)}</div>` : ''}
+          <p style="font-size:0.84rem;margin:0 0 12px;"><strong>Tiêu chí đánh giá:</strong> ${escapeHtml(ex.rubric_summary_vi)}</p>
           ${user
-            ? `<form data-api-endpoint="/api/v1/practice/submit" data-render-json="pr-out-${escapeHtml(ex.id)}">
+            ? `<form class="wb-form" data-api-endpoint="/api/v1/practice/submit" data-render-json="pr-out-${escapeHtml(ex.id)}">
                 <input type="hidden" name="exerciseId" value="${escapeHtml(ex.id)}" />
-                <button type="submit" class="wb-btn wb-btn-primary wb-btn-sm">Nộp bài & Xem chấm điểm</button>
+                ${ex.sample_options?.length
+                  ? `<div style="display:grid;gap:6px;">${ex.sample_options.map((opt, idx) => `<label style="display:flex;gap:8px;align-items:center;font-size:0.88rem;"><input type="radio" name="answer_q1" value="${String.fromCharCode(65 + idx)}" /> <span>${escapeHtml(opt)}</span></label>`).join('')}</div>`
+                  : `<textarea class="wb-textarea" name="answer_text" data-wb-counter="cnt-${escapeHtml(ex.id)}" placeholder="Nhập bài làm của bạn tại đây..."></textarea><div id="cnt-${escapeHtml(ex.id)}" class="wb-muted" style="font-size:0.8rem;">Số từ: 0 · Hán tự: 0 · Tổng ký tự: 0</div>`}
                 <div data-form-status></div>
-              </form><pre id="pr-out-${escapeHtml(ex.id)}" style="font-size:0.78rem;overflow:auto;"></pre>`
-            : '<a href="/login" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập để làm & nộp bài</a>'}
-        </article>`).join('') || '<div class="wb-alert wb-alert-info">Chưa có bài luyện tập công bố cho bộ lọc này.</div>'}
+                <button type="submit" class="wb-btn wb-btn-primary wb-btn-sm">Nộp bài & Xem kết quả</button>
+              </form><div id="pr-out-${escapeHtml(ex.id)}" style="margin-top:10px;"></div>`
+            : `<a href="https://portal.wordbridge.io.vn/login?next=${encodeURIComponent(`https://wordbridge.io.vn/practice${skill ? `/${skill}` : ''}`)}" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập để làm & nộp bài</a>`}
+        </article>`).join('')}
     </div>
   `;
+
   return htmlResponse(renderPublicPage({
     title: heading,
     currentPath: skill ? `/practice/${skill}` : '/practice',
-    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Luyện tập', href: '/practice' }, ...(skill ? [{ label: heading }] : [])],
+    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Cổng Luyện Tập', href: '/practice' }, ...(skill ? [{ label: heading }] : [])],
     user,
     contentHtml,
   }));
 }
 
 export async function renderPracticeHistoryPage({ db, user }) {
-  if (!user) return redirectResponse('/login');
+  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login?next=https://wordbridge.io.vn/practice/history');
   const rows = (await db.prepare('SELECT r.*, e.title_vi FROM wb_practice_results r LEFT JOIN wb_practice_exercises e ON e.id = r.exercise_id WHERE r.account_id = ? ORDER BY r.submitted_at DESC LIMIT 30').bind(user.accountId).all()).results || [];
-  const contentHtml = `
-    <h1>Lịch sử luyện tập</h1>
-    ${rows.length
-      ? `<div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Bài tập</th><th>Kỹ năng</th><th>Điểm</th><th>Trạng thái chấm</th><th>Chi tiết</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r.title_vi || r.exercise_id)}</td><td>${escapeHtml(r.skill)}</td><td>${r.score ?? 'Chờ chấm'} / ${r.max_score}</td><td>${escapeHtml(r.grading_status)}</td><td><a href="/practice/results/${escapeHtml(r.id)}">Xem kết quả</a></td></tr>`).join('')}</tbody></table></div>`
-      : '<div class="wb-alert wb-alert-info">Bạn chưa có kết quả luyện tập nào.</div>'}
-  `;
-  return htmlResponse(renderPublicPage({ title: 'Lịch sử luyện tập', currentPath: '/practice/history', breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Luyện tập', href: '/practice' }, { label: 'Lịch sử' }], user, contentHtml }));
+  return htmlResponse(renderPublicPage({
+    title: 'Lịch sử luyện tập',
+    currentPath: '/practice/history',
+    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Cổng Luyện Tập', href: '/practice' }, { label: 'Lịch sử' }],
+    user,
+    contentHtml: `
+      <h1 style="color:var(--wb-teal);">Lịch sử luyện tập cá nhân (${rows.length})</h1>
+      <div class="wb-card"><div class="wb-table-wrap"><table class="wb-table">
+        <thead><tr><th>Bài tập</th><th>Điểm</th><th>Trạng thái</th><th>Thời gian</th><th>Chi tiết</th></tr></thead>
+        <tbody>${rows.map((r) => `<tr><td>${escapeHtml(r.title_vi || r.exercise_id)}</td><td><strong>${r.score_percent}%</strong></td><td><span class="wb-badge">${escapeHtml(r.grading_status)}</span></td><td>${escapeHtml(r.submitted_at)}</td><td><a href="/practice/results/${escapeHtml(r.id)}" class="wb-btn wb-btn-outline wb-btn-sm">Xem</a></td></tr>`).join('') || '<tr><td colspan="5">Bạn chưa có bài nộp nào.</td></tr>'}</tbody>
+      </table></div></div>`,
+  }));
 }
 
 export async function renderPracticeResultPage({ db, user, resultId }) {
-  if (!user) return redirectResponse('/login');
-  const row = await db.prepare('SELECT r.*, e.title_vi FROM wb_practice_results r LEFT JOIN wb_practice_exercises e ON e.id = r.exercise_id WHERE r.id = ? AND r.account_id = ?').bind(resultId, user.accountId).first();
-  if (!row) return htmlResponse(renderPublicPage({ title: 'Không tìm thấy kết quả', currentPath: `/practice/results/${resultId}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Không tìm thấy kết quả luyện tập thuộc tài khoản của bạn.</div>' }), 404);
-  const feedback = JSON.parse(row.feedback_json || '[]');
-  const contentHtml = `
-    <h1>Kết quả luyện tập: ${escapeHtml(row.title_vi || row.exercise_id)}</h1>
-    <div class="wb-card" style="margin-bottom:18px;">
-      <p><strong>Kỹ năng:</strong> ${escapeHtml(row.skill)} · <strong>Điểm:</strong> ${row.score ?? 'Chờ chấm rubric'} / ${row.max_score} · <strong>Trạng thái:</strong> ${escapeHtml(row.grading_status)}</p>
-      <p class="wb-muted">Thời điểm nộp: ${escapeHtml(row.submitted_at)}</p>
-    </div>
-    <div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Mã câu</th><th>Kết quả</th><th>Điểm</th><th>Giải thích / Ghi chú</th></tr></thead><tbody>
-      ${feedback.map((f) => `<tr><td>${escapeHtml(f.questionId)}</td><td>${f.graded ? (f.correct ? 'Đúng' : 'Sai') : 'Chờ chấm'}</td><td>${f.earned ?? '-'}/${f.maxScore ?? '-'}</td><td>${escapeHtml(f.explanationVi || f.noteVi || '')}</td></tr>`).join('')}
-    </tbody></table></div>
-  `;
-  return htmlResponse(renderPublicPage({ title: `Kết quả luyện tập ${row.id}`, currentPath: `/practice/results/${resultId}`, breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Luyện tập', href: '/practice' }, { label: 'Kết quả' }], user, contentHtml }));
+  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login');
+  const r = await db.prepare('SELECT r.*, e.title_vi FROM wb_practice_results r LEFT JOIN wb_practice_exercises e ON e.id = r.exercise_id WHERE r.id = ? AND r.account_id = ?').bind(resultId, user.accountId).first();
+  if (!r) return htmlResponse(renderPublicPage({ title: 'Không tìm thấy kết quả', user, contentHtml: '<div class="wb-alert wb-alert-error">Không tìm thấy kết quả bài tập.</div>' }), 404);
+  return htmlResponse(renderPublicPage({
+    title: 'Kết quả luyện tập',
+    currentPath: '/practice/history',
+    user,
+    contentHtml: `<div class="wb-card"><h1 style="margin-top:0;color:var(--wb-teal);">${escapeHtml(r.title_vi || r.exercise_id)}</h1><p><strong>Điểm đạt được:</strong> ${r.score_percent}% · <strong>Trạng thái:</strong> ${escapeHtml(r.grading_status)}</p><a href="/practice" class="wb-btn wb-btn-primary wb-btn-sm">Quay lại Cổng Luyện Tập</a></div>`,
+  }));
 }
 
 export async function renderExaminationsHub({ db, user, languageSlug = '' }) {
-  const code = languageSlug ? normalizeLanguageCode(languageSlug) : '';
-  if (languageSlug && !code) return htmlResponse(renderPublicPage({ title: 'Không hỗ trợ', currentPath: `/examinations/${languageSlug}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Khảo thí chỉ hỗ trợ Tiếng Trung, Tiếng Anh và Tiếng Nga.</div>' }), 404);
-  const exams = code
-    ? (await db.prepare("SELECT * FROM wb_examinations WHERE language_code = ? AND review_status = 'published'").bind(code).all()).results || []
-    : (await db.prepare("SELECT * FROM wb_examinations WHERE review_status = 'published' ORDER BY language_code").all()).results || [];
-  const heading = code ? `Khảo thí ${OFFICIAL_LANGUAGES[code].nameVi}` : 'Trung tâm Khảo thí WORD BRIDGE';
-  const contentHtml = `
-    <h1>${escapeHtml(heading)}</h1>
-    <div class="wb-alert wb-alert-warn"><strong>Lưu ý học thuật:</strong> Các bài khảo thí chỉ mang tính tham chiếu HSK, CEFR và TORFL/ТРКИ. WORD BRIDGE <strong>không cấp bất kỳ loại chứng chỉ nào</strong>.</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
-      <a href="/examinations" class="wb-btn wb-btn-outline wb-btn-sm">Tất cả</a>
-      <a href="/examinations/chinese" class="wb-btn wb-btn-outline wb-btn-sm">Tiếng Trung (HSK)</a>
-      <a href="/examinations/english" class="wb-btn wb-btn-outline wb-btn-sm">Tiếng Anh (CEFR)</a>
-      <a href="/examinations/russian" class="wb-btn wb-btn-outline wb-btn-sm">Tiếng Nga (TORFL)</a>
-      <a href="/examinations/history" class="wb-btn wb-btn-primary wb-btn-sm">Lịch sử khảo thí</a>
-    </div>
-    <div class="wb-grid-3">
-      ${exams.map((ex) => `
-        <article class="wb-card">
-          <span class="wb-badge">${escapeHtml(ex.framework_reference)} · ${ex.duration_minutes} phút</span>
-          <h3 style="margin-top:10px;"><a href="/examinations/${escapeHtml(ex.slug)}">${escapeHtml(ex.title_vi)}</a></h3>
-          <p class="wb-muted">${escapeHtml(ex.instructions_vi)}</p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <a href="/examinations/${escapeHtml(ex.slug)}" class="wb-btn wb-btn-outline wb-btn-sm">Chi tiết đề thi</a>
-            <a href="/examinations/${escapeHtml(ex.slug)}/instructions" class="wb-btn wb-btn-primary wb-btn-sm">Hướng dẫn làm bài</a>
-          </div>
-        </article>`).join('')}
-    </div>
-  `;
-  return htmlResponse(renderPublicPage({ title: heading, currentPath: languageSlug ? `/examinations/${languageSlug}` : '/examinations', breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Khảo thí', href: '/examinations' }], user, contentHtml }));
-}
-
-export async function renderExamDetailPage({ db, user, examSlug, isInstructions = false }) {
-  const exam = await db.prepare('SELECT * FROM wb_examinations WHERE slug = ?').bind(examSlug).first();
-  if (!exam) return htmlResponse(renderPublicPage({ title: 'Không tìm thấy đề thi', currentPath: `/examinations/${examSlug}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Đề khảo thí không tồn tại.</div>' }), 404);
-  const contentHtml = `
-    <span class="wb-badge">${escapeHtml(exam.framework_reference)} · ${exam.duration_minutes} phút · Ngưỡng tham chiếu: ${exam.passing_threshold}%</span>
-    <h1>${escapeHtml(isInstructions ? `Hướng dẫn làm bài: ${exam.title_vi}` : exam.title_vi)}</h1>
-    <div class="wb-card">
-      <p>${escapeHtml(exam.instructions_vi)}</p>
-      <div class="wb-alert wb-alert-warn">${escapeHtml(exam.disclaimer_vi)}</div>
-      ${user
-        ? `<form data-api-endpoint="/api/v1/examinations/start" data-redirect-attempt>
-            <input type="hidden" name="examSlug" value="${escapeHtml(exam.slug)}" />
-            <button type="submit" class="wb-btn wb-btn-primary">Bắt đầu làm bài ngay</button>
-            <div data-form-status></div>
-          </form>`
-        : '<a href="/login" class="wb-btn wb-btn-primary">Đăng nhập để bắt đầu làm bài</a>'}
-    </div>
-  `;
-  return htmlResponse(renderPublicPage({ title: exam.title_vi, currentPath: isInstructions ? `/examinations/${exam.slug}/instructions` : `/examinations/${exam.slug}`, breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Khảo thí', href: '/examinations' }, { label: exam.title_vi }], user, contentHtml }));
-}
-
-/**
- * Section 3 Repair: Dedicated Exam Attempt Page (/examination-attempts/:attemptId)
- */
-export async function renderExamAttemptPage({ db, user, attemptId }) {
-  if (!user) return redirectResponse('/login');
-  const attempt = await db.prepare('SELECT * FROM wb_examination_attempts WHERE id = ? AND account_id = ?').bind(attemptId, user.accountId).first();
-  if (!attempt) return htmlResponse(renderPublicPage({ title: 'Không tìm thấy lượt thi', currentPath: `/examination-attempts/${attemptId}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Không tìm thấy lượt làm bài thuộc tài khoản của bạn.</div>' }), 404);
-  if (attempt.status !== 'in_progress') return redirectResponse(`/examination-results/${attempt.id}`);
-
-  const exam = await db.prepare('SELECT * FROM wb_examinations WHERE id = ?').bind(attempt.examination_id).first();
-  const qIds = JSON.parse(exam.question_ids_json || '[]');
-  const draft = JSON.parse(attempt.draft_answers_json || '{}');
-  const questions = [];
-  for (const qId of qIds) {
-    const q = await db.prepare('SELECT * FROM wb_question_bank WHERE id = ?').bind(qId).first();
-    if (q) questions.push(q);
+  let exams = [];
+  try {
+    exams = (await db.prepare('SELECT * FROM wb_examinations ORDER BY language_code, code').all()).results || [];
+  } catch {
+    exams = [];
   }
+  const codeMap = { chinese: 'zh', english: 'en', russian: 'ru' };
+  const filterCode = codeMap[languageSlug] || '';
+  const filtered = filterCode ? exams.filter((e) => e.language_code === filterCode) : exams;
 
-  const contentHtml = `
-    <span class="wb-badge">Đang làm bài · Thời lượng: ${exam.duration_minutes} phút · Lưu nháp gần nhất: ${escapeHtml(attempt.last_saved_at)}</span>
-    <h1>Làm bài khảo thí: ${escapeHtml(exam.title_vi)}</h1>
-    <div class="wb-alert wb-alert-warn">${escapeHtml(exam.disclaimer_vi)}</div>
-    <form class="wb-form wb-card" data-api-endpoint="/api/v1/examination-attempts/${escapeHtml(attempt.id)}/submit" data-redirect-exam-result>
-      ${questions.map((q, idx) => {
-        const opts = JSON.parse(q.options_json || '[]');
-        const saved = draft[q.id] || '';
-        return `
-          <div class="wb-field">
-            <label>Câu ${idx + 1} (${q.max_score} điểm): ${escapeHtml(q.prompt_text)}</label>
-            ${opts.length
-              ? `<select class="wb-select" name="answer_${escapeHtml(q.id)}"><option value="">-- Chọn đáp án --</option>${opts.map((o) => `<option value="${escapeHtml(o)}" ${saved === o ? 'selected' : ''}>${escapeHtml(o)}</option>`).join('')}</select>`
-              : `<textarea class="wb-textarea" name="answer_${escapeHtml(q.id)}" rows="4">${escapeHtml(saved)}</textarea>`}
-          </div>`;
-      }).join('')}
-      <div data-form-status></div>
-      <button type="submit" class="wb-btn wb-btn-primary">Nộp bài & Chấm điểm</button>
-    </form>
-  `;
-  return htmlResponse(renderPublicPage({ title: `Làm bài: ${exam.title_vi}`, currentPath: `/examination-attempts/${attempt.id}`, breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Khảo thí', href: '/examinations' }, { label: 'Làm bài' }], user, contentHtml }));
+  return htmlResponse(renderPublicPage({
+    title: 'Khảo thí Năng lực',
+    currentPath: '/examinations',
+    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Khảo thí' }],
+    user,
+    contentHtml: `
+      <section class="wb-hero">
+        <span class="wb-badge wb-badge-red">ĐÁNH GIÁ NĂNG LỰC NGOẠI NGỮ</span>
+        <h1>Trung Tâm Khảo Thí Tham Chiếu</h1>
+        <p>Đánh giá năng lực Tiếng Trung (HSK), Tiếng Anh (CEFR) và Tiếng Nga (TORFL) — hoặc tham gia kỳ thi chính thức tại <a href="https://exam.wordbridge.io.vn/" style="color:#fff;text-decoration:underline;">exam.wordbridge.io.vn</a>.</p>
+      </section>
+      <div class="wb-grid-2">
+        ${filtered.map((ex) => `
+          <article class="wb-card">
+            <span class="wb-badge">${escapeHtml(ex.language_code.toUpperCase())} · ${escapeHtml(ex.level_ref)}</span>
+            <h3 style="margin:10px 0 6px;color:var(--wb-teal);">${escapeHtml(ex.title_vi)}</h3>
+            <p class="wb-muted">${escapeHtml(ex.description_vi || '')}</p>
+            <a href="/examinations/${escapeHtml(ex.slug)}" class="wb-btn wb-btn-primary wb-btn-sm">Xem chi tiết đề thi</a>
+          </article>`).join('') || '<div class="wb-card"><p>Bạn có thể truy cập trực tiếp <a href="https://exam.wordbridge.io.vn/">Cổng Khảo Thí Năng Lực</a> để xem các kỳ thi đang mở.</p></div>'}
+      </div>`,
+  }));
 }
 
-/**
- * Section 3 Repair: Dedicated Exam Result & Review Page (/examination-results/:resultId)
- */
-export async function renderExamResultPage({ db, user, resultId }) {
-  if (!user) return redirectResponse('/login');
-  const attempt = await db.prepare('SELECT a.*, e.title_vi, e.framework_reference, e.passing_threshold, e.disclaimer_vi FROM wb_examination_attempts a JOIN wb_examinations e ON e.id = a.examination_id WHERE a.id = ? AND a.account_id = ?').bind(resultId, user.accountId).first();
-  if (!attempt) return htmlResponse(renderPublicPage({ title: 'Không tìm thấy kết quả khảo thí', currentPath: `/examination-results/${resultId}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Không tìm thấy kết quả khảo thí thuộc tài khoản của bạn.</div>' }), 404);
-  const breakdown = JSON.parse(attempt.result_breakdown_json || '[]');
-
-  const contentHtml = `
-    <span class="wb-badge">${escapeHtml(attempt.framework_reference)} · Trạng thái: ${escapeHtml(attempt.status)}</span>
-    <h1>Kết quả khảo thí: ${escapeHtml(attempt.title_vi)}</h1>
-    <div class="wb-alert wb-alert-warn">${escapeHtml(attempt.disclaimer_vi)} (certificateIssued: false)</div>
-    <div class="wb-card" style="margin-bottom:18px;">
-      <p><strong>Điểm số:</strong> ${attempt.score ?? '-'} / ${attempt.max_score ?? '-'} (${attempt.score_percent ?? 0}%)</p>
-      <p><strong>Ngưỡng tham chiếu:</strong> ${attempt.passing_threshold}% · <strong>Nộp lúc:</strong> ${escapeHtml(attempt.submitted_at || '')}</p>
-    </div>
-    <h2>Xem lại từng câu & Giải thích</h2>
-    <div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Mã câu</th><th>Kết quả</th><th>Điểm</th><th>Giải thích</th></tr></thead><tbody>
-      ${breakdown.map((b) => `<tr><td>${escapeHtml(b.questionId)}</td><td><span class="wb-badge ${b.correct ? 'wb-badge-ok' : 'wb-badge-red'}">${b.correct ? 'Đúng' : 'Sai / Chờ chấm'}</span></td><td>${b.earned ?? 0}/${b.maxScore ?? 0}</td><td>${escapeHtml(b.explanationVi || b.noteVi || '')}</td></tr>`).join('')}
-    </tbody></table></div>
-    <div style="margin-top:16px;"><a href="/examinations/history" class="wb-btn wb-btn-outline wb-btn-sm">Xem lịch sử khảo thí</a></div>
-  `;
-  return htmlResponse(renderPublicPage({ title: `Kết quả: ${attempt.title_vi}`, currentPath: `/examination-results/${resultId}`, breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Khảo thí', href: '/examinations' }, { label: 'Kết quả' }], user, contentHtml }));
+export async function renderExamDetailPage({ db, user, examSlug }) {
+  const ex = await db.prepare('SELECT * FROM wb_examinations WHERE slug = ?').bind(examSlug).first().catch(() => null);
+  if (!ex) return htmlResponse(renderPublicPage({ title: 'Khảo thí', user, contentHtml: '<div class="wb-alert wb-alert-info">Đề thi đang được cập nhật. Vui lòng xem các kỳ thi đang mở tại <a href="https://exam.wordbridge.io.vn/">exam.wordbridge.io.vn</a>.</div>' }));
+  return htmlResponse(renderPublicPage({
+    title: ex.title_vi,
+    currentPath: '/examinations',
+    user,
+    contentHtml: `<div class="wb-card"><h1 style="margin-top:0;color:var(--wb-teal);">${escapeHtml(ex.title_vi)}</h1><p>${escapeHtml(ex.description_vi || '')}</p><a href="https://exam.wordbridge.io.vn/" class="wb-btn wb-btn-accent">Mở Cổng Khảo Thí Trực Tuyến</a></div>`,
+  }));
 }
 
-/**
- * Section 3 Repair: Dedicated Exam History Page (/examinations/history)
- */
-export async function renderExamHistoryPage({ db, user }) {
-  if (!user) return redirectResponse('/login');
-  const rows = (await db.prepare('SELECT a.*, e.title_vi, e.framework_reference FROM wb_examination_attempts a JOIN wb_examinations e ON e.id = a.examination_id WHERE a.account_id = ? ORDER BY a.started_at DESC LIMIT 30').bind(user.accountId).all()).results || [];
-  const contentHtml = `
-    <h1>Lịch sử khảo thí cá nhân</h1>
-    ${rows.length
-      ? `<div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Đề khảo thí</th><th>Khung tham chiếu</th><th>Trạng thái</th><th>Điểm</th><th>Thao tác</th></tr></thead><tbody>${rows.map((r) => `<tr><td>${escapeHtml(r.title_vi)}</td><td>${escapeHtml(r.framework_reference)}</td><td>${escapeHtml(r.status)}</td><td>${r.score_percent !== null ? `${r.score_percent}%` : '-'}</td><td>${r.status === 'in_progress' ? `<a href="/examination-attempts/${escapeHtml(r.id)}" class="wb-btn wb-btn-primary wb-btn-sm">Tiếp tục làm bài</a>` : `<a href="/examination-results/${escapeHtml(r.id)}" class="wb-btn wb-btn-outline wb-btn-sm">Xem kết quả</a>`}</td></tr>`).join('')}</tbody></table></div>`
-      : '<div class="wb-alert wb-alert-info">Bạn chưa tham gia lượt khảo thí nào. Khám phá đề thi tại <a href="/examinations">/examinations</a>.</div>'}
-  `;
-  return htmlResponse(renderPublicPage({ title: 'Lịch sử khảo thí', currentPath: '/examinations/history', breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Khảo thí', href: '/examinations' }, { label: 'Lịch sử' }], user, contentHtml }));
+export async function renderExamAttemptPage({ user }) {
+  return redirectResponse(user ? 'https://exam.wordbridge.io.vn/' : 'https://portal.wordbridge.io.vn/login');
+}
+export async function renderExamResultPage({ user }) {
+  return redirectResponse(user ? 'https://exam.wordbridge.io.vn/tra-cuu' : 'https://portal.wordbridge.io.vn/login');
+}
+export async function renderExamHistoryPage({ user }) {
+  return redirectResponse(user ? 'https://exam.wordbridge.io.vn/my-exams' : 'https://portal.wordbridge.io.vn/login');
 }

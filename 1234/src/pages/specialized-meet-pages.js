@@ -35,9 +35,9 @@ export async function renderSpecializedPage({ db, user, subSlug = '' }) {
       return htmlResponse(renderPublicPage({ title: 'Không tìm thấy chuyên ngành', currentPath: `/specialized/${subSlug}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Nhóm chuyên ngành không tồn tại.</div>' }), 404);
     }
     heading = `Ngoại ngữ chuyên ngành: ${dom.nameVi}`;
-    terms = (await db.prepare('SELECT * FROM wb_dictionary_entries WHERE specialized_domain = ? LIMIT 30').bind(subSlug).all()).results || [];
+    try { terms = (await db.prepare('SELECT * FROM wb_dictionary_entries WHERE specialized_domain = ? LIMIT 30').bind(subSlug).all()).results || []; } catch { terms = []; }
   } else {
-    terms = (await db.prepare('SELECT * FROM wb_dictionary_entries WHERE specialized_domain IS NOT NULL LIMIT 18').all()).results || [];
+    try { terms = (await db.prepare('SELECT * FROM wb_dictionary_entries WHERE specialized_domain IS NOT NULL LIMIT 18').all()).results || []; } catch { terms = []; }
   }
 
   const contentHtml = `
@@ -75,7 +75,7 @@ export async function renderLearnerMeetPage({ db, services, user, subPath = '', 
   const providerStatus = services.learnerMeet.getProviderStatus();
 
   if (['create', 'history', 'room', 'join'].includes(subPath) && !user) {
-    return redirectResponse('/login');
+    return redirectResponse('https://portal.wordbridge.io.vn/login');
   }
 
   let body = '';

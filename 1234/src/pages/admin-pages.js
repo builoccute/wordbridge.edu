@@ -58,7 +58,7 @@ function renderSimpleTable(headers, rows, emptyText = 'Chưa có bản ghi dữ 
 }
 
 export async function renderAdminRoute({ db, services, user, subPath = '' }) {
-  if (!user) return redirectResponse('/login');
+  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login');
   if (!services.auth.hasAnyAdminRole(user)) {
     return htmlResponse('<h1>403 — Không có quyền truy cập khu vực quản trị WORD BRIDGE.</h1><p>Vai trò quản trị phải được cấp hợp lệ thông qua hệ thống phân quyền RBAC.</p><a href="/">Về trang chủ</a>', 403);
   }

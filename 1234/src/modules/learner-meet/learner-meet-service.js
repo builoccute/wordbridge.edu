@@ -12,7 +12,7 @@ import { generateId, randomTokenHex } from '../../utils/crypto.js';
 import { assertOfficialLanguage } from '../../utils/validation.js';
 
 export const LEARNER_MEET_DISCLAIMER_VI =
-  'WORD BRIDGE không cung cấp chat văn bản, không chia sẻ màn hình, không ghi âm/ghi hình và không dùng nội dung phiên để quảng cáo hay huấn luyện AI. Tuy nhiên, WORD BRIDGE không thể ngăn người tham gia sử dụng thiết bị hoặc phần mềm bên ngoài để tự ghi hình, ghi âm.';
+  'Phòng thực hành giao tiếp trực tiếp tập trung vào âm thanh và hình ảnh.';
 
 export class LearnerMeetService {
   constructor(db, emailService, env = {}) {

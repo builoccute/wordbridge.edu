@@ -84,13 +84,13 @@ export const RBAC_ROLES = Object.freeze([
 export const PLANS = Object.freeze({
   PERSONAL_FREE: {
     code: 'PERSONAL_FREE',
-    nameVi: 'PERSONAL FREE',
+    nameVi: 'Thành viên FREE',
     storageQuotaBytes: 1073741824, // 1 GB/account (verified from prior decision)
     priceStatus: 'Miễn phí',
   },
   PERSONAL_PLUS: {
     code: 'PERSONAL_PLUS',
-    nameVi: 'PERSONAL PLUS',
+    nameVi: 'Thành viên',
     storageQuotaBytes: 5368709120, // 5 GB/account (verified from prior decision)
     priceStatus: 'BLOCKED — Chờ xác nhận bảng giá chính thức',
     studentBenefitMonths: 3,

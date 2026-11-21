@@ -297,3 +297,152 @@ a:hover { text-decoration: underline; }
   .wb-hero { padding: 22px 16px; }
   .wb-header-actions .wb-hide-mobile { display: none; }
 }
+/* ============================================================================
+   WORD BRIDGE — Visual Hero, 3 Language Image Cards & 5-Column Glowing Footer
+   Appended to unified design-system.css (Mobile 360px+ & Laptop 1024px–1920px)
+   ============================================================================ */
+
+/* Premium Hero matching reference mockup */
+.wb-hero-visual {
+  position: relative;
+  overflow: hidden;
+  border-radius: 18px;
+  background: radial-gradient(circle at 75% 35%, #0D6E73 0%, #035257 52%, #023236 100%);
+  color: #fff;
+  padding: 36px 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 32px rgba(2, 50, 54, 0.22);
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(260px, 0.95fr);
+  gap: 24px;
+  align-items: center;
+}
+.wb-hero-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255, 255, 255, 0.95); color: #035257;
+  padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 0.84rem;
+  margin-bottom: 14px;
+}
+.wb-hero-visual h1 {
+  margin: 0 0 12px; font-size: clamp(1.65rem, 3.2vw, 2.55rem); line-height: 1.18; font-weight: 900;
+}
+.wb-hero-visual h1 em { font-style: italic; font-weight: 700; display: block; font-size: 0.86em; margin-top: 4px; }
+.wb-hero-visual p { color: #E2F6F6; font-size: 1rem; margin: 0 0 22px; max-width: 580px; }
+.wb-hero-ctas { display: flex; flex-wrap: wrap; gap: 10px; }
+.wb-hero-btn-white {
+  background: #fff; color: #035257 !important; border-radius: 999px; padding: 10px 18px; font-weight: 700;
+}
+.wb-hero-btn-glass {
+  background: rgba(255, 255, 255, 0.12); color: #fff !important; border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 999px; padding: 10px 18px; font-weight: 600;
+}
+.wb-hero-btn-red {
+  background: linear-gradient(135deg, #D91213, #B30203); color: #fff !important;
+  border-radius: 999px; padding: 10px 20px; font-weight: 700; box-shadow: 0 4px 14px rgba(203, 2, 3, 0.35);
+}
+.wb-hero-art {
+  border-radius: 14px; overflow: hidden; box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+.wb-hero-art img { display: block; width: 100%; height: auto; object-fit: cover; }
+
+/* 3 Visual Language Image Cards */
+.wb-lang-cards {
+  display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-bottom: 28px;
+}
+.wb-lang-card {
+  position: relative; border-radius: 16px; overflow: hidden; min-height: 215px;
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 20px;
+  color: #fff !important; text-decoration: none !important;
+  box-shadow: 0 10px 24px rgba(3, 82, 87, 0.16);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.wb-lang-card:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(3, 82, 87, 0.25); }
+.wb-lang-card img.wb-lang-bg {
+  position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;
+}
+.wb-lang-card::after {
+  content: ''; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(90deg, rgba(10, 20, 28, 0.82) 0%, rgba(10, 20, 28, 0.42) 58%, rgba(10, 20, 28, 0.12) 100%);
+}
+.wb-lang-card-body { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.wb-lang-code {
+  display: inline-block; padding: 4px 10px; border-radius: 8px; font-weight: 800; font-size: 0.82rem; color: #fff;
+}
+.wb-lang-code-zh { background: #E12D39; }
+.wb-lang-code-en { background: #1D75DE; }
+.wb-lang-code-ru { background: #6C3CE9; }
+.wb-lang-card h3 { margin: 0; font-size: 1.32rem; font-weight: 800; color: #fff; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+.wb-lang-cta {
+  background: #fff; color: #035257; font-weight: 700; font-size: 0.86rem;
+  padding: 7px 15px; border-radius: 999px; display: inline-flex; align-items: center; gap: 6px;
+}
+
+/* 5-Column Glowing Footer matching reference mockup 2 */
+.wb-footer-v4 {
+  position: relative; overflow: hidden; margin-top: auto; color: #E8F8F8;
+  background: radial-gradient(circle at 50% 82%, #0B7A78 0%, #034A4E 42%, #022C30 100%);
+  border-top: 3px solid var(--wb-aqua);
+  padding: 40px 0 0;
+}
+.wb-footer-v4-grid {
+  position: relative; z-index: 2;
+  display: grid; grid-template-columns: 1.25fr 1fr 1fr 1fr 1.15fr; gap: 22px; align-items: start;
+}
+.wb-footer-logo-pill {
+  background: #fff; border-radius: 14px; padding: 10px 14px; display: inline-flex;
+  align-items: center; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.18);
+}
+.wb-footer-logo-pill img { height: 38px; width: auto; display: block; }
+.wb-footer-lang-pills { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.wb-footer-lang-pill {
+  display: inline-flex; align-items: center; gap: 5px; font-size: 0.76rem; font-weight: 700;
+  padding: 4px 9px; border-radius: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+}
+.wb-footer-socials { display: flex; gap: 8px; margin-top: 10px; }
+.wb-footer-social-btn {
+  width: 34px; height: 34px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(255,255,255,0.28); background: rgba(255,255,255,0.08); color: #fff !important; font-weight: 800; font-size: 0.82rem;
+}
+.wb-footer-col h4 {
+  margin: 0 0 12px; color: #fff; font-size: 0.98rem; display: flex; align-items: center; gap: 8px;
+  padding-bottom: 8px; border-bottom: 1px solid rgba(90, 171, 169, 0.35);
+}
+.wb-footer-col ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; font-size: 0.88rem; }
+.wb-footer-col a { color: #D4F1F1 !important; display: inline-flex; align-items: center; gap: 6px; }
+.wb-footer-col a:hover { color: #fff !important; text-decoration: underline; }
+.wb-footer-stats-box {
+  background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(92, 208, 206, 0.32);
+  border-radius: 14px; padding: 14px; display: grid; gap: 10px;
+}
+.wb-footer-stat-item {
+  background: rgba(3, 52, 56, 0.65); border: 1px solid rgba(92, 208, 206, 0.24);
+  border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+}
+.wb-footer-stat-num { font-size: 1.25rem; font-weight: 900; color: #fff; line-height: 1.1; }
+.wb-footer-glow-art {
+  text-align: center; margin: 16px auto 0; max-width: 420px; position: relative; z-index: 1;
+}
+.wb-footer-glow-art img {
+  width: 100%; height: auto; border-radius: 14px 14px 0 0; opacity: 0.92; mix-blend-mode: lighten;
+}
+.wb-footer-bottom-bar {
+  position: relative; z-index: 2; background: rgba(1, 28, 31, 0.85);
+  border-top: 1px solid rgba(255, 255, 255, 0.14); padding: 14px 0; font-size: 0.84rem;
+}
+.wb-footer-bottom-inner {
+  display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+}
+
+/* Nav icon alignment */
+.wb-nav a { display: inline-flex; align-items: center; gap: 6px; }
+.wb-nav a svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+@media (max-width: 1060px) {
+  .wb-footer-v4-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 820px) {
+  .wb-hero-visual { grid-template-columns: 1fr; padding: 24px 18px; }
+  .wb-lang-cards { grid-template-columns: 1fr; }
+  .wb-footer-v4-grid { grid-template-columns: 1fr; }
+}

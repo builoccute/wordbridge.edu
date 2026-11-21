@@ -1,8 +1,8 @@
 /**
  * WORD BRIDGE — Student Benefit Service (Section 59)
- * - 3 months PERSONAL PLUS free, strictly ONE TIME ONLY per account & school email
+ * - 3 months Thành viên free, strictly ONE TIME ONLY per account & school email
  * - ONLY accepted verification: school-issued student email (NO ID cards, NO certificates, NO alternative docs)
- * - Automatic expiration check downgrading to PERSONAL FREE if no paid subscription
+ * - Automatic expiration check downgrading to Thành viên FREE if no paid subscription
  */
 
 import { generateId, randomTokenHex, sha256Hex } from '../utils/crypto.js';
@@ -89,7 +89,7 @@ export class StudentBenefitService {
       variables: {
         ctaUrl: verifyUrl,
         expiresMinutes: 1440,
-        subjectOverride: 'Xác minh email sinh viên WORD BRIDGE (03 tháng PERSONAL PLUS)',
+        subjectOverride: 'Xác minh email sinh viên WORD BRIDGE (03 tháng Thành viên)',
       },
     });
 

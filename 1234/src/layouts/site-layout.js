@@ -1,46 +1,32 @@
 /**
- * WORD BRIDGE V4.0 — Unified Brand & Responsive Layout (Mobile Drawer + Laptop)
- * Uses exact Logo.jpg palette (#035257, #CB0203, #3DA2A0) & vector SVG logo.
+ * WORD BRIDGE — Unified Layout matching Reference Mockups 1 & 2
+ * - Real Logo.jpg in Header, Footer & Favicon
+ * - Exact 5 Header links with icons: Trang chủ, Học tập, Learner Meet, Cổng Luyện Tập, Trung Tâm Trợ Giúp
+ * - 5-Column Glowing Footer with stats & links editable dynamically from quantri.wordbridge.io.vn
+ * - Zero raw domain URLs printed in visible text (all links cleanly hidden behind Vietnamese labels)
  */
 import { BRAND } from '../config/constants.js';
 import { escapeHtml } from '../utils/validation.js';
 
-const PUBLIC_NAV_ITEMS = [
-  { label: 'Trang chủ', href: '/' },
-  { label: 'Học ngoại ngữ', href: '/learning' },
-  { label: 'Chuyên ngành', href: '/specialized' },
-  { label: 'Từ điển', href: '/dictionary' },
-  { label: 'Luyện tập', href: '/practice' },
-  { label: 'Learner Meet', href: '/learner-meet' },
-  { label: '40 Tính năng', href: '/features' },
-  { label: 'Thi thật', href: 'https://exam.wordbridge.io.vn/' },
-  { label: 'Trợ giúp', href: 'https://help.wordbridge.io.vn/' },
-];
+const NAV_ICONS = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>',
+  learn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>',
+  meet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5"/><path d="M15 19c0-2 1.8-3.6 4-4"/></svg>',
+  practice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3M22 12h-3"/></svg>',
+  help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.8 2.1c-.8.5-1.3 1-1.3 1.9"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg>',
+};
 
-const FOOTER_GROUPS = [
-  {
-    title: 'Học tập & Chuyên ngành',
-    links: [
-      { label: 'Tiếng Trung (HSK & CN)', href: '/learning/chinese' },
-      { label: 'Tiếng Anh (CEFR & CN)', href: '/learning/english' },
-      { label: 'Tiếng Nga (Tổng quát)', href: '/learning/russian' },
-      { label: '10 Lĩnh vực Chuyên ngành', href: '/specialized' },
-    ],
-  },
-  {
-    title: 'Công cụ & Chính sách',
-    links: [
-      { label: 'Từ điển & Flashcard SM-2', href: '/dictionary' },
-      { label: '15 Trí tuệ Ngôn ngữ', href: '/intelligence' },
-      { label: 'Điều khoản sử dụng', href: '/policies/terms' },
-      { label: 'Bảo mật & Quyền riêng tư', href: '/policies/privacy' },
-    ],
-  },
+const PUBLIC_NAV_ITEMS = [
+  { label: 'Trang chủ', href: '/', icon: NAV_ICONS.home },
+  { label: 'Học tập', href: '/learning', icon: NAV_ICONS.learn },
+  { label: 'Learner Meet', href: 'https://portal.wordbridge.io.vn/meet', icon: NAV_ICONS.meet },
+  { label: 'Cổng Luyện Tập', href: '/practice', icon: NAV_ICONS.practice },
+  { label: 'Trung Tâm Trợ Giúp', href: 'https://help.wordbridge.io.vn/', icon: NAV_ICONS.help },
 ];
 
 export function renderBrandLogo() {
-  return `<a href="/" class="wb-brand" aria-label="${escapeHtml(BRAND.name)} — ${escapeHtml(BRAND.tagline)}">
-    <img src="/branding/logo-wordbridge.svg" alt="${escapeHtml(BRAND.name)}" />
+  return `<a href="/" class="wb-brand" aria-label="${escapeHtml(BRAND.name)}">
+    <img src="/branding/logo-wordbridge.jpg" alt="${escapeHtml(BRAND.name)}" style="height:44px;width:auto;border-radius:6px;" />
   </a>`;
 }
 
@@ -53,6 +39,7 @@ export function renderPublicPage({
   contentHtml = '',
   runtime = null,
 }) {
+  const s = runtime?.settings || {};
   const csrfMeta = user?.csrfToken ? `<meta name="wb-csrf-token" content="${escapeHtml(user.csrfToken)}" />` : '';
   const banner = runtime?.site?.announcement_banner
     ? `<div class="wb-banner">${escapeHtml(runtime.site.announcement_banner)}</div>`
@@ -64,7 +51,7 @@ export function renderPublicPage({
   const navHtml = PUBLIC_NAV_ITEMS
     .map((item) => {
       const active = currentPath === item.href || (item.href !== '/' && !item.href.startsWith('http') && currentPath.startsWith(item.href));
-      return `<a href="${escapeHtml(item.href)}" class="${active ? 'active' : ''}">${escapeHtml(item.label)}</a>`;
+      return `<a href="${escapeHtml(item.href)}" class="${active ? 'active' : ''}">${item.icon}<span>${escapeHtml(item.label)}</span></a>`;
     })
     .join('');
 
@@ -77,8 +64,19 @@ export function renderPublicPage({
   const authActions = user
     ? `<a href="https://portal.wordbridge.io.vn/" class="wb-btn wb-btn-outline wb-btn-sm wb-hide-mobile">${escapeHtml(user.fullName || user.email)}</a>
        <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-wb-logout>Đăng xuất</button>`
-    : `<a href="https://portal.wordbridge.io.vn/login" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập</a>
+    : `<span class="wb-btn wb-btn-ghost wb-btn-sm wb-hide-mobile" style="cursor:default;">🌐 VI</span>
+       <a href="https://portal.wordbridge.io.vn/login" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập</a>
        <a href="https://portal.wordbridge.io.vn/register" class="wb-btn wb-btn-accent wb-btn-sm wb-hide-mobile">Đăng ký</a>`;
+
+  // Editable Footer stats & socials from quantri.wordbridge.io.vn
+  const statLearners = s.footer_stat_learners || '10.000+';
+  const statLearnersLabel = s.footer_stat_learners_label || 'Người học';
+  const statDocs = s.footer_stat_docs || '100+';
+  const statDocsLabel = s.footer_stat_docs_label || 'Tài liệu học tập';
+  const footerSlogan = s.footer_slogan || 'WORD BRIDGE – Kết nối tri thức, mở rộng thế giới ngôn ngữ';
+  const fbUrl = s.social_facebook || '#';
+  const ytUrl = s.social_youtube || '#';
+  const ttUrl = s.social_tiktok || '#';
 
   return `<!DOCTYPE html>
 <html lang="vi">
@@ -86,7 +84,8 @@ export function renderPublicPage({
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)} | ${escapeHtml(BRAND.name)}</title>
-  <meta name="description" content="${escapeHtml(description || 'WORD BRIDGE — Nền tảng học ngoại ngữ chuyên ngành Trung – Anh & Tiếng Nga.')}" />
+  <meta name="description" content="${escapeHtml(description || 'WORD BRIDGE — Nền tảng học ngôn ngữ Trung – Anh – Nga và kết nối người học toàn cầu.')}" />
+  <link rel="icon" type="image/png" href="/branding/favicon.png" />
   ${csrfMeta}
   <link rel="stylesheet" href="/styles/design-system.css" />
   ${customStyle}
@@ -98,7 +97,6 @@ export function renderPublicPage({
       ${renderBrandLogo()}
       <nav class="wb-nav" id="wb-main-nav" aria-label="Điều hướng chính">${navHtml}</nav>
       <div class="wb-header-actions">
-        <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm wb-hide-mobile" data-wb-theme-toggle title="Sáng / Tối">🌓</button>
         ${authActions}
         <button type="button" class="wb-menu-toggle" data-wb-menu-toggle aria-label="Mở menu">☰</button>
       </div>
@@ -106,37 +104,92 @@ export function renderPublicPage({
   </header>
   <main class="wb-main">
     <div class="wb-container">
-      ${!user ? `<div class="wb-alert wb-alert-info" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
-        <span><strong>Chế độ xem công khai:</strong> Bạn có thể xem trước giáo trình, từ điển và 10 nhóm chuyên ngành. Đăng nhập qua <strong>portal.wordbridge.io.vn</strong> để lưu sổ từ, lật Flashcard, ghi chú và nộp bài.</span>
-        <a href="https://portal.wordbridge.io.vn/login" class="wb-btn wb-btn-primary wb-btn-sm">Đăng nhập sử dụng</a>
-      </div>` : ''}
       ${crumbHtml}
       <div id="wb-global-status" role="status" aria-live="polite"></div>
       ${contentHtml}
     </div>
   </main>
-  <footer class="wb-footer">
+  <footer class="wb-footer-v4">
     <div class="wb-container">
-      <div class="wb-footer-grid">
+      <div class="wb-footer-v4-grid">
         <div>
-          <div style="background:#fff;display:inline-block;padding:8px 12px;border-radius:10px;margin-bottom:10px;">
-            <img src="/branding/logo-wordbridge.svg" alt="WORD BRIDGE" style="height:34px;" />
+          <div class="wb-footer-logo-pill">
+            <img src="/branding/logo-wordbridge.jpg" alt="WORD BRIDGE" />
           </div>
-          <p style="font-size:0.86rem;opacity:0.9;">Nền tảng học Tiếng Chuyên Ngành Trung – Anh & Tiếng Nga tổng quát. Dữ liệu & vận hành bảo mật tập trung.</p>
+          <p style="font-size:0.88rem;margin:0 0 10px;color:#E2F6F6;">Nền tảng học ngôn ngữ và kết nối người học toàn cầu</p>
+          <div style="width:42px;height:3px;background:#CB0203;border-radius:2px;margin-bottom:10px;"></div>
+          <div class="wb-footer-lang-pills">
+            <span class="wb-footer-lang-pill"><strong style="color:#FF6B6B;">ZH</strong> Tiếng Trung</span>
+            <span class="wb-footer-lang-pill"><strong style="color:#63B3FF;">EN</strong> Tiếng Anh</span>
+            <span class="wb-footer-lang-pill"><strong style="color:#C09BFF;">RU</strong> Tiếng Nga</span>
+          </div>
+          <div style="font-size:0.78rem;opacity:0.85;margin-top:8px;">Kết nối với WORD BRIDGE</div>
+          <div class="wb-footer-socials">
+            <a href="${escapeHtml(fbUrl)}" class="wb-footer-social-btn" aria-label="Facebook">f</a>
+            <a href="${escapeHtml(ytUrl)}" class="wb-footer-social-btn" aria-label="YouTube">▶</a>
+            <a href="${escapeHtml(ttUrl)}" class="wb-footer-social-btn" aria-label="TikTok">♪</a>
+            <a href="/" class="wb-footer-social-btn" aria-label="Website">🌐</a>
+          </div>
         </div>
-        ${FOOTER_GROUPS.map((g) => `<div><h4 style="margin:0 0 8px;color:#fff;">${escapeHtml(g.title)}</h4><ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px;font-size:0.86rem;">${g.links.map((l) => `<li><a href="${escapeHtml(l.href)}">${escapeHtml(l.label)}</a></li>`).join('')}</ul></div>`).join('')}
-        <div>
-          <h4 style="margin:0 0 8px;color:#fff;">Hệ sinh thái WORD BRIDGE</h4>
-          <ul style="list-style:none;padding:0;margin:0;display:grid;gap:6px;font-size:0.86rem;">
-            <li><a href="https://portal.wordbridge.io.vn/">Cổng Thành Viên (Portal)</a></li>
-            <li><a href="https://reader.wordbridge.io.vn/">Thư Viện PDF (Reader)</a></li>
-            <li><a href="https://exam.wordbridge.io.vn/">Hệ Thống Thi Thật (Exam)</a></li>
-            <li><a href="https://help.wordbridge.io.vn/">Trung Tâm Trợ Giúp (Help)</a></li>
+
+        <div class="wb-footer-col">
+          <h4>Học tập & Chương trình</h4>
+          <ul>
+            <li><a href="/learning">› Chương trình học</a></li>
+            <li><a href="/specialized">› Ngoại ngữ Chuyên ngành</a></li>
+            <li><a href="https://reader.wordbridge.io.vn/">› Thư Viện Tài Liệu</a></li>
+            <li><a href="/dictionary">› Từ điển Ngôn ngữ</a></li>
           </ul>
         </div>
+
+        <div class="wb-footer-col">
+          <h4>Cộng đồng & Kết nối</h4>
+          <ul>
+            <li><a href="https://portal.wordbridge.io.vn/meet">› Learner Meet</a></li>
+            <li><a href="https://portal.wordbridge.io.vn/">› Cổng Thành Viên</a></li>
+            <li><a href="/practice">› Cổng Luyện Tập</a></li>
+            <li><a href="https://exam.wordbridge.io.vn/">› Cổng Dự Thi</a></li>
+          </ul>
+        </div>
+
+        <div class="wb-footer-col">
+          <h4>Hỗ trợ & Thông tin</h4>
+          <ul>
+            <li><a href="https://help.wordbridge.io.vn/">› Trung Tâm Trợ Giúp</a></li>
+            <li><a href="/faq">› Câu hỏi thường gặp</a></li>
+            <li><a href="/about">› Giới thiệu nền tảng</a></li>
+            <li><a href="/contact">› Liên hệ hỗ trợ</a></li>
+          </ul>
+        </div>
+
+        <div class="wb-footer-stats-box">
+          <div style="font-weight:800;font-size:0.95rem;color:#fff;">Thống kê & Kết nối</div>
+          <div class="wb-footer-stat-item">
+            <div style="font-size:1.3rem;">👥</div>
+            <div>
+              <div class="wb-footer-stat-num">${escapeHtml(statLearners)}</div>
+              <div style="font-size:0.78rem;color:#BCE9E8;">${escapeHtml(statLearnersLabel)}</div>
+            </div>
+          </div>
+          <div class="wb-footer-stat-item">
+            <div style="font-size:1.3rem;">📚</div>
+            <div>
+              <div class="wb-footer-stat-num">${escapeHtml(statDocs)}</div>
+              <div style="font-size:0.78rem;color:#BCE9E8;">${escapeHtml(statDocsLabel)}</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div style="margin-top:22px;padding-top:14px;border-top:1px solid rgba(255,255,255,0.16);font-size:0.82rem;opacity:0.85;">
-        © 2026 WORD BRIDGE (wordbridge.io.vn) — Where Languages Bring People Together.
+
+      <div class="wb-footer-glow-art">
+        <img src="/branding/footer-glow-book.jpg" alt="WORD BRIDGE Global Knowledge" />
+      </div>
+    </div>
+
+    <div class="wb-footer-bottom-bar">
+      <div class="wb-container wb-footer-bottom-inner">
+        <div><span style="color:#3DA2A0;font-weight:900;margin-right:8px;">|</span><strong>${escapeHtml(footerSlogan)}</strong></div>
+        <div style="opacity:0.85;">© 2026 WORD BRIDGE. All rights reserved.</div>
       </div>
     </div>
   </footer>

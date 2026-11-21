@@ -18,7 +18,7 @@ export function renderLoginPage({ user }) {
         <div class="wb-field"><label>Mật khẩu</label><input class="wb-input" type="password" name="password" required /></div>
         <div data-form-status></div>
         <button type="submit" class="wb-btn wb-btn-primary">Đăng nhập</button>
-        <p style="font-size:0.88rem;"><a href="/forgot-password">Quên mật khẩu?</a> · <a href="/register">Chưa có tài khoản? Đăng ký ngay</a></p>
+        <p style="font-size:0.88rem;"><a href="/forgot-password">Quên mật khẩu?</a> · <a href="https://portal.wordbridge.io.vn/register">Chưa có tài khoản? Đăng ký ngay</a></p>
       </form>
       <div class="wb-card wb-card-warm">
         <h3>Đăng nhập liên kết & Passkey</h3>
@@ -34,7 +34,7 @@ export function renderLoginPage({ user }) {
   `;
   return htmlResponse(renderPublicPage({
     title: 'Đăng nhập',
-    currentPath: '/login',
+    currentPath: 'https://portal.wordbridge.io.vn/login',
     breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Đăng nhập' }],
     user,
     contentHtml,
@@ -62,7 +62,7 @@ export function renderRegisterPage({ user }) {
   `;
   return htmlResponse(renderPublicPage({
     title: 'Đăng ký tài khoản',
-    currentPath: '/register',
+    currentPath: 'https://portal.wordbridge.io.vn/register',
     breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Đăng ký' }],
     user,
     contentHtml,
@@ -86,7 +86,7 @@ export async function renderVerifyEmailPage({ services, url, request }) {
     return htmlResponse(renderPublicPage({
       title: 'Xác minh email thất bại',
       currentPath: '/verify-email',
-      contentHtml: `<h1>Xác minh email thất bại</h1><div class="wb-alert wb-alert-error">${escapeHtml(res.error)}</div><a href="/login" class="wb-btn wb-btn-outline">Về trang đăng nhập</a>`,
+      contentHtml: `<h1>Xác minh email thất bại</h1><div class="wb-alert wb-alert-error">${escapeHtml(res.error)}</div><a href="https://portal.wordbridge.io.vn/login" class="wb-btn wb-btn-outline">Về trang đăng nhập</a>`,
     }), 400);
   }
   return redirectResponse('/my-learning', 302, {
@@ -114,13 +114,13 @@ export function renderOAuthCallbackPage({ url, user }) {
     <div class="wb-alert wb-alert-warn">
       <strong>Trạng thái tích hợp (Nhóm B):</strong> OAuth credentials cho ${escapeHtml(provider.toUpperCase())} chưa được cấu hình trên môi trường hiện tại. Khi cấu hình đầy đủ, hệ thống sẽ hiển thị màn hình rà soát thông tin, yêu cầu điền độc lập Trường học & Nơi làm việc, và xác nhận quyền sở hữu trước khi liên kết tài khoản trùng email.
     </div>
-    <a href="/login" class="wb-btn wb-btn-outline">Quay lại trang đăng nhập</a>
+    <a href="https://portal.wordbridge.io.vn/login" class="wb-btn wb-btn-outline">Quay lại trang đăng nhập</a>
   `;
   return htmlResponse(renderPublicPage({ title: 'OAuth Callback', currentPath: '/oauth/callback', user, contentHtml }));
 }
 
 export async function renderAccountPage({ db, user, subPath = '' }) {
-  if (!user) return redirectResponse('/login');
+  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login');
   const nav = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
       <a href="/account" class="wb-btn wb-btn-outline wb-btn-sm">Tổng quan</a>
@@ -138,12 +138,12 @@ export async function renderAccountPage({ db, user, subPath = '' }) {
   let title = 'Tài khoản cá nhân';
 
   if (subPath === 'student-benefit') {
-    title = 'Quyền lợi sinh viên (03 tháng PERSONAL PLUS)';
+    title = 'Quyền lợi sinh viên (03 tháng Thành viên)';
     const existing = await db.prepare('SELECT * FROM wb_student_benefits WHERE account_id = ?').bind(user.accountId).first();
     body = `
       <div class="wb-card">
         <h3>Chính sách sinh viên chính thức</h3>
-        <p>Sinh viên được sử dụng <strong>PERSONAL PLUS miễn phí 03 tháng</strong>, chỉ áp dụng <strong>một lần duy nhất</strong>. Điều kiện xác minh duy nhất: <strong>Email sinh viên do trường cấp</strong>. Không nhận ảnh thẻ sinh viên, giấy xác nhận hay hồ sơ thay thế.</p>
+        <p>Sinh viên được sử dụng <strong>Thành viên miễn phí 03 tháng</strong>, chỉ áp dụng <strong>một lần duy nhất</strong>. Điều kiện xác minh duy nhất: <strong>Email sinh viên do trường cấp</strong>. Không nhận ảnh thẻ sinh viên, giấy xác nhận hay hồ sơ thay thế.</p>
         ${existing
           ? `<div class="wb-alert wb-alert-info">Trạng thái hiện tại: <strong>${escapeHtml(existing.status)}</strong> · Email trường: ${escapeHtml(existing.school_email)} · Hết hạn: ${escapeHtml(existing.expires_at || 'Chờ xác minh')}</div>`
           : `<form class="wb-form" data-api-endpoint="/api/v1/student-benefit/request">
@@ -157,8 +157,8 @@ export async function renderAccountPage({ db, user, subPath = '' }) {
     title = 'Gói dịch vụ cá nhân';
     body = `
       <div class="wb-grid-2">
-        <div class="wb-card"><h3>Gói hiện tại: ${escapeHtml(user.planCode)}</h3><p>Dung lượng lưu trữ cá nhân: ${(user.storageQuotaBytes / (1024 * 1024 * 1024)).toFixed(0)} GB / tài khoản.</p><p class="wb-muted">Hết hạn: ${escapeHtml(user.planExpiresAt || 'Không giới hạn (PERSONAL FREE)')}</p></div>
-        <div class="wb-card wb-card-warm"><h3>Thông tin gói PERSONAL PLUS</h3><p>Dung lượng: 5 GB / tài khoản.</p><p>Bảng giá thương mại: <strong>${escapeHtml(PLANS.PERSONAL_PLUS.priceStatus)}</strong></p></div>
+        <div class="wb-card"><h3>Gói hiện tại: ${escapeHtml(user.planCode)}</h3><p>Dung lượng lưu trữ cá nhân: ${(user.storageQuotaBytes / (1024 * 1024 * 1024)).toFixed(0)} GB / tài khoản.</p><p class="wb-muted">Hết hạn: ${escapeHtml(user.planExpiresAt || 'Không giới hạn (Thành viên FREE)')}</p></div>
+        <div class="wb-card wb-card-warm"><h3>Thông tin gói Thành viên</h3><p>Dung lượng: 5 GB / tài khoản.</p><p>Bảng giá thương mại: <strong>${escapeHtml(PLANS.PERSONAL_PLUS.priceStatus)}</strong></p></div>
       </div>`;
   } else if (subPath === 'sessions') {
     title = 'Quản lý phiên đăng nhập';

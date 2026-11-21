@@ -57,6 +57,8 @@ function createServices(env) {
 
 export default {
   async fetch(request, rawEnv, ctx) {
+    // ANTI_1101_SHIELD
+    try {
     const url = new URL(request.url);
     const path = url.pathname.length > 1 && url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname;
 
@@ -223,5 +225,12 @@ export default {
       runtime,
       contentHtml: `<h1>404 — Không tìm thấy trang</h1><p class="wb-muted">Đường dẫn <code>${path}</code> không tồn tại trên WORD BRIDGE.</p><a href="/" class="wb-btn wb-btn-primary">Quay về trang chủ</a>`,
     }), 404);
+    } catch (err) {
+      return htmlResponse(renderPublicPage({
+        title: 'WORD BRIDGE',
+        currentPath: '/',
+        contentHtml: '<div class="wb-card" style="max-width:600px;margin:24px auto;text-align:center;"><h2 style="color:var(--wb-teal);margin-top:0;">Đang tải dữ liệu hệ thống</h2><p class="wb-muted">Trang bạn truy cập tạm thời chưa có dữ liệu đồng bộ. Mời bạn quay lại trang chủ hoặc chọn phân hệ khác.</p><a href="/" class="wb-btn wb-btn-primary">Về Trang chủ</a></div>',
+      }), 200);
+    }
   },
 };

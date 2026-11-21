@@ -1,8 +1,8 @@
 /**
  * WORD BRIDGE V4.0 — Zero-Trust Remote SQLite, Storage & Runtime Control Client
- * Runs natively on Cloudflare Workers (WebCrypto) AND Node.js 18+ (globalThis.crypto).
- * Replaces Cloudflare D1 & R2 completely (Zero-D1 / Zero-R2) by routing securely
- * to quantri.wordbridge.io.vn/internal/* with HMAC-SHA256 + Timestamp + Nonce.
+ * Hardened against Cloudflare Error 1101:
+ * - Fast AbortController timeouts so pages never hang when quantri is offline
+ * - Graceful non-throwing fallbacks for read queries so public pages always render 200 OK
  */
 
 const enc = new TextEncoder();
@@ -35,11 +35,22 @@ async function hmacSha256Hex(secret, message) {
   return toHex(sig);
 }
 
+async function fetchWithTimeout(url, init, timeoutMs = 3500) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function createQuantriBridge(env, siteKey) {
   const baseUrl = String(env.QUANTRI_API_BASE_URL || 'https://quantri.wordbridge.io.vn').replace(/\/+$/, '');
   const secret = String(env.QUANTRI_INTERNAL_SECRET || '');
 
   async function signedFetch(pathAndQuery, { method = 'GET', body = null, contentType = null, extraHeaders = {} } = {}) {
+    if (!secret) throw new Error('QUANTRI_INTERNAL_SECRET_NOT_SET');
     const ts = String(Date.now());
     const nonce = randomNonce();
     let bodyBytes = new Uint8Array(0);
@@ -66,10 +77,10 @@ export function createQuantriBridge(env, siteKey) {
     if (method.toUpperCase() !== 'GET' && method.toUpperCase() !== 'HEAD' && method.toUpperCase() !== 'DELETE') {
       init.body = bodyBytes;
     }
-    return fetch(`${baseUrl}${pathAndQuery}`, init);
+    return fetchWithTimeout(`${baseUrl}${pathAndQuery}`, init, 3500);
   }
 
-  // D1-compatible Remote SQLite interface
+  // Safe D1-compatible Remote SQLite interface (never throws unhandled Error 1101 on offline Quantri)
   const db = {
     prepare(sql) {
       const makeBound = (params = []) => ({
@@ -77,42 +88,55 @@ export function createQuantriBridge(env, siteKey) {
           return makeBound(args);
         },
         async first(colName) {
-          const res = await signedFetch('/internal/db/query', {
-            method: 'POST',
-            contentType: 'application/json',
-            body: JSON.stringify({ op: 'first', sql, params }),
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.error || 'Remote SQLite error');
-          if (!data.result) return null;
-          return colName ? data.result[colName] : data.result;
+          try {
+            const res = await signedFetch('/internal/db/query', {
+              method: 'POST',
+              contentType: 'application/json',
+              body: JSON.stringify({ op: 'first', sql, params }),
+            });
+            if (!res.ok) return null;
+            const data = await res.json().catch(() => null);
+            if (!data || !data.ok || !data.result) return null;
+            return colName ? data.result[colName] : data.result;
+          } catch {
+            return null;
+          }
         },
         async all() {
-          const res = await signedFetch('/internal/db/query', {
-            method: 'POST',
-            contentType: 'application/json',
-            body: JSON.stringify({ op: 'all', sql, params }),
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.error || 'Remote SQLite error');
-          return { results: data.results || [], success: true };
+          try {
+            const res = await signedFetch('/internal/db/query', {
+              method: 'POST',
+              contentType: 'application/json',
+              body: JSON.stringify({ op: 'all', sql, params }),
+            });
+            if (!res.ok) return { results: [], success: false };
+            const data = await res.json().catch(() => null);
+            if (!data || !data.ok) return { results: [], success: false };
+            return { results: data.results || [], success: true };
+          } catch {
+            return { results: [], success: false };
+          }
         },
         async run() {
-          const res = await signedFetch('/internal/db/query', {
-            method: 'POST',
-            contentType: 'application/json',
-            body: JSON.stringify({ op: 'run', sql, params }),
-          });
-          const data = await res.json();
-          if (!data.ok) throw new Error(data.error || 'Remote SQLite error');
-          return { success: true, meta: data.meta || {} };
+          try {
+            const res = await signedFetch('/internal/db/query', {
+              method: 'POST',
+              contentType: 'application/json',
+              body: JSON.stringify({ op: 'run', sql, params }),
+            });
+            if (!res.ok) return { success: false, meta: {} };
+            const data = await res.json().catch(() => null);
+            if (!data || !data.ok) return { success: false, meta: {} };
+            return { success: true, meta: data.meta || {} };
+          } catch {
+            return { success: false, meta: {} };
+          }
         },
       });
       return makeBound([]);
     },
   };
 
-  // R2-compatible Remote Sovereign Storage interface
   const storage = {
     async put(key, data, opts = {}) {
       const ct = opts?.httpMetadata?.contentType || opts?.contentType || 'application/octet-stream';
@@ -121,50 +145,63 @@ export function createQuantriBridge(env, siteKey) {
         contentType: ct,
         body: data,
       });
-      const out = await res.json();
-      if (!out.ok) throw new Error(out.error || 'Remote storage put failed');
-      return out.object;
+      const out = await res.json().catch(() => ({ ok: false }));
+      return out.ok ? out.object : null;
     },
     async get(key, rangeHeader = null) {
-      const extraHeaders = rangeHeader ? { Range: rangeHeader } : {};
-      const res = await signedFetch(`/internal/storage/get?key=${encodeURIComponent(key)}`, {
-        method: 'GET',
-        extraHeaders,
-      });
-      if (res.status === 404) return null;
-      const buf = await res.arrayBuffer();
-      return {
-        status: res.status,
-        contentType: res.headers.get('content-type') || 'application/octet-stream',
-        contentRange: res.headers.get('content-range') || null,
-        size: buf.byteLength,
-        body: buf,
-        arrayBuffer: async () => buf,
-      };
+      try {
+        const extraHeaders = rangeHeader ? { Range: rangeHeader } : {};
+        const res = await signedFetch(`/internal/storage/get?key=${encodeURIComponent(key)}`, { method: 'GET', extraHeaders });
+        if (!res.ok && res.status !== 206) return null;
+        const buf = await res.arrayBuffer();
+        return {
+          status: res.status,
+          contentType: res.headers.get('content-type') || 'application/octet-stream',
+          contentRange: res.headers.get('content-range') || null,
+          size: buf.byteLength,
+          body: buf,
+          arrayBuffer: async () => buf,
+        };
+      } catch {
+        return null;
+      }
     },
     async head(key) {
-      const res = await signedFetch(`/internal/storage/head?key=${encodeURIComponent(key)}`, { method: 'GET' });
-      if (res.status === 404) return null;
-      const data = await res.json();
-      return data.ok ? data.info : null;
+      try {
+        const res = await signedFetch(`/internal/storage/head?key=${encodeURIComponent(key)}`, { method: 'GET' });
+        if (!res.ok) return null;
+        const data = await res.json().catch(() => null);
+        return data?.ok ? data.info : null;
+      } catch {
+        return null;
+      }
     },
     async delete(key) {
-      const res = await signedFetch(`/internal/storage/delete?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
-      return res.json();
+      try {
+        const res = await signedFetch(`/internal/storage/delete?key=${encodeURIComponent(key)}`, { method: 'DELETE' });
+        return await res.json().catch(() => ({ deleted: false }));
+      } catch {
+        return { deleted: false };
+      }
     },
     async list(prefix = '') {
-      const res = await signedFetch(`/internal/storage/list?prefix=${encodeURIComponent(prefix)}`, { method: 'GET' });
-      const data = await res.json();
-      return data.ok ? (data.objects || []) : [];
+      try {
+        const res = await signedFetch(`/internal/storage/list?prefix=${encodeURIComponent(prefix)}`, { method: 'GET' });
+        if (!res.ok) return [];
+        const data = await res.json().catch(() => null);
+        return data?.ok ? (data.objects || []) : [];
+      } catch {
+        return [];
+      }
     },
   };
 
   async function getRuntimeConfig() {
     try {
-      const res = await fetch(`${baseUrl}/api/public/runtime/${encodeURIComponent(siteKey)}`);
+      const res = await fetchWithTimeout(`${baseUrl}/api/public/runtime/${encodeURIComponent(siteKey)}`, { method: 'GET' }, 2500);
       if (!res.ok) return null;
-      const data = await res.json();
-      return data.ok ? data : null;
+      const data = await res.json().catch(() => null);
+      return data?.ok ? data : null;
     } catch {
       return null;
     }
@@ -175,18 +212,17 @@ export function createQuantriBridge(env, siteKey) {
 
 export function renderMaintenancePage(site) {
   const title = site?.display_name || 'WORD BRIDGE';
-  const msg = site?.maintenance_message || 'Hệ thống đang bảo trì nâng cấp. Vui lòng quay lại sau ít phút.';
+  const msg = site?.maintenance_message || 'Hệ thống đang bảo trì nâng cấp định kỳ. Vui lòng quay lại sau ít phút.';
   return new Response(`<!DOCTYPE html>
 <html lang="vi"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Bảo trì hệ thống | ${title}</title>
 <link rel="stylesheet" href="/styles/design-system.css"/></head>
 <body style="justify-content:center;align-items:center;padding:24px;text-align:center;">
   <div class="wb-card" style="max-width:520px;border-top:5px solid #CB0203;">
-    <img src="/branding/logo-wordbridge.svg" alt="WORD BRIDGE" style="height:46px;margin:0 auto 12px;"/>
+    <img src="/branding/logo-wordbridge.jpg" alt="WORD BRIDGE" style="height:46px;margin:0 auto 12px;"/>
     <h1 style="color:#035257;margin:8px 0;">Đang bảo trì hệ thống</h1>
     <p>${msg}</p>
-    <p class="wb-muted">Trạng thái trực tiếp được điều hành từ <code>quantri.wordbridge.io.vn</code>.</p>
-    <a href="https://help.wordbridge.io.vn/" class="wb-btn wb-btn-outline">Xem trạng thái tại Help Center</a>
+    <a href="https://help.wordbridge.io.vn/" class="wb-btn wb-btn-outline">Mở Trung Tâm Trợ Giúp</a>
   </div>
 </body></html>`, { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Retry-After': '300' } });
 }

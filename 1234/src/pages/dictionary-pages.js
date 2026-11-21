@@ -7,6 +7,16 @@ import { OFFICIAL_LANGUAGES } from '../config/constants.js';
 import { escapeHtml, normalizeLanguageCode } from '../utils/validation.js';
 import { htmlResponse, redirectResponse } from '../utils/http.js';
 
+
+const BUILTIN_DICT_ENTRIES = [
+  { id: 'd1', slug: 'bill-of-lading', language_code: 'en', headword: 'Bill of Lading (B/L)', phonetic: '/bɪl əv ˈleɪdɪŋ/', part_of_speech: 'noun', level_ref: 'B2', specialized_domain: 'logistics', meaning_vi: 'Vận đơn đường biển — chứng từ sở hữu hàng hóa và hợp đồng vận tải.', example_sentence: 'Please send the original Bill of Lading before the vessel arrives.', example_translation_vi: 'Vui lòng gửi vận đơn đường biển bản gốc trước khi tàu cập cảng.', attribution_label: 'WORD BRIDGE Specialized Corpus' },
+  { id: 'd2', slug: 'demurrage', language_code: 'en', headword: 'Demurrage', phonetic: '/dɪˈmʌrɪdʒ/', part_of_speech: 'noun', level_ref: 'C1', specialized_domain: 'logistics', meaning_vi: 'Phí lưu bãi container quá thời hạn miễn phí tại cảng.', example_sentence: 'Customs delay resulted in three days of container demurrage.', example_translation_vi: 'Chậm thông quan khiến phát sinh ba ngày phí lưu bãi container.', attribution_label: 'WORD BRIDGE Specialized Corpus' },
+  { id: 'd3', slug: 'xinyongzheng', language_code: 'zh', headword: '信用证', phonetic: 'xìnyòngzhèng', part_of_speech: 'noun', level_ref: 'Trung cao cấp', specialized_domain: 'import-export', meaning_vi: 'Thư tín dụng (L/C) trong thanh toán xuất nhập khẩu quốc tế.', example_sentence: '我们接受不可撤销即期信用证付款。', example_translation_vi: 'Chúng tôi chấp nhận thanh toán bằng thư tín dụng trả ngay không hủy ngang.', attribution_label: 'WORD BRIDGE Specialized Corpus' },
+  { id: 'd4', slug: 'buke-kangli', language_code: 'zh', headword: '不可抗力', phonetic: 'bùkě kànglì', part_of_speech: 'noun', level_ref: 'Trung cao cấp', specialized_domain: 'business', meaning_vi: 'Điều khoản bất khả kháng (Force Majeure) trong hợp đồng thương mại.', example_sentence: '因不可抗力导致的交货延迟，双方互不承担违约责任。', example_translation_vi: 'Chậm giao hàng do sự kiện bất khả kháng thì hai bên không chịu trách nhiệm vi phạm.', attribution_label: 'WORD BRIDGE Specialized Corpus' },
+  { id: 'd5', slug: 'gongcha', language_code: 'zh', headword: '公差', phonetic: 'gōngchā', part_of_speech: 'noun', level_ref: 'Trung cao cấp', specialized_domain: 'mechanical-engineering', meaning_vi: 'Dung sai kỹ thuật trên bản vẽ cơ khí.', example_sentence: '请严格按照图纸上的公差要求进行加工。', example_translation_vi: 'Vui lòng gia công đúng theo yêu cầu dung sai trên bản vẽ.', attribution_label: 'WORD BRIDGE Specialized Corpus' },
+  { id: 'd6', slug: 'russkiy-yazyk', language_code: 'ru', headword: 'русский язык', phonetic: '/ˈruskʲɪj jɪˈzɨk/', part_of_speech: 'phrase', level_ref: 'Sơ cấp', specialized_domain: '', meaning_vi: 'Tiếng Nga (ngôn ngữ Nga tổng quát).', example_sentence: 'Мы изучаем русский язык каждый день.', example_translation_vi: 'Chúng tôi học tiếng Nga mỗi ngày.', attribution_label: 'WORD BRIDGE General Corpus' },
+];
+
 export async function renderDictionaryPage({ services, user, url, languageSlug = '' }) {
   const q = url.searchParams.get('q') || '';
   const level = url.searchParams.get('level') || '';

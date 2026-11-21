@@ -1,40 +1,25 @@
-name = "word-bridge"
+name = "word-bridge-main"
 main = "src/index.js"
 compatibility_date = "2026-11-01"
 compatibility_flags = ["nodejs_compat"]
 
+# Cloudflare Workers Static Assets — KHẮC PHỤC TRIỆT ĐỂ LỖI 404 CSS/JS/LOGO
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+# ZERO-D1 & ZERO-R2: Toàn bộ SQLite, Lưu trữ file, DNS và API đặt tập trung tại quantri.wordbridge.io.vn
 [vars]
 APP_NAME = "WORD BRIDGE"
 APP_TAGLINE = "Where Languages Bring People Together."
-APP_BASE_URL = "https://www.wordbridge.vn"
-PDF_READER_BASE_URL = "https://reader.wordbridge.vn"
-EMAIL_FROM_NOREPLY = "WORD BRIDGE <noreply@wordbridge.vn>"
-EMAIL_FROM_CSKH = "WORD BRIDGE <cskh@wordbridge.vn>"
-EMAIL_FROM_CONTACT = "WORD BRIDGE <contact@wordbridge.vn>"
-EMAIL_REPLY_TO_SYSTEM = "cskh@wordbridge.vn"
-EMAIL_PROVIDER = "unconfigured"
-LEARNER_MEET_PROVIDER = "unconfigured"
-LOGO_SVG_STATUS = "pending_official_svg"
+APP_BASE_URL = "https://wordbridge.io.vn"
+PORTAL_BASE_URL = "https://portal.wordbridge.io.vn"
+PDF_READER_BASE_URL = "https://reader.wordbridge.io.vn"
+EXAM_BASE_URL = "https://exam.wordbridge.io.vn"
+HELP_BASE_URL = "https://help.wordbridge.io.vn"
+QUANTRI_API_BASE_URL = "https://quantri.wordbridge.io.vn"
+COOKIE_DOMAIN = ".wordbridge.io.vn"
 ENVIRONMENT = "production"
-
-# Cloudflare D1 — TUYỆT ĐỐI KHÔNG ĐỔI DATABASE NAME HOẶC DATABASE ID
-[[d1_databases]]
-binding = "DB"
-database_name = "word"
-database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
-migrations_dir = "database/migrations"
-
-# Cloudflare R2 — TUYỆT ĐỐI KHÔNG ĐỔI BUCKET NAME
-[[r2_buckets]]
-binding = "R2"
-bucket_name = "word"
-
-# Tác vụ tự động định kỳ (Cron Triggers)
-[triggers]
-crons = [
-  "*/15 * * * *",
-  "0 1 * * *"
-]
 
 [observability]
 enabled = true

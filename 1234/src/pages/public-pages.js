@@ -5,7 +5,7 @@
  * - Clean Vietnamese labels with hidden URLs (no raw domains, no awkward jargon)
  */
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { SPECIALIZED_DOMAINS } from '../config/constants.js';
+import { SPECIALIZED_VOCAB_DOMAINS } from './specialized-meet-pages.js';
 import { escapeHtml } from '../utils/validation.js';
 import { htmlResponse } from '../utils/http.js';
 
@@ -69,10 +69,10 @@ export function renderHomePage({ user, runtime = null }) {
         <a href="/specialized" class="wb-btn wb-btn-outline wb-btn-sm">Khám phá chuyên ngành →</a>
       </div>
       <div class="wb-grid">
-        ${SPECIALIZED_DOMAINS.map((d) => `
+        ${SPECIALIZED_VOCAB_DOMAINS.map((d) => `
           <a href="/specialized/${escapeHtml(d.slug)}" class="wb-card" style="margin:0;display:block;border-left:4px solid var(--wb-teal);">
             <strong style="color:var(--wb-teal);display:block;">${escapeHtml(d.nameVi)}</strong>
-            <span class="wb-muted" style="font-size:0.82rem;">Thuật ngữ · Mẫu câu · Tình huống</span>
+            <span class="wb-muted" style="font-size:0.82rem;">${d.count.toLocaleString("vi-VN")} từ · ${d.topicsCount} chủ đề</span>
           </a>`).join('')}
       </div>
     </section>

@@ -61,7 +61,7 @@ export default {
     const path = url.pathname.length > 1 && url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname;
 
     // 1. Cloudflare Workers Static Assets (Fixes 404 CSS/JS/Logo permanently!)
-    if (path.startsWith('/styles/') || path.startsWith('/scripts/') || path.startsWith('/branding/') || path.startsWith('/public/')) {
+    if (path.startsWith('/styles/') || path.startsWith('/scripts/') || path.startsWith('/branding/') || path.startsWith('/data/') || path.startsWith('/public/')) {
       const normalizedPath = path.startsWith('/public/') ? path.slice('/public'.length) : path;
       if (rawEnv.ASSETS) {
         const assetUrl = new URL(normalizedPath, url.origin);

@@ -1,165 +1,143 @@
 /**
- * WORD BRIDGE — Specialized Foreign Languages (ONLY Chinese & English; NO Russian!)
- * & Learner Meet Pages (Audio/Video ONLY — NO chat, NO screen share, NO recording)
+ * WORD BRIDGE — Specialized Languages (12 Real Industry Corpora — 12,104 Individual Words)
+ * & Learner Meet Entry Page (redirecting to portal.wordbridge.io.vn/meet).
+ * Strictly NO PDF/XLSX/EXE files served — 100% structured word-by-word data.
  */
-
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { SPECIALIZED_DOMAINS, OFFICIAL_LANGUAGES } from '../config/constants.js';
-import { LEARNER_MEET_DISCLAIMER_VI } from '../modules/learner-meet/learner-meet-service.js';
 import { escapeHtml } from '../utils/validation.js';
-import { htmlResponse, redirectResponse } from '../utils/http.js';
+import { htmlResponse } from '../utils/http.js';
 
-export async function renderSpecializedPage({ db, user, subSlug = '' }) {
-  // Strictly block any Specialized Russian route (Section 8.6 & 22)
+export const SPECIALIZED_VOCAB_DOMAINS = [
+  { slug: 'ke-toan-doanh-nghiep', nameVi: 'Kế toán Doanh nghiệp', count: 1000, topicsCount: 10, sample: 'account, balance sheet, general ledger, depreciation' },
+  { slug: 'quan-tri-mang-may-tinh', nameVi: 'Quản trị Mạng Máy tính', count: 1000, topicsCount: 10, sample: 'application layer, firewall, subnet mask, routing protocol' },
+  { slug: 'cong-nghe-o-to', nameVi: 'Công nghệ Ô tô', count: 1000, topicsCount: 7, sample: 'internal combustion engine, turbocharger, ABS, crankshaft' },
+  { slug: 'ky-thuat-may-lanh-dhkk', nameVi: 'Kỹ thuật Máy lạnh & ĐHKK', count: 1000, topicsCount: 8, sample: 'refrigeration cycle, compressor, evaporator, condenser' },
+  { slug: 'sua-chua-lap-rap-may-tinh', nameVi: 'Sửa chữa & Lắp ráp Máy tính', count: 1012, topicsCount: 21, sample: 'motherboard, BIOS, thermal paste, power supply unit' },
+  { slug: 'thiet-ke-do-hoa', nameVi: 'Thiết kế Đồ họa', count: 1017, topicsCount: 15, sample: 'graphic design, typography, kerning, vector graphics' },
+  { slug: 'dien-cong-nghiep', nameVi: 'Điện Công nghiệp', count: 1012, topicsCount: 17, sample: 'transformer, circuit breaker, three-phase motor, switchgear' },
+  { slug: 'dien-tu-cong-nghiep', nameVi: 'Điện tử Công nghiệp', count: 1015, topicsCount: 19, sample: 'semiconductor, transistor, microcontroller, oscilloscope' },
+  { slug: 'co-dien-tu', nameVi: 'Cơ Điện tử', count: 1023, topicsCount: 17, sample: 'mechatronics, actuator, servo motor, PLC automation' },
+  { slug: 'cat-got-kim-loai', nameVi: 'Cắt gọt Kim loại', count: 1005, topicsCount: 17, sample: 'metal cutting, lathe, milling machine, CNC spindle' },
+  { slug: 'nguoi-sua-chua-may-cong-cu', nameVi: 'Nguội Sửa chữa Máy công cụ', count: 1013, topicsCount: 17, sample: 'bench work, vernier caliper, tolerance, surface scraping' },
+  { slug: 'bao-tri-thiet-bi-co-dien', nameVi: 'Bảo trì Thiết bị Cơ điện', count: 1007, topicsCount: 12, sample: 'preventive maintenance, vibration analysis, bearing alignment' },
+];
+
+export async function renderSpecializedPage({ user, subSlug = '', runtime = null }) {
+  // Strictly block specialized Russian
   if (subSlug === 'russian' || subSlug === 'ru') {
     return htmlResponse(renderPublicPage({
-      title: 'Không hỗ trợ Tiếng Nga chuyên ngành',
-      currentPath: '/specialized/russian',
-      breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Ngoại ngữ chuyên ngành', href: '/specialized' }],
+      title: 'Không hỗ trợ chuyên ngành Tiếng Nga',
+      currentPath: `/specialized/${subSlug}`,
       user,
-      contentHtml: '<div class="wb-alert wb-alert-error">Theo phạm vi chính thức của WORD BRIDGE, Ngoại ngữ chuyên ngành chỉ áp dụng cho <strong>Tiếng Trung (zh)</strong> và <strong>Tiếng Anh (en)</strong>. Không mở chương trình Tiếng Nga chuyên ngành.</div>',
+      runtime,
+      contentHtml: '<div class="wb-alert wb-alert-error">Kho Ngoại ngữ Chuyên ngành hiện chỉ áp dụng cho Tiếng Anh và Tiếng Trung. Mời bạn xem chương trình <a href="/learning/russian">Tiếng Nga</a>.</div>',
     }), 404);
   }
 
-  let heading = 'Ngoại ngữ chuyên ngành (Tiếng Trung & Tiếng Anh)';
-  let terms = [];
-  if (subSlug === 'chinese') {
-    heading = 'Tiếng Trung chuyên ngành';
-    terms = (await db.prepare("SELECT * FROM wb_dictionary_entries WHERE language_code = 'zh' AND specialized_domain IS NOT NULL LIMIT 30").all()).results || [];
-  } else if (subSlug === 'english') {
-    heading = 'Tiếng Anh chuyên ngành';
-    terms = (await db.prepare("SELECT * FROM wb_dictionary_entries WHERE language_code = 'en' AND specialized_domain IS NOT NULL LIMIT 30").all()).results || [];
-  } else if (subSlug) {
-    const dom = SPECIALIZED_DOMAINS.find((d) => d.slug === subSlug);
-    if (!dom) {
-      return htmlResponse(renderPublicPage({ title: 'Không tìm thấy chuyên ngành', currentPath: `/specialized/${subSlug}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Nhóm chuyên ngành không tồn tại.</div>' }), 404);
-    }
-    heading = `Ngoại ngữ chuyên ngành: ${dom.nameVi}`;
-    try { terms = (await db.prepare('SELECT * FROM wb_dictionary_entries WHERE specialized_domain = ? LIMIT 30').bind(subSlug).all()).results || []; } catch { terms = []; }
-  } else {
-    try { terms = (await db.prepare('SELECT * FROM wb_dictionary_entries WHERE specialized_domain IS NOT NULL LIMIT 18').all()).results || []; } catch { terms = []; }
+  // Detail view for any of the 12 specialized industries (word-by-word explorer!)
+  const matched = SPECIALIZED_VOCAB_DOMAINS.find((d) => d.slug === subSlug);
+  if (matched) {
+    const contentHtml = `
+      <section class="wb-hero">
+        <span class="wb-badge wb-badge-aqua">KHO TỪ VỰNG CHUYÊN NGÀNH · ${matched.count.toLocaleString('vi-VN')} TỪ</span>
+        <h1>${escapeHtml(matched.nameVi)}</h1>
+        <p>Tra cứu từng từ vựng kèm loại từ, phiên âm IPA, nghĩa tiếng Việt sát ngữ cảnh nghề nghiệp và phân theo ${matched.topicsCount} nhóm chủ đề kỹ thuật.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="/specialized" class="wb-btn wb-btn-ghost wb-btn-sm">← Tất cả chuyên ngành</a>
+          <a href="/vocabulary/flashcards" class="wb-btn wb-btn-accent wb-btn-sm">Luyện Flashcard</a>
+        </div>
+      </section>
+
+      <div id="wb-vocab-explorer" data-domain-slug="${escapeHtml(matched.slug)}" class="wb-card">
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+          <input id="wb-vocab-search" class="wb-input" style="flex:1;min-width:220px;" placeholder="Tìm từ tiếng Anh, phiên âm IPA hoặc nghĩa tiếng Việt..." />
+          <select id="wb-vocab-topic" class="wb-select" style="max-width:320px;">
+            <option value="">Đang tải nhóm chủ đề...</option>
+          </select>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+          <div id="wb-vocab-stats" class="wb-muted">Đang tải toàn bộ ${matched.count.toLocaleString('vi-VN')} từ vựng...</div>
+          <div id="wb-vocab-pager" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"></div>
+        </div>
+        <div class="wb-table-wrap">
+          <table class="wb-table">
+            <thead>
+              <tr>
+                <th style="width:64px;">STT</th>
+                <th>Thuật ngữ</th>
+                <th>Phiên âm IPA</th>
+                <th>Nghĩa tiếng Việt</th>
+                <th>Nhóm chủ đề</th>
+                <th style="width:120px;">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody id="wb-vocab-list">
+              <tr><td colspan="6" style="text-align:center;padding:24px;">Đang tải danh sách từng từ vựng...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <script src="/scripts/vocab-explorer.js" defer></script>
+    `;
+
+    return htmlResponse(renderPublicPage({
+      title: `Từ vựng ${matched.nameVi}`,
+      currentPath: `/specialized/${matched.slug}`,
+      breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Ngoại ngữ Chuyên ngành', href: '/specialized' }, { label: matched.nameVi }],
+      user,
+      runtime,
+      contentHtml,
+    }));
   }
 
+  // Overview hub of all 12 Specialized Domains (12,104 total words)
+  const totalWords = SPECIALIZED_VOCAB_DOMAINS.reduce((s, d) => s + d.count, 0);
   const contentHtml = `
-    <h1>${escapeHtml(heading)}</h1>
-    <p class="wb-muted">Phạm vi chính thức: chỉ áp dụng <strong>Tiếng Trung</strong> và <strong>Tiếng Anh</strong>. Không mở chuyên ngành Tiếng Nga.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 22px;">
-      <a href="/specialized" class="wb-btn wb-btn-outline wb-btn-sm">Tổng quan</a>
-      <a href="/specialized/chinese" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Trung chuyên ngành</a>
-      <a href="/specialized/english" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Anh chuyên ngành</a>
-      ${SPECIALIZED_DOMAINS.map((d) => `<a href="/specialized/${d.slug}" class="wb-btn wb-btn-ghost wb-btn-sm">${escapeHtml(d.nameVi)}</a>`).join('')}
-    </div>
-    <h2>Thuật ngữ chuyên môn trong ngữ cảnh công việc</h2>
+    <section class="wb-hero">
+      <span class="wb-badge wb-badge-aqua">KHO TỪ VỰNG CHUYÊN NGÀNH · ${totalWords.toLocaleString('vi-VN')} TỪ</span>
+      <h1>Ngoại Ngữ Chuyên Ngành Ứng Dụng</h1>
+      <p>Hệ thống ${totalWords.toLocaleString('vi-VN')} thuật ngữ chuyên ngành được biên soạn theo từng từ riêng biệt, đầy đủ loại từ, phiên âm IPA, nghĩa tiếng Việt sát thực tế công việc và phân loại theo nhóm chủ đề.</p>
+    </section>
+
     <div class="wb-grid-3">
-      ${terms.map((t) => `
-        <article class="wb-card">
-          <span class="wb-badge">${escapeHtml(t.language_code.toUpperCase())} · ${escapeHtml(t.specialized_domain || '')}</span>
-          <h3 style="margin-top:8px;"><a href="/dictionary/${escapeHtml(OFFICIAL_LANGUAGES[t.language_code].slug)}/${escapeHtml(t.slug)}">${escapeHtml(t.headword)}</a></h3>
-          <div><span class="wb-phonetic">${escapeHtml(t.phonetic)}</span></div>
-          <p style="margin:6px 0;"><strong>${escapeHtml(t.meaning_vi)}</strong></p>
-          <p class="wb-muted" style="font-size:0.86rem;">${escapeHtml(t.target_definition)}</p>
-        </article>`).join('') || '<div class="wb-alert wb-alert-info">Chuyên ngành này đang bổ sung thêm bộ thuật ngữ & tình huống nghiệp vụ.</div>'}
+      ${SPECIALIZED_VOCAB_DOMAINS.map((d) => `
+        <article class="wb-card" style="display:flex;flex-direction:column;justify-content:space-between;border-top:4px solid var(--wb-teal);">
+          <div>
+            <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;">
+              <span class="wb-badge">${d.count.toLocaleString('vi-VN')} từ</span>
+              <span class="wb-badge wb-badge-aqua">${d.topicsCount} chủ đề</span>
+            </div>
+            <h3 style="margin:0 0 8px;color:var(--wb-teal);">${escapeHtml(d.nameVi)}</h3>
+            <p class="wb-muted" style="font-size:0.84rem;margin:0 0 14px;">Ví dụ: ${escapeHtml(d.sample)}...</p>
+          </div>
+          <a href="/specialized/${escapeHtml(d.slug)}" class="wb-btn wb-btn-primary wb-btn-sm">Mở toàn bộ ${d.count.toLocaleString('vi-VN')} từ →</a>
+        </article>`).join('')}
     </div>
   `;
 
   return htmlResponse(renderPublicPage({
-    title: heading,
-    currentPath: subSlug ? `/specialized/${subSlug}` : '/specialized',
-    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Ngoại ngữ chuyên ngành', href: '/specialized' }, ...(subSlug ? [{ label: heading }] : [])],
+    title: 'Ngoại ngữ Chuyên ngành',
+    currentPath: '/specialized',
+    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Ngoại ngữ Chuyên ngành' }],
     user,
+    runtime,
     contentHtml,
   }));
 }
 
-export async function renderLearnerMeetPage({ db, services, user, subPath = '', param = '' }) {
-  const providerStatus = services.learnerMeet.getProviderStatus();
-
-  if (['create', 'history', 'room', 'join'].includes(subPath) && !user) {
-    return redirectResponse('https://portal.wordbridge.io.vn/login');
-  }
-
-  let body = '';
-  let title = 'Learner Meet — Thực hành Âm thanh & Video';
-
-  if (subPath === 'create') {
-    title = 'Tạo phiên Learner Meet';
-    body = `
-      <form class="wb-form wb-card" data-api-endpoint="/api/v1/learner-meet/sessions" data-render-json="lm-create-out">
-        <div class="wb-field">
-          <label>Ngôn ngữ thực hành</label>
-          <select class="wb-select" name="languageCode">
-            <option value="zh">Tiếng Trung (zh)</option>
-            <option value="en">Tiếng Anh (en)</option>
-            <option value="ru">Tiếng Nga (ru)</option>
-          </select>
-        </div>
-        <div class="wb-field">
-          <label>Hình thức</label>
-          <select class="wb-select" name="mode">
-            <option value="one_to_one">Thực hành 1–1 (2 người)</option>
-            <option value="group">Thực hành nhóm (tối đa 8 người)</option>
-          </select>
-        </div>
-        <div class="wb-field"><label>Chủ đề thực hành</label><input class="wb-input" name="topicVi" required placeholder="Ví dụ: Luyện hội thoại đặt lịch họp bằng tiếng Anh" /></div>
-        <div class="wb-field"><label>Số người tối đa (2–8)</label><input class="wb-input" type="number" name="maxParticipants" min="2" max="8" value="2" /></div>
-        <div data-form-status></div>
-        <button type="submit" class="wb-btn wb-btn-primary">Tạo phiên thực hành</button>
-      </form>
-      <pre id="lm-create-out" style="font-size:0.82rem;overflow:auto;"></pre>`;
-  } else if (subPath === 'sessions' || subPath === 'history') {
-    title = subPath === 'history' ? 'Lịch sử tham gia Learner Meet' : 'Danh sách phiên Learner Meet';
-    const sessions = (await db.prepare('SELECT * FROM wb_learner_meet_sessions ORDER BY created_at DESC LIMIT 20').all()).results || [];
-    body = sessions.length
-      ? `<div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Mã phiên</th><th>Ngôn ngữ</th><th>Chủ đề</th><th>Trạng thái</th><th>Phòng</th></tr></thead><tbody>${sessions.map((s) => `<tr><td><strong>${escapeHtml(s.session_code)}</strong></td><td>${escapeHtml(s.language_code.toUpperCase())}</td><td>${escapeHtml(s.topic_vi)}</td><td>${escapeHtml(s.status)}</td><td><a href="/learner-meet/room/${escapeHtml(s.room_id)}">Mở phòng</a></td></tr>`).join('')}</tbody></table></div>`
-      : '<div class="wb-alert wb-alert-info">Hiện chưa có phiên Learner Meet nào đang mở.</div>';
-  } else if (subPath === 'room') {
-    title = `Phòng thực hành ${param}`;
-    body = `
-      <div class="wb-card">
-        <h3>Phòng thực hành: ${escapeHtml(param)}</h3>
-        <p><strong>Trạng thái WebRTC Provider:</strong> <span class="wb-badge wb-badge-warn">${escapeHtml(providerStatus.status)}</span></p>
-        <p class="wb-muted">${escapeHtml(providerStatus.noteVi)}</p>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;">
-          <button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-wb-device-check>Kiểm tra Micro & Camera</button>
-          <a href="/learner-meet/sessions" class="wb-btn wb-btn-ghost wb-btn-sm">Rời phòng</a>
-        </div>
-        <div id="wb-device-status" class="wb-muted" style="font-size:0.9rem;"></div>
-      </div>`;
-  } else {
-    body = `
-      <div class="wb-grid-2">
-        <div class="wb-card">
-          <h3>Thực hành giao tiếp trực tiếp 1–1 & Nhóm</h3>
-          <p>Hỗ trợ bật/tắt micro, bật/tắt camera, kiểm tra thiết bị và kết nối theo chủ đề cho Tiếng Trung, Tiếng Anh và Tiếng Nga.</p>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
-            <a href="/learner-meet/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Danh sách phiên</a>
-            <a href="/learner-meet/create" class="wb-btn wb-btn-primary wb-btn-sm">Tạo phiên mới</a>
-            <a href="/learner-meet/history" class="wb-btn wb-btn-ghost wb-btn-sm">Lịch sử tham gia</a>
-          </div>
-        </div>
-        <div class="wb-card wb-card-warm">
-          <h3>Các giới hạn tuyệt đối của Learner Meet</h3>
-          <ul>
-            <li>Không có chat văn bản, không nhắn tin cá nhân/nhóm, không gửi tệp, không bình luận.</li>
-            <li>Không livestream công khai, không chia sẻ màn hình.</li>
-            <li>Không có nút ghi âm/ghi hình, không lưu bản ghi, không Recording API.</li>
-            <li>Chỉ lưu metadata vận hành tối thiểu (thời gian tham gia/rời, trạng thái phiên).</li>
-          </ul>
-        </div>
-      </div>`;
-  }
-
-  const contentHtml = `
-    <h1>${escapeHtml(title)}</h1>
-    <div class="wb-alert wb-alert-warn">${escapeHtml(LEARNER_MEET_DISCLAIMER_VI)}</div>
-    ${body}
-  `;
-
+export async function renderLearnerMeetPage({ user, runtime = null }) {
   return htmlResponse(renderPublicPage({
-    title,
-    currentPath: subPath ? `/learner-meet/${subPath}${param ? `/${param}` : ''}` : '/learner-meet',
-    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Learner Meet', href: '/learner-meet' }],
+    title: 'Learner Meet',
+    currentPath: '/learner-meet',
+    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Learner Meet' }],
     user,
-    contentHtml,
+    runtime,
+    contentHtml: `
+      <section class="wb-hero">
+        <span class="wb-badge wb-badge-aqua">LEARNER MEET</span>
+        <h1>Thực Hành Giao Tiếp Trực Tuyến</h1>
+        <p>Kết nối trực tiếp cùng cộng đồng người học WORD BRIDGE qua phòng luyện nói âm thanh và hình ảnh ngay trong Cổng Thành Viên.</p>
+        <a href="https://portal.wordbridge.io.vn/meet" class="wb-btn wb-hero-btn-white">Mở phòng Learner Meet →</a>
+      </section>`,
   }));
 }

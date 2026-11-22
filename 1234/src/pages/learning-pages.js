@@ -4,7 +4,7 @@
  */
 
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { OFFICIAL_LANGUAGES } from '../config/constants.js';
+import { OFFICIAL_LANGUAGES, signInUrl } from '../config/constants.js';
 import { escapeHtml, normalizeLanguageCode } from '../utils/validation.js';
 import { htmlResponse, redirectResponse } from '../utils/http.js';
 
@@ -19,6 +19,15 @@ const BUILTIN_PROGRAMS = [
 export async function renderLearningHub({ db, user }) {
   let programs = []; try { programs = (await db.prepare("SELECT * FROM wb_programs WHERE review_status = 'published' ORDER BY language_code, code").all()).results || []; } catch { programs = []; }
   if (!programs.length) programs = BUILTIN_PROGRAMS;
+  let recentPractice = [];
+  let dueCount = 0;
+  if (user && db) {
+    try {
+      recentPractice = (await db.prepare('SELECT id, skill, score, max_score, grading_status, submitted_at FROM wb_practice_results WHERE account_id = ? ORDER BY submitted_at DESC LIMIT 5').bind(user.accountId).all()).results || [];
+      const dueRow = await db.prepare("SELECT COUNT(*) AS cnt FROM wb_vocabulary_notebook WHERE account_id = ? AND datetime(next_review_at) <= datetime('now')").bind(user.accountId).first();
+      dueCount = dueRow?.cnt || 0;
+    } catch {}
+  }
   const cards = programs.map((p) => `
     <article class="wb-card">
       <span class="wb-badge">${escapeHtml(p.language_code.toUpperCase())} · ${escapeHtml(p.program_type)}</span>
@@ -35,8 +44,14 @@ export async function renderLearningHub({ db, user }) {
       <a href="/learning/chinese" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Trung (zh)</a>
       <a href="/learning/english" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Anh (en)</a>
       <a href="/learning/russian" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Nga (ru)</a>
+      <a href="/learning/path" class="wb-btn wb-btn-outline wb-btn-sm">Lộ trình học tập</a>
+      <a href="/learning/skills" class="wb-btn wb-btn-outline wb-btn-sm">Trung tâm kỹ năng</a>
+      <a href="/my-knowledge" class="wb-btn wb-btn-outline wb-btn-sm">My Knowledge</a>
       <a href="/my-learning" class="wb-btn wb-btn-outline wb-btn-sm">Lộ trình cá nhân</a>
     </div>
+    ${user
+      ? `<section class="wb-card wb-card-warm" style="margin-bottom:18px;"><h2 style="margin-top:0;color:var(--wb-teal);">Learning Home · Hoạt động gần đây</h2><p>Từ đến hạn ôn: <strong>${dueCount}</strong> · <a href="/vocabulary/review">Ôn tập SRS ngay</a></p>${recentPractice.length ? `<ul>${recentPractice.map((r) => `<li><a href="/practice/results/${escapeHtml(r.id)}">${escapeHtml(r.id)}</a> · ${escapeHtml(r.skill)} · ${escapeHtml(r.grading_status)}</li>`).join('')}</ul>` : '<p class="wb-muted">Chưa có hoạt động luyện tập gần đây.</p>'}</section>`
+      : `<section class="wb-alert wb-alert-info" style="margin-bottom:18px;"><strong>Khám phá trước khi đăng nhập</strong> — Xem cấu trúc Learning Path, 7 Skill Centers, Practice, Dictionary và Chuyên ngành. Mọi action lưu tiến độ/làm bài yêu cầu đăng nhập. <a href="${escapeHtml(signInUrl('/learning', 'learning.start'))}" class="wb-btn wb-btn-primary wb-btn-sm" style="margin-left:8px;">Đăng nhập để bắt đầu</a></section>`}
     <div class="wb-grid-3">${cards || '<div class="wb-alert wb-alert-info">Chưa có chương trình được phát hành.</div>'}</div>
   `;
   return htmlResponse(renderPublicPage({

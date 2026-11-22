@@ -29,34 +29,32 @@ async function registerAndVerify(env, email) {
   return { accountId: regData.accountId, cookie, csrfToken: verData.csrfToken };
 }
 
-test('OAuth Flow: generates state/nonce, reports BLOCKED_UNCONFIGURED without credentials, and blocks replayed state', async () => {
+test('Third-party OAuth Removed: /api/v1/auth/oauth/*, /oauth/callback & /account/linked-accounts return 410 and /login has zero GG/FB/MC/AP buttons', async () => {
   const env = await createTestEnv();
   try {
-    const startRes = await worker.fetch(new Request('https://www.wordbridge.vn/api/v1/auth/oauth/google/start', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ redirectPath: '/my-learning' }),
-    }), env, {});
-    assert.equal(startRes.status, 503);
-    const startData = await startRes.json();
-    assert.equal(startData.code, 'BLOCKED_UNCONFIGURED');
-    assert.ok(startData.state);
+    for (const prov of ['google', 'facebook', 'microsoft', 'apple']) {
+      const startRes = await worker.fetch(new Request(`https://www.wordbridge.vn/api/v1/auth/oauth/${prov}/start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ redirectPath: '/my-learning' }),
+      }), env, {});
+      assert.equal(startRes.status, 410);
 
-    // Callback with valid state when unconfigured -> 503 (never fakes login)
-    const cb1 = await worker.fetch(new Request('https://www.wordbridge.vn/api/v1/auth/oauth/google/callback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: startData.state, code: 'fake_code' }),
-    }), env, {});
-    assert.equal(cb1.status, 503);
+      const cbRes = await worker.fetch(new Request(`https://www.wordbridge.vn/api/v1/auth/oauth/${prov}/callback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state: 'any', code: 'any' }),
+      }), env, {});
+      assert.equal(cbRes.status, 410);
+    }
 
-    // Replayed state -> 400
-    const cb2 = await worker.fetch(new Request('https://www.wordbridge.vn/api/v1/auth/oauth/google/callback', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ state: startData.state, code: 'fake_code' }),
-    }), env, {});
-    assert.equal(cb2.status, 400);
+    assert.equal((await worker.fetch(new Request('https://www.wordbridge.vn/oauth/callback'), env, {})).status, 410);
+    assert.equal((await worker.fetch(new Request('https://www.wordbridge.vn/account/linked-accounts'), env, {})).status, 410);
+
+    const loginRes = await worker.fetch(new Request('https://www.wordbridge.vn/login'), env, {});
+    const loginHtml = await loginRes.text();
+    assert.equal(loginRes.status, 200);
+    assert.doesNotMatch(loginHtml, /google|facebook|microsoft|apple|oauth/i);
   } finally {
     env.DB.close();
   }

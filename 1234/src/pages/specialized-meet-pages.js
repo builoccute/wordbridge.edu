@@ -4,13 +4,13 @@
  */
 
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { SPECIALIZED_DOMAINS, OFFICIAL_LANGUAGES } from '../config/constants.js';
+import { SPECIALIZED_DOMAINS, OFFICIAL_LANGUAGES, ECOSYSTEM, signInUrl } from '../config/constants.js';
 import { LEARNER_MEET_DISCLAIMER_VI } from '../modules/learner-meet/learner-meet-service.js';
 import { escapeHtml } from '../utils/validation.js';
 import { htmlResponse, redirectResponse } from '../utils/http.js';
 
 export async function renderSpecializedPage({ db, user, subSlug = '' }) {
-  // Strictly block any Specialized Russian route (Section 8.6 & 22)
+  // Strictly block any Specialized Russian route
   if (subSlug === 'russian' || subSlug === 'ru') {
     return htmlResponse(renderPublicPage({
       title: 'Không hỗ trợ Tiếng Nga chuyên ngành',
@@ -51,7 +51,7 @@ export async function renderSpecializedPage({ db, user, subSlug = '' }) {
       <div class="wb-specialized-hero-copy">
         <span class="wb-eyebrow">Ngoại ngữ chuyên ngành · WORD BRIDGE</span>
         <h1>${escapeHtml(heading)}</h1>
-        <p>Học ngôn ngữ trong đúng bối cảnh nghề nghiệp: thuật ngữ, cách diễn đạt và tình huống chuyên môn được tổ chức theo từng lĩnh vực.</p>
+        <p>Học ngôn ngữ trong đúng bối cảnh nghề nghiệp: 12 bộ dữ liệu thuật ngữ (12.104 mục từ) cùng các chuyên ngành Tiếng Trung & Tiếng Anh.</p>
         <div class="wb-specialized-language-switch" aria-label="Chọn ngôn ngữ chuyên ngành">
           <a href="/specialized/chinese" class="wb-specialized-language ${subSlug === 'chinese' ? 'active' : ''}"><strong>中文</strong><span>Tiếng Trung chuyên ngành</span></a>
           <a href="/specialized/english" class="wb-specialized-language ${subSlug === 'english' ? 'active' : ''}"><strong>EN</strong><span>Tiếng Anh chuyên ngành</span></a>
@@ -75,7 +75,7 @@ export async function renderSpecializedPage({ db, user, subSlug = '' }) {
             <span class="wb-domain-index">${String(index + 1).padStart(2, '0')}</span>
             <div>
               <h3>${escapeHtml(d.nameVi)}</h3>
-              <p>${d.languages.map((code) => code === 'zh' ? 'Tiếng Trung' : 'Tiếng Anh').join(' · ')}</p>
+              <p>${d.languages.map((code) => code === 'zh' ? 'Tiếng Trung' : 'Tiếng Anh').join(' · ')}${d.count ? ` · ${d.count.toLocaleString('vi-VN')} thuật ngữ` : ''}</p>
             </div>
             <span class="wb-domain-arrow" aria-hidden="true">→</span>
           </a>`).join('')}
@@ -94,12 +94,11 @@ export async function renderSpecializedPage({ db, user, subSlug = '' }) {
               <span class="wb-badge">${escapeHtml(t.language_code.toUpperCase())}</span>
               ${t.specialized_domain ? `<span>${escapeHtml(SPECIALIZED_DOMAINS.find((d) => d.slug === t.specialized_domain)?.nameVi || t.specialized_domain)}</span>` : ''}
             </div>
-            <h3><a href="/dictionary/${escapeHtml(OFFICIAL_LANGUAGES[t.language_code].slug)}/${escapeHtml(t.slug)}">${escapeHtml(t.headword)}</a></h3>
+            <h3><a href="/dictionary/${escapeHtml(OFFICIAL_LANGUAGES[t.language_code].slug)}/${escapeHtml(t.slug)}" data-learning-content>${escapeHtml(t.headword)}</a></h3>
             ${t.phonetic ? `<div class="wb-phonetic">${escapeHtml(t.phonetic)}</div>` : ''}
-            <p class="wb-term-meaning">${escapeHtml(t.meaning_vi)}</p>
-            ${t.target_definition ? `<p class="wb-muted">${escapeHtml(t.target_definition)}</p>` : ''}
+            <p class="wb-term-meaning" data-learning-content>${escapeHtml(t.meaning_vi)}</p>
             <a class="wb-term-link" href="/dictionary/${escapeHtml(OFFICIAL_LANGUAGES[t.language_code].slug)}/${escapeHtml(t.slug)}">Xem mục từ <span>→</span></a>
-          </article>`).join('') || '<div class="wb-specialized-empty"><strong>Nội dung đang được hoàn thiện.</strong><p>Kho dữ liệu hiện chưa có thuật ngữ đã xuất bản cho lựa chọn này. WORD BRIDGE không hiển thị dữ liệu minh họa thay cho nội dung thật.</p></div>'}
+          </article>`).join('') || `<div class="wb-specialized-empty"><strong>${activeDomain?.count ? `${activeDomain.count.toLocaleString('vi-VN')} thuật ngữ khả dụng qua API chuyên ngành.` : 'Nội dung đang được hoàn thiện.'}</strong><p>${user ? 'Sử dụng bộ lọc hoặc lưu thuật ngữ vào Sổ từ cá nhân để học Flashcard.' : `Đăng nhập tại <a href="${escapeHtml(signInUrl(subSlug ? `/specialized/${subSlug}` : '/specialized', 'specialized.search'))}">Portal</a> để tra cứu và lưu thuật ngữ chuyên ngành.`}</p></div>`}
       </div>
     </section>
   `;
@@ -115,9 +114,10 @@ export async function renderSpecializedPage({ db, user, subSlug = '' }) {
 
 export async function renderLearnerMeetPage({ db, services, user, subPath = '', param = '' }) {
   const providerStatus = services.learnerMeet.getProviderStatus();
+  const currentPath = subPath ? `/learner-meet/${subPath}${param ? `/${param}` : ''}` : '/learner-meet';
 
   if (['create', 'history', 'room', 'join'].includes(subPath) && !user) {
-    return redirectResponse('https://portal.wordbridge.io.vn/login');
+    return redirectResponse(signInUrl(currentPath, 'meet.join'));
   }
 
   let body = '';
@@ -172,11 +172,14 @@ export async function renderLearnerMeetPage({ db, services, user, subPath = '', 
       <div class="wb-grid-2">
         <div class="wb-card">
           <h3>Thực hành giao tiếp trực tiếp 1–1 & Nhóm</h3>
-          <p>Hỗ trợ bật/tắt micro, bật/tắt camera, kiểm tra thiết bị và kết nối theo chủ đề cho Tiếng Trung, Tiếng Anh và Tiếng Nga.</p>
+          <p>Hỗ trợ bật/tắt micro, bật/tắt camera và kết nối theo chủ đề cho Tiếng Trung, Tiếng Anh và Tiếng Nga. Public discovery; tham gia yêu cầu đăng nhập và handoff sang Portal.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
-            <a href="/learner-meet/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Danh sách phiên</a>
-            <a href="/learner-meet/create" class="wb-btn wb-btn-primary wb-btn-sm">Tạo phiên mới</a>
-            <a href="/learner-meet/history" class="wb-btn wb-btn-ghost wb-btn-sm">Lịch sử tham gia</a>
+            ${user
+              ? `<a data-wb-handoff href="${escapeHtml(ECOSYSTEM.portal)}/meet" class="wb-btn wb-btn-primary wb-btn-sm">Mở Learner Meet tại Portal</a>
+                 <a href="/learner-meet/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Danh sách phiên</a>
+                 <a href="/learner-meet/create" class="wb-btn wb-btn-ghost wb-btn-sm">Tạo phiên mới</a>`
+              : `<a href="${escapeHtml(signInUrl('/learner-meet', 'meet.join'))}" class="wb-btn wb-btn-primary wb-btn-sm">Đăng nhập để tham gia</a>
+                 <a href="/learner-meet/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Xem danh sách phiên</a>`}
           </div>
         </div>
         <div class="wb-card wb-card-warm">
@@ -199,7 +202,7 @@ export async function renderLearnerMeetPage({ db, services, user, subPath = '', 
 
   return htmlResponse(renderPublicPage({
     title,
-    currentPath: subPath ? `/learner-meet/${subPath}${param ? `/${param}` : ''}` : '/learner-meet',
+    currentPath,
     breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Learner Meet', href: '/learner-meet' }],
     user,
     contentHtml,

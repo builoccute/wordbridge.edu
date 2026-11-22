@@ -1,18 +1,11 @@
 /**
- * WORD BRIDGE — Authentication, Session, OAuth (State/Nonce/No-Auto-Merge),
+ * WORD BRIDGE — Authentication, Session,
  * WebAuthn/FIDO2 Passkey (Challenge/Attestation/Assertion) & RBAC Service (V3.1)
  */
 
 import { generateId, hashPassword, verifyPassword, randomTokenHex, sha256Hex } from '../utils/crypto.js';
 import { validateRegistrationPayload, validateEmail } from '../utils/validation.js';
 import { PLANS } from '../config/constants.js';
-
-const OAUTH_PROVIDERS = {
-  google: { authUrl: 'https://accounts.google.com/o/oauth2/v2/auth', clientIdKey: 'OAUTH_GOOGLE_CLIENT_ID', secretKey: 'OAUTH_GOOGLE_CLIENT_SECRET', scope: 'openid email profile' },
-  facebook: { authUrl: 'https://www.facebook.com/v19.0/dialog/oauth', clientIdKey: 'OAUTH_FACEBOOK_CLIENT_ID', secretKey: 'OAUTH_FACEBOOK_CLIENT_SECRET', scope: 'email public_profile' },
-  microsoft: { authUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize', clientIdKey: 'OAUTH_MICROSOFT_CLIENT_ID', secretKey: 'OAUTH_MICROSOFT_CLIENT_SECRET', scope: 'openid email profile' },
-  apple: { authUrl: 'https://appleid.apple.com/auth/authorize', clientIdKey: 'OAUTH_APPLE_CLIENT_ID', secretKey: 'OAUTH_APPLE_PRIVATE_KEY', scope: 'name email' },
-};
 
 export class AuthService {
   constructor(db, emailService, env = {}) {
@@ -292,78 +285,6 @@ export class AuthService {
     });
     await this.recordAudit(account.id, 'auth.password_reset_requested', 'wb_accounts', account.id, ipAddress, {});
     return { ok: true, ...(this.env.EXPOSE_TEST_TOKENS === 'true' ? { resetToken: rawToken } : {}) };
-  }
-
-  // ---- OAuth 2.0 / OIDC Authorization Flow (Section 16) ----
-  async startOAuthFlow(provider, redirectPath = '/my-learning', accountId = null) {
-    const cfg = OAUTH_PROVIDERS[String(provider || '').toLowerCase()];
-    if (!cfg) return { ok: false, status: 400, error: 'Nhà cung cấp OAuth không hợp lệ (chỉ hỗ trợ google, facebook, microsoft, apple).' };
-
-    const clientId = this.env[cfg.clientIdKey];
-    const clientSecret = this.env[cfg.secretKey];
-    const state = randomTokenHex(24);
-    const nonce = randomTokenHex(16);
-
-    await this.db
-      .prepare("INSERT INTO wb_oauth_states (state, provider, nonce, redirect_path, account_id, expires_at) VALUES (?, ?, ?, ?, ?, datetime('now', '+10 minutes'))")
-      .bind(state, provider.toLowerCase(), nonce, redirectPath, accountId)
-      .run();
-
-    if (!clientId || !clientSecret) {
-      return {
-        ok: false,
-        status: 503,
-        code: 'BLOCKED_UNCONFIGURED',
-        state,
-        provider: provider.toLowerCase(),
-        error: `OAuth ${provider.toUpperCase()} đang ở trạng thái BLOCKED_UNCONFIGURED (thiếu ${cfg.clientIdKey}/${cfg.secretKey}). Không giả lập đăng nhập thành công.`,
-      };
-    }
-
-    const params = new URLSearchParams({
-      client_id: clientId,
-      redirect_uri: `${this.baseUrl}/oauth/callback?provider=${provider.toLowerCase()}`,
-      response_type: 'code',
-      scope: cfg.scope,
-      state,
-      nonce,
-    });
-    return { ok: true, provider: provider.toLowerCase(), state, authorizationUrl: `${cfg.authUrl}?${params.toString()}` };
-  }
-
-  async handleOAuthCallback({ provider, state, code }) {
-    const prov = String(provider || '').toLowerCase();
-    if (!OAUTH_PROVIDERS[prov]) return { ok: false, status: 400, error: 'Nhà cung cấp OAuth không hợp lệ.' };
-    if (!state) return { ok: false, status: 400, error: 'Thiếu tham số state chống CSRF cho OAuth.' };
-
-    const row = await this.db
-      .prepare('SELECT * FROM wb_oauth_states WHERE state = ? AND provider = ?')
-      .bind(state, prov)
-      .first();
-
-    if (!row || row.consumed_at) {
-      return { ok: false, status: 400, error: 'OAuth state không hợp lệ hoặc đã được sử dụng (chống replay).' };
-    }
-
-    await this.db.prepare("UPDATE wb_oauth_states SET consumed_at = datetime('now') WHERE state = ?").bind(state).run();
-
-    const cfg = OAUTH_PROVIDERS[prov];
-    if (!this.env[cfg.clientIdKey] || !this.env[cfg.secretKey]) {
-      return {
-        ok: false,
-        status: 503,
-        code: 'BLOCKED_UNCONFIGURED',
-        error: `Không thể trao đổi OAuth code cho ${prov.toUpperCase()} vì thiếu credentials cấu hình. Tuyệt đối không giả lập phiên đăng nhập.`,
-      };
-    }
-    if (!code) return { ok: false, status: 400, error: 'Thiếu authorization code từ nhà cung cấp OAuth.' };
-
-    return {
-      ok: false,
-      status: 501,
-      code: 'OAUTH_TOKEN_EXCHANGE_REQUIRES_LIVE_IDP',
-      error: 'Cần môi trường kết nối trực tiếp tới OAuth IdP để xác thực token và hiển thị màn hình xác nhận liên kết tài khoản (không tự động gộp tài khoản trùng email).',
-    };
   }
 
   // ---- WebAuthn / FIDO2 Passkeys (Section 17) ----

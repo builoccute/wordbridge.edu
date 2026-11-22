@@ -1,10 +1,11 @@
 /**
- * WORD BRIDGE — Account, Registration (8 Mandatory Fields), Email Verification,
- * OAuth Review, Passkey & Student Benefit Pages (Section 8.9 & Part XII–XIV)
+ * WORD BRIDGE V4 — Account, Registration (8 Mandatory Fields), Email Verification,
+ * Passkey & Student Benefit Pages
+ * - Legacy subscription marketing removed from active V4 Account UI
  */
 
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { PLANS } from '../config/constants.js';
+import { ECOSYSTEM, signInUrl } from '../config/constants.js';
 import { escapeHtml } from '../utils/validation.js';
 import { htmlResponse, redirectResponse, buildSessionCookie } from '../utils/http.js';
 
@@ -18,23 +19,18 @@ export function renderLoginPage({ user }) {
         <div class="wb-field"><label>Mật khẩu</label><input class="wb-input" type="password" name="password" required /></div>
         <div data-form-status></div>
         <button type="submit" class="wb-btn wb-btn-primary">Đăng nhập</button>
-        <p style="font-size:0.88rem;"><a href="/forgot-password">Quên mật khẩu?</a> · <a href="https://portal.wordbridge.io.vn/register">Chưa có tài khoản? Đăng ký ngay</a></p>
+        <p style="font-size:0.88rem;"><a href="/forgot-password">Quên mật khẩu?</a> · <a href="${escapeHtml(ECOSYSTEM.portal)}/register">Chưa có tài khoản? Đăng ký ngay</a></p>
       </form>
       <div class="wb-card wb-card-warm">
-        <h3>Đăng nhập liên kết & Passkey</h3>
-        <p class="wb-muted" style="font-size:0.9rem;">Hỗ trợ Google, Facebook, Microsoft, Apple (chờ cấu hình OAuth credentials Nhóm B) và Passkey WebAuthn/FIDO2. Hệ thống không tự động gộp tài khoản trùng email khi chưa xác minh quyền sở hữu.</p>
-        <div style="display:grid;gap:8px;">
-          <a href="/oauth/callback?provider=google" class="wb-btn wb-btn-outline wb-btn-sm">Tiếp tục với Google (OAuth Adapter)</a>
-          <a href="/oauth/callback?provider=facebook" class="wb-btn wb-btn-outline wb-btn-sm">Tiếp tục với Facebook (OAuth Adapter)</a>
-          <a href="/oauth/callback?provider=microsoft" class="wb-btn wb-btn-outline wb-btn-sm">Tiếp tục với Microsoft (OAuth Adapter)</a>
-          <a href="/oauth/callback?provider=apple" class="wb-btn wb-btn-outline wb-btn-sm">Tiếp tục với Apple (OAuth Adapter)</a>
-        </div>
+        <h3>Đăng nhập bảo mật bằng Passkey</h3>
+        <p class="wb-muted" style="font-size:0.9rem;">WORD BRIDGE chỉ sử dụng tài khoản nội bộ (Email/Mật khẩu) và khóa bảo mật Passkey WebAuthn/FIDO2. Hệ thống không lưu dữ liệu sinh trắc học trên máy chủ.</p>
+        <a href="/account/passkeys" class="wb-btn wb-btn-outline wb-btn-sm">Quản lý Passkey</a>
       </div>
     </div>
   `;
   return htmlResponse(renderPublicPage({
     title: 'Đăng nhập',
-    currentPath: 'https://portal.wordbridge.io.vn/login',
+    currentPath: '/login',
     breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Đăng nhập' }],
     user,
     contentHtml,
@@ -43,7 +39,6 @@ export function renderLoginPage({ user }) {
 
 export function renderRegisterPage({ user }) {
   if (user) return redirectResponse('/my-learning');
-  // Section 52: Strictly 8 mandatory fields, NO pre-filled fake defaults
   const contentHtml = `
     <h1>Đăng ký tài khoản cá nhân WORD BRIDGE</h1>
     <p class="wb-muted">WORD BRIDGE chỉ hỗ trợ tài khoản cá nhân. Trường học và Nơi làm việc/tổ chức công tác là hai trường độc lập và đều bắt buộc. Xác minh tài khoản qua liên kết email một lần (không dùng OTP).</p>
@@ -62,7 +57,7 @@ export function renderRegisterPage({ user }) {
   `;
   return htmlResponse(renderPublicPage({
     title: 'Đăng ký tài khoản',
-    currentPath: 'https://portal.wordbridge.io.vn/register',
+    currentPath: '/register',
     breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Đăng ký' }],
     user,
     contentHtml,
@@ -86,7 +81,7 @@ export async function renderVerifyEmailPage({ services, url, request }) {
     return htmlResponse(renderPublicPage({
       title: 'Xác minh email thất bại',
       currentPath: '/verify-email',
-      contentHtml: `<h1>Xác minh email thất bại</h1><div class="wb-alert wb-alert-error">${escapeHtml(res.error)}</div><a href="https://portal.wordbridge.io.vn/login" class="wb-btn wb-btn-outline">Về trang đăng nhập</a>`,
+      contentHtml: `<h1>Xác minh email thất bại</h1><div class="wb-alert wb-alert-error">${escapeHtml(res.error)}</div><a href="${escapeHtml(signInUrl('/my-learning', 'verify.retry'))}" class="wb-btn wb-btn-outline">Về trang đăng nhập</a>`,
     }), 400);
   }
   return redirectResponse('/my-learning', 302, {
@@ -107,30 +102,18 @@ export function renderPasswordPage({ mode = 'forgot', user }) {
   }));
 }
 
-export function renderOAuthCallbackPage({ url, user }) {
-  const provider = url.searchParams.get('provider') || 'google';
-  const contentHtml = `
-    <h1>Đăng nhập liên kết (${escapeHtml(provider.toUpperCase())})</h1>
-    <div class="wb-alert wb-alert-warn">
-      <strong>Trạng thái tích hợp (Nhóm B):</strong> OAuth credentials cho ${escapeHtml(provider.toUpperCase())} chưa được cấu hình trên môi trường hiện tại. Khi cấu hình đầy đủ, hệ thống sẽ hiển thị màn hình rà soát thông tin, yêu cầu điền độc lập Trường học & Nơi làm việc, và xác nhận quyền sở hữu trước khi liên kết tài khoản trùng email.
-    </div>
-    <a href="https://portal.wordbridge.io.vn/login" class="wb-btn wb-btn-outline">Quay lại trang đăng nhập</a>
-  `;
-  return htmlResponse(renderPublicPage({ title: 'OAuth Callback', currentPath: '/oauth/callback', user, contentHtml }));
-}
 
 export async function renderAccountPage({ db, user, subPath = '' }) {
-  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login');
+  const currentPath = subPath ? `/account/${subPath}` : '/account';
+  if (!user) return redirectResponse(signInUrl(currentPath, 'account.view'));
   const nav = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
       <a href="/account" class="wb-btn wb-btn-outline wb-btn-sm">Tổng quan</a>
       <a href="/account/profile" class="wb-btn wb-btn-outline wb-btn-sm">Hồ sơ</a>
       <a href="/account/security" class="wb-btn wb-btn-outline wb-btn-sm">Bảo mật</a>
       <a href="/account/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Phiên đăng nhập</a>
-      <a href="/account/linked-accounts" class="wb-btn wb-btn-outline wb-btn-sm">Tài khoản liên kết</a>
       <a href="/account/passkeys" class="wb-btn wb-btn-outline wb-btn-sm">Passkey</a>
       <a href="/account/privacy" class="wb-btn wb-btn-outline wb-btn-sm">Quyền riêng tư</a>
-      <a href="/account/subscription" class="wb-btn wb-btn-outline wb-btn-sm">Gói dịch vụ</a>
       <a href="/account/student-benefit" class="wb-btn wb-btn-primary wb-btn-sm">Quyền lợi sinh viên</a>
     </div>`;
 
@@ -138,12 +121,12 @@ export async function renderAccountPage({ db, user, subPath = '' }) {
   let title = 'Tài khoản cá nhân';
 
   if (subPath === 'student-benefit') {
-    title = 'Quyền lợi sinh viên (03 tháng Thành viên)';
+    title = 'Quyền lợi sinh viên (03 tháng)';
     const existing = await db.prepare('SELECT * FROM wb_student_benefits WHERE account_id = ?').bind(user.accountId).first();
     body = `
       <div class="wb-card">
         <h3>Chính sách sinh viên chính thức</h3>
-        <p>Sinh viên được sử dụng <strong>Thành viên miễn phí 03 tháng</strong>, chỉ áp dụng <strong>một lần duy nhất</strong>. Điều kiện xác minh duy nhất: <strong>Email sinh viên do trường cấp</strong>. Không nhận ảnh thẻ sinh viên, giấy xác nhận hay hồ sơ thay thế.</p>
+        <p>Quyền lợi hỗ trợ học tập dành cho sinh viên có thời hạn <strong>03 tháng</strong>, chỉ áp dụng <strong>một lần duy nhất</strong>. Điều kiện xác minh duy nhất: <strong>Email sinh viên do trường cấp</strong>. Không nhận ảnh thẻ sinh viên, giấy xác nhận hay hồ sơ thay thế.</p>
         ${existing
           ? `<div class="wb-alert wb-alert-info">Trạng thái hiện tại: <strong>${escapeHtml(existing.status)}</strong> · Email trường: ${escapeHtml(existing.school_email)} · Hết hạn: ${escapeHtml(existing.expires_at || 'Chờ xác minh')}</div>`
           : `<form class="wb-form" data-api-endpoint="/api/v1/student-benefit/request">
@@ -152,13 +135,6 @@ export async function renderAccountPage({ db, user, subPath = '' }) {
               <div data-form-status></div>
               <button type="submit" class="wb-btn wb-btn-primary">Gửi liên kết xác minh email sinh viên</button>
             </form>`}
-      </div>`;
-  } else if (subPath === 'subscription') {
-    title = 'Gói dịch vụ cá nhân';
-    body = `
-      <div class="wb-grid-2">
-        <div class="wb-card"><h3>Gói hiện tại: ${escapeHtml(user.planCode)}</h3><p>Dung lượng lưu trữ cá nhân: ${(user.storageQuotaBytes / (1024 * 1024 * 1024)).toFixed(0)} GB / tài khoản.</p><p class="wb-muted">Hết hạn: ${escapeHtml(user.planExpiresAt || 'Không giới hạn (Thành viên FREE)')}</p></div>
-        <div class="wb-card wb-card-warm"><h3>Thông tin gói Thành viên</h3><p>Dung lượng: 5 GB / tài khoản.</p><p>Bảng giá thương mại: <strong>${escapeHtml(PLANS.PERSONAL_PLUS.priceStatus)}</strong></p></div>
       </div>`;
   } else if (subPath === 'sessions') {
     title = 'Quản lý phiên đăng nhập';
@@ -179,14 +155,13 @@ export async function renderAccountPage({ db, user, subPath = '' }) {
           <li><strong>Số điện thoại:</strong> ${escapeHtml(user.phoneNumber)}</li>
           <li><strong>Trường học:</strong> ${escapeHtml(user.schoolName)}</li>
           <li><strong>Nơi làm việc / tổ chức công tác:</strong> ${escapeHtml(user.workplaceName)}</li>
-          <li><strong>Gói hiện tại:</strong> ${escapeHtml(user.planCode)}</li>
         </ul>
       </div>`;
   }
 
   return htmlResponse(renderPublicPage({
     title,
-    currentPath: subPath ? `/account/${subPath}` : '/account',
+    currentPath,
     breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Tài khoản', href: '/account' }, ...(subPath ? [{ label: title }] : [])],
     user,
     contentHtml: `<h1>${escapeHtml(title)}</h1>${nav}${body}`,

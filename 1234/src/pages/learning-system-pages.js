@@ -29,7 +29,7 @@ function pct(value) {
 export async function renderGlobalSearchPage({ db, user, url }) {
   const q = String(url.searchParams.get('q') || '').trim();
   const category = String(url.searchParams.get('category') || 'all');
-  if (q && !user) return redirectResponse(signInUrl(`/search?q=${encodeURIComponent(q)}&category=${encodeURIComponent(category)}`, 'global.search'));
+  if (q && !user) return redirectResponse(signInUrl(`${url.pathname}${url.search}`, 'global.search', url.searchParams.get('locale') || ''));
 
   const results = { dictionary: [], learning: [], practice: [], specialized: [] };
   let error = '';

@@ -1,6 +1,9 @@
 /**
  * WORD BRIDGE — HTTP Response, Security Headers & Cookie Utilities
  */
+import { escapeHtml } from './validation.js';
+
+export { escapeHtml };
 
 export const SECURITY_HEADERS = Object.freeze({
   'X-Content-Type-Options': 'nosniff',
@@ -59,7 +62,11 @@ export function parseCookies(request) {
     if (idx > 0) {
       const k = part.slice(0, idx).trim();
       const v = part.slice(idx + 1).trim();
-      cookies[k] = decodeURIComponent(v);
+      try {
+        cookies[k] = decodeURIComponent(v);
+      } catch {
+        cookies[k] = v;
+      }
     }
   }
   return cookies;

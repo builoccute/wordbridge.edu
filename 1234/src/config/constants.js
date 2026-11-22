@@ -1,13 +1,13 @@
 /**
- * WORD BRIDGE — Canonical Product Constants & Hard Boundaries
- * Enforces Master Specification V3.0 decisions across Backend, API, Frontend & Admin.
+ * WORD BRIDGE — Canonical Product Constants, Ecosystem Contracts & Hard Boundaries
+ * Enforces Master Specification V4.0 decisions across Backend, API, Frontend & Admin.
  */
 
 export const BRAND = Object.freeze({
   name: 'WORD BRIDGE',
   tagline: 'Where Languages Bring People Together.',
-  websiteUrl: 'https://www.wordbridge.vn',
-  pdfReaderUrl: 'https://reader.wordbridge.vn',
+  websiteUrl: 'https://wordbridge.io.vn',
+  pdfReaderUrl: 'https://reader.wordbridge.io.vn',
   copyright: '© 2026 WORD BRIDGE. All rights reserved.',
   colors: {
     deepTeal: '#146466',
@@ -16,6 +16,86 @@ export const BRAND = Object.freeze({
     warmIvory: '#E2E2C4',
   },
 });
+
+export const ECOSYSTEM = Object.freeze({
+  main: 'https://wordbridge.io.vn',
+  portal: 'https://portal.wordbridge.io.vn',
+  control: 'https://quantri.wordbridge.io.vn',
+  exam: 'https://exam.wordbridge.io.vn',
+  reader: 'https://reader.wordbridge.io.vn',
+  help: 'https://help.wordbridge.io.vn',
+});
+
+export const ALLOWED_RETURN_ORIGINS = Object.freeze([
+  ECOSYSTEM.main,
+  ECOSYSTEM.portal,
+  ECOSYSTEM.exam,
+  ECOSYSTEM.reader,
+  ECOSYSTEM.help,
+  'https://www.wordbridge.vn',
+]);
+
+export function normalizeUiLocale(locale) {
+  return String(locale || '').trim().toLowerCase() === 'en' ? 'en' : 'vi';
+}
+
+export const TRANSLATIONS = Object.freeze({
+  vi: Object.freeze({
+    siteTitle: 'WORD BRIDGE — Nền tảng học ngôn ngữ Trung – Anh – Nga',
+    login: 'Đăng nhập',
+    register: 'Đăng ký',
+    logout: 'Đăng xuất',
+    search: 'Tìm kiếm',
+    learning: 'Học tập',
+    practice: 'Cổng Luyện Tập',
+    dictionary: 'Từ điển',
+    specialized: 'Chuyên ngành',
+    authGateTitle: 'Đăng nhập để tiếp tục',
+    authGateBody: 'Hành động này cần tài khoản. Sau đăng nhập, WORD BRIDGE sẽ quay lại trang hiện tại với intent an toàn.',
+  }),
+  en: Object.freeze({
+    siteTitle: 'WORD BRIDGE — Chinese, English & Russian Language Platform',
+    login: 'Sign in',
+    register: 'Register',
+    logout: 'Sign out',
+    search: 'Search',
+    learning: 'Learning',
+    practice: 'Practice Center',
+    dictionary: 'Dictionary',
+    specialized: 'Specialized',
+    authGateTitle: 'Sign in to continue',
+    authGateBody: 'This action requires an account. After sign-in, WORD BRIDGE returns to the current page with a safe intent.',
+  }),
+});
+
+export function safeReturnUrl(input = '/', baseOrigin = ECOSYSTEM.main) {
+  const fallback = `${baseOrigin}/`;
+  const raw = String(input || '').trim();
+  if (!raw) return fallback;
+  try {
+    if (raw.startsWith('/') && !raw.startsWith('//')) {
+      const parsed = new URL(raw, baseOrigin);
+      if (parsed.origin === baseOrigin) return parsed.toString();
+      return fallback;
+    }
+    const parsed = new URL(raw);
+    if (ALLOWED_RETURN_ORIGINS.includes(parsed.origin)) {
+      return parsed.toString();
+    }
+    return fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+export function signInUrl(nextPath = '/', intent = '', locale = '') {
+  const safeNext = safeReturnUrl(nextPath, ECOSYSTEM.main);
+  const url = new URL('/login', ECOSYSTEM.portal);
+  url.searchParams.set('next', safeNext);
+  if (intent) url.searchParams.set('intent', String(intent));
+  if (locale) url.searchParams.set('locale', normalizeUiLocale(locale));
+  return url.toString();
+}
 
 export const OFFICIAL_LANGUAGES = Object.freeze({
   zh: {
@@ -56,17 +136,41 @@ export const OFFICIAL_LANGUAGES = Object.freeze({
 export const ALLOWED_LANGUAGE_CODES = Object.freeze(['zh', 'en', 'ru']);
 export const SPECIALIZED_LANGUAGE_CODES = Object.freeze(['zh', 'en']);
 
+/**
+ * 12 real specialized terminology datasets in public/data/vocab/ (12,104 verified entries)
+ * Strictly English & Chinese scope — ZERO Russian specialized datasets.
+ */
+export const SPECIALIZED_VOCAB_DATASETS = Object.freeze([
+  { slug: 'ke-toan-doanh-nghiep', nameVi: 'Kế toán Doanh nghiệp', languages: ['en'], count: 1000, sample: 'balance sheet, general ledger, accounts payable, audit trail' },
+  { slug: 'quan-tri-mang-may-tinh', nameVi: 'Quản trị Mạng Máy tính', languages: ['en'], count: 1000, sample: 'subnet mask, firewall, routing table, packet loss' },
+  { slug: 'cong-nghe-o-to', nameVi: 'Công nghệ Ô tô', languages: ['en'], count: 1000, sample: 'internal combustion engine, turbocharger, ABS, crankshaft' },
+  { slug: 'ky-thuat-may-lanh-dhkk', nameVi: 'Kỹ thuật Máy lạnh & ĐHKK', languages: ['en'], count: 1000, sample: 'compressor, evaporator, refrigerant, condenser' },
+  { slug: 'sua-chua-lap-rap-may-tinh', nameVi: 'Sửa chữa & Lắp ráp Máy tính', languages: ['en'], count: 1012, sample: 'motherboard, BIOS/UEFI, thermal paste, power supply unit' },
+  { slug: 'thiet-ke-do-hoa', nameVi: 'Thiết kế Đồ họa', languages: ['en'], count: 1017, sample: 'typography, vector graphics, color palette, kerning' },
+  { slug: 'dien-cong-nghiep', nameVi: 'Điện Công nghiệp', languages: ['en'], count: 1012, sample: 'circuit breaker, transformer, three-phase motor, contactor' },
+  { slug: 'dien-tu-cong-nghiep', nameVi: 'Điện tử Công nghiệp', languages: ['en'], count: 1015, sample: 'microcontroller, oscilloscope, rectifier, printed circuit board' },
+  { slug: 'co-dien-tu', nameVi: 'Cơ Điện tử', languages: ['en'], count: 1023, sample: 'PLC, actuator, pneumatic cylinder, servo motor' },
+  { slug: 'cat-got-kim-loai', nameVi: 'Cắt gọt Kim loại', languages: ['en'], count: 1005, sample: 'metal cutting, machining, CNC lathe, milling cutter' },
+  { slug: 'nguoi-sua-chua-may-cong-cu', nameVi: 'Nguội Sửa chữa Máy công cụ', languages: ['en'], count: 1013, sample: 'bench work, micrometer, spindle alignment, backlash' },
+  { slug: 'bao-tri-thiet-bi-co-dien', nameVi: 'Bảo trì Thiết bị Cơ điện', languages: ['en'], count: 1007, sample: 'preventive maintenance, bearing lubrication, vibration analysis, downtime' },
+]);
+
+/**
+ * Reconciled Specialized Domains catalog: combines the 12 real JSON datasets
+ * with D1-seeded ZH/EN specialized domains (logistics, business, import-export, etc.).
+ */
 export const SPECIALIZED_DOMAINS = Object.freeze([
-  { slug: 'logistics', nameVi: 'Logistics', languages: ['zh', 'en'] },
-  { slug: 'business', nameVi: 'Thương mại', languages: ['zh'] },
-  { slug: 'import-export', nameVi: 'Xuất nhập khẩu', languages: ['zh', 'en'] },
-  { slug: 'it-cloud', nameVi: 'Công nghệ thông tin và Cloud', languages: ['en'] },
-  { slug: 'mechanical-engineering', nameVi: 'Cơ khí', languages: ['zh', 'en'] },
-  { slug: 'electrical-electronics', nameVi: 'Điện – điện tử', languages: ['zh', 'en'] },
-  { slug: 'automotive', nameVi: 'Ô tô', languages: ['en'] },
-  { slug: 'economics-tourism', nameVi: 'Kinh tế – du lịch', languages: ['en'] },
-  { slug: 'graphic-design', nameVi: 'Thiết kế đồ họa', languages: ['en'] },
-  { slug: 'healthcare', nameVi: 'Điều dưỡng – y dược', languages: ['en'] },
+  ...SPECIALIZED_VOCAB_DATASETS,
+  { slug: 'logistics', nameVi: 'Logistics', languages: ['zh', 'en'], count: 0, sample: 'bill of lading, demurrage, 海运提单' },
+  { slug: 'business', nameVi: 'Thương mại', languages: ['zh'], count: 0, sample: '不可抗力, 合同条款' },
+  { slug: 'import-export', nameVi: 'Xuất nhập khẩu', languages: ['zh', 'en'], count: 0, sample: '信用证, commercial invoice, packing list' },
+  { slug: 'it-cloud', nameVi: 'Công nghệ thông tin và Cloud', languages: ['en'], count: 0, sample: 'cloud infrastructure, API gateway' },
+  { slug: 'mechanical-engineering', nameVi: 'Cơ khí', languages: ['zh', 'en'], count: 0, sample: '公差, tolerance' },
+  { slug: 'electrical-electronics', nameVi: 'Điện – điện tử', languages: ['zh', 'en'], count: 0, sample: 'circuit, voltage' },
+  { slug: 'automotive', nameVi: 'Ô tô', languages: ['en'], count: 0, sample: 'powertrain, chassis' },
+  { slug: 'economics-tourism', nameVi: 'Kinh tế – du lịch', languages: ['en'], count: 0, sample: 'hospitality, itinerary' },
+  { slug: 'graphic-design', nameVi: 'Thiết kế đồ họa (D1)', languages: ['en'], count: 0, sample: 'layout, composition' },
+  { slug: 'healthcare', nameVi: 'Điều dưỡng – y dược', languages: ['en'], count: 0, sample: 'vital signs, clinical care' },
 ]);
 
 export const RBAC_ROLES = Object.freeze([
@@ -85,13 +189,13 @@ export const PLANS = Object.freeze({
   PERSONAL_FREE: {
     code: 'PERSONAL_FREE',
     nameVi: 'Thành viên FREE',
-    storageQuotaBytes: 1073741824, // 1 GB/account (verified from prior decision)
+    storageQuotaBytes: 1073741824, // 1 GB/account
     priceStatus: 'Miễn phí',
   },
   PERSONAL_PLUS: {
     code: 'PERSONAL_PLUS',
     nameVi: 'Thành viên',
-    storageQuotaBytes: 5368709120, // 5 GB/account (verified from prior decision)
+    storageQuotaBytes: 5368709120, // 5 GB/account
     priceStatus: 'BLOCKED — Chờ xác nhận bảng giá chính thức',
     studentBenefitMonths: 3,
     studentBenefitVerification: 'school_email_only',

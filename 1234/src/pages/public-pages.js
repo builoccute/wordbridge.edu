@@ -1,13 +1,15 @@
 /**
- * WORD BRIDGE — Public Core Pages matching Reference Mockups 1 & 2
- * - Visual Hero with Books & Globe artwork + 3 Visual Language Image Cards
- * - Dynamic content fields editable from quantri.wordbridge.io.vn
- * - Clean Vietnamese labels with hidden URLs (no raw domains, no awkward jargon)
+ * WORD BRIDGE — Public Core Pages (100% Visual Identity Preserved)
+ * - Exports SPECIALIZED_VOCAB_DOMAINS (12 real datasets)
+ * - Adds /reader discovery page with Auth Gate handoff
+ * - Uses local discovery links (/learner-meet, /reader, /examinations)
  */
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { SPECIALIZED_DOMAINS } from '../config/constants.js';
+import { SPECIALIZED_VOCAB_DATASETS, ECOSYSTEM, signInUrl } from '../config/constants.js';
 import { escapeHtml } from '../utils/validation.js';
 import { htmlResponse } from '../utils/http.js';
+
+export const SPECIALIZED_VOCAB_DOMAINS = SPECIALIZED_VOCAB_DATASETS;
 
 export function renderHomePage({ user, runtime = null }) {
   const s = runtime?.settings || {};
@@ -19,13 +21,13 @@ export function renderHomePage({ user, runtime = null }) {
   const contentHtml = `
     <section class="wb-hero-visual">
       <div>
-        <div class="wb-hero-pill">🎓 ${escapeHtml(heroBadge)}</div>
+        <div class="wb-hero-pill">${escapeHtml(heroBadge)}</div>
         <h1>${escapeHtml(heroTitle)}<em>${escapeHtml(heroTagline)}</em></h1>
         <p>${escapeHtml(heroSubtitle)}</p>
         <div class="wb-hero-ctas">
-          <a href="/learning" class="wb-btn wb-hero-btn-white">📖 Khám phá Học tập</a>
-          <a href="https://portal.wordbridge.io.vn/meet" class="wb-btn wb-hero-btn-glass">👥 Tham gia Learner Meet</a>
-          <a href="https://portal.wordbridge.io.vn/register" class="wb-btn wb-hero-btn-red">👤+ Đăng ký tài khoản miễn phí</a>
+          <a href="/learning" class="wb-btn wb-hero-btn-white">Khám phá Học tập</a>
+          <a href="/learner-meet" class="wb-btn wb-hero-btn-glass">Tham gia Learner Meet</a>
+          <a href="${escapeHtml(ECOSYSTEM.portal)}/register" class="wb-btn wb-hero-btn-red">Đăng ký tài khoản miễn phí</a>
         </div>
       </div>
       <div class="wb-hero-art">
@@ -69,10 +71,10 @@ export function renderHomePage({ user, runtime = null }) {
         <a href="/specialized" class="wb-btn wb-btn-outline wb-btn-sm">Khám phá chuyên ngành →</a>
       </div>
       <div class="wb-grid">
-        ${SPECIALIZED_DOMAINS.map((d) => `
+        ${SPECIALIZED_VOCAB_DOMAINS.map((d) => `
           <a href="/specialized/${escapeHtml(d.slug)}" class="wb-card" style="margin:0;display:block;border-left:4px solid var(--wb-teal);">
             <strong style="color:var(--wb-teal);display:block;">${escapeHtml(d.nameVi)}</strong>
-            <span class="wb-muted" style="font-size:0.82rem;">Thuật ngữ · Mẫu câu · Tình huống</span>
+            <span class="wb-muted" style="font-size:0.82rem;">${d.count.toLocaleString('vi-VN')} thuật ngữ · Mẫu câu · Tình huống</span>
           </a>`).join('')}
       </div>
     </section>
@@ -80,8 +82,8 @@ export function renderHomePage({ user, runtime = null }) {
     <section class="wb-grid-4">
       <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Từ điển & Flashcard</h3><p class="wb-muted">Tra cứu đa ngữ, lưu sổ từ vựng cá nhân và ôn tập ghi nhớ khoa học.</p><a href="/dictionary" class="wb-btn wb-btn-outline wb-btn-sm">Mở Từ điển</a></article>
       <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Cổng Luyện Tập</h3><p class="wb-muted">Thực hành Nghe, Nói, Đọc, Viết, Từ vựng và Ngữ pháp chuyên sâu.</p><a href="/practice" class="wb-btn wb-btn-outline wb-btn-sm">Vào Luyện Tập</a></article>
-      <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Thư Viện Tài Liệu</h3><p class="wb-muted">Đọc giáo trình và tài liệu chuyên ngành trực quan ngay trên trình duyệt.</p><a href="https://reader.wordbridge.io.vn/" class="wb-btn wb-btn-outline wb-btn-sm">Mở Thư Viện</a></article>
-      <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-red);">Cổng Dự Thi</h3><p class="wb-muted">Tham gia kỳ đánh giá năng lực và tra cứu kết quả trực tuyến.</p><a href="https://exam.wordbridge.io.vn/" class="wb-btn wb-btn-accent wb-btn-sm">Vào Cổng Dự Thi</a></article>
+      <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Thư Viện Tài Liệu</h3><p class="wb-muted">Đọc giáo trình và tài liệu chuyên ngành trực quan ngay trên trình duyệt.</p><a href="/reader" class="wb-btn wb-btn-outline wb-btn-sm">Mở Thư Viện</a></article>
+      <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-red);">Cổng Dự Thi</h3><p class="wb-muted">Tham gia kỳ đánh giá năng lực và tra cứu kết quả trực tuyến.</p><a href="/examinations" class="wb-btn wb-btn-accent wb-btn-sm">Vào Cổng Dự Thi</a></article>
     </section>
   `;
 
@@ -91,6 +93,31 @@ export function renderHomePage({ user, runtime = null }) {
     user,
     runtime,
     contentHtml,
+  }));
+}
+
+export function renderReaderDiscoveryPage({ user, runtime = null }) {
+  const ctaHtml = user
+    ? `<a data-wb-handoff href="${escapeHtml(ECOSYSTEM.reader)}/" class="wb-btn wb-btn-primary">Mở Reader</a>`
+    : `<a href="${escapeHtml(signInUrl('/reader', 'reader.open'))}" class="wb-btn wb-btn-primary">Đăng nhập để mở Reader</a>`;
+
+  return htmlResponse(renderPublicPage({
+    title: 'Thư viện đọc — WORD BRIDGE Reader',
+    currentPath: '/reader',
+    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Thư viện đọc' }],
+    user,
+    runtime,
+    contentHtml: `
+      <section class="wb-card">
+        <p class="wb-eyebrow">READER DISCOVERY & HANDOFF</p>
+        <h1 style="margin-top:6px;color:var(--wb-teal);">Thư viện đọc tài liệu</h1>
+        <p>Miền 1 chỉ cung cấp entry point. Nội dung đọc và session chuyên trách thuộc reader.wordbridge.io.vn.</p>
+        <p class="wb-muted">Public entry; mở thư viện là action được auth-gate. SSO assertion endpoint tồn tại trong source nhưng external Reader continuation contract cần được kiểm chứng trên môi trường staging.</p>
+        <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+          ${ctaHtml}
+          <a href="/learning" class="wb-btn wb-btn-outline">Khám phá học tập</a>
+        </div>
+      </section>`,
   }));
 }
 
@@ -116,15 +143,15 @@ export function renderHelpPage({ user, runtime = null }) {
     currentPath: '/help',
     user,
     runtime,
-    contentHtml: `<div class="wb-card"><h1>Trung Tâm Trợ Giúp</h1><p>Mời bạn truy cập <a href="https://help.wordbridge.io.vn/">Trung Tâm Trợ Giúp</a> để xem hướng dẫn chi tiết và gửi yêu cầu hỗ trợ.</p></div>`,
+    contentHtml: `<div class="wb-card"><h1>Trung Tâm Trợ Giúp</h1><p>Mời bạn truy cập <a href="${escapeHtml(ECOSYSTEM.help)}/">Trung Tâm Trợ Giúp</a> để xem hướng dẫn chi tiết và gửi yêu cầu hỗ trợ.</p></div>`,
   }));
 }
 
 export function renderFaqPage({ user, runtime = null }) {
   const faqs = [
     ['WORD BRIDGE hỗ trợ những ngôn ngữ nào?', 'Nền tảng tập trung đào tạo Tiếng Trung, Tiếng Anh (nền tảng và chuyên ngành) cùng Tiếng Nga.'],
-    ['Quy trình đăng ký tài khoản thành viên như thế nào?', 'Tại Cổng Thành Viên, bạn điền Họ tên, Số điện thoại, Email và Trường/Đơn vị công tác. Hệ thống sẽ gửi liên kết xác nhận qua email để bạn tự thiết lập mật khẩu.'],
-    ['Tôi có thể đọc tài liệu và tham gia đánh giá năng lực ở đâu?', 'Bạn có thể truy cập trực tiếp Thư Viện Tài Liệu và Cổng Dự Thi ngay từ tài khoản thành viên của mình.'],
+    ['Quy trình đăng ký tài khoản thành viên như thế nào?', 'Tại Cổng Thành Viên, bạn điền đầy đủ thông tin cá nhân bắt buộc và xác minh qua liên kết email một lần (không dùng OTP).'],
+    ['Tôi có thể đọc tài liệu và tham gia đánh giá năng lực ở đâu?', 'Bạn có thể truy cập trực tiếp Thư Viện Tài Liệu (/reader) và Cổng Khảo Thí (/examinations) từ tài khoản thành viên thống nhất.'],
   ];
   return htmlResponse(renderPublicPage({
     title: 'Câu hỏi thường gặp',
@@ -149,7 +176,7 @@ export function renderContactPage({ user, runtime = null }) {
       <div class="wb-card" style="max-width:640px;">
         <h1 style="margin-top:0;color:var(--wb-teal);">Liên hệ WORD BRIDGE</h1>
         <p>Đội ngũ hỗ trợ luôn sẵn sàng đồng hành cùng bạn trong suốt quá trình học tập.</p>
-        <a href="https://help.wordbridge.io.vn/tickets" class="wb-btn wb-btn-primary">Gửi yêu cầu tại Trung Tâm Trợ Giúp</a>
+        <a href="${escapeHtml(ECOSYSTEM.help)}/tickets" class="wb-btn wb-btn-primary">Gửi yêu cầu tại Trung Tâm Trợ Giúp</a>
       </div>`,
   }));
 }

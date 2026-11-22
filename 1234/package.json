@@ -1,24 +1,27 @@
 {
   "name": "word-bridge",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "private": true,
   "type": "module",
-  "description": "WORD BRIDGE — Nền tảng học tập, tra cứu, luyện tập và đánh giá năng lực ngoại ngữ Trung – Anh – Nga (Multi-page Website trên Cloudflare Workers, D1 và R2).",
-  "homepage": "https://www.wordbridge.vn/",
+  "description": "WORD BRIDGE V4 — Nền tảng học tập, tra cứu, luyện tập và đánh giá năng lực ngoại ngữ Trung – Anh – Nga (Web Super App trên Cloudflare Workers, D1 và R2).",
+  "homepage": "https://wordbridge.io.vn/",
   "engines": {
     "node": ">=18.18.0"
   },
   "scripts": {
     "dev": "wrangler dev",
     "dev:local": "node scripts/run-local-dev.mjs",
+    "build": "node scripts/build.mjs",
     "deploy": "wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply word --local",
     "db:migrate:remote": "wrangler d1 migrations apply word --remote",
-    "test": "node --test tests/unit/*.test.js tests/integration/*.test.js tests/e2e/*.test.js",
+    "test": "node --test tests/integration/oauth-passkey-ownership.test.js tests/integration/v4-contract.test.mjs tests/unit/client-workflows.test.mjs",
+    "test:v4": "node --test tests/integration/v4-contract.test.mjs tests/unit/client-workflows.test.mjs",
     "test:unit": "node --test tests/unit/*.test.js",
     "test:integration": "node --test tests/integration/*.test.js",
     "test:e2e": "node --test tests/e2e/*.test.js",
-    "lint:check": "node --check src/index.js"
+    "qa:browser": "node scripts/qa-browser.mjs",
+    "lint:check": "node --check src/index.js && node --check src/api/router.js && node --check src/config/constants.js && node --check public/scripts/app.js && node --check public/scripts/i18n.js"
   },
   "devDependencies": {
     "wrangler": "^4.16.0"

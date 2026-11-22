@@ -1,14 +1,14 @@
 /**
- * WORD BRIDGE — REST API Router (/api/v1/*) — V3.1 Security & Functional Hardened
- * - Mandatory Backend CSRF verification on authenticated state-changing requests (Section 15)
- * - Backend-computed Lesson Evaluation (NEVER accepts arbitrary frontend scorePercent=100) (Section 14)
- * - HMAC-SHA256 Signed Email Webhook with anti-replay (Section 18)
- * - OAuth start/callback & WebAuthn Passkey challenge/verify (Sections 16–17)
- * - Strict Data Ownership & Academic CMS RBAC APIs (Sections 5, 19, 20)
+ * WORD BRIDGE — REST API Router (/api/v1/*) — V4.0 Security & Super App Hardened
+ * - Auth Gate enforced on Audio stream, Dictionary search, Specialized terms, Support tickets, Notebook, Sets, Review, Practice
+ * - Mandatory Backend CSRF verification on authenticated state-changing requests
+ * - Strict SM-2 validation (422), optimistic concurrency (409), honest DB failure (503)
+ * - Backend-computed Lesson Evaluation (never accepts arbitrary frontend scorePercent=100)
+ * - Strict Data Ownership & Academic CMS RBAC APIs
  */
 
 import { jsonResponse, errorResponse, buildSessionCookie, clearSessionCookie } from '../utils/http.js';
-import { OFFICIAL_LANGUAGES, SPECIALIZED_DOMAINS, INTELLIGENCE_SYSTEMS, PLANS } from '../config/constants.js';
+import { OFFICIAL_LANGUAGES, SPECIALIZED_DOMAINS, INTELLIGENCE_SYSTEMS, PLANS, ECOSYSTEM } from '../config/constants.js';
 import { assertOfficialLanguage, assertSpecializedLanguage } from '../utils/validation.js';
 import { generateId, hmacSha256Hex, randomTokenHex, timingSafeEqual } from '../utils/crypto.js';
 
@@ -34,7 +34,7 @@ function requireCsrf(request, user, parsedBody = {}) {
 }
 
 export async function handleApiRequest(request, url, ctx) {
-  const { services, user, env } = ctx;
+  const { services, user, env, loadVocabJson } = ctx;
   const path = url.pathname;
   const method = request.method.toUpperCase();
   const ipAddress = request.headers.get('CF-Connecting-IP') || '127.0.0.1';
@@ -52,7 +52,7 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse({
       ok: true,
       service: 'WORD BRIDGE API',
-      version: '3.2.0',
+      version: '4.0.0',
       database: { name: 'word', status: 'connected', officialLanguages: langCount?.cnt || 0 },
       emailProvider: env.EMAIL_PROVIDER || 'unconfigured',
       learnerMeetProvider: env.LEARNER_MEET_PROVIDER || 'unconfigured',
@@ -64,29 +64,34 @@ export async function handleApiRequest(request, url, ctx) {
   if (path === '/api/v1/openapi.json' && method === 'GET') {
     return jsonResponse({
       openapi: '3.1.0',
-      info: { title: 'WORD BRIDGE API', version: '3.2.0' },
-      servers: [{ url: 'https://www.wordbridge.vn/api/v1' }],
+      info: { title: 'WORD BRIDGE API', version: '4.0.0' },
+      servers: [{ url: `${ECOSYSTEM.main}/api/v1` }],
       paths: {
         '/health': { get: { summary: 'Health & Integration status' } },
         '/auth/register': { post: { summary: 'Đăng ký cá nhân 8 trường' } },
-        '/auth/oauth/{provider}/start': { post: { summary: 'Khởi tạo OAuth state/nonce' } },
         '/account/passkeys/register/options': { post: { summary: 'Tạo WebAuthn registration challenge' } },
+        '/dictionary/search': { get: { summary: 'Tra cứu từ điển (yêu cầu đăng nhập)' } },
+        '/specialized/terms': { get: { summary: 'Tra cứu 12 bộ thuật ngữ chuyên ngành (yêu cầu đăng nhập)' } },
+        '/vocabulary/sets': { get: { summary: 'Quản lý bộ thẻ Flashcard' }, post: { summary: 'Tạo bộ thẻ Flashcard' } },
+        '/vocabulary/notebook': { get: { summary: 'Sổ từ vựng cá nhân' }, post: { summary: 'Lưu mục từ / thuật ngữ' } },
+        '/vocabulary/review': { post: { summary: 'Đánh giá SM-2 có kiểm tra xung đột' } },
         '/learning/progress': { post: { summary: 'Ghi nhận tiến độ & chấm câu hỏi bài học tại backend (CSRF)' } },
-        '/audio/{id}/stream': { get: { summary: 'Phát luồng audio thực tế từ R2' } },
+        '/audio/{id}/stream': { get: { summary: 'Phát luồng audio thực tế từ R2 (yêu cầu đăng nhập)' } },
         '/webhooks/email': { post: { summary: 'Webhook trạng thái email có xác minh HMAC-SHA256' } },
-        '/admin/programs': { post: { summary: 'CMS tạo chương trình học (RBAC)' } },
-        '/admin/intelligence/status': { patch: { summary: 'Cập nhật trạng thái 15 hệ thống trí tuệ (RBAC)' } },
       },
     });
   }
 
-  // Real Audio R2 Stream Endpoint (Section 7)
+  // Real Audio R2 Stream Endpoint — Auth Required + Published Only
   const audioStreamMatch = path.match(/^\/api\/v1\/audio\/([^/]+)\/stream$/);
   if (audioStreamMatch && method === 'GET') {
+    if (!user) return errorResponse('UNAUTHORIZED', 'Cần đăng nhập tài khoản WORD BRIDGE để nghe phát âm và audio học tập.', 401);
     const asset = await env.DB.prepare('SELECT * FROM wb_audio_assets WHERE id = ?').bind(audioStreamMatch[1]).first();
-    if (!asset) return errorResponse('AUDIO_NOT_FOUND', 'Không tìm thấy bản ghi âm thanh.', 404);
+    if (!asset || asset.review_status !== 'published') {
+      return errorResponse('AUDIO_NOT_FOUND', 'Không tìm thấy bản ghi âm thanh đã xuất bản.', 404);
+    }
     try {
-      const obj = await services.r2.getObject(asset.r2_object_key, { allowPrivate: Boolean(user) });
+      const obj = await services.r2.getObject(asset.r2_object_key, { allowPrivate: true });
       if (!obj) {
         return errorResponse('AUDIO_ASSET_PENDING_UPLOAD', 'Tệp audio chính thức chưa được tải lên R2 bucket `word`.', 404);
       }
@@ -127,7 +132,9 @@ export async function handleApiRequest(request, url, ctx) {
     }
   }
 
+  // Interactive Dictionary Search — Auth Required (V4 Business Rule)
   if (path === '/api/v1/dictionary/search' && method === 'GET') {
+    if (!user) return errorResponse('UNAUTHORIZED', 'Cần đăng nhập để sử dụng tìm kiếm từ điển tương tác.', 401);
     const result = await services.dictionary.search({
       q: url.searchParams.get('q') || '',
       language: url.searchParams.get('language') || '',
@@ -155,7 +162,31 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse({ ok: true, domains: SPECIALIZED_DOMAINS });
   }
 
-  // Signed Email Webhook (HMAC-SHA256 + Anti-Replay — Section 18)
+  // Specialized Dataset Term Search — Auth Required (reads real JSON datasets)
+  if (path === '/api/v1/specialized/terms' && method === 'GET') {
+    if (!user) return errorResponse('UNAUTHORIZED', 'Cần đăng nhập để tra cứu thuật ngữ chuyên ngành.', 401);
+    const domain = String(url.searchParams.get('domain') || '').trim().toLowerCase();
+    const q = String(url.searchParams.get('q') || '').trim().toLowerCase();
+    const topic = String(url.searchParams.get('topic') || '').trim().toLowerCase();
+    const limit = Math.min(100, Math.max(1, Number(url.searchParams.get('limit') || 50)));
+    const dataset = typeof loadVocabJson === 'function' ? await loadVocabJson(domain) : null;
+    if (!dataset || !Array.isArray(dataset.words)) {
+      return errorResponse('DOMAIN_NOT_FOUND', `Không tìm thấy bộ thuật ngữ chuyên ngành: ${domain}`, 404);
+    }
+    let words = dataset.words;
+    if (topic) words = words.filter((w) => String(w.t || '').toLowerCase().includes(topic));
+    if (q) words = words.filter((w) => `${w.w || ''} ${w.m || ''} ${w.i || ''} ${w.t || ''}`.toLowerCase().includes(q));
+    return jsonResponse({
+      ok: true,
+      domain: dataset.slug,
+      nameVi: dataset.nameVi,
+      language: dataset.language,
+      total: words.length,
+      words: words.slice(0, limit),
+    });
+  }
+
+  // Signed Email Webhook (HMAC-SHA256 + Anti-Replay)
   if (path === '/api/v1/webhooks/email' && method === 'POST') {
     const rawBody = await request.text();
     const res = await services.email.verifyAndHandleWebhook({
@@ -166,14 +197,6 @@ export async function handleApiRequest(request, url, ctx) {
     });
     if (!res.ok) return errorResponse(res.code || 'WEBHOOK_ERROR', res.error, res.status);
     return jsonResponse(res, res.status);
-  }
-
-  // Public Support/Contact Ticket
-  if (path === '/api/v1/support/tickets' && method === 'POST') {
-    const body = await readJsonBody(request);
-    const res = await services.admin.createSupportOrContactTicket({ ...body, accountId: user?.accountId || null }, services.email);
-    if (!res.ok) return errorResponse('VALIDATION_ERROR', res.error, res.status);
-    return jsonResponse(res, 201);
   }
 
   // Unauthenticated Auth Routes
@@ -218,21 +241,9 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse(res);
   }
 
-  // OAuth Start & Callback (Section 16)
-  const oauthStartMatch = path.match(/^\/api\/v1\/auth\/oauth\/([a-z]+)\/start$/);
-  if (oauthStartMatch && method === 'POST') {
-    const body = await readJsonBody(request);
-    const res = await services.auth.startOAuthFlow(oauthStartMatch[1], body.redirectPath || '/my-learning', user?.accountId || null);
-    if (!res.ok) return jsonResponse({ ok: false, ...res }, res.status);
-    return jsonResponse(res);
-  }
-
-  const oauthCbMatch = path.match(/^\/api\/v1\/auth\/oauth\/([a-z]+)\/callback$/);
-  if (oauthCbMatch && method === 'POST') {
-    const body = await readJsonBody(request);
-    const res = await services.auth.handleOAuthCallback({ provider: oauthCbMatch[1], state: body.state, code: body.code });
-    if (!res.ok) return errorResponse(res.code || 'OAUTH_ERROR', res.error, res.status);
-    return jsonResponse(res);
+  // Third-party OAuth login completely removed from WORD BRIDGE
+  if (path.startsWith('/api/v1/auth/oauth/')) {
+    return errorResponse('AUTH_METHOD_REMOVED', 'Phương thức đăng nhập bên thứ ba đã được gỡ bỏ hoàn toàn khỏi WORD BRIDGE. Vui lòng sử dụng Email/Mật khẩu hoặc Passkey.', 410);
   }
 
   // Passkey Authentication (unauthenticated login with challenge)
@@ -254,12 +265,19 @@ export async function handleApiRequest(request, url, ctx) {
   const authErr = requireAuth(user);
   if (authErr) return authErr;
 
-  // Enforce CSRF on ALL authenticated state-changing methods (Section 15)
+  // Enforce CSRF on ALL authenticated state-changing methods
   let body = {};
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     body = await readJsonBody(request);
     const csrfErr = requireCsrf(request, user, body);
     if (csrfErr) return csrfErr;
+  }
+
+  // Support/Contact Ticket (Authenticated + CSRF)
+  if (path === '/api/v1/support/tickets' && method === 'POST') {
+    const res = await services.admin.createSupportOrContactTicket({ ...body, accountId: user.accountId }, services.email);
+    if (!res.ok) return errorResponse('VALIDATION_ERROR', res.error, res.status);
+    return jsonResponse(res, 201);
   }
 
   if (path === '/api/v1/auth/logout' && method === 'POST') {
@@ -284,8 +302,7 @@ export async function handleApiRequest(request, url, ctx) {
     });
   }
 
-
-  // Cross-App SSO Assertion Issuer for Independent WORD BRIDGE PDF READER (Section 52 & 64)
+  // Cross-App SSO Assertion Issuer for Independent WORD BRIDGE PDF READER
   if (path === '/api/v1/sso/reader/issue' && method === 'POST') {
     if (env.PDF_READER_SSO_ENABLED !== 'true' || !env.PDF_READER_SSO_SHARED_SECRET) {
       return errorResponse('BLOCKED_UNCONFIGURED', 'SSO tới WORD BRIDGE PDF READER chưa được cấu hình credentials (PDF_READER_SSO_ENABLED / PDF_READER_SSO_SHARED_SECRET).', 503);
@@ -331,7 +348,7 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse(res, 201);
   }
 
-  // Lesson Progress & Backend-Evaluated Completion (Section 14 — NEVER trusts frontend scorePercent!)
+  // Lesson Progress & Backend-Evaluated Completion
   if (path === '/api/v1/learning/progress' && method === 'POST') {
     if (!body.lessonId) return errorResponse('VALIDATION_ERROR', 'Thiếu lessonId.', 400);
     const lesson = await env.DB.prepare('SELECT * FROM wb_lessons WHERE id = ?').bind(body.lessonId).first();
@@ -380,7 +397,6 @@ export async function handleApiRequest(request, url, ctx) {
       lifecycleStatus = 'opened';
       progressStatus = 'in_progress';
     } else {
-      // Content-only reading completion: NEVER assign fake 100% score!
       lifecycleStatus = 'content_completed';
       progressStatus = 'completed';
       scorePercent = null;
@@ -445,30 +461,67 @@ export async function handleApiRequest(request, url, ctx) {
     }, 201);
   }
 
+  // Personal Vocabulary Sets CRUD (Strict ownership + CSRF)
+  if (path === '/api/v1/vocabulary/sets' && method === 'GET') {
+    const sets = await services.dictionary.listSets(user.accountId);
+    return jsonResponse({ ok: true, sets });
+  }
+  if (path === '/api/v1/vocabulary/sets' && method === 'POST') {
+    const res = await services.dictionary.createSet(user.accountId, body);
+    if (!res.ok) return errorResponse('SET_ERROR', res.error, res.status);
+    return jsonResponse(res, 201);
+  }
+  const setMatch = path.match(/^\/api\/v1\/vocabulary\/sets\/([^/]+)$/);
+  if (setMatch && method === 'PATCH') {
+    const res = await services.dictionary.updateSet(user.accountId, setMatch[1], body);
+    if (!res.ok) return errorResponse('SET_ERROR', res.error, res.status);
+    return jsonResponse(res);
+  }
+  if (setMatch && method === 'DELETE') {
+    const res = await services.dictionary.deleteSet(user.accountId, setMatch[1]);
+    if (!res.ok) return errorResponse('SET_ERROR', res.error, res.status);
+    return jsonResponse(res);
+  }
+
   // Personal Vocabulary Notebook & SRS (Strict ownership)
   if (path === '/api/v1/vocabulary/notebook' && method === 'GET') {
     const rows = await env.DB
-      .prepare('SELECT n.*, d.headword, d.phonetic, d.meaning_vi, d.language_code, d.slug FROM wb_vocabulary_notebook n JOIN wb_dictionary_entries d ON d.id = n.entry_id WHERE n.account_id = ? ORDER BY n.created_at DESC')
+      .prepare('SELECT n.*, d.headword, d.phonetic, d.meaning_vi, d.language_code, d.slug, d.specialized_domain FROM wb_vocabulary_notebook n JOIN wb_dictionary_entries d ON d.id = n.entry_id WHERE n.account_id = ? ORDER BY n.created_at DESC')
       .bind(user.accountId)
       .all();
     return jsonResponse({ ok: true, items: rows.results || [] });
   }
   if (path === '/api/v1/vocabulary/notebook' && method === 'POST') {
-    const res = await services.dictionary.saveToNotebook(user.accountId, body);
+    const resolveSpecializedTerm = async (domain, termNum) => {
+      if (typeof loadVocabJson !== 'function') return null;
+      const dataset = await loadVocabJson(domain);
+      if (!dataset || !Array.isArray(dataset.words)) return null;
+      const word = dataset.words.find((w) => Number(w.n) === Number(termNum)) || dataset.words[Number(termNum) - 1];
+      if (!word) return null;
+      return { word, language: dataset.language || 'en' };
+    };
+    const res = await services.dictionary.saveToNotebook(user.accountId, body, { resolveSpecializedTerm });
     if (!res.ok) return errorResponse('NOTEBOOK_ERROR', res.error, res.status);
     return jsonResponse(res, 201);
   }
-  const nbDelMatch = path.match(/^\/api\/v1\/vocabulary\/notebook\/([^/]+)$/);
-  if (nbDelMatch && method === 'DELETE') {
-    const existing = await env.DB.prepare('SELECT id, account_id FROM wb_vocabulary_notebook WHERE id = ?').bind(nbDelMatch[1]).first();
+  const nbItemMatch = path.match(/^\/api\/v1\/vocabulary\/notebook\/([^/]+)$/);
+  if (nbItemMatch && method === 'PATCH') {
+    const res = await services.dictionary.updateNotebookItem(user.accountId, nbItemMatch[1], body);
+    if (!res.ok) return errorResponse('NOTEBOOK_ERROR', res.error, res.status);
+    return jsonResponse(res);
+  }
+  if (nbItemMatch && method === 'DELETE') {
+    const existing = await env.DB.prepare('SELECT id, account_id FROM wb_vocabulary_notebook WHERE id = ?').bind(nbItemMatch[1]).first();
     if (!existing) return errorResponse('NOT_FOUND', 'Không tìm thấy mục từ.', 404);
     if (existing.account_id !== user.accountId) return errorResponse('FORBIDDEN', 'Bạn không có quyền xóa dữ liệu của tài khoản khác.', 403);
     await env.DB.prepare('DELETE FROM wb_vocabulary_notebook WHERE id = ?').bind(existing.id).run();
     return jsonResponse({ ok: true });
   }
   if (path === '/api/v1/vocabulary/review' && method === 'POST') {
-    const res = await services.dictionary.reviewFlashcard(user.accountId, body.notebookItemId, body.quality);
-    if (!res.ok) return errorResponse('SRS_ERROR', res.error, res.status);
+    const res = await services.dictionary.reviewFlashcard(user.accountId, body.notebookItemId, body.quality, {
+      expectedReview: body.expectedReview,
+    });
+    if (!res.ok) return errorResponse(res.code || 'SRS_ERROR', res.error, res.status);
     return jsonResponse(res);
   }
 

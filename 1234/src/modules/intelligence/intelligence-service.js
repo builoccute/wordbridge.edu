@@ -7,7 +7,7 @@
 
 import { generateId } from '../../utils/crypto.js';
 import { INTELLIGENCE_SYSTEMS } from '../../config/constants.js';
-import { assertOfficialLanguage, assertSpecializedLanguage } from '../../utils/validation.js';
+import { assertOfficialLanguage, assertSpecializedLanguage } from '../../utils/http.js';
 
 export const SYSTEM_SPEC_MAP = new Map(INTELLIGENCE_SYSTEMS.map((s) => [s.slug, s]));
 

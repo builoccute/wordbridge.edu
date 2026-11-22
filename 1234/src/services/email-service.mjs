@@ -188,7 +188,7 @@ export function renderEmailTemplate(templateCode, variables = {}) {
             <td style="padding:20px 32px;background-color:#146466;color:#FFFFFF;font-size:12px;line-height:1.6;">
               <div style="font-weight:700;font-size:13px;">WORD BRIDGE — Where Languages Bring People Together.</div>
               <div>Nền tảng học tập và thực hành ngoại ngữ Trung – Anh – Nga.</div>
-              <div style="margin-top:6px;">Website: <a href="https://www.wordbridge.vn/" style="color:#E2E2C4;text-decoration:underline;">https://www.wordbridge.vn/</a> | Hỗ trợ: <a href="mailto:cskh@wordbridge.vn" style="color:#E2E2C4;text-decoration:underline;">cskh@wordbridge.vn</a></div>
+              <div style="margin-top:6px;">Website: <a href="https://wordbridge.io.vn/" style="color:#E2E2C4;text-decoration:underline;">https://wordbridge.io.vn/</a> | Hỗ trợ: <a href="mailto:cskh@wordbridge.vn" style="color:#E2E2C4;text-decoration:underline;">cskh@wordbridge.vn</a></div>
               <div style="margin-top:6px;opacity:0.85;">© 2026 WORD BRIDGE. All rights reserved.</div>
             </td>
           </tr>
@@ -217,7 +217,7 @@ ${ctaLabel}: ${ctaUrl}
     }`,
     '------------------------------------------------------------',
     'Nền tảng học tập và thực hành ngoại ngữ Trung – Anh – Nga',
-    'Website: https://www.wordbridge.vn/ | CSKH: cskh@wordbridge.vn',
+    'Website: https://wordbridge.io.vn/ | CSKH: cskh@wordbridge.vn',
     '© 2026 WORD BRIDGE. All rights reserved.',
   ]
     .filter(Boolean)

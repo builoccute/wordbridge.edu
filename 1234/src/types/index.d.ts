@@ -1,7 +1,7 @@
 /**
  * WORD BRIDGE — TypeScript Type Definitions & Domain Contracts
- * Website: https://www.wordbridge.vn/
- * Standalone PDF Reader (SSO only): https://reader.wordbridge.vn/
+ * Website: https://wordbridge.io.vn/
+ * Standalone PDF Reader (SSO only): https://reader.wordbridge.io.vn/
  */
 
 export type LanguageCode = 'zh' | 'en' | 'ru';

@@ -1,24 +1,29 @@
 {
   "name": "word-bridge",
-  "version": "3.2.0",
+  "version": "4.0.0-work-in-progress",
   "private": true,
   "type": "module",
-  "description": "WORD BRIDGE — Nền tảng học tập, tra cứu, luyện tập và đánh giá năng lực ngoại ngữ Trung – Anh – Nga (Multi-page Website trên Cloudflare Workers, D1 và R2).",
-  "homepage": "https://www.wordbridge.vn/",
+  "description": "WORD BRIDGE domain 1: V4 learning website backed by quantri.wordbridge.io.vn control plane, with two UI locales (VI/EN).",
+  "homepage": "https://wordbridge.io.vn/",
   "engines": {
     "node": ">=18.18.0"
   },
   "scripts": {
     "dev": "wrangler dev",
     "dev:local": "node scripts/run-local-dev.mjs",
-    "deploy": "wrangler deploy",
-    "db:migrate:local": "wrangler d1 migrations apply word --local",
-    "db:migrate:remote": "wrangler d1 migrations apply word --remote",
-    "test": "node --test tests/unit/*.test.js tests/integration/*.test.js tests/e2e/*.test.js",
-    "test:unit": "node --test tests/unit/*.test.js",
-    "test:integration": "node --test tests/integration/*.test.js",
-    "test:e2e": "node --test tests/e2e/*.test.js",
-    "lint:check": "node --check src/index.js"
+    "deploy": "npm run build && wrangler deploy",
+    "db:migrate:local": "node -e \"console.error('Database migrations belong to the centralized control plane; see migration instructions.');process.exit(1)\"",
+    "db:migrate:remote": "node -e \"console.error('Database migrations belong to the centralized control plane; see migration instructions.');process.exit(1)\"",
+    "test": "node --test tests/unit/*.test.js tests/unit/*.test.mjs tests/integration/*.test.js tests/integration/*.test.mjs tests/e2e/*.test.js tests/e2e/*.test.mjs tests/security/*.test.mjs",
+    "test:unit": "node --test tests/unit/*.test.mjs",
+    "test:integration": "node --test tests/integration/*.test.mjs",
+    "test:e2e": "node --test tests/e2e/*.test.mjs",
+    "lint:check": "node --check src/index.js && node --check src/layouts/site-layout.js && node --check public/scripts/app.js",
+    "build": "node scripts/build.mjs",
+    "test:v4": "node --test tests/integration/v4-contract.test.mjs tests/unit/client-workflows.test.mjs",
+    "test:legacy": "node --test --test-name-pattern=\"End-to-End V3.1 Journey|Multi-page navigation|Curriculum Quality V3.2\" tests/e2e/combined.test.mjs tests/integration/combined.test.mjs",
+    "qa:ui": "node scripts/audit-ui.mjs",
+    "qa:browser": "python3 tests/e2e/acceptance.py"
   },
   "devDependencies": {
     "wrangler": "^4.16.0"

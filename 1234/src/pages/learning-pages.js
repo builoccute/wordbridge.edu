@@ -4,48 +4,46 @@
  */
 
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { OFFICIAL_LANGUAGES } from '../config/constants.js';
-import { escapeHtml, normalizeLanguageCode } from '../utils/validation.js';
-import { htmlResponse, redirectResponse } from '../utils/http.js';
-
-const BUILTIN_PROGRAMS = [
-  { code: 'ZH-GEN', slug: 'tieng-trung-nen-tang', language_code: 'zh', program_type: 'Nền tảng', name_vi: 'Tiếng Trung Ứng dụng & Giao tiếp Công việc', entry_level: 'Sơ cấp', target_level: 'Trung cao cấp', total_weeks: 12, sessions_per_week: 3, estimated_hours: 72 },
-  { code: 'ZH-SPEC', slug: 'tieng-trung-chuyen-nganh', language_code: 'zh', program_type: 'Chuyên ngành', name_vi: 'Tiếng Trung Thương mại, Xuất nhập khẩu & Sản xuất', entry_level: 'Trung cấp', target_level: 'Chuyên sâu', total_weeks: 12, sessions_per_week: 3, estimated_hours: 84 },
-  { code: 'EN-GEN', slug: 'tieng-anh-ung-dung', language_code: 'en', program_type: 'Nền tảng', name_vi: 'Tiếng Anh Học thuật & Giao tiếp Quốc tế', entry_level: 'Sơ cấp', target_level: 'Thành thạo', total_weeks: 12, sessions_per_week: 3, estimated_hours: 72 },
-  { code: 'EN-SPEC', slug: 'tieng-anh-chuyen-nganh', language_code: 'en', program_type: 'Chuyên ngành', name_vi: 'Tiếng Anh Chuyên ngành Logistics, Công nghệ & Kinh doanh', entry_level: 'Trung cấp', target_level: 'Chuyên sâu', total_weeks: 12, sessions_per_week: 3, estimated_hours: 84 },
-  { code: 'RU-GEN', slug: 'tieng-nga-tong-quat', language_code: 'ru', program_type: 'Cơ bản & Giao tiếp', name_vi: 'Tiếng Nga Giao tiếp & Ngữ pháp Ứng dụng', entry_level: 'Sơ cấp', target_level: 'Trung cấp', total_weeks: 12, sessions_per_week: 3, estimated_hours: 72 },
-];
+import { signInUrl, OFFICIAL_LANGUAGES } from '../config/constants.js';
+import { escapeHtml, normalizeLanguageCode, htmlResponse, redirectResponse } from '../utils/http.js';
 
 export async function renderLearningHub({ db, user }) {
-  let programs = []; try { programs = (await db.prepare("SELECT * FROM wb_programs WHERE review_status = 'published' ORDER BY language_code, code").all()).results || []; } catch { programs = []; }
-  if (!programs.length) programs = BUILTIN_PROGRAMS;
-  const cards = programs.map((p) => `
-    <article class="wb-card">
-      <span class="wb-badge">${escapeHtml(p.language_code.toUpperCase())} · ${escapeHtml(p.program_type)}</span>
-      <h3 style="margin-top:10px;"><a href="/programs/${escapeHtml(p.slug)}">${escapeHtml(p.name_vi)}</a></h3>
-      <p class="wb-muted" style="font-size:0.9rem;">Đầu vào: ${escapeHtml(p.entry_level)} → Mục tiêu: ${escapeHtml(p.target_level)}</p>
-      <p style="font-size:0.88rem;">${p.total_weeks} tuần · ${p.sessions_per_week} buổi/tuần · ~${p.estimated_hours} giờ</p>
-      <a href="/programs/${escapeHtml(p.slug)}" class="wb-btn wb-btn-outline wb-btn-sm">Xem chi tiết chương trình</a>
-    </article>`).join('');
+  const programs = (await db.prepare("SELECT * FROM wb_programs WHERE review_status = 'published' ORDER BY language_code, code").all()).results || [];
 
-  const contentHtml = `
-    <h1>Hệ thống Học ngoại ngữ WORD BRIDGE</h1>
-    <p class="wb-muted">Lộ trình học tập bài bản theo từng ngôn ngữ, chương trình và chuyên ngành ứng dụng.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 24px;">
-      <a href="/learning/chinese" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Trung (zh)</a>
-      <a href="/learning/english" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Anh (en)</a>
-      <a href="/learning/russian" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Nga (ru)</a>
-      <a href="/my-learning" class="wb-btn wb-btn-outline wb-btn-sm">Lộ trình cá nhân</a>
-    </div>
-    <div class="wb-grid-3">${cards || '<div class="wb-alert wb-alert-info">Chưa có chương trình được phát hành.</div>'}</div>
-  `;
-  return htmlResponse(renderPublicPage({
-    title: 'Học ngoại ngữ',
-    currentPath: '/learning',
-    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Học ngoại ngữ' }],
-    user,
-    contentHtml,
-  }));
+  let progress = [], dueCount = 0, practice = [];
+  if (user) {
+    progress = (await db.prepare(`SELECT p.*, l.title_vi AS lesson_title, l.slug AS lesson_slug, l.language_code, l.level_ref FROM wb_learner_progress p LEFT JOIN wb_lessons l ON l.id=p.lesson_id WHERE p.account_id=? ORDER BY p.updated_at DESC LIMIT 20`).bind(user.accountId).all()).results || [];
+    const due = await db.prepare(`SELECT COUNT(*) cnt FROM wb_vocabulary_notebook WHERE account_id=? AND datetime(next_review_at) <= datetime('now')`).bind(user.accountId).first();
+    dueCount = Number(due?.cnt || 0);
+    practice = (await db.prepare(`SELECT id, skill, score, max_score, grading_status, submitted_at FROM wb_practice_results WHERE account_id=? ORDER BY submitted_at DESC LIMIT 30`).bind(user.accountId).all()).results || [];
+  }
+  const current = progress.find(p => p.status === 'in_progress' && p.lesson_slug) || null;
+  const scored = practice.filter(r => r.grading_status === 'auto_graded' && r.score != null && Number(r.max_score) > 0);
+  const skillGroups = new Map();
+  for (const row of scored) {
+    const value = Number(row.score) / Number(row.max_score) * 100;
+    const stat = skillGroups.get(row.skill) || { total: 0, count: 0 };
+    stat.total += value; stat.count += 1; skillGroups.set(row.skill, stat);
+  }
+  const weakest = [...skillGroups.entries()].map(([skill, stat]) => ({ skill, avg: Math.round(stat.total / stat.count), count: stat.count })).filter(row=>row.avg<80).sort((a,b)=>a.avg-b.avg)[0] || null;
+  const recommendation = dueCount ? { href:'/vocabulary/review', title:`Ôn ${dueCount} mục từ đến hạn`, reason:'Dựa trên lịch SRS đã lưu.' }
+    : weakest ? { href:`/practice/${weakest.skill}`, title:`Luyện ${weakest.skill}`, reason:`Điểm trung bình evidence hiện tại ${weakest.avg}%.` }
+    : current ? { href:`/lessons/${current.lesson_slug}`, title:'Tiếp tục bài học đang có evidence', reason:current.lesson_title || current.lesson_id }
+    : {href:'/learning/path',title:'Chọn lộ trình',reason:'Chưa có hoạt động học đã lưu.'};
+
+  const programRows = programs.map((p) => `<article class="wb-learning-row"><div><p class="wb-eyebrow">${escapeHtml(p.language_code.toUpperCase())} · ${escapeHtml(p.program_type)}</p><h3><a href="/programs/${escapeHtml(p.slug)}" data-learning-content>${escapeHtml(p.name_vi)}</a></h3><p>${escapeHtml(p.entry_level)} → ${escapeHtml(p.target_level)} · ${p.total_weeks} tuần · ~${p.estimated_hours} giờ</p></div><a href="/programs/${escapeHtml(p.slug)}" class="wb-btn wb-btn-outline wb-btn-sm">Xem chương trình</a></article>`).join('');
+
+  const signedIn = user ? `<div class="wb-learning-dashboard">
+      <section><h2>Tiếp tục học</h2>${current ? `<article class="wb-focus-panel"><p class="wb-eyebrow">${escapeHtml(current.language_code?.toUpperCase() || '')} · ${escapeHtml(current.level_ref || '')}</p><h3>${escapeHtml(current.lesson_title || current.lesson_id)}</h3><p>Trạng thái: ${escapeHtml(current.status)}${current.score_percent != null ? ` · evidence ${current.score_percent}%` : ''}</p><a href="/lessons/${escapeHtml(current.lesson_slug || '')}" class="wb-btn wb-btn-primary">Tiếp tục</a></article>` : '<div class="wb-empty-state"><p>Chưa có lesson progress đã lưu.</p><a href="/learning/path" class="wb-btn wb-btn-primary">Chọn lộ trình</a></div>'}</section>
+      <aside><div class="wb-card"><h2>Hôm nay</h2><p><strong>${dueCount}</strong> mục từ đến hạn ôn.</p><p><strong>${practice.length}</strong> practice evidence gần đây.</p>${recommendation ? `<a href="${recommendation.href}" class="wb-btn wb-btn-primary">${escapeHtml(recommendation.title)}</a><p class="wb-muted">${escapeHtml(recommendation.reason)}</p>` : '<p class="wb-muted">Chưa đủ evidence để sinh recommendation rule-based.</p>'}</div>${weakest ? `<div class="wb-card"><h2>Cần cải thiện</h2><a href="/practice/${encodeURIComponent(weakest.skill)}">${escapeHtml(weakest.skill)}</a> · ${weakest.avg}%</div>` : ''}<div class="wb-card"><h2>Bridge</h2><a href="/my-knowledge">My Knowledge</a><br/><a href="/my-mistakes">My Mistakes</a><br/><a href="/practice/history">Practice Insights</a></div></aside>
+    </div>` : `<section class="wb-discovery-band"><div><h2>Khám phá trước khi đăng nhập</h2><p>Xem cấu trúc Learning Path, 7 Skill Centers, Practice, Dictionary và Chuyên ngành. Mọi action lưu tiến độ/làm bài yêu cầu đăng nhập.</p></div><a href="${signInUrl('/learning','learning.start')}" class="wb-btn wb-btn-primary">Đăng nhập để bắt đầu</a></section>`;
+
+  const contentHtml = `<section class="wb-learning-landing"><p class="wb-eyebrow">DISCOVER → LEARN → UNDERSTAND → PRACTICE → REVIEW → ASSESS</p><h1>Learning Home</h1><p>WORD BRIDGE nối bài học, practice, dictionary, review, mistakes và assessment thành một learning loop thống nhất.</p></section>
+    <nav class="wb-learning-quick" aria-label="Learning navigation"><a href="/learning/path" class="wb-btn wb-btn-primary">Learning Path</a><a href="/learning/skills" class="wb-btn wb-btn-outline">Skill Center</a><a href="/practice" class="wb-btn wb-btn-outline">Practice</a><a href="/dictionary" class="wb-btn wb-btn-outline">Dictionary</a><a href="/specialized" class="wb-btn wb-btn-outline">Chuyên ngành</a></nav>
+    ${signedIn}
+    ${user && practice.length ? `<section><h2>Hoạt động gần đây</h2><ol>${practice.slice(0,5).map(r=>`<li><a href="/practice/results/${encodeURIComponent(r.id)}">${escapeHtml(r.skill)} · ${escapeHtml(r.submitted_at)}</a></li>`).join('')}</ol></section>` : ''}
+    <section><h2>Chương trình đã phát hành</h2>${programRows ? `<div class="wb-learning-list">${programRows}</div>` : '<div class="wb-empty-state"><p>Chưa có chương trình được phát hành từ hệ thống học liệu. Không có nội dung dự phòng giả.</p></div>'}</section>`;
+  return htmlResponse(renderPublicPage({ title:'Learning Home', currentPath:'/learning', breadcrumbs:[{label:'Học'}], user, contentHtml }));
 }
 
 export async function renderLanguageLearningPage({ db, user, languageSlug }) {
@@ -60,11 +58,9 @@ export async function renderLanguageLearningPage({ db, user, languageSlug }) {
   }
   const lang = OFFICIAL_LANGUAGES[code];
   let programs = [], courses = [];
-  try {
-    programs = (await db.prepare('SELECT * FROM wb_programs WHERE language_code = ? ORDER BY code').bind(code).all()).results || [];
-    courses = (await db.prepare('SELECT * FROM wb_courses WHERE language_code = ? ORDER BY slug').bind(code).all()).results || [];
-  } catch {}
-  if (!programs.length) programs = BUILTIN_PROGRAMS.filter((p) => p.language_code === code);
+  programs = (await db.prepare('SELECT * FROM wb_programs WHERE language_code = ? ORDER BY code').bind(code).all()).results || [];
+  courses = (await db.prepare('SELECT * FROM wb_courses WHERE language_code = ? ORDER BY slug').bind(code).all()).results || [];
+
 
   const contentHtml = `
     <h1>Học ${escapeHtml(lang.nameVi)} (${escapeHtml(lang.nativeName)})</h1>
@@ -75,14 +71,14 @@ export async function renderLanguageLearningPage({ db, user, languageSlug }) {
     </div>
     <h2>Chương trình học</h2>
     <div class="wb-grid-2" style="margin-bottom:24px;">
-      ${programs.map((p) => `<article class="wb-card"><h3><a href="/programs/${escapeHtml(p.slug)}">${escapeHtml(p.name_vi)}</a></h3><p class="wb-muted">${escapeHtml(p.overall_objectives)}</p><a href="/programs/${escapeHtml(p.slug)}" class="wb-btn wb-btn-outline wb-btn-sm">Xem chương trình</a></article>`).join('')}
+      ${programs.map((p) => `<article class="wb-card"><h3><a href="/programs/${escapeHtml(p.slug)}" data-learning-content>${escapeHtml(p.name_vi)}</a></h3><p class="wb-muted">${escapeHtml(p.overall_objectives)}</p><a href="/programs/${escapeHtml(p.slug)}" class="wb-btn wb-btn-outline wb-btn-sm">Xem chương trình</a></article>`).join('')}
     </div>
     <h2>Khóa học & Giáo trình theo tuần</h2>
     <div class="wb-grid-2">
       ${courses.map((c) => `
         <article class="wb-card">
-          <h3><a href="/courses/${escapeHtml(c.slug)}">${escapeHtml(c.title_vi)}</a></h3>
-          <p class="wb-muted">${escapeHtml(c.summary_vi)}</p>
+          <h3><a href="/courses/${escapeHtml(c.slug)}" data-learning-content>${escapeHtml(c.title_vi)}</a></h3>
+          <p class="wb-muted" data-learning-content>${escapeHtml(c.summary_vi)}</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <a href="/courses/${escapeHtml(c.slug)}" class="wb-btn wb-btn-primary wb-btn-sm">Chi tiết khóa học</a>
             <a href="/courses/${escapeHtml(c.slug)}/curriculum" class="wb-btn wb-btn-outline wb-btn-sm">Xem giáo trình</a>
@@ -109,7 +105,7 @@ export async function renderProgramDetailPage({ db, user, programSlug }) {
 
   const contentHtml = `
     <span class="wb-badge">${escapeHtml(program.code)} · Phiên bản ${escapeHtml(program.version)}</span>
-    <h1>${escapeHtml(program.name_vi)}</h1>
+    <h1 data-learning-content>${escapeHtml(program.name_vi)}</h1>
     <div class="wb-grid-2">
       <div class="wb-card">
         <h3>Thông tin học thuật</h3>
@@ -130,8 +126,8 @@ export async function renderProgramDetailPage({ db, user, programSlug }) {
     </div>
     <h2 style="margin-top:24px;">Cấp độ & Khóa học thuộc chương trình</h2>
     <div class="wb-grid-2">
-      ${levels.map((lv) => `<div class="wb-card"><h3><a href="/programs/${escapeHtml(program.slug)}/levels/${escapeHtml(lv.slug)}">${escapeHtml(lv.name_vi)}</a></h3><p>${escapeHtml(lv.objectives)}</p></div>`).join('')}
-      ${courses.map((c) => `<div class="wb-card"><h3><a href="/courses/${escapeHtml(c.slug)}">${escapeHtml(c.title_vi)}</a></h3><p>${escapeHtml(c.summary_vi)}</p><a href="/courses/${escapeHtml(c.slug)}/curriculum" class="wb-btn wb-btn-primary wb-btn-sm">Mở giáo trình theo tuần</a></div>`).join('')}
+      ${levels.map((lv) => `<div class="wb-card"><h3><a href="/programs/${escapeHtml(program.slug)}/levels/${escapeHtml(lv.slug)}" data-learning-content>${escapeHtml(lv.name_vi)}</a></h3><p data-learning-content>${escapeHtml(lv.objectives)}</p></div>`).join('')}
+      ${courses.map((c) => `<div class="wb-card"><h3><a href="/courses/${escapeHtml(c.slug)}" data-learning-content>${escapeHtml(c.title_vi)}</a></h3><p data-learning-content>${escapeHtml(c.summary_vi)}</p><a href="/courses/${escapeHtml(c.slug)}/curriculum" class="wb-btn wb-btn-primary wb-btn-sm">Mở giáo trình theo tuần</a></div>`).join('')}
     </div>
   `;
   return htmlResponse(renderPublicPage({
@@ -153,7 +149,7 @@ export async function renderCourseCurriculumPage({ db, user, courseSlug, showCur
 
   const contentHtml = `
     <h1>${escapeHtml(showCurriculumOnly ? `Giáo trình: ${course.title_vi}` : course.title_vi)}</h1>
-    <p class="wb-muted">${escapeHtml(course.summary_vi)}</p>
+    <p class="wb-muted" data-learning-content>${escapeHtml(course.summary_vi)}</p>
     <div style="margin:12px 0 20px;">
       ${modules.map((m) => `<a href="/modules/${escapeHtml(m.slug)}" class="wb-btn wb-btn-outline wb-btn-sm" style="margin-right:8px;">Mở học phần: ${escapeHtml(m.title_vi)}</a>`).join('')}
     </div>
@@ -212,7 +208,7 @@ export async function renderModuleDetailPage({ db, user, moduleSlug }) {
 
   const contentHtml = `
     <span class="wb-badge">Học phần #${mod.sort_order} · Thuộc khóa: ${escapeHtml(mod.course_title)}</span>
-    <h1>${escapeHtml(mod.title_vi)}</h1>
+    <h1 data-learning-content>${escapeHtml(mod.title_vi)}</h1>
     <div class="wb-grid-2" style="margin-bottom:20px;">
       <div class="wb-card">
         <h3>Mục tiêu & Điều kiện tiên quyết học phần</h3>
@@ -270,7 +266,7 @@ export async function renderWeekDetailPage({ db, user, weekSlug }) {
 
   const contentHtml = `
     <span class="wb-badge">Tuần ${String(week.week_number).padStart(2, '0')} · ${sessions.length || week.sessions_count} buổi học thực tế</span>
-    <h1>${escapeHtml(week.name_vi)}</h1>
+    <h1 data-learning-content>${escapeHtml(week.name_vi)}</h1>
     <div class="wb-grid-2">
       <div class="wb-card">
         <h3>Mục tiêu, Chuẩn đầu ra & Kiến thức</h3>
@@ -311,7 +307,7 @@ export async function renderWeekDetailPage({ db, user, weekSlug }) {
     </div>
     <h2 style="margin-top:24px;">Các buổi học & Bài học trong tuần (${lessons.length} bài)</h2>
     <div class="wb-grid-3">
-      ${lessons.map((l) => `<article class="wb-card"><h3><a href="/lessons/${escapeHtml(l.slug)}">${escapeHtml(l.title_vi)}</a></h3><p class="wb-muted">Trình độ: ${escapeHtml(l.level_ref)}</p><a href="/lessons/${escapeHtml(l.slug)}" class="wb-btn wb-btn-primary wb-btn-sm">Mở bài học</a></article>`).join('')}
+      ${lessons.map((l) => `<article class="wb-card"><h3><a href="/lessons/${escapeHtml(l.slug)}" data-learning-content>${escapeHtml(l.title_vi)}</a></h3><p class="wb-muted">Trình độ: ${escapeHtml(l.level_ref)}</p><a href="/lessons/${escapeHtml(l.slug)}" class="wb-btn wb-btn-primary wb-btn-sm">Mở bài học</a></article>`).join('')}
     </div>
   `;
   return htmlResponse(renderPublicPage({
@@ -329,7 +325,7 @@ export async function renderLessonDetailPage({ db, user, lessonSlug }) {
     return htmlResponse(renderPublicPage({ title: 'Không tìm thấy bài học', currentPath: `/lessons/${lessonSlug}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Bài học không tồn tại.</div>' }), 404);
   }
   const c = JSON.parse(lesson.components_json || '{}');
-  const audioAsset = await db.prepare('SELECT * FROM wb_audio_assets WHERE language_code = ? LIMIT 1').bind(lesson.language_code).first();
+  const audioAsset = await db.prepare("SELECT * FROM wb_audio_assets WHERE id=? AND review_status='published'").bind(c.audioAssetId || null).first();
   const segments = audioAsset ? JSON.parse(audioAsset.sync_segments_json || '[]') : [];
   const checkQIds = Array.isArray(c.checkQuestionIds) ? c.checkQuestionIds : [];
   const questions = [];
@@ -356,10 +352,10 @@ export async function renderLessonDetailPage({ db, user, lessonSlug }) {
         <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-audio-speed="1">1.0x</button>
         <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-audio-speed="1.25">1.25x</button>
         <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-audio-speed="1.5">1.5x</button>
-        <button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-wb-mic-check>Bật micro tự luyện đọc</button>
+        <a class="wb-btn wb-btn-outline wb-btn-sm" href="/skills/pronunciation">Phát âm</a>
       </div>
-      ${segments.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;">${segments.map((s) => `<button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-audio-segment-start="${s.startMs}">▶ ${escapeHtml(s.text)}</button>`).join('')}</div>` : ''}
-      <div data-audio-status class="wb-muted" style="font-size:0.84rem;">Trạng thái tệp audio R2: ${escapeHtml(audioAsset?.review_status || 'pending_upload')} (không dùng URL giả).</div>
+      ${segments.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;">${segments.map((s) => `<button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-audio-segment-start="${Number(s.startMs)}" data-audio-segment-end="${Number(s.endMs)}">▶ ${escapeHtml(s.text)}</button>`).join('')}</div>` : ''}
+      <p data-learning-content>${escapeHtml(audioAsset?.transcript_text || '')}</p><div role="status" data-audio-status class="wb-muted" style="font-size:0.84rem;">Trạng thái tệp audio R2: ${escapeHtml(audioAsset?.review_status || 'pending_upload')} (không dùng URL giả).</div>
       <div id="wb-mic-status" class="wb-muted" style="font-size:0.84rem;">Micro chỉ bật khi bạn chủ động nhấn nút. Hệ thống không giả lập điểm phát âm.</div>
     </div>`;
 
@@ -383,18 +379,18 @@ export async function renderLessonDetailPage({ db, user, lessonSlug }) {
         <h3>Kiểm tra mức hiểu & Ghi nhận hoàn thành</h3>
         <p class="wb-muted" style="font-size:0.88rem;margin:0;">Điểm số được tính hoàn toàn tại backend từ câu trả lời thực tế. Nếu bài chỉ đọc nội dung, hệ thống ghi nhận trạng thái hoàn thành nội dung (không gán điểm 100% giả).</p>
         ${quizFields}
-        <div data-form-status></div>
+        <div data-form-status role="status" aria-live="polite"></div>
         <button type="submit" class="wb-btn wb-btn-primary">Nộp kiểm tra & Xem trang kết quả bài học</button>
       </form>`
     : `<div class="wb-alert wb-alert-info">Bạn đang xem trước nội dung bài học công khai. <a href="https://portal.wordbridge.io.vn/login">Đăng nhập</a> để làm kiểm tra và lưu tiến độ cá nhân.</div>`;
 
   const contentHtml = `
     <span class="wb-badge">${escapeHtml(lesson.language_code.toUpperCase())} · ${escapeHtml(lesson.level_ref)} · v${escapeHtml(lesson.version)}</span>
-    <h1>${escapeHtml(lesson.title_vi)}</h1>
-    ${audioPlayerHtml}
+    <h1 data-learning-content>${escapeHtml(lesson.title_vi)}</h1>
+    ${!user ? `<a class="wb-btn" href="${signInUrl('/lessons/'+lessonSlug,'lesson.audio')}">Đăng nhập để nghe</a>` : audioAsset ? audioPlayerHtml : '<p>Chưa có bản ghi đã phát hành cho bài học này.</p>'}
     <div class="wb-grid-2">
-      <div class="wb-card"><h3>1. Mục tiêu & Kiến thức</h3><p>${escapeHtml(c.objectives || '')}</p><p>${escapeHtml(c.coreKnowledge || '')}</p></div>
-      <div class="wb-card"><h3>2. Phiên âm & Phát âm</h3><p>${escapeHtml(c.phonetics || '')}</p></div>
+      <div class="wb-card"><h3>1. Mục tiêu & Kiến thức</h3><p data-learning-content>${escapeHtml(c.objectives || '')}</p><p data-learning-content>${escapeHtml(c.coreKnowledge || '')}</p></div>
+      <div class="wb-card"><h3>2. Phiên âm & Phát âm</h3><p data-learning-content>${escapeHtml(c.phonetics || '')}</p></div>
       <div class="wb-card"><h3>3. Nghe & Nói</h3><p><strong>Listening:</strong> ${escapeHtml(c.listening || '')}</p><p><strong>Speaking:</strong> ${escapeHtml(c.speaking || '')}</p></div>
       <div class="wb-card"><h3>4. Đọc & Viết</h3><p><strong>Reading:</strong> ${escapeHtml(c.reading || '')}</p><p><strong>Writing:</strong> ${escapeHtml(c.writing || '')}</p></div>
     </div>
@@ -413,7 +409,7 @@ export async function renderLessonDetailPage({ db, user, lessonSlug }) {
  * Section 3 Repair: Dedicated Lesson Result Page (/lessons/:lessonSlug/result)
  */
 export async function renderLessonResultPage({ db, user, lessonSlug }) {
-  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login');
+  if (!user) return redirectResponse(signInUrl(`/lessons/${lessonSlug}/result`, 'lesson.results'));
   const lesson = await db.prepare('SELECT * FROM wb_lessons WHERE slug = ?').bind(lessonSlug).first();
   if (!lesson) {
     return htmlResponse(renderPublicPage({ title: 'Không tìm thấy bài học', currentPath: `/lessons/${lessonSlug}/result`, user, contentHtml: '<div class="wb-alert wb-alert-error">Bài học không tồn tại.</div>' }), 404);
@@ -470,7 +466,7 @@ export async function renderLessonResultPage({ db, user, lessonSlug }) {
 }
 
 export async function renderMyLearningPage({ db, user, subPath = '' }) {
-  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login');
+  if (!user) return redirectResponse(signInUrl(subPath ? `/my-learning/${subPath}` : '/my-learning'));
   const progress = (await db.prepare(`
     SELECT p.*, l.title_vi AS lesson_title, l.slug AS lesson_slug
     FROM wb_learner_progress p

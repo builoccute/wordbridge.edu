@@ -61,11 +61,12 @@ import {
   LEARNER_MEET_POLICY_ENFORCEMENT,
   assertProhibitedLearnerMeetAction,
   createLearnerMeetSessionRecord,
-} from '../modules/learner-meet/service.mjs';
-import { calculateNextSpacedRepetition } from '../modules/dictionary/spaced-repetition.mjs';
-import { gradeExamSubmission } from '../modules/examination/grading.mjs';
-import { getPdfReaderSsoStatus } from '../modules/account/sso-pdf-reader.mjs';
-import { ADMIN_MODULE_GROUPS_VI, SEVEN_ADMIN_CENTERS_VI, NINE_ADMIN_ROLES_VI } from '../modules/administration/centers.mjs';
+  getPdfReaderSsoStatus,
+  ADMIN_MODULE_GROUPS_VI,
+  SEVEN_ADMIN_CENTERS_VI,
+  NINE_ADMIN_ROLES_VI,
+} from '../modules/administration/legacy-domains.mjs';
+import { calculateNextSpacedRepetition, gradeExamSubmission } from '../modules/examination/learning-rules.mjs';
 
 export function createWordBridgeRuntime(env = {}) {
   const store = createLocalD1CompatibleStore();

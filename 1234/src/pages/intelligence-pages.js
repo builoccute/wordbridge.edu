@@ -5,8 +5,7 @@
 import { renderPublicPage } from '../layouts/site-layout.js';
 import { INTELLIGENCE_SYSTEMS } from '../config/constants.js';
 import { SYSTEM_SPEC_MAP } from '../modules/intelligence/intelligence-service.js';
-import { escapeHtml } from '../utils/validation.js';
-import { htmlResponse } from '../utils/http.js';
+import { escapeHtml, htmlResponse } from '../utils/http.js';
 
 export function renderIntelligenceHub({ user }) {
   const cards = INTELLIGENCE_SYSTEMS.map((sys) => `
@@ -54,14 +53,14 @@ export async function renderIntelligenceSystemPage({ services, user, systemSlug 
       <form class="wb-form wb-card" data-api-endpoint="/api/v1/intelligence/${escapeHtml(spec.slug)}/run" data-render-json="intel-result-box">
         <h3>Chạy phân tích ${escapeHtml(spec.nameVi)}</h3>
         <div class="wb-field">
-          <label>Ngôn ngữ phân tích</label>
-          <select class="wb-select" name="languageCode">${langOptions}</select>
+          <label for="wb-field-languageCode">Ngôn ngữ phân tích</label>
+          <select id="wb-field-languageCode" class="wb-select" name="languageCode">${langOptions}</select>
         </div>
         <div class="wb-field">
-          <label>Văn bản / Ngữ liệu đầu vào (tùy chọn tùy hệ thống)</label>
-          <textarea class="wb-textarea" name="inputText" rows="4" placeholder="Nhập câu, đoạn văn hoặc ngữ cảnh cần phân tích..."></textarea>
+          <label for="wb-field-inputText">Văn bản / Ngữ liệu đầu vào (tùy chọn tùy hệ thống)</label>
+          <textarea id="wb-field-inputText" class="wb-textarea" name="inputText" rows="4" placeholder="Nhập câu, đoạn văn hoặc ngữ cảnh cần phân tích..."></textarea>
         </div>
-        <div data-form-status></div>
+        <div data-form-status role="status" aria-live="polite"></div>
         <button type="submit" class="wb-btn wb-btn-primary">Chạy phân tích & Lưu lịch sử D1</button>
       </form>
       <pre id="intel-result-box" class="wb-card" style="font-size:0.82rem;overflow:auto;margin-top:16px;">Kết quả phân tích JSON sẽ hiển thị tại đây sau khi chạy.</pre>

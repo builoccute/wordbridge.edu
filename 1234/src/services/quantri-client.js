@@ -5,6 +5,8 @@
  * - Graceful non-throwing fallbacks for read queries so public pages always render 200 OK
  */
 
+import { escapeHtml } from '../utils/http.js';
+
 const enc = new TextEncoder();
 
 function toHex(buf) {
@@ -87,50 +89,27 @@ export function createQuantriBridge(env, siteKey) {
         bind(...args) {
           return makeBound(args);
         },
+        async query(op) {
+          const response = await signedFetch('/internal/db/query', {
+            method: 'POST', contentType: 'application/json', body: JSON.stringify({ op, sql, params }),
+          });
+          if (!response.ok) throw new Error('CONTROL_DATABASE_UNAVAILABLE');
+          const data = await response.json();
+          if (data?.ok !== true) throw new Error('CONTROL_DATABASE_QUERY_FAILED');
+          return data;
+        },
         async first(colName) {
-          try {
-            const res = await signedFetch('/internal/db/query', {
-              method: 'POST',
-              contentType: 'application/json',
-              body: JSON.stringify({ op: 'first', sql, params }),
-            });
-            if (!res.ok) return null;
-            const data = await res.json().catch(() => null);
-            if (!data || !data.ok || !data.result) return null;
-            return colName ? data.result[colName] : data.result;
-          } catch {
-            return null;
-          }
+          const { result } = await this.query('first');
+          return colName ? result?.[colName] ?? null : result ?? null;
         },
         async all() {
-          try {
-            const res = await signedFetch('/internal/db/query', {
-              method: 'POST',
-              contentType: 'application/json',
-              body: JSON.stringify({ op: 'all', sql, params }),
-            });
-            if (!res.ok) return { results: [], success: false };
-            const data = await res.json().catch(() => null);
-            if (!data || !data.ok) return { results: [], success: false };
-            return { results: data.results || [], success: true };
-          } catch {
-            return { results: [], success: false };
-          }
+          const { results } = await this.query('all');
+          if (!Array.isArray(results)) throw new Error('CONTROL_DATABASE_INVALID_ROWS');
+          return { success:true, results };
         },
         async run() {
-          try {
-            const res = await signedFetch('/internal/db/query', {
-              method: 'POST',
-              contentType: 'application/json',
-              body: JSON.stringify({ op: 'run', sql, params }),
-            });
-            if (!res.ok) return { success: false, meta: {} };
-            const data = await res.json().catch(() => null);
-            if (!data || !data.ok) return { success: false, meta: {} };
-            return { success: true, meta: data.meta || {} };
-          } catch {
-            return { success: false, meta: {} };
-          }
+          const { meta } = await this.query('run');
+          return { success:true, meta:meta || {} };
         },
       });
       return makeBound([]);
@@ -210,19 +189,19 @@ export function createQuantriBridge(env, siteKey) {
   return { db, storage, getRuntimeConfig, baseUrl };
 }
 
-export function renderMaintenancePage(site) {
-  const title = site?.display_name || 'WORD BRIDGE';
-  const msg = site?.maintenance_message || 'Hệ thống đang bảo trì nâng cấp định kỳ. Vui lòng quay lại sau ít phút.';
+export function renderMaintenancePage(site, locale='vi') {
+  const title = escapeHtml(site?.display_name || 'WORD BRIDGE');
+  const msg = escapeHtml(site?.maintenance_message || (locale==='en'?'Please try again in a few minutes.':'Vui lòng quay lại sau ít phút.'));
   return new Response(`<!DOCTYPE html>
-<html lang="vi"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Bảo trì hệ thống | ${title}</title>
+<html lang="${locale}"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>${locale==='en'?'System maintenance':'Bảo trì hệ thống'} | ${title}</title>
 <link rel="stylesheet" href="/styles/design-system.css"/></head>
 <body style="justify-content:center;align-items:center;padding:24px;text-align:center;">
-  <div class="wb-card" style="max-width:520px;border-top:5px solid #CB0203;">
-    <img src="/branding/logo-wordbridge.jpg" alt="WORD BRIDGE" style="height:46px;margin:0 auto 12px;"/>
-    <h1 style="color:#035257;margin:8px 0;">Đang bảo trì hệ thống</h1>
+  <main class="wb-card" style="max-width:520px;border-top:5px solid #CB0203;">
+    <img src="/branding/logo-wordbridge.svg" alt="WORD BRIDGE" style="height:46px;margin:0 auto 12px;"/>
+    <h1 style="color:#035257;margin:8px 0;">${locale==='en'?'System maintenance':'Đang bảo trì hệ thống'}</h1>
     <p>${msg}</p>
-    <a href="https://help.wordbridge.io.vn/" class="wb-btn wb-btn-outline">Mở Trung Tâm Trợ Giúp</a>
-  </div>
+    <a href="https://help.wordbridge.io.vn/" class="wb-btn wb-btn-outline">${locale==='en'?'Open help center':'Mở Trung Tâm Trợ Giúp'}</a>
+  </main>
 </body></html>`, { status: 503, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Retry-After': '300' } });
 }

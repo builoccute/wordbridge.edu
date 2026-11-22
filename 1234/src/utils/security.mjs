@@ -189,7 +189,7 @@ export function resetRateLimitsForTest() {
   rateBuckets.clear();
 }
 
-export function buildSecurityHeaders(origin = 'https://www.wordbridge.vn') {
+export function buildSecurityHeaders(origin = 'https://wordbridge.io.vn') {
   return {
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY',

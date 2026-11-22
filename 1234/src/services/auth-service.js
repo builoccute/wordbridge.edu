@@ -4,7 +4,7 @@
  */
 
 import { generateId, hashPassword, verifyPassword, randomTokenHex, sha256Hex } from '../utils/crypto.js';
-import { validateRegistrationPayload, validateEmail } from '../utils/http.js';
+import { validateRegistrationPayload, validateEmail } from '../utils/validation.js';
 import { PLANS } from '../config/constants.js';
 
 const OAUTH_PROVIDERS = {
@@ -19,7 +19,7 @@ export class AuthService {
     this.db = db;
     this.emailService = emailService;
     this.env = env;
-    this.baseUrl = env.APP_BASE_URL || 'https://wordbridge.io.vn';
+    this.baseUrl = env.APP_BASE_URL || 'https://www.wordbridge.vn';
     this.tokenPepper = env.TOKEN_PEPPER || '';
   }
 

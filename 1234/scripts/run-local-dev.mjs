@@ -10,11 +10,10 @@ import worker from '../src/index.js';
 import { SQLiteD1Database, MemoryR2Bucket } from '../tests/helpers/sqlite-d1-shim.js';
 
 const PORT = Number(process.env.PORT || 8787);
-const db = new SQLiteD1Database(process.env.WB_LOCAL_DB || path.resolve(process.cwd(), '.local-word-bridge.sqlite3'));
+const db = new SQLiteD1Database(path.resolve(process.cwd(), '.local-word-bridge.sqlite3'));
 await db.applyAllMigrations();
 
 const mimeTypes = {
-  '.json': 'application/json',
   '.css': 'text/css; charset=utf-8',
   '.js': 'application/javascript; charset=utf-8',
   '.svg': 'image/svg+xml',
@@ -57,6 +56,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(PORT, '127.0.0.1', () => {
+server.listen(PORT, () => {
   console.log(`WORD BRIDGE local server running at http://localhost:${PORT}`);
 });

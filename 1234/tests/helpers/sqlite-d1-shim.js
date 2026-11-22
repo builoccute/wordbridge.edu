@@ -106,7 +106,7 @@ export async function createTestEnv(extraEnv = {}) {
   return {
     DB: db,
     R2: r2,
-    APP_BASE_URL: 'https://wordbridge.io.vn',
+    APP_BASE_URL: 'https://www.wordbridge.vn',
     EMAIL_PROVIDER: 'unconfigured',
     LEARNER_MEET_PROVIDER: 'unconfigured',
     EXPOSE_TEST_TOKENS: 'true',

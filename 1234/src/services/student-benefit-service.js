@@ -6,7 +6,7 @@
  */
 
 import { generateId, randomTokenHex, sha256Hex } from '../utils/crypto.js';
-import { isAcademicSchoolEmail } from '../utils/http.js';
+import { isAcademicSchoolEmail } from '../utils/validation.js';
 import { PLANS } from '../config/constants.js';
 
 export class StudentBenefitService {
@@ -14,7 +14,7 @@ export class StudentBenefitService {
     this.db = db;
     this.emailService = emailService;
     this.env = env;
-    this.baseUrl = env.APP_BASE_URL || 'https://wordbridge.io.vn';
+    this.baseUrl = env.APP_BASE_URL || 'https://www.wordbridge.vn';
     this.tokenPepper = env.TOKEN_PEPPER || '';
   }
 

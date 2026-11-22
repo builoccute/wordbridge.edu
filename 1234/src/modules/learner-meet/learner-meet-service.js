@@ -9,7 +9,7 @@
  */
 
 import { generateId, randomTokenHex } from '../../utils/crypto.js';
-import { assertOfficialLanguage } from '../../utils/http.js';
+import { assertOfficialLanguage } from '../../utils/validation.js';
 
 export const LEARNER_MEET_DISCLAIMER_VI =
   'Phòng thực hành giao tiếp trực tiếp tập trung vào âm thanh và hình ảnh.';

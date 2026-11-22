@@ -1,5 +1,3 @@
-import '../../public/scripts/i18n.js';
-
 /**
  * WORD BRIDGE — Canonical Product Constants & Hard Boundaries
  * Enforces Master Specification V3.0 decisions across Backend, API, Frontend & Admin.
@@ -8,8 +6,8 @@ import '../../public/scripts/i18n.js';
 export const BRAND = Object.freeze({
   name: 'WORD BRIDGE',
   tagline: 'Where Languages Bring People Together.',
-  websiteUrl: 'https://wordbridge.io.vn',
-  pdfReaderUrl: 'https://reader.wordbridge.io.vn',
+  websiteUrl: 'https://www.wordbridge.vn',
+  pdfReaderUrl: 'https://reader.wordbridge.vn',
   copyright: '© 2026 WORD BRIDGE. All rights reserved.',
   colors: {
     deepTeal: '#146466',
@@ -127,22 +125,3 @@ export const ADMIN_CENTERS = Object.freeze([
   { id: 'security', nameVi: 'Trung tâm bảo mật và kiểm toán', route: '/admin/audit-logs' },
   { id: 'infrastructure', nameVi: 'Trung tâm vận hành hạ tầng', route: '/admin/infrastructure' },
 ]);
-
-/** Default public origins; Workers bindings and the control plane override these at deployment. */
-export const ECOSYSTEM = Object.freeze({
- main: 'https://wordbridge.io.vn', portal: 'https://portal.wordbridge.io.vn',
- control: 'https://quantri.wordbridge.io.vn', exam: 'https://exam.wordbridge.io.vn',
- help: 'https://help.wordbridge.io.vn', reader: 'https://reader.wordbridge.io.vn',
-});
-export function signInUrl(path = '/', intent = '') {
- const url = new URL('/login', ECOSYSTEM.portal);
- const safePath = typeof path === 'string' && /^\/(?!\/)/.test(path) && !/[\\\x00-\x1f]/.test(path) ? path : '/';
- url.searchParams.set('next', new URL(safePath, ECOSYSTEM.main).toString());
- if (intent) url.searchParams.set('intent', String(intent).slice(0, 120));
- return url.toString();
-}
-
-const {vi,en}=globalThis.WB_I18N;
-export const TRANSLATIONS=Object.freeze({vi,en});
-export function normalizeUiLocale(value) { return value === 'en' ? 'en' : 'vi'; }
-export function translate(locale, key) { return TRANSLATIONS[normalizeUiLocale(locale)][key] || key; }

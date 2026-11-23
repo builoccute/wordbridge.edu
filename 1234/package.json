@@ -1,16 +1,15 @@
 {
   "name": "word-bridge",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "private": true,
   "type": "module",
-  "description": "WORD BRIDGE V4 — Nền tảng học tập, tra cứu, luyện tập và đánh giá năng lực ngoại ngữ Trung – Anh – Nga (Web Super App trên Cloudflare Workers, D1 và R2).",
+  "description": "WORD BRIDGE V4.2 — Nền tảng học tập, tra cứu từ điển, luyện tập và thư viện đọc ngoại ngữ Trung – Anh trên Cloudflare Workers, D1 và R2.",
   "homepage": "https://wordbridge.io.vn/",
   "engines": {
     "node": ">=18.18.0"
   },
   "scripts": {
     "dev": "wrangler dev",
-    "dev:local": "node scripts/run-local-dev.mjs",
     "build": "node scripts/build.mjs",
     "deploy": "wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply word --local",
@@ -20,8 +19,7 @@
     "test:unit": "node --test tests/unit/*.test.js",
     "test:integration": "node --test tests/integration/*.test.js",
     "test:e2e": "node --test tests/e2e/*.test.js",
-    "qa:browser": "node scripts/qa-browser.mjs",
-    "lint:check": "node --check src/index.js && node --check src/api/router.js && node --check src/config/constants.js && node --check public/scripts/app.js && node --check public/scripts/i18n.js"
+    "lint:check": "node --check src/index.js && node --check src/api/router.js && node --check src/config/constants.js && node --check src/utils/crypto.js && node --check public/scripts/app.js && node --check public/scripts/i18n.js"
   },
   "devDependencies": {
     "wrangler": "^4.16.0"

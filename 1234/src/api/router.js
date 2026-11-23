@@ -62,11 +62,11 @@ export async function handleApiRequest(request, url, ctx) {
 
   // Health & OpenAPI
   if (path === '/api/v1/health' && method === 'GET') {
-    const langCount = await env.DB.prepare('SELECT COUNT(*) AS cnt FROM wb_languages').first();
+    const langCount = await env.DB.prepare("SELECT COUNT(*) AS cnt FROM wb_languages WHERE code IN ('zh', 'en') AND is_active = 1").first();
     return jsonResponse({
       ok: true,
       service: 'WORD BRIDGE API',
-      version: '4.1.0',
+      version: '4.2.0',
       domain: BRAND.websiteUrl,
       database: { name: 'word', status: 'connected', officialLanguages: langCount?.cnt || 0 },
       storage: { bucket: 'word', status: services.r2.isAvailable() ? 'connected' : 'unbound' },
@@ -80,7 +80,7 @@ export async function handleApiRequest(request, url, ctx) {
   if (path === '/api/v1/openapi.json' && method === 'GET') {
     return jsonResponse({
       openapi: '3.1.0',
-      info: { title: 'WORD BRIDGE Unified API', version: '4.1.0' },
+      info: { title: 'WORD BRIDGE Unified API', version: '4.2.0' },
       servers: [{ url: `${BRAND.websiteUrl}/api/v1` }],
       paths: {
         '/health': { get: { summary: 'Health & D1/R2 status' } },
@@ -93,7 +93,6 @@ export async function handleApiRequest(request, url, ctx) {
         '/reader/progress': { post: { summary: 'Lưu tiến độ đọc & ghi chú cá nhân' } },
         '/support/tickets': { get: { summary: 'Theo dõi yêu cầu hỗ trợ cá nhân' }, post: { summary: 'Gửi yêu cầu hỗ trợ / liên hệ' } },
         '/practice/submit': { post: { summary: 'Nộp bài luyện tập 6 kỹ năng' } },
-        '/admin/dashboard': { get: { summary: 'Thống kê quản trị tối cao (/quan-tri)' } },
       },
     });
   }
@@ -109,7 +108,7 @@ export async function handleApiRequest(request, url, ctx) {
     try {
       const obj = await services.r2.getObject(asset.r2_object_key, { allowPrivate: true });
       if (!obj) {
-        return errorResponse('AUDIO_ASSET_PENDING_UPLOAD', 'Tệp audio chính thức chưa được tải lên R2 bucket `word`.', 404);
+        return errorResponse('AUDIO_ASSET_PENDING_UPLOAD', 'Tệp âm thanh hiện đang được cập nhật.', 404);
       }
       return new Response(obj.body, {
         status: 200,

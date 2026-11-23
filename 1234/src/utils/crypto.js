@@ -1,11 +1,14 @@
-import { webcrypto as nodeWebCrypto } from 'node:crypto';
-const webCrypto = globalThis.crypto || nodeWebCrypto;
-
 /**
- * WORD BRIDGE — Web Crypto Security Utilities (Cloudflare Workers & Node 18 compatible)
- * Uses PBKDF2-SHA256 (100,000 iterations), SHA-256 token hashing, HMAC-SHA256 webhook verification,
- * and constant-time string comparison.
+ * WORD BRIDGE V4.2 — Web Crypto Security Utilities (Cloudflare Workers & Node 18+ Compatible)
+ * Uses native `globalThis.crypto` first (zero `node:crypto` invocation in Cloudflare Workers).
+ * Only falls back to dynamic `node:crypto` webcrypto in legacy Node 18 environments where `globalThis.crypto` is unset.
  */
+
+let webCrypto = globalThis.crypto;
+if (!webCrypto || !webCrypto.subtle) {
+  const nodeCrypto = await import('node:crypto');
+  webCrypto = nodeCrypto.webcrypto;
+}
 
 const encoder = new TextEncoder();
 
@@ -16,6 +19,9 @@ export function toHex(buffer) {
 }
 
 export function fromHex(hex) {
+  if (typeof hex !== 'string' || hex.length % 2 !== 0) {
+    return new Uint8Array(0);
+  }
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < bytes.length; i += 1) {
     bytes[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
@@ -30,7 +36,10 @@ export function randomTokenHex(byteLength = 32) {
 }
 
 export function generateId(prefix = 'wb') {
-  return `${prefix}_${webCrypto.randomUUID().replace(/-/g, '')}`;
+  if (typeof webCrypto.randomUUID === 'function') {
+    return `${prefix}_${webCrypto.randomUUID().replace(/-/g, '')}`;
+  }
+  return `${prefix}_${randomTokenHex(16)}`;
 }
 
 export async function sha256Hex(input, pepper = '') {
@@ -86,7 +95,9 @@ export async function verifyPassword(password, storedHash) {
   const parts = storedHash.split('$');
   if (parts.length !== 4 || parts[0] !== 'pbkdf2_sha256') return false;
   const iterations = Number(parts[1]);
+  if (!Number.isFinite(iterations) || iterations < 1000 || iterations > 500000) return false;
   const salt = fromHex(parts[2]);
+  if (salt.length === 0) return false;
   const expectedHex = parts[3];
   const keyMaterial = await webCrypto.subtle.importKey(
     'raw',

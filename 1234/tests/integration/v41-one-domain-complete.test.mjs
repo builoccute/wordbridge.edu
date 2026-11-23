@@ -1,3 +1,4 @@
+import { renderErrorPage } from '../../src/pages/error-pages.js';
 /**
  * WORD BRIDGE V4.1 — Comprehensive Integration & Security Test Suite
  * Verifies:
@@ -214,15 +215,15 @@ test('V4.1 Security & RBAC: hasAnyAdminRole() rejects non-admin roles, blocks se
 
     // Unauthenticated /quan-tri redirects to internal /login
     const guestAdmin = await worker.fetch(new Request('https://wordbridge.io.vn/quan-tri'), env);
-    assert.equal(guestAdmin.status, 302);
-    assert.ok(guestAdmin.headers.get('location').startsWith('/login?'));
+    assert.equal(guestAdmin.status, 404);
+    assert.equal(guestAdmin.headers.get('location'), null);
 
     // Normal user gets 403 on /quan-tri and /api/v1/admin/dashboard
     const member = await registerVerifyAndLogin(env, 'normal-member@wordbridge.io.vn');
     const memberAdminPage = await worker.fetch(new Request('https://wordbridge.io.vn/quan-tri', {
       headers: { Cookie: member.cookie },
     }), env);
-    assert.equal(memberAdminPage.status, 403);
+    assert.equal(memberAdminPage.status, 404);
     const memberAdminApi = await worker.fetch(new Request('https://wordbridge.io.vn/api/v1/admin/dashboard', {
       headers: { Cookie: member.cookie },
     }), env);
@@ -237,7 +238,7 @@ test('V4.1 Security & RBAC: hasAnyAdminRole() rejects non-admin roles, blocks se
       const res = await worker.fetch(new Request(`https://wordbridge.io.vn/quan-tri${sec}`, {
         headers: { Cookie: superAdmin.cookie },
       }), env);
-      assert.equal(res.status, 200, `/quan-tri${sec} should return 200 for super_admin`);
+      assert.equal(res.status, 404, `/quan-tri${sec} must be blocked (404) on public website`);
     }
 
     // Anti-self-elevation: Super Admin cannot assign a role to self
@@ -289,8 +290,10 @@ test('V4.1 Security & RBAC: hasAnyAdminRole() rejects non-admin roles, blocks se
     assert.equal(maintOn.status, 200);
     const guestHome = await worker.fetch(new Request('https://wordbridge.io.vn/'), env);
     assert.equal(guestHome.status, 503);
-    const adminStillUp = await worker.fetch(new Request('https://wordbridge.io.vn/quan-tri', { headers: { Cookie: superAdmin.cookie } }), env);
-    assert.equal(adminStillUp.status, 200);
+    const adminBlocked = await worker.fetch(new Request('https://wordbridge.io.vn/quan-tri', { headers: { Cookie: superAdmin.cookie } }), env);
+    assert.equal(adminBlocked.status, 404);
+    const adminApiStillUp = await worker.fetch(new Request('https://wordbridge.io.vn/api/v1/admin/dashboard', { headers: { Cookie: superAdmin.cookie } }), env);
+    assert.equal(adminApiStillUp.status, 200);
 
     // Turn Maintenance Mode back OFF
     await worker.fetch(new Request('https://wordbridge.io.vn/api/v1/admin/config', {
@@ -394,4 +397,73 @@ test('V4.1 Real Help Center (/help) & Real Reader (/reader) + R2 Integration', a
   } finally {
     env.DB.close();
   }
+});
+
+
+// === V4.2 Bilingual, P0 Admin Block & 1101 Tests ===
+
+async function createEnv() {
+  return createTestEnv();
+}
+
+test('V4.2 P0: /quan-tri and /admin* are completely blocked (404, no redirect, no leak)', async () => {
+  const env = await createEnv();
+  try {
+    for (const p of ['/admin', '/admin/accounts', '/admin/curriculum', '/quan-tri', '/quan-tri/accounts', '/quan-tri/security']) {
+      const res = await worker.fetch(new Request(`https://wordbridge.io.vn${p}`), env);
+      assert.equal(res.status, 404, `${p} must return 404`);
+      assert.equal(res.headers.get('location'), null, `${p} must not redirect`);
+      const html = await res.text();
+      assert.doesNotMatch(html, /Trung tâm Quản trị|Super Admin|href="\/quan-tri/i);
+    }
+
+    const openapi = await (await worker.fetch(new Request('https://wordbridge.io.vn/api/v1/openapi.json'), env)).json();
+    assert.equal(openapi.paths['/admin/dashboard'], undefined, 'OpenAPI must not advertise admin routes');
+  } finally {
+    env.DB.close();
+  }
+});
+
+test('V4.2 P2: Zero Russian across all public pages and Russian routes return 410', async () => {
+  const env = await createEnv();
+  try {
+    const publicRoutes = ['/', '/learning', '/learning/chinese', '/learning/english', '/learning/skills', '/dictionary', '/practice', '/specialized', '/reader', '/help', '/about', '/faq', '/login', '/register'];
+    for (const route of publicRoutes) {
+      const res = await worker.fetch(new Request(`https://wordbridge.io.vn${route}`), env);
+      assert.equal(res.status, 200, `${route} should return 200`);
+      const html = await res.text();
+      assert.doesNotMatch(html, /Tiếng Nga|Русский|card-ru\.jpg|\/learning\/russian|\/dictionary\/russian/i, `${route} must not contain Russian`);
+      assert.doesNotMatch(html, /href="\/quan-tri|Trung tâm Quản trị Tối cao|Không có bài tập giả|presentation và bridge/i, `${route} must not contain internal jargon or admin links`);
+    }
+
+    for (const ruPath of ['/learning/russian', '/learning/ru', '/dictionary/russian', '/specialized/russian']) {
+      const res = await worker.fetch(new Request(`https://wordbridge.io.vn${ruPath}`), env);
+      assert.equal(res.status, 410, `${ruPath} must return 410 Gone`);
+    }
+
+    const health = await (await worker.fetch(new Request('https://wordbridge.io.vn/api/v1/health'), env)).json();
+    assert.equal(health.ok, true);
+    assert.equal(health.database.officialLanguages, 2, 'Active official languages in D1 must be 2 (zh, en)');
+  } finally {
+    env.DB.close();
+  }
+});
+
+test('V4.2 P0/XI: Error 1101 is handled as Worker Exception (not invalid session) and fetch/scheduled never crash uncaught', async () => {
+  const res1101 = renderErrorPage({ code: 1101, currentPath: '/', requestId: 'a5ee8729dc25797c' });
+  assert.equal(res1101.status, 500);
+  const html1101 = await res1101.text();
+  assert.match(html1101, /1101/);
+  assert.match(html1101, /Worker Exception|Cloudflare Worker/i);
+  assert.doesNotMatch(html1101, /Phiên đăng nhập không hợp lệ/i);
+
+  // Missing DB must return clean 500 without throwing uncaught Worker exception
+  const brokenRes = await worker.fetch(new Request('https://wordbridge.io.vn/'), {});
+  assert.equal(brokenRes.status, 500);
+  const brokenHtml = await brokenRes.text();
+  assert.doesNotMatch(brokenHtml, /at Object\.fetch|node:internal/);
+
+  // scheduled() with empty/broken env must never throw uncaught
+  await assert.doesNotReject(() => worker.scheduled({}, {}));
+  await assert.doesNotReject(() => worker.scheduled({}, { DB: { prepare() { throw new Error('DB_DOWN'); } } }));
 });

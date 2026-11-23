@@ -1,6 +1,7 @@
 /**
- * WORD BRIDGE V4.1 — Unified Account, Profile, Registration, Email Verification,
- * Password Reset, Passkey & Student Benefit Pages (One Domain: wordbridge.io.vn)
+ * WORD BRIDGE V4.2 — Account, Login (#16), Register (#01), Email Verification,
+ * Password Reset, Profile, Passkey WebAuthn & Student Benefit Pages
+ * Zero OAuth Google/Facebook; 8 mandatory independent registration fields (School & Workplace required).
  */
 
 import { renderPublicPage } from '../layouts/site-layout.js';
@@ -12,21 +13,64 @@ export function renderLoginPage({ user, url = null }) {
   const nextRaw = url?.searchParams?.get('next') || '/my-learning';
   const safeNext = nextRaw.startsWith('/') && !nextRaw.startsWith('//') ? nextRaw : '/my-learning';
   if (user) return redirectResponse(safeNext);
+
+  const benefits = [
+    ['Học tập linh hoạt', 'Theo năng lực và mục tiêu cá nhân'],
+    ['Luyện tập chuyên sâu', 'Nghe · Nói · Đọc · Viết đồng bộ'],
+    ['Từ điển & Flashcards', 'Lưu từ vựng và ôn tập SM-2'],
+    ['Thư viện phong phú', 'Tài liệu, bài đọc và nội dung chuyên ngành'],
+    ['An toàn & Bảo mật', 'Bảo vệ tài khoản bằng mật khẩu & Passkey'],
+    ['Sử dụng mọi thiết bị', 'Trải nghiệm mượt mà trên máy tính và di động'],
+  ];
+
   const contentHtml = `
-    <h1>Đăng nhập WORD BRIDGE</h1>
-    <div class="wb-grid-2">
-      <form class="wb-form wb-card" data-api-endpoint="/api/v1/auth/login" data-redirect-to="${escapeHtml(safeNext)}">
-        <div class="wb-field"><label>Email</label><input class="wb-input" type="email" name="email" required /></div>
-        <div class="wb-field"><label>Mật khẩu</label><input class="wb-input" type="password" name="password" required /></div>
-        <div data-form-status></div>
-        <button type="submit" class="wb-btn wb-btn-primary">Đăng nhập</button>
-        <p style="font-size:0.88rem;"><a href="/forgot-password">Quên mật khẩu?</a> · <a href="/register">Chưa có tài khoản? Đăng ký ngay</a></p>
-      </form>
-      <div class="wb-card wb-card-warm">
-        <h3>Tài khoản thống nhất trên wordbridge.io.vn</h3>
-        <p class="wb-muted" style="font-size:0.9rem;">WORD BRIDGE chỉ sử dụng tài khoản nội bộ tập trung bằng Email/Mật khẩu và khóa bảo mật Passkey WebAuthn/FIDO2. Hệ thống không lưu dữ liệu sinh trắc học trên máy chủ.</p>
-        <a href="/account/passkeys" class="wb-btn wb-btn-outline wb-btn-sm">Quản lý Passkey</a>
+    <div class="wb-section-title-wrap" style="margin-bottom:20px;">
+      <span class="wb-section-bar" aria-hidden="true"></span>
+      <div>
+        <h1 style="margin:0;color:var(--wb-text);">Đăng nhập WORD BRIDGE</h1>
+        <span class="wb-accent-line" aria-hidden="true"></span>
       </div>
+    </div>
+
+    <div class="wb-auth-grid">
+      <form class="wb-form wb-card wb-auth-card" data-api-endpoint="/api/v1/auth/login" data-redirect-to="${escapeHtml(safeNext)}">
+        <div class="wb-field">
+          <label for="login-email">Email</label>
+          <input id="login-email" class="wb-input" type="email" name="email" placeholder="Nhập email của bạn" autocomplete="email" required />
+        </div>
+        <div class="wb-field">
+          <label for="login-password">Mật khẩu</label>
+          <input id="login-password" class="wb-input" type="password" name="password" placeholder="Nhập mật khẩu" autocomplete="current-password" required />
+        </div>
+        <div data-form-status></div>
+        <button type="submit" class="wb-btn wb-btn-primary wb-btn-block">Đăng nhập</button>
+        <p class="wb-auth-links">
+          <a href="/forgot-password">Quên mật khẩu?</a>
+          <span aria-hidden="true">·</span>
+          <span>Chưa có tài khoản? <a href="/register" class="wb-link-accent">Đăng ký ngay</a></span>
+        </p>
+      </form>
+
+      <aside class="wb-card wb-auth-benefits">
+        <div class="wb-section-title-wrap" style="margin-bottom:12px;">
+          <span class="wb-section-bar" aria-hidden="true"></span>
+          <div>
+            <h2 style="margin:0;font-size:1.2rem;color:var(--wb-text);">Vì sao chọn WORD BRIDGE?</h2>
+            <p class="wb-muted" style="margin:4px 0 0;font-size:0.9rem;">Nền tảng học ngôn ngữ Trung – Anh thống nhất và an toàn.</p>
+          </div>
+        </div>
+        <div class="wb-benefits-grid">
+          ${benefits.map(([t, d]) => `
+            <div class="wb-benefit-tile">
+              <strong>${escapeHtml(t)}</strong>
+              <span>${escapeHtml(d)}</span>
+            </div>`).join('')}
+        </div>
+        <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--wb-border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <span class="wb-muted" style="font-size:0.84rem;">Hỗ trợ khóa bảo mật Passkey WebAuthn/FIDO2</span>
+          <a href="/account/passkeys" class="wb-btn wb-btn-outline wb-btn-sm">Quản lý Passkey</a>
+        </div>
+      </aside>
     </div>
   `;
   return htmlResponse(renderPublicPage({
@@ -41,19 +85,25 @@ export function renderLoginPage({ user, url = null }) {
 export function renderRegisterPage({ user }) {
   if (user) return redirectResponse('/my-learning');
   const contentHtml = `
-    <h1>Đăng ký tài khoản cá nhân WORD BRIDGE</h1>
-    <p class="wb-muted">WORD BRIDGE chỉ hỗ trợ tài khoản cá nhân bằng Email và Mật khẩu. Trường học và Nơi làm việc/tổ chức công tác là hai trường độc lập và đều bắt buộc. Xác minh tài khoản qua liên kết email một lần.</p>
-    <form class="wb-form wb-card" data-api-endpoint="/api/v1/auth/register">
-      <div class="wb-field"><label>1. Họ và tên *</label><input class="wb-input" name="fullName" required /></div>
-      <div class="wb-field"><label>2. Ngày sinh *</label><input class="wb-input" type="date" name="dateOfBirth" required /></div>
-      <div class="wb-field"><label>3. Số điện thoại *</label><input class="wb-input" name="phoneNumber" required /></div>
-      <div class="wb-field"><label>4. Email *</label><input class="wb-input" type="email" name="email" required /></div>
-      <div class="wb-field"><label>5. Mật khẩu (tối thiểu 10 ký tự gồm hoa, thường, số) *</label><input class="wb-input" type="password" name="password" required /></div>
-      <div class="wb-field"><label>6. Xác nhận mật khẩu *</label><input class="wb-input" type="password" name="confirmPassword" required /></div>
-      <div class="wb-field"><label>7. Trường học *</label><input class="wb-input" name="schoolName" required /></div>
-      <div class="wb-field"><label>8. Nơi làm việc / tổ chức công tác *</label><input class="wb-input" name="workplaceName" required /></div>
+    <div class="wb-section-title-wrap" style="margin-bottom:8px;">
+      <span class="wb-section-bar" aria-hidden="true"></span>
+      <h1 style="margin:0;color:var(--wb-text);">Đăng ký tài khoản cá nhân WORD BRIDGE</h1>
+    </div>
+    <p class="wb-muted" style="margin-top:0;margin-bottom:20px;">Tạo tài khoản WORD BRIDGE để học tập, luyện tập Tiếng Trung và Tiếng Anh. Vui lòng cung cấp đầy đủ thông tin cá nhân, trường học và nơi làm việc để hoàn tất đăng ký.</p>
+
+    <form class="wb-form wb-card wb-register-card" data-api-endpoint="/api/v1/auth/register">
+      <div class="wb-grid-2">
+        <div class="wb-field"><label for="reg-fullname">1. Họ và tên <span class="wb-req">*</span></label><input id="reg-fullname" class="wb-input" name="fullName" placeholder="Nhập họ và tên" required /></div>
+        <div class="wb-field"><label for="reg-dob">2. Ngày sinh <span class="wb-req">*</span></label><input id="reg-dob" class="wb-input" type="date" name="dateOfBirth" required /></div>
+        <div class="wb-field"><label for="reg-phone">3. Số điện thoại <span class="wb-req">*</span></label><input id="reg-phone" class="wb-input" name="phoneNumber" placeholder="Nhập số điện thoại" required /></div>
+        <div class="wb-field"><label for="reg-email">4. Email <span class="wb-req">*</span></label><input id="reg-email" class="wb-input" type="email" name="email" placeholder="Nhập email" required /></div>
+        <div class="wb-field"><label for="reg-password">5. Mật khẩu (tối thiểu 10 ký tự gồm hoa, thường, số) <span class="wb-req">*</span></label><input id="reg-password" class="wb-input" type="password" name="password" placeholder="Nhập mật khẩu" required /></div>
+        <div class="wb-field"><label for="reg-confirm">6. Xác nhận mật khẩu <span class="wb-req">*</span></label><input id="reg-confirm" class="wb-input" type="password" name="confirmPassword" placeholder="Nhập lại mật khẩu" required /></div>
+        <div class="wb-field"><label for="reg-school">7. Trường học <span class="wb-req">*</span></label><input id="reg-school" class="wb-input" name="schoolName" placeholder="Nhập tên trường học" required /></div>
+        <div class="wb-field"><label for="reg-workplace">8. Nơi làm việc / tổ chức công tác <span class="wb-req">*</span></label><input id="reg-workplace" class="wb-input" name="workplaceName" placeholder="Nhập tên cơ quan, tổ chức nơi làm việc" required /></div>
+      </div>
       <div data-form-status></div>
-      <button type="submit" class="wb-btn wb-btn-primary">Tạo tài khoản & Gửi liên kết xác minh email</button>
+      <button type="submit" class="wb-btn wb-btn-primary wb-btn-block">Tạo tài khoản & Gửi liên kết xác minh email →</button>
     </form>
   `;
   return htmlResponse(renderPublicPage({
@@ -71,7 +121,7 @@ export async function renderVerifyEmailPage({ services, url, request }) {
     return htmlResponse(renderPublicPage({
       title: 'Xác minh email',
       currentPath: '/verify-email',
-      contentHtml: '<h1>Xác minh địa chỉ email</h1><div class="wb-alert wb-alert-info">Vui lòng mở liên kết xác minh một lần đã được gửi tới hộp thư của bạn (không sử dụng mã OTP).</div>',
+      contentHtml: '<h1>Xác minh địa chỉ email</h1><div class="wb-alert wb-alert-info">Vui lòng mở liên kết xác minh một lần đã được gửi tới hộp thư của bạn.</div>',
     }));
   }
   const res = await services.auth.verifyEmailToken(token, {
@@ -95,7 +145,7 @@ export function renderPasswordPage({ mode = 'forgot', user, url = null }) {
   const token = url?.searchParams?.get('token') || '';
   const contentHtml = isReset
     ? `<h1>Đặt lại mật khẩu</h1>
-       <form class="wb-form wb-card" data-api-endpoint="/api/v1/auth/reset-password" data-redirect-to="/login">
+       <form class="wb-form wb-card" style="max-width:560px;" data-api-endpoint="/api/v1/auth/reset-password" data-redirect-to="/login">
          <p class="wb-muted">Nhập mật khẩu mới an toàn (tối thiểu 10 ký tự, gồm chữ hoa, chữ thường và chữ số).</p>
          <div class="wb-field"><label>Mã xác nhận khôi phục *</label><input class="wb-input" name="token" value="${escapeHtml(token)}" required /></div>
          <div class="wb-field"><label>Mật khẩu mới *</label><input class="wb-input" type="password" name="newPassword" required /></div>
@@ -104,7 +154,7 @@ export function renderPasswordPage({ mode = 'forgot', user, url = null }) {
          <button type="submit" class="wb-btn wb-btn-primary">Cập nhật mật khẩu mới</button>
        </form>`
     : `<h1>Quên mật khẩu</h1>
-       <form class="wb-form wb-card" data-api-endpoint="/api/v1/auth/forgot-password">
+       <form class="wb-form wb-card" style="max-width:560px;" data-api-endpoint="/api/v1/auth/forgot-password">
          <div class="wb-field"><label>Email tài khoản</label><input class="wb-input" type="email" name="email" required /></div>
          <div data-form-status></div>
          <button type="submit" class="wb-btn wb-btn-primary">Gửi liên kết khôi phục mật khẩu</button>
@@ -118,84 +168,77 @@ export function renderPasswordPage({ mode = 'forgot', user, url = null }) {
 }
 
 export async function renderAccountPage({ db, user, subPath = '' }) {
-  const currentPath = subPath === 'profile-root' ? '/profile' : (subPath ? `/account/${subPath}` : '/account');
-  if (!user) return redirectResponse(signInUrl(currentPath, 'account.view'));
-  const nav = `
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
-      <a href="/profile" class="wb-btn wb-btn-outline wb-btn-sm">Hồ sơ cá nhân</a>
-      <a href="/account/security" class="wb-btn wb-btn-outline wb-btn-sm">Bảo mật & Đổi mật khẩu</a>
-      <a href="/account/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Phiên đăng nhập</a>
-      <a href="/account/passkeys" class="wb-btn wb-btn-outline wb-btn-sm">Passkey</a>
-      <a href="/account/student-benefit" class="wb-btn wb-btn-primary wb-btn-sm">Quyền lợi sinh viên</a>
+  if (!user) return redirectResponse(signInUrl(`/account/${subPath}`, 'account.access'));
+  const account = await db.prepare('SELECT * FROM wb_accounts WHERE id = ?').bind(user.accountId).first();
+  const sessions = (await db.prepare('SELECT id, ip_address, user_agent, created_at, expires_at FROM wb_sessions WHERE account_id = ? AND revoked_at IS NULL ORDER BY created_at DESC').bind(user.accountId).all()).results || [];
+  const passkeys = (await db.prepare('SELECT id, credential_id, display_name, created_at, revoked_at FROM wb_passkeys WHERE account_id = ? ORDER BY created_at DESC').bind(user.accountId).all()).results || [];
+  const tickets = (await db.prepare('SELECT id, subject, status, created_at FROM wb_support_requests WHERE account_id = ? ORDER BY created_at DESC LIMIT 10').bind(user.accountId).all()).results || [];
+
+  let sectionHtml = `
+    <div class="wb-grid-2">
+      <div class="wb-card">
+        <h3>Thông tin cá nhân</h3>
+        <form class="wb-form" data-api-endpoint="/api/v1/auth/profile" data-api-method="PATCH" data-reload-on-success="true">
+          <div class="wb-field"><label>Email tài khoản</label><input class="wb-input" value="${escapeHtml(account?.email || user.email)}" disabled /></div>
+          <div class="wb-field"><label>Họ và tên *</label><input class="wb-input" name="fullName" value="${escapeHtml(account?.full_name || user.fullName || '')}" required /></div>
+          <div class="wb-field"><label>Số điện thoại *</label><input class="wb-input" name="phoneNumber" value="${escapeHtml(account?.phone_number || '')}" required /></div>
+          <div class="wb-field"><label>Trường học *</label><input class="wb-input" name="schoolName" value="${escapeHtml(account?.school_name || '')}" required /></div>
+          <div class="wb-field"><label>Nơi làm việc / tổ chức công tác *</label><input class="wb-input" name="workplaceName" value="${escapeHtml(account?.workplace_name || '')}" required /></div>
+          <div data-form-status></div>
+          <button type="submit" class="wb-btn wb-btn-primary">Lưu thay đổi hồ sơ</button>
+        </form>
+      </div>
+      <div class="wb-card">
+        <h3>Đổi mật khẩu tài khoản</h3>
+        <form class="wb-form" data-api-endpoint="/api/v1/auth/change-password">
+          <div class="wb-field"><label>Mật khẩu hiện tại *</label><input class="wb-input" type="password" name="currentPassword" required /></div>
+          <div class="wb-field"><label>Mật khẩu mới (tối thiểu 10 ký tự gồm hoa, thường, số) *</label><input class="wb-input" type="password" name="newPassword" required /></div>
+          <div class="wb-field"><label>Xác nhận mật khẩu mới *</label><input class="wb-input" type="password" name="confirmPassword" required /></div>
+          <div data-form-status></div>
+          <button type="submit" class="wb-btn wb-btn-outline">Cập nhật mật khẩu</button>
+        </form>
+        <hr style="margin:18px 0;border:none;border-top:1px solid var(--wb-border);" />
+        <p class="wb-muted" style="font-size:0.86rem;">Tài khoản cá nhân WORD BRIDGE · Yêu cầu hỗ trợ: <a href="/help#my-tickets">${tickets.length} phiếu</a></p>
+      </div>
     </div>`;
 
-  let body = '';
-  let title = 'Hồ sơ & Tài khoản cá nhân';
-
-  if (subPath === 'student-benefit') {
-    title = 'Quyền lợi sinh viên (03 tháng)';
-    const existing = await db.prepare('SELECT * FROM wb_student_benefits WHERE account_id = ?').bind(user.accountId).first();
-    body = `
-      <div class="wb-card">
-        <h3>Chính sách sinh viên chính thức</h3>
-        <p>Quyền lợi hỗ trợ học tập dành cho sinh viên có thời hạn <strong>03 tháng</strong>, chỉ áp dụng <strong>một lần duy nhất</strong>. Điều kiện xác minh duy nhất: <strong>Email sinh viên do trường cấp</strong>.</p>
-        ${existing
-          ? `<div class="wb-alert wb-alert-info">Trạng thái hiện tại: <strong>${escapeHtml(existing.status)}</strong> · Email trường: ${escapeHtml(existing.school_email)} · Hết hạn: ${escapeHtml(existing.expires_at || 'Chờ xác minh')}</div>`
-          : `<form class="wb-form" data-api-endpoint="/api/v1/student-benefit/request">
-              <input type="hidden" name="verificationMethod" value="school_email_only" />
-              <div class="wb-field"><label>Email sinh viên do trường cấp (*.edu.vn, *.edu, *.ac.*)</label><input class="wb-input" type="email" name="schoolEmail" required /></div>
-              <div data-form-status></div>
-              <button type="submit" class="wb-btn wb-btn-primary">Gửi liên kết xác minh email sinh viên</button>
-            </form>`}
-      </div>`;
-  } else if (subPath === 'security') {
-    title = 'Bảo mật & Đổi mật khẩu';
-    body = `
-      <form class="wb-form wb-card" data-api-endpoint="/api/v1/account/change-password">
-        <h3 style="margin-top:0;color:var(--wb-teal);">Đổi mật khẩu tài khoản</h3>
-        <div class="wb-field"><label>Mật khẩu hiện tại *</label><input class="wb-input" type="password" name="currentPassword" required /></div>
-        <div class="wb-field"><label>Mật khẩu mới (tối thiểu 10 ký tự gồm hoa, thường, số) *</label><input class="wb-input" type="password" name="newPassword" required /></div>
-        <div class="wb-field"><label>Xác nhận mật khẩu mới *</label><input class="wb-input" type="password" name="confirmPassword" required /></div>
+  if (subPath === 'passkeys') {
+    sectionHtml = `<div class="wb-card"><h3>Passkey WebAuthn / FIDO2</h3>
+      <p class="wb-muted">Khóa công khai và challenge được xác thực tại Cloudflare Workers. Dữ liệu sinh trắc học không lưu trên máy chủ.</p>
+      <p>Số Passkey đã đăng ký: <strong>${passkeys.length}</strong></p>
+      <table class="wb-table"><thead><tr><th>Thiết bị</th><th>Trạng thái</th><th>Ngày tạo</th></tr></thead><tbody>
+        ${passkeys.map((p) => `<tr><td>${escapeHtml(p.display_name)}</td><td>${p.revoked_at ? 'Đã thu hồi' : 'Đang hoạt động'}</td><td>${escapeHtml(p.created_at)}</td></tr>`).join('') || '<tr><td colspan="3">Chưa có Passkey nào.</td></tr>'}
+      </tbody></table></div>`;
+  } else if (subPath === 'student-benefit') {
+    sectionHtml = `<div class="wb-card"><h3>Ưu đãi sinh viên bằng email trường học (.edu / .edu.vn)</h3>
+      <p class="wb-muted">Xác minh quyền lợi học tập dành riêng cho sinh viên bằng email trường học hợp lệ.</p>
+      <form class="wb-form" data-api-endpoint="/api/v1/account/student-benefit/request">
+        <div class="wb-field"><label>Email trường học *</label><input class="wb-input" type="email" name="schoolEmail" placeholder="student@university.edu.vn" required /></div>
         <div data-form-status></div>
-        <button type="submit" class="wb-btn wb-btn-primary">Cập nhật mật khẩu</button>
-      </form>`;
+        <button type="submit" class="wb-btn wb-btn-primary">Gửi liên kết xác minh email trường học</button>
+      </form></div>`;
   } else if (subPath === 'sessions') {
-    title = 'Quản lý phiên đăng nhập';
-    const sessions = (await db.prepare('SELECT id, ip_address, user_agent, created_at, expires_at, revoked_at FROM wb_sessions WHERE account_id = ? ORDER BY created_at DESC LIMIT 15').bind(user.accountId).all()).results || [];
-    body = `<div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Mã phiên</th><th>Thiết bị</th><th>IP</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${sessions.map((s) => `<tr><td><code>${escapeHtml(s.id)}</code></td><td>${escapeHtml(s.user_agent || '')}</td><td>${escapeHtml(s.ip_address || '')}</td><td>${s.revoked_at ? 'Đã thu hồi' : (s.id === user.sessionId ? 'Phiên hiện tại' : 'Đang hoạt động')}</td><td>${!s.revoked_at ? `<form class="wb-form" data-api-endpoint="/api/v1/account/sessions/revoke" data-reload-on-success="true"><input type="hidden" name="sessionId" value="${escapeHtml(s.id)}" /><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Thu hồi</button></form>` : '—'}</td></tr>`).join('')}</tbody></table></div>`;
-  } else if (subPath === 'passkeys') {
-    title = 'Passkey (WebAuthn / FIDO2)';
-    const keys = (await db.prepare('SELECT id, display_name, created_at, revoked_at FROM wb_passkeys WHERE account_id = ? ORDER BY created_at DESC').bind(user.accountId).all()).results || [];
-    body = `<div class="wb-card"><p>WORD BRIDGE không thu thập hay lưu vân tay, khuôn mặt, PIN thiết bị hay khóa bí mật (private key). Chỉ lưu định danh WebAuthn và khóa công khai COSE.</p><p>Số Passkey hiện có: <strong>${keys.length}</strong></p></div>`;
-  } else {
-    body = `
-      <div class="wb-grid-2">
-        <div class="wb-card">
-          <h3 style="margin-top:0;color:var(--wb-teal);">Thông tin tài khoản</h3>
-          <ul>
-            <li><strong>Email:</strong> ${escapeHtml(user.email)}</li>
-            <li><strong>Vai trò:</strong> <code>${escapeHtml(user.roles.length ? user.roles.join(', ') : 'member')}</code></li>
-            <li><strong>Trạng thái tài khoản:</strong> Đang hoạt động</li>
-          </ul>
-        </div>
-        <form class="wb-form wb-card" data-api-endpoint="/api/v1/account/profile" data-reload-on-success="true">
-          <h3 style="margin-top:0;color:var(--wb-teal);">Cập nhật hồ sơ cá nhân</h3>
-          <div class="wb-field"><label>Họ và tên *</label><input class="wb-input" name="fullName" value="${escapeHtml(user.fullName || '')}" required /></div>
-          <div class="wb-field"><label>Ngày sinh</label><input class="wb-input" type="date" name="dateOfBirth" value="${escapeHtml(user.dateOfBirth || '')}" /></div>
-          <div class="wb-field"><label>Số điện thoại *</label><input class="wb-input" name="phoneNumber" value="${escapeHtml(user.phoneNumber || '')}" required /></div>
-          <div class="wb-field"><label>Trường học *</label><input class="wb-input" name="schoolName" value="${escapeHtml(user.schoolName || '')}" required /></div>
-          <div class="wb-field"><label>Nơi làm việc *</label><input class="wb-input" name="workplaceName" value="${escapeHtml(user.workplaceName || '')}" required /></div>
-          <div data-form-status></div>
-          <button type="submit" class="wb-btn wb-btn-primary">Lưu hồ sơ</button>
-        </form>
-      </div>`;
+    sectionHtml = `<div class="wb-card"><h3>Phiên đăng nhập đang hoạt động (${sessions.length})</h3>
+      <table class="wb-table"><thead><tr><th>IP</th><th>Trình duyệt</th><th>Tạo lúc</th><th>Hết hạn</th></tr></thead><tbody>
+        ${sessions.map((s) => `<tr><td>${escapeHtml(s.ip_address)}</td><td>${escapeHtml(s.user_agent)}</td><td>${escapeHtml(s.created_at)}</td><td>${escapeHtml(s.expires_at)}</td></tr>`).join('')}
+      </tbody></table></div>`;
   }
 
+  const contentHtml = `
+    <h1>Quản lý tài khoản & Bảo mật</h1>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;">
+      <a href="/account" class="wb-btn wb-btn-outline wb-btn-sm">Hồ sơ & Đổi mật khẩu</a>
+      <a href="/account/passkeys" class="wb-btn wb-btn-outline wb-btn-sm">Passkey</a>
+      <a href="/account/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Phiên đăng nhập</a>
+      <a href="/account/student-benefit" class="wb-btn wb-btn-outline wb-btn-sm">Ưu đãi sinh viên</a>
+      <a href="/help#my-tickets" class="wb-btn wb-btn-outline wb-btn-sm">Yêu cầu hỗ trợ (${tickets.length})</a>
+    </div>
+    ${sectionHtml}`;
+
   return htmlResponse(renderPublicPage({
-    title,
-    currentPath,
-    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Hồ sơ cá nhân', href: '/profile' }, ...(subPath && subPath !== 'profile-root' ? [{ label: title }] : [])],
+    title: 'Tài khoản',
+    currentPath: subPath === 'profile-root' ? '/profile' : `/account/${subPath}`,
     user,
-    contentHtml: `<h1>${escapeHtml(title)}</h1>${nav}${body}`,
+    contentHtml,
   }));
 }

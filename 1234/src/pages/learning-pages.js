@@ -13,11 +13,10 @@ const BUILTIN_PROGRAMS = [
   { code: 'ZH-SPEC', slug: 'tieng-trung-chuyen-nganh', language_code: 'zh', program_type: 'Chuyên ngành', name_vi: 'Tiếng Trung Thương mại, Xuất nhập khẩu & Sản xuất', entry_level: 'Trung cấp', target_level: 'Chuyên sâu', total_weeks: 12, sessions_per_week: 3, estimated_hours: 84 },
   { code: 'EN-GEN', slug: 'tieng-anh-ung-dung', language_code: 'en', program_type: 'Nền tảng', name_vi: 'Tiếng Anh Học thuật & Giao tiếp Quốc tế', entry_level: 'Sơ cấp', target_level: 'Thành thạo', total_weeks: 12, sessions_per_week: 3, estimated_hours: 72 },
   { code: 'EN-SPEC', slug: 'tieng-anh-chuyen-nganh', language_code: 'en', program_type: 'Chuyên ngành', name_vi: 'Tiếng Anh Chuyên ngành Logistics, Công nghệ & Kinh doanh', entry_level: 'Trung cấp', target_level: 'Chuyên sâu', total_weeks: 12, sessions_per_week: 3, estimated_hours: 84 },
-  { code: 'RU-GEN', slug: 'tieng-nga-tong-quat', language_code: 'ru', program_type: 'Cơ bản & Giao tiếp', name_vi: 'Tiếng Nga Giao tiếp & Ngữ pháp Ứng dụng', entry_level: 'Sơ cấp', target_level: 'Trung cấp', total_weeks: 12, sessions_per_week: 3, estimated_hours: 72 },
 ];
 
 export async function renderLearningHub({ db, user }) {
-  let programs = []; try { programs = (await db.prepare("SELECT * FROM wb_programs WHERE review_status = 'published' ORDER BY language_code, code").all()).results || []; } catch { programs = []; }
+  let programs = []; try { programs = (await db.prepare("SELECT * FROM wb_programs WHERE review_status = 'published' AND language_code IN ('zh', 'en') ORDER BY language_code, code").all()).results || []; } catch { programs = []; }
   if (!programs.length) programs = BUILTIN_PROGRAMS;
   let recentPractice = [];
   let dueCount = 0;
@@ -43,7 +42,6 @@ export async function renderLearningHub({ db, user }) {
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 24px;">
       <a href="/learning/chinese" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Trung (zh)</a>
       <a href="/learning/english" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Anh (en)</a>
-      <a href="/learning/russian" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Nga (ru)</a>
       <a href="/learning/path" class="wb-btn wb-btn-outline wb-btn-sm">Lộ trình học tập</a>
       <a href="/learning/skills" class="wb-btn wb-btn-outline wb-btn-sm">Trung tâm kỹ năng</a>
       <a href="/my-knowledge" class="wb-btn wb-btn-outline wb-btn-sm">My Knowledge</a>
@@ -70,7 +68,7 @@ export async function renderLanguageLearningPage({ db, user, languageSlug }) {
       title: 'Ngôn ngữ không hỗ trợ',
       currentPath: `/learning/${languageSlug}`,
       user,
-      contentHtml: '<div class="wb-alert wb-alert-error">WORD BRIDGE chỉ hỗ trợ 3 ngôn ngữ chính thức: Tiếng Trung, Tiếng Anh và Tiếng Nga. Không hỗ trợ tiếng Nhật hoặc tiếng Hàn.</div>',
+      contentHtml: '<div class="wb-alert wb-alert-error">WORD BRIDGE hiện hỗ trợ chính thức hai ngôn ngữ: Tiếng Trung (zh) và Tiếng Anh (en).</div>',
     }), 404);
   }
   const lang = OFFICIAL_LANGUAGES[code];

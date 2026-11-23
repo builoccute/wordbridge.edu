@@ -45,7 +45,7 @@ export async function renderIntelligenceSystemPage({ services, user, systemSlug 
 
   const history = user ? await services.intelligence.listHistory(user.accountId, systemSlug, 10) : [];
   const langOptions = spec.languages.map((code) => {
-    const label = code === 'zh' ? 'Tiếng Trung (zh)' : code === 'en' ? 'Tiếng Anh (en)' : 'Tiếng Nga (ru)';
+    const label = code === 'zh' ? 'Tiếng Trung (zh)' : 'Tiếng Anh (en)';
     return `<option value="${code}">${label}</option>`;
   }).join('');
 

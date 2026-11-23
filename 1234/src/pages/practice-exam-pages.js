@@ -50,7 +50,7 @@ export async function renderPracticePage({ services, db, user, skill = '' }) {
   let publishedAudio = [];
   if (skill === 'listening' && db) {
     try {
-      publishedAudio = (await db.prepare("SELECT * FROM wb_audio_assets WHERE review_status = 'published' ORDER BY created_at DESC LIMIT 10").all()).results || [];
+      publishedAudio = (await db.prepare("SELECT * FROM wb_audio_assets WHERE review_status = 'published' AND language_code IN ('zh', 'en') ORDER BY created_at DESC LIMIT 10").all()).results || [];
     } catch {
       publishedAudio = [];
     }
@@ -185,7 +185,7 @@ export async function renderPracticePage({ services, db, user, skill = '' }) {
                 <button type="submit" class="wb-btn wb-btn-primary wb-btn-sm">Nộp bài & Xem kết quả</button>
               </form><div id="pr-out-${escapeHtml(ex.id)}" style="margin-top:10px;"></div>`
             : `<a href="${escapeHtml(signInUrl(currentPath, `practice.${skill || 'all'}`))}" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập để làm & nộp bài</a>`}
-        </article>`).join('') || '<div class="wb-alert wb-alert-info">Chưa có bài luyện tập đã xác thực cho kỹ năng này. Không có bài tập giả được tạo.</div>'}
+        </article>`).join('') || '<div class="wb-alert wb-alert-info">Mục này hiện chưa có bài luyện tập phù hợp. Nội dung đang được cập nhật.</div>'}
     </div>
   `;
 

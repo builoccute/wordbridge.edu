@@ -92,10 +92,6 @@ export class IntelligenceService {
             positive: ['Hệ chữ viết Latin quen thuộc với người học Việt Nam', 'Cấu trúc chủ–vị–tân (SVO) tương đồng ở câu đơn'],
             negative: ['Thiếu biến đổi thì động từ và số nhiều trong tiếng Việt dẫn tới quên chia động từ/-s/-ed', 'Bỏ sót âm cuối (ending sounds) và trọng âm từ'],
           },
-          ru: {
-            positive: ['Khả năng phân biệt ngữ điệu câu hỏi không cần trợ động từ'],
-            negative: ['Tiếng Việt không có biến cách (6 cách danh từ), giống danh từ và cặp thể động từ (hoàn thành/chưa hoàn thành)', 'Nhầm chữ cái Cyrillic giống hình dạng Latin (В, Н, Р, С, У, Х)'],
-          },
         };
         output = { sourceLanguage: 'vi', targetLanguage: lang, analysis: transferRules[lang], sampleChecked: cleanText || null };
         methodology = 'Áp dụng bảng đối chiếu ngôn ngữ học tương phản (Contrastive Linguistics) Việt – Trung / Anh / Nga.';
@@ -108,14 +104,13 @@ export class IntelligenceService {
           .bind(lang)
           .all();
         output = { languageCode: lang, domainFilter: domain || 'all', matchedTerms: terms.results || [] };
-        methodology = 'Truy vấn kho thuật ngữ chuyên ngành Tiếng Trung / Tiếng Anh trong D1 (loại trừ hoàn toàn Tiếng Nga).';
+        methodology = 'Truy vấn kho thuật ngữ chuyên ngành Tiếng Trung và Tiếng Anh trong D1.';
         break;
       }
       case 'real-world-simulator': {
         const scenarios = {
           zh: ['Đàm phán điều khoản vận đơn (海运提单) với đối tác logistics', 'Hỏi đường và đặt món ăn tại Thượng Hải'],
           en: ['Trình bày sự cố hệ thống Cloud với khách hàng quốc tế', 'Trao đổi chứng từ xuất nhập khẩu (Commercial Invoice & Packing List)'],
-          ru: ['Giới thiệu bản thân và hỏi thông tin tại trường đại học Nga', 'Mua sắm và hỏi đường tại Moscow'],
         };
         output = {
           selectedScenario: scenario || scenarios[lang][0],
@@ -200,7 +195,7 @@ export class IntelligenceService {
             return acc;
           }, {}),
         };
-        methodology = 'Liên kết các mục từ thực tế từ `wb_dictionary_entries` theo chủ đề chung giữa Tiếng Trung, Tiếng Anh và Tiếng Nga.';
+        methodology = 'Liên kết các mục từ thực tế từ `wb_dictionary_entries` theo chủ đề chung giữa Tiếng Trung và Tiếng Anh.';
         break;
       }
       case 'personal-corpus': {

@@ -28,7 +28,7 @@ export class LearnerMeetService {
         ready: false,
         status: 'BLOCKED_UNCONFIGURED',
         provider: this.provider,
-        noteVi: 'Hạ tầng WebRTC SFU (ví dụ LiveKit) chưa được cấu hình credential và chưa được phê duyệt chi phí. Chức năng quản lý phiên & kiểm tra thiết bị đã sẵn sàng; kết nối luồng media trực tiếp đang ở trạng thái BLOCKED.',
+        noteVi: 'Chức năng tạo lịch phiên và kiểm tra thiết bị đã sẵn sàng. Luồng kết nối âm thanh trực tiếp đang được cập nhật.',
       };
     }
     return { ready: true, status: 'CONFIGURED', provider: this.provider };

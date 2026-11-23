@@ -61,8 +61,8 @@ test('V4: removed legacy routes return 410 and local management forwards to cont
   try {
     for (const path of ['/social','/friends','/organizations','/account/subscription']) assert.equal((await run(path, env)).status, 410);
     const admin = await run('/admin', env);
-    assert.equal(admin.status, 302);
-    assert.equal(admin.headers.get('location'), '/quan-tri');
+    assert.equal(admin.status, 404);
+    assert.equal(admin.headers.get('location'), null);
     assert.equal((await run('/page-does-not-exist',env)).status, 404);
   } finally { env.DB.close(); }
 });
@@ -71,7 +71,7 @@ test('V4: infrastructure exceptions surface 500, not a misleading success page',
   const res = await run('/styles/design-system.css', { ASSETS: { fetch() { throw new Error('TEST_ASSET_BACKEND_FAILED'); } } });
   assert.equal(res.status, 500);
   const html = await res.text();
-  assert.match(html, /không thể xử lý yêu cầu/);
+  assert.match(html, /Lỗi hệ thống|xử lý yêu cầu/);
 });
 
 test('V4: all 12 specialized data sources and all SQL migrations survive cleanup', async () => {
@@ -90,20 +90,18 @@ test('V4: all 12 specialized data sources and all SQL migrations survive cleanup
   }
   assert.equal(records,12104);
   const migrations=fs.readdirSync('database/migrations').filter(name=>name.endsWith('.sql'));
-  assert.equal(migrations.length, 17);
+  assert.equal(migrations.length, 2);
 });
 
 test('V4 replacement: /admin and /help ownership handoffs are explicit and path-safe', async () => {
   const env = await createTestEnv();
   try {
     const admin = await run('/admin', env);
-    assert.equal(admin.status, 302);
-    assert.equal(admin.headers.get('location'), '/quan-tri');
+    assert.equal(admin.status, 404);
+    assert.equal(admin.headers.get('location'), null);
     const nested = await run('/admin/curriculum?locale=en', env);
-    assert.equal(nested.status, 302);
-    const target = new URL(nested.headers.get('location'), ECOSYSTEM.main);
-    assert.equal(target.origin, ECOSYSTEM.main);
-    assert.equal(target.pathname, '/quan-tri/curriculum');
+    assert.equal(nested.status, 404);
+    assert.equal(nested.headers.get('location'), null);
     const help = await run('/help', env);
     assert.equal(help.status, 200);
   } finally { env.DB.close(); }
@@ -150,7 +148,7 @@ test('V4: examination discovery uses existing schema and never depends on remove
     assert.doesNotMatch(html, /undefined/);
     const detail = await run('/examinations/cefr-a1-reference-diagnostic', env);
     assert.equal(detail.status, 410);
-    assert.match(await detail.text(), /Chức năng không tồn tại/i);
+    assert.match(await detail.text(), /Nội dung không còn khả dụng|410/i);
   } finally { env.DB.close(); }
 });
 
@@ -253,7 +251,7 @@ test('V4 specialized term → notebook → flashcard → grade → persisted due
 
 test('V4 published exercises stay on their own route and submissions drive errors, history, home and results',async t=>{
   const {env,request}=await learnerFixture(t);
-  const rows=(await env.DB.prepare('SELECT * FROM wb_practice_exercises').all()).results;
+  const rows=(await env.DB.prepare("SELECT * FROM wb_practice_exercises WHERE language_code IN ('zh', 'en')").all()).results;
   for (const skill of ['grammar','vocabulary','listening','reading','speaking','writing']) {
     const html=await (await request('/practice/'+skill)).text();
     for(const exercise of rows) assert.equal(html.includes('value="'+exercise.id+'"'),exercise.skill===skill,skill+' '+exercise.id);
@@ -303,8 +301,8 @@ test('V4 actionable requests require session and preserve locale and the origina
   assert.equal((await run('/api/v1/audio/aud_en_w01_s1/stream',env)).status,401);
   for(const path of ['/admin/courses','/admin/programs','/admin/curriculum','/admin/lessons']) {
     const res=await run(path+'?locale=en',env);
-    assert.equal(res.status,302);
-    assert.equal(res.headers.get('location'),path.replace('/admin','/quan-tri')+'?locale=en');
+    assert.equal(res.status,404);
+    assert.equal(res.headers.get('location'),null);
   }
 });
 

@@ -1,8 +1,10 @@
 /**
- * WORD BRIDGE V4.1 — Unified One-Domain Platform (https://wordbridge.io.vn)
- * Supreme Admin Center: https://wordbridge.io.vn/quan-tri
- * Native Cloudflare D1 (`DB`) & R2 (`R2`), Unified Auth, Integrated /help & /reader,
- * Complete Exam Removal (410 Gone), Zero Subdomain Dependencies.
+ * WORD BRIDGE V4.2 — Unified Single-Domain Platform (https://wordbridge.io.vn)
+ * - Bilingual Learning Scope: Chinese (zh) & English (en) ONLY
+ * - Native Cloudflare D1 (`DB`), R2 (`R2`), and Static Assets (`ASSETS`)
+ * - ZERO Public Admin Portal (/quan-tri and /admin* blocked without redirect or structure leak)
+ * - ZERO Exam / Certificate module (410 Gone)
+ * - Hardened Worker Exception Guard & Structured Internal Logging (prevents uncaught 1101 crashes)
  */
 
 import { EmailService } from './services/email-service.js';
@@ -19,18 +21,34 @@ import { IntelligenceService } from './modules/intelligence/intelligence-service
 import { AdminService } from './modules/administration/admin-service.js';
 import { handleApiRequest } from './api/router.js';
 import { SPECIALIZED_VOCAB_DATASETS } from './config/constants.js';
-import { parseCookies, htmlResponse, jsonResponse, redirectResponse, SECURITY_HEADERS } from './utils/http.js';
-import { timingSafeEqual } from './utils/crypto.js';
-import { renderPublicPage } from './layouts/site-layout.js';
+import { parseCookies, htmlResponse, jsonResponse, SECURITY_HEADERS } from './utils/http.js';
+import { timingSafeEqual, generateId } from './utils/crypto.js';
 import { renderMaintenancePage } from './services/quantri-client.js';
 import { renderFeaturesPage } from './pages/features-page.js';
+import { renderErrorPage } from './pages/error-pages.js';
 
 import { renderHomePage, renderAboutPage, renderFaqPage, renderContactPage, renderPolicyPage } from './pages/public-pages.js';
 import { renderHelpCenterPage } from './pages/help-pages.js';
 import { renderReaderLibraryPage, renderReaderDocumentPage } from './pages/reader-pages.js';
-import { renderQuanTriPage } from './pages/admin-pages.js';
-import { renderLearningHub, renderLanguageLearningPage, renderProgramDetailPage, renderCourseCurriculumPage, renderModuleDetailPage, renderWeekDetailPage, renderLessonDetailPage, renderLessonResultPage, renderMyLearningPage } from './pages/learning-pages.js';
-import { renderGlobalSearchPage, renderLearningPathPage, renderSkillCenterHub, renderSkillCenterPage, renderKnowledgePage, renderMistakesPage } from './pages/learning-system-pages.js';
+import {
+  renderLearningHub,
+  renderLanguageLearningPage,
+  renderProgramDetailPage,
+  renderCourseCurriculumPage,
+  renderModuleDetailPage,
+  renderWeekDetailPage,
+  renderLessonDetailPage,
+  renderLessonResultPage,
+  renderMyLearningPage,
+} from './pages/learning-pages.js';
+import {
+  renderGlobalSearchPage,
+  renderLearningPathPage,
+  renderSkillCenterHub,
+  renderSkillCenterPage,
+  renderKnowledgePage,
+  renderMistakesPage,
+} from './pages/learning-system-pages.js';
 import { renderDictionaryPage, renderDictionaryEntryPage, renderVocabularyPage } from './pages/dictionary-pages.js';
 import { renderPracticePage, renderPracticeHistoryPage, renderPracticeResultPage } from './pages/practice-exam-pages.js';
 import { renderSpecializedPage, renderLearnerMeetPage } from './pages/specialized-meet-pages.js';
@@ -42,7 +60,38 @@ const REMOVED_LEGACY_PATHS = new Set([
   '/oauth/callback', '/account/linked-accounts',
   '/examinations', '/examinations/history',
   '/examinations/chinese', '/examinations/english', '/examinations/russian',
+  '/learning/russian', '/learning/ru',
+  '/dictionary/russian', '/dictionary/ru',
+  '/specialized/russian', '/specialized/ru',
 ]);
+
+function isBlockedAdminPath(path) {
+  return (
+    path === '/quan-tri' ||
+    path.startsWith('/quan-tri/') ||
+    path === '/admin' ||
+    path.startsWith('/admin/')
+  );
+}
+
+function logInternalError({ requestId, path, error, status = 'handled_500', phase = 'fetch' }) {
+  const errObj = error instanceof Error ? error : new Error(String(error ?? 'Unknown error'));
+  try {
+    console.error(JSON.stringify({
+      level: 'error',
+      timestamp: new Date().toISOString(),
+      requestId,
+      phase,
+      path,
+      errorType: errObj.name || 'Error',
+      message: errObj.message || 'Unhandled exception',
+      stack: errObj.stack || '',
+      status,
+    }));
+  } catch {
+    // Ensure logging itself can never throw
+  }
+}
 
 function createServices(env) {
   const email = new EmailService(env.DB, env);
@@ -61,6 +110,7 @@ function createServices(env) {
 }
 
 async function loadRuntimeFromD1(db) {
+  if (!db) return null;
   try {
     const rows = (await db
       .prepare("SELECT config_key, config_value FROM wb_platform_config WHERE config_key IN ('site.maintenance_mode', 'site.maintenance_message', 'site.announcement_banner')")
@@ -87,26 +137,42 @@ function inferContentType(path) {
   if (path.endsWith('.svg')) return 'image/svg+xml';
   if (path.endsWith('.png')) return 'image/png';
   if (path.endsWith('.jpg') || path.endsWith('.jpeg')) return 'image/jpeg';
+  if (path.endsWith('.webp')) return 'image/webp';
   return 'application/octet-stream';
 }
 
 async function loadStaticAsset(normalizedPath, request, url, rawEnv) {
-  if (rawEnv.ASSETS) {
-    const assetUrl = new URL(normalizedPath, url.origin);
-    const assetRes = await rawEnv.ASSETS.fetch(new Request(assetUrl.toString(), request));
-    if (assetRes && assetRes.status !== 404) return assetRes;
-  }
-  if (rawEnv.STATIC_ASSETS_LOADER) {
-    const asset = await rawEnv.STATIC_ASSETS_LOADER(`/public${normalizedPath}`);
-    if (asset) {
-      return new Response(asset.body, {
-        status: 200,
-        headers: {
-          'Content-Type': asset.contentType || inferContentType(normalizedPath),
-          'Cache-Control': 'public, max-age=3600',
-          ...SECURITY_HEADERS,
-        },
+  // Never serve removed Russian branding assets publicly
+  if (normalizedPath === '/branding/card-ru.jpg') return null;
+
+  if (rawEnv?.ASSETS && typeof rawEnv.ASSETS.fetch === 'function') {
+    try {
+      const assetUrl = new URL(normalizedPath, url.origin);
+      const assetReq = new Request(assetUrl.toString(), {
+        method: request.method === 'HEAD' ? 'HEAD' : 'GET',
+        headers: request.headers,
       });
+      const assetRes = await rawEnv.ASSETS.fetch(assetReq);
+      if (assetRes && assetRes.status !== 404) return assetRes;
+    } catch {
+      // Fallback safely if ASSETS.fetch throws
+    }
+  }
+  if (typeof rawEnv?.STATIC_ASSETS_LOADER === 'function') {
+    try {
+      const asset = await rawEnv.STATIC_ASSETS_LOADER(`/public${normalizedPath}`);
+      if (asset) {
+        return new Response(asset.body, {
+          status: 200,
+          headers: {
+            'Content-Type': asset.contentType || inferContentType(normalizedPath),
+            'Cache-Control': 'public, max-age=3600',
+            ...SECURITY_HEADERS,
+          },
+        });
+      }
+    } catch {
+      // Fallback safely
     }
   }
   return null;
@@ -125,18 +191,26 @@ async function loadVocabJson(domainSlug, request, url, rawEnv) {
   }
 }
 
-function render500Page(path) {
-  return htmlResponse(renderPublicPage({
-    title: '500 — Hệ thống tạm thời không thể xử lý yêu cầu',
-    currentPath: path,
-    contentHtml: `<section class="wb-alert wb-alert-error" role="alert"><h1>Hệ thống tạm thời không thể xử lý yêu cầu</h1><p>Không có dữ liệu nào được xác nhận đã lưu. Hãy thử lại hoặc liên hệ hỗ trợ tại <a href="/help">/help</a>.</p><a href="/" class="wb-btn wb-btn-outline">Về trang chủ</a></section>`,
-  }), 500);
+function emergencyFallback500(requestId) {
+  return htmlResponse(
+    `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>500 — Lỗi hệ thống | WORD BRIDGE</title></head><body style="font-family:system-ui,sans-serif;text-align:center;padding:48px 16px;color:#142829;"><h1 style="color:#146466;">500 — Lỗi hệ thống</h1><p>Dịch vụ tạm thời chưa khả dụng. Vui lòng thử lại sau ít phút.</p><p style="font-size:13px;color:#64748b;">Mã tham chiếu: ${requestId}</p><p><a href="/" style="color:#146466;font-weight:700;">Về Trang chủ</a></p></body></html>`,
+    500
+  );
 }
 
 export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
-    const path = url.pathname.length > 1 && url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname;
+  async fetch(request, env = {}, ctx) {
+    const requestId = request?.headers?.get?.('cf-ray') || generateId('req');
+    let path = '/';
+    let url;
+
+    try {
+      url = new URL(request.url);
+      path = url.pathname.length > 1 && url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname;
+    } catch (err) {
+      logInternalError({ requestId, path: 'invalid-url', error: err, status: 'handled_400' });
+      return renderErrorPage({ code: 400, currentPath: '/', requestId });
+    }
 
     try {
       // 1. Static Assets (CSS/JS/Logo/Specialized Vocab Datasets)
@@ -152,7 +226,16 @@ export default {
         if (assetRes) return assetRes;
       }
 
-      // 2. Removed Legacy & Exam Routes -> 410 Gone
+      // 2. P0 Security: Strictly block public admin routes (/quan-tri*, /admin*) — NO redirect, NO structure leak
+      if (isBlockedAdminPath(path)) {
+        return renderErrorPage({
+          code: 404,
+          currentPath: '/',
+          requestId,
+        });
+      }
+
+      // 3. Removed Legacy, Exam & Russian Routes -> 410 Gone
       if (
         REMOVED_LEGACY_PATHS.has(path) ||
         path.startsWith('/social/') ||
@@ -160,23 +243,19 @@ export default {
         path.startsWith('/organizations/') ||
         path.startsWith('/examinations/') ||
         path.startsWith('/examination-attempts/') ||
-        path.startsWith('/examination-results/')
+        path.startsWith('/examination-results/') ||
+        path.startsWith('/dictionary/russian/') ||
+        path.startsWith('/learning/russian/')
       ) {
-        return htmlResponse(renderPublicPage({
-          title: '410 — Chức năng không tồn tại',
+        return renderErrorPage({
+          code: 410,
           currentPath: path,
-          contentHtml: `<section class="wb-alert wb-alert-warn"><h1>Chức năng không tồn tại</h1><p>Đường dẫn này đã được loại bỏ khỏi phạm vi sản phẩm WORD BRIDGE. Vui lòng sử dụng các phân hệ Học tập (/learning) hoặc Cổng Luyện Tập (/practice).</p><a href="/practice" class="wb-btn wb-btn-primary">Vào Cổng Luyện Tập</a></section>`,
-        }), 410);
+          requestId,
+        });
       }
 
-      // 3. Canonicalize /admin* internally to /quan-tri (same domain, NO external subdomain)
-      if (path === '/admin' || path.startsWith('/admin/')) {
-        const suffix = path === '/admin' ? '' : path.slice('/admin'.length);
-        return redirectResponse(`/quan-tri${suffix}${url.search}`, 302);
-      }
-
-      if (!env.DB) {
-        throw new Error('Cloudflare D1 binding `DB` chưa được cấu hình.');
+      if (!env || !env.DB) {
+        throw new Error('Cloudflare D1 binding `DB` is not configured.');
       }
 
       const services = createServices(env);
@@ -184,12 +263,10 @@ export default {
       const user = await services.auth.authenticateSession(cookies.wb_session);
       const runtime = await loadRuntimeFromD1(env.DB);
 
-      // 4. D1-Controlled Maintenance Mode (Admins, /quan-tri, /login, /help, /api/v1/health remain accessible)
+      // 4. D1-Controlled Maintenance Mode (no public admin bypass path exposed)
       const bypassMaintenance =
         path === '/login' ||
         path === '/help' ||
-        path === '/quan-tri' ||
-        path.startsWith('/quan-tri/') ||
         path.startsWith('/api/v1/health') ||
         path.startsWith('/api/v1/auth/') ||
         path.startsWith('/api/v1/admin/') ||
@@ -235,10 +312,21 @@ export default {
         if (!user) return jsonResponse({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Cần đăng nhập để xuất sổ từ vựng.' } }, 401);
         const rows = (await env.DB.prepare(
           `SELECT e.headword, e.phonetic, e.language_code, e.meaning_vi, n.mastery_status, n.interval_days
-           FROM wb_vocabulary_notebook n JOIN wb_dictionary_entries e ON e.id = n.entry_id WHERE n.account_id = ?`
+           FROM wb_vocabulary_notebook n JOIN wb_dictionary_entries e ON e.id = n.entry_id
+           WHERE n.account_id = ? AND e.language_code IN ('zh', 'en')`
         ).bind(user.accountId).all()).results || [];
-        const csv = ['headword,phonetic,language,meaning_vi,status,interval_days', ...rows.map((r) => `"${String(r.headword || '').replace(/"/g, '""')}","${String(r.phonetic || '').replace(/"/g, '""')}","${r.language_code}","${String(r.meaning_vi || '').replace(/"/g, '""')}","${r.mastery_status}",${r.interval_days}`)].join('\n');
-        return new Response(csv, { status: 200, headers: { 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': 'attachment; filename="wordbridge-vocabulary.csv"', ...SECURITY_HEADERS } });
+        const csv = [
+          'headword,phonetic,language,meaning_vi,status,interval_days',
+          ...rows.map((r) => `"${String(r.headword || '').replace(/"/g, '""')}","${String(r.phonetic || '').replace(/"/g, '""')}","${r.language_code}","${String(r.meaning_vi || '').replace(/"/g, '""')}","${r.mastery_status}",${r.interval_days}`),
+        ].join('\n');
+        return new Response(csv, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': 'attachment; filename="wordbridge-vocabulary.csv"',
+            ...SECURITY_HEADERS,
+          },
+        });
       }
 
       if (path.startsWith('/api/v1/')) {
@@ -247,18 +335,12 @@ export default {
           user,
           env,
           ctx,
+          requestId,
           loadVocabJson: (domainSlug) => loadVocabJson(domainSlug, request, url, env),
         });
       }
 
-      // 6. Supreme Admin Center (/quan-tri & /quan-tri/:section)
-      if (path === '/quan-tri') return renderQuanTriPage({ services, user, section: 'overview', url, runtime });
-      if (path.startsWith('/quan-tri/')) {
-        const section = path.slice('/quan-tri/'.length).split('/')[0] || 'overview';
-        return renderQuanTriPage({ services, user, section, url, runtime });
-      }
-
-      // 7. Public, Help, Reader & Learning Pages (All on https://wordbridge.io.vn)
+      // 6. Public, Help, Reader & Learning Pages (All on https://wordbridge.io.vn)
       if (path === '/') return renderHomePage({ user, runtime });
       if (path === '/features') return renderFeaturesPage({ user, runtime });
       if (path === '/about') return renderAboutPage({ user, runtime });
@@ -342,21 +424,39 @@ export default {
       if (path === '/account') return renderAccountPage({ db: env.DB, user, subPath: '' });
       if (path.startsWith('/account/')) return renderAccountPage({ db: env.DB, user, subPath: path.slice('/account/'.length) });
 
-      return htmlResponse(renderPublicPage({
-        title: '404 — Không tìm thấy trang',
-        currentPath: path,
-        user,
-        runtime,
-        contentHtml: `<h1>404 — Không tìm thấy trang</h1><p class="wb-muted">Đường dẫn <code>${path}</code> không tồn tại trên WORD BRIDGE.</p><a href="/" class="wb-btn wb-btn-primary">Quay về trang chủ</a>`,
-      }), 404);
-    } catch {
-      return render500Page(path);
+      return renderErrorPage({ code: 404, currentPath: path, user, runtime, requestId });
+    } catch (error) {
+      logInternalError({ requestId, path, error, status: 'handled_500', phase: 'fetch' });
+      if (path.startsWith('/api/v1/')) {
+        return jsonResponse(
+          {
+            ok: false,
+            error: {
+              code: 'INTERNAL_SERVER_ERROR',
+              message: 'Dịch vụ tạm thời chưa khả dụng. Vui lòng thử lại sau.',
+              requestId,
+            },
+          },
+          500
+        );
+      }
+      try {
+        return renderErrorPage({ code: 500, currentPath: path, requestId });
+      } catch (secondaryError) {
+        logInternalError({ requestId, path, error: secondaryError, status: 'emergency_fallback_500', phase: 'error_render' });
+        return emergencyFallback500(requestId);
+      }
     }
   },
 
-  async scheduled(event, env) {
-    if (!env.DB) return;
-    const services = createServices(env);
-    await services.jobs.runScheduledSweep();
+  async scheduled(event, env = {}) {
+    const requestId = generateId('cron');
+    try {
+      if (!env || !env.DB) return;
+      const services = createServices(env);
+      await services.jobs.runScheduledSweep();
+    } catch (error) {
+      logInternalError({ requestId, path: 'scheduled', error, status: 'handled_cron_error', phase: 'scheduled' });
+    }
   },
 };

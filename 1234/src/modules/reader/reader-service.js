@@ -17,8 +17,9 @@ export class ReaderService {
     const params = [];
     if (!includeDrafts) {
       clauses.push("review_status = 'published'");
+      clauses.push("language_code IN ('zh', 'en')");
     }
-    if (language && ['zh', 'en', 'ru'].includes(language)) {
+    if (language && ['zh', 'en'].includes(language)) {
       clauses.push('language_code = ?');
       params.push(language);
     }
@@ -41,7 +42,7 @@ export class ReaderService {
 
   async getDocumentBySlug(slug, accountId = null) {
     const doc = await this.db
-      .prepare("SELECT * FROM wb_reader_documents WHERE slug = ? AND review_status = 'published'")
+      .prepare("SELECT * FROM wb_reader_documents WHERE slug = ? AND review_status = 'published' AND language_code IN ('zh', 'en')")
       .bind(slug)
       .first();
     if (!doc) return null;

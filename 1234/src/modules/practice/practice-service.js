@@ -15,7 +15,7 @@ export class PracticeService {
   }
 
   async listExercises({ skill = '', language = '' } = {}) {
-    const clauses = [];
+    const clauses = ["language_code IN ('zh', 'en')"];
     const params = [];
     if (skill) {
       clauses.push('skill = ?');
@@ -35,7 +35,7 @@ export class PracticeService {
 
   async submitPractice(accountId, exerciseId, answers = {}) {
     const exercise = await this.db
-      .prepare('SELECT * FROM wb_practice_exercises WHERE id = ?')
+      .prepare("SELECT * FROM wb_practice_exercises WHERE id = ? AND language_code IN ('zh', 'en')")
       .bind(exerciseId)
       .first();
     if (!exercise) return { ok: false, status: 404, error: 'Không tìm thấy bài luyện tập.' };

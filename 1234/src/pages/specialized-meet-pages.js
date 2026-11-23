@@ -17,7 +17,7 @@ export async function renderSpecializedPage({ db, user, subSlug = '' }) {
       currentPath: '/specialized/russian',
       breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Ngoại ngữ chuyên ngành', href: '/specialized' }],
       user,
-      contentHtml: '<div class="wb-alert wb-alert-error">Theo phạm vi chính thức của WORD BRIDGE, Ngoại ngữ chuyên ngành chỉ áp dụng cho <strong>Tiếng Trung (zh)</strong> và <strong>Tiếng Anh (en)</strong>. Không mở chương trình Tiếng Nga chuyên ngành.</div>',
+      contentHtml: '<div class="wb-alert wb-alert-error">Ngoại ngữ chuyên ngành trên WORD BRIDGE áp dụng cho <strong>Tiếng Trung (zh)</strong> và <strong>Tiếng Anh (en)</strong>.</div>',
     }), 404);
   }
 
@@ -60,7 +60,7 @@ export async function renderSpecializedPage({ db, user, subSlug = '' }) {
       <aside class="wb-specialized-scope">
         <span class="wb-badge wb-badge-aqua">Phạm vi hiện hành</span>
         <strong>Tiếng Trung & Tiếng Anh</strong>
-        <p>Chuyên ngành hiện chỉ áp dụng cho hai ngôn ngữ này. Tiếng Nga tiếp tục thuộc chương trình ngôn ngữ tổng quát.</p>
+        <p>Hệ thống ngoại ngữ chuyên ngành tập trung vào Tiếng Trung (zh) và Tiếng Anh (en) với 12 bộ dữ liệu thuật ngữ thực tế.</p>
       </aside>
     </section>
 
@@ -132,7 +132,6 @@ export async function renderLearnerMeetPage({ db, services, user, subPath = '', 
           <select class="wb-select" name="languageCode">
             <option value="zh">Tiếng Trung (zh)</option>
             <option value="en">Tiếng Anh (en)</option>
-            <option value="ru">Tiếng Nga (ru)</option>
           </select>
         </div>
         <div class="wb-field">
@@ -172,7 +171,7 @@ export async function renderLearnerMeetPage({ db, services, user, subPath = '', 
       <div class="wb-grid-2">
         <div class="wb-card">
           <h3>Thực hành giao tiếp trực tiếp 1–1 & Nhóm</h3>
-          <p>Hỗ trợ bật/tắt micro, bật/tắt camera và kết nối theo chủ đề cho Tiếng Trung, Tiếng Anh và Tiếng Nga. Tham gia trực tiếp trên nền tảng thống nhất wordbridge.io.vn sau khi đăng nhập.</p>
+          <p>Hỗ trợ bật/tắt micro, bật/tắt camera và kết nối theo chủ đề cho Tiếng Trung và Tiếng Anh. Tham gia trực tiếp trên nền tảng thống nhất wordbridge.io.vn sau khi đăng nhập.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
             ${user
               ? `<a href="/learner-meet/sessions" class="wb-btn wb-btn-primary wb-btn-sm">Danh sách phiên</a>

@@ -243,7 +243,7 @@
     }
   });
 
-  // Live Word & Character Counter for Writing exercises (CJK / Latin / Cyrillic)
+  // Live Word & Character Counter for Writing exercises (CJK / Latin)
   document.addEventListener('input', (ev) => {
     const ta = ev.target && ev.target.closest ? ev.target.closest('textarea[data-wb-counter]') : null;
     if (!ta) return;
@@ -457,7 +457,7 @@
         return;
       }
       const text = ttsBtn.getAttribute('data-wb-tts') || '';
-      const langMap = { zh: 'zh-CN', en: 'en-US', ru: 'ru-RU' };
+      const langMap = { zh: 'zh-CN', en: 'en-US' };
       const u = new SpeechSynthesisUtterance(text);
       u.lang = langMap[ttsBtn.getAttribute('data-wb-lang')] || 'en-US';
       window.speechSynthesis.cancel();

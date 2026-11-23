@@ -29,7 +29,7 @@ export function renderFeaturesPage({ user, runtime }) {
     <section class="wb-hero">
       <span class="wb-badge wb-badge-aqua">CÔNG CỤ HỌC TẬP CHUYÊN NGÀNH</span>
       <h1>Hệ Sinh Thái Học Ngoại Ngữ Chuyên Ngành Toàn Diện</h1>
-      <p>Kết hợp phương pháp ghi nhớ khoa học với chiều sâu thuật ngữ nghề nghiệp Trung – Anh (10 nhóm ngành) cùng chương trình Tiếng Nga tổng quát chuẩn mực.</p>
+      <p>Kết hợp phương pháp ghi nhớ khoa học SM-2 với chiều sâu thuật ngữ nghề nghiệp Trung – Anh (12 nhóm ngành) và hệ thống 7 kỹ năng chuẩn mực.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <a href="/specialized" class="wb-btn wb-btn-accent">Khám phá 10 Chuyên ngành</a>
         <a href="/practice" class="wb-btn wb-btn-ghost">Vào Cổng Luyện Tập</a>

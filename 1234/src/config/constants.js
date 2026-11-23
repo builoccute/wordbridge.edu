@@ -1,14 +1,14 @@
 /**
- * WORD BRIDGE — Canonical Product Constants, Unified Single-Domain Contracts & Hard Boundaries
- * One Domain — One Platform: https://wordbridge.io.vn (Admin: https://wordbridge.io.vn/quan-tri)
- * Exam module completely removed; Practice, Learning, Dictionary, Reader, Help, Admin unified.
+ * WORD BRIDGE V4.2 — Canonical Product Constants, Unified Single-Domain Contracts & Hard Boundaries
+ * One Domain — One Platform: https://wordbridge.io.vn
+ * Bilingual Learning Scope: Chinese (zh) & English (en) ONLY.
+ * Zero Public Admin Portal, Zero Exam/Certificate Module.
  */
 
 export const BRAND = Object.freeze({
   name: 'WORD BRIDGE',
   tagline: 'Where Languages Bring People Together.',
   websiteUrl: 'https://wordbridge.io.vn',
-  adminUrl: 'https://wordbridge.io.vn/quan-tri',
   readerPath: '/reader',
   helpPath: '/help',
   copyright: '© 2026 WORD BRIDGE. All rights reserved.',
@@ -22,10 +22,12 @@ export const BRAND = Object.freeze({
 
 export const ECOSYSTEM = Object.freeze({
   main: 'https://wordbridge.io.vn',
+  www: 'https://www.wordbridge.io.vn',
 });
 
 export const ALLOWED_RETURN_ORIGINS = Object.freeze([
   ECOSYSTEM.main,
+  ECOSYSTEM.www,
 ]);
 
 export function normalizeUiLocale(locale) {
@@ -34,7 +36,7 @@ export function normalizeUiLocale(locale) {
 
 export const TRANSLATIONS = Object.freeze({
   vi: Object.freeze({
-    siteTitle: 'WORD BRIDGE — Nền tảng học ngôn ngữ Trung – Anh – Nga',
+    siteTitle: 'WORD BRIDGE — Nền tảng học ngôn ngữ Trung – Anh',
     login: 'Đăng nhập',
     register: 'Đăng ký',
     logout: 'Đăng xuất',
@@ -44,12 +46,12 @@ export const TRANSLATIONS = Object.freeze({
     dictionary: 'Từ điển',
     specialized: 'Chuyên ngành',
     reader: 'Thư viện đọc',
-    help: 'Trung tâm trợ giúp',
+    help: 'Trung Tâm Trợ Giúp',
     authGateTitle: 'Đăng nhập để tiếp tục',
-    authGateBody: 'Hành động này cần tài khoản. Sau đăng nhập, WORD BRIDGE sẽ quay lại trang hiện tại với intent an toàn.',
+    authGateBody: 'Hành động này cần tài khoản WORD BRIDGE. Sau khi đăng nhập, hệ thống sẽ đưa bạn quay lại đúng trang hiện tại.',
   }),
   en: Object.freeze({
-    siteTitle: 'WORD BRIDGE — Chinese, English & Russian Language Platform',
+    siteTitle: 'WORD BRIDGE — Chinese & English Language Platform',
     login: 'Sign in',
     register: 'Register',
     logout: 'Sign out',
@@ -61,7 +63,7 @@ export const TRANSLATIONS = Object.freeze({
     reader: 'Reader Library',
     help: 'Help Center',
     authGateTitle: 'Sign in to continue',
-    authGateBody: 'This action requires an account. After sign-in, WORD BRIDGE returns to the current page with a safe intent.',
+    authGateBody: 'This action requires a WORD BRIDGE account. After signing in, you will return directly to this page.',
   }),
 });
 
@@ -103,7 +105,7 @@ export const OFFICIAL_LANGUAGES = Object.freeze({
     hasGeneral: true,
     hasSpecialized: true,
     framework: 'HSK 1–6 & HSK 7–9',
-    scriptSystem: 'Chữ Hán giản thể (và phồn thể theo chương trình)',
+    scriptSystem: 'Chữ Hán giản thể (tùy chọn phồn thể theo chương trình)',
     phoneticSystem: 'Pinyin, 4 thanh điệu + thanh nhẹ, bộ thủ',
   },
   en: {
@@ -117,25 +119,14 @@ export const OFFICIAL_LANGUAGES = Object.freeze({
     scriptSystem: 'Chữ Latin',
     phoneticSystem: 'IPA, trọng âm từ, trọng âm câu, ngữ điệu',
   },
-  ru: {
-    code: 'ru',
-    slug: 'russian',
-    nameVi: 'Tiếng Nga',
-    nativeName: 'Русский язык',
-    hasGeneral: true,
-    hasSpecialized: false, // TUYỆT ĐỐI KHÔNG MỞ CHUYÊN NGÀNH TIẾNG NGA
-    framework: 'TORFL / ТРКИ (ТЭУ, ТБУ, ТРКИ-I đến ТРКИ-IV)',
-    scriptSystem: 'Bảng chữ cái Cyrillic',
-    phoneticSystem: 'Trọng âm, biến âm, 6 cách danh từ, cặp thể động từ',
-  },
 });
 
-export const ALLOWED_LANGUAGE_CODES = Object.freeze(['zh', 'en', 'ru']);
+export const ALLOWED_LANGUAGE_CODES = Object.freeze(['zh', 'en']);
 export const SPECIALIZED_LANGUAGE_CODES = Object.freeze(['zh', 'en']);
 
 /**
  * 12 real specialized terminology datasets in public/data/vocab/ (12,104 verified entries)
- * Strictly English & Chinese scope — ZERO Russian specialized datasets.
+ * Strictly English & Chinese scope.
  */
 export const SPECIALIZED_VOCAB_DATASETS = Object.freeze([
   { slug: 'ke-toan-doanh-nghiep', nameVi: 'Kế toán Doanh nghiệp', languages: ['en'], count: 1000, sample: 'balance sheet, general ledger, accounts payable, audit trail' },
@@ -167,15 +158,15 @@ export const SPECIALIZED_DOMAINS = Object.freeze([
 ]);
 
 /**
- * 8 Active Administrative Roles (exam_admin removed completely)
+ * 8 Internal Backend RBAC Roles (strictly backend-only; NO public admin portal)
  */
 export const RBAC_ROLES = Object.freeze([
-  { code: 'super_admin', nameVi: 'Super Admin', descriptionVi: 'Toàn quyền quản trị tối cao toàn nền tảng, phân quyền và cấu hình lõi.' },
-  { code: 'platform_admin', nameVi: 'Quản trị viên', descriptionVi: 'Quản lý tài khoản, ngôn ngữ, cấu hình vận hành nền tảng.' },
+  { code: 'super_admin', nameVi: 'Super Admin', descriptionVi: 'Quyền vận hành hệ thống và phân quyền nội bộ.' },
+  { code: 'platform_admin', nameVi: 'Quản trị nền tảng', descriptionVi: 'Quản lý tài khoản, ngôn ngữ và cấu hình vận hành.' },
   { code: 'academic_admin', nameVi: 'Quản trị học thuật', descriptionVi: 'Quản lý chương trình, giáo trình, khóa học, bài học, từ điển và chuyên ngành.' },
   { code: 'editor', nameVi: 'Biên tập viên', descriptionVi: 'Soạn thảo và cập nhật học liệu, bài học, tài liệu Reader, từ vựng và ngữ pháp.' },
   { code: 'reviewer', nameVi: 'Kiểm duyệt viên', descriptionVi: 'Rà soát, hiệu đính và phê duyệt học thuật trước khi phát hành.' },
-  { code: 'support_admin', nameVi: 'Nhân sự hỗ trợ', descriptionVi: 'Tiếp nhận, phản hồi và quản lý yêu cầu hỗ trợ người học và liên hệ.' },
+  { code: 'support_admin', nameVi: 'Nhân sự hỗ trợ', descriptionVi: 'Tiếp nhận, phản hồi và quản lý yêu cầu hỗ trợ người học.' },
   { code: 'data_admin', nameVi: 'Quản trị dữ liệu', descriptionVi: 'Theo dõi Cloudflare D1, R2, sao lưu, khôi phục và kiểm tra tính toàn vẹn dữ liệu.' },
   { code: 'security_admin', nameVi: 'Quản trị bảo mật', descriptionVi: 'Quản lý nhật ký đăng nhập, nhật ký kiểm toán, phiên đăng nhập và bảo vệ hệ thống.' },
 ]);
@@ -193,36 +184,26 @@ export const PLANS = Object.freeze({
     code: 'PERSONAL_PLUS',
     nameVi: 'Thành viên',
     storageQuotaBytes: 5368709120, // 5 GB/account
-    priceStatus: 'BLOCKED — Chờ xác nhận bảng giá chính thức',
+    priceStatus: 'Đang cập nhật biểu phí chính thức',
     studentBenefitMonths: 3,
     studentBenefitVerification: 'school_email_only',
   },
 });
 
 export const INTELLIGENCE_SYSTEMS = Object.freeze([
-  { slug: 'language-dna', code: 'INT-01', nameVi: 'Language DNA', descriptionVi: 'Bản đồ năng lực ngôn ngữ nhiều chiều (từ vựng, ngữ pháp, ngữ âm, ngữ dụng, độ trôi chảy, độ hiểu sâu).', languages: ['zh', 'en', 'ru'] },
-  { slug: 'language-transfer-lab', code: 'INT-02', nameVi: 'Language Transfer Lab', descriptionVi: 'Phân tích chuyển giao tích cực và tiêu cực giữa tiếng Việt với tiếng Trung, tiếng Anh và tiếng Nga.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'knowledge-to-language', code: 'INT-03', nameVi: 'Knowledge-to-Language', descriptionVi: 'Học kiến thức chuyên ngành bằng ngoại ngữ (chỉ áp dụng tiếng Trung và tiếng Anh).', languages: ['zh', 'en'] },
-  { slug: 'real-world-simulator', code: 'INT-04', nameVi: 'Real-World Language Simulator', descriptionVi: 'Mô phỏng tình huống giao tiếp nhiều bước, nhiều lựa chọn và nhiều kết quả.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'language-error-genome', code: 'INT-05', nameVi: 'Language Error Genome', descriptionVi: 'Phân tích nguyên nhân gốc của lỗi lặp lại (thanh điệu tiếng Trung, cách danh từ tiếng Nga, cấu trúc tiếng Anh).', languages: ['zh', 'en', 'ru'] },
-  { slug: 'meaning-equivalence', code: 'INT-06', nameVi: 'Meaning Equivalence Engine', descriptionVi: 'Phân tích tương đương ý nghĩa, sắc thái, văn phong và ngữ cảnh giữa tiếng Việt và ba ngôn ngữ học tập.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'language-timeline', code: 'INT-07', nameVi: 'Language Timeline', descriptionVi: 'Theo dõi tiến bộ theo thời gian, kỹ năng, kết quả và khả năng duy trì kiến thức.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'pronunciation-lab', code: 'INT-08', nameVi: 'Universal Pronunciation Lab', descriptionVi: 'Đánh giá phát âm theo đặc trưng âm vị của tiếng Trung, tiếng Anh và tiếng Nga.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'knowledge-graph', code: 'INT-09', nameVi: 'Multi-Language Knowledge Graph', descriptionVi: 'Đồ thị tri thức liên kết khái niệm, từ vựng và ngữ pháp giữa ba ngôn ngữ.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'personal-corpus', code: 'INT-10', nameVi: 'Personal Language Corpus', descriptionVi: 'Kho ngữ liệu cá nhân, hỗ trợ phân tích từ vựng, cấu trúc và lỗi ngôn ngữ.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'context-reconstruction', code: 'INT-11', nameVi: 'Context Reconstruction', descriptionVi: 'Tái dựng bối cảnh, ý định giao tiếp, vai vế, sắc thái và ngữ dụng.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'comprehension-depth', code: 'INT-12', nameVi: 'Comprehension Depth Test', descriptionVi: 'Đánh giá bốn tầng hiểu: Literal, Inferential, Pragmatic, Critical.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'learning-recovery', code: 'INT-13', nameVi: 'Learning Recovery System', descriptionVi: 'Phát hiện kiến thức có nguy cơ quên và đề xuất kế hoạch ôn tập.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'language-quality', code: 'INT-14', nameVi: 'Language Quality Benchmark', descriptionVi: 'Đánh giá độ chính xác, tự nhiên, mạch lạc và phù hợp văn phong.', languages: ['zh', 'en', 'ru'] },
-  { slug: 'language-observatory', code: 'INT-15', nameVi: 'Personal Language Observatory', descriptionVi: 'Trung tâm tổng hợp kết quả và đề xuất bước học tiếp theo.', languages: ['zh', 'en', 'ru'] },
-]);
-
-export const ADMIN_CENTERS = Object.freeze([
-  { id: 'overview', nameVi: 'Tổng quan', route: '/quan-tri' },
-  { id: 'accounts', nameVi: 'Tài khoản', route: '/quan-tri/accounts' },
-  { id: 'staff', nameVi: 'Nhân sự & Phân quyền', route: '/quan-tri/staff' },
-  { id: 'academic', nameVi: 'Học thuật & Nội dung', route: '/quan-tri/academic' },
-  { id: 'data', nameVi: 'Dữ liệu & Lưu trữ', route: '/quan-tri/data' },
-  { id: 'security', nameVi: 'Bảo mật & Kiểm toán', route: '/quan-tri/security' },
-  { id: 'operations', nameVi: 'Vận hành & Hỗ trợ', route: '/quan-tri/operations' },
+  { slug: 'language-dna', code: 'INT-01', nameVi: 'Language DNA', descriptionVi: 'Bản đồ năng lực ngôn ngữ nhiều chiều (từ vựng, ngữ pháp, ngữ âm, ngữ dụng, độ trôi chảy, độ hiểu sâu).', languages: ['zh', 'en'] },
+  { slug: 'language-transfer-lab', code: 'INT-02', nameVi: 'Language Transfer Lab', descriptionVi: 'Phân tích chuyển giao tích cực và tiêu cực giữa tiếng Việt với tiếng Trung và tiếng Anh.', languages: ['zh', 'en'] },
+  { slug: 'knowledge-to-language', code: 'INT-03', nameVi: 'Knowledge-to-Language', descriptionVi: 'Học kiến thức chuyên ngành bằng ngoại ngữ (áp dụng cho tiếng Trung và tiếng Anh).', languages: ['zh', 'en'] },
+  { slug: 'real-world-simulator', code: 'INT-04', nameVi: 'Real-World Language Simulator', descriptionVi: 'Mô phỏng tình huống giao tiếp nhiều bước, nhiều lựa chọn và nhiều kết quả.', languages: ['zh', 'en'] },
+  { slug: 'language-error-genome', code: 'INT-05', nameVi: 'Language Error Genome', descriptionVi: 'Phân tích nguyên nhân gốc của lỗi lặp lại (thanh điệu tiếng Trung, cấu trúc và trọng âm tiếng Anh).', languages: ['zh', 'en'] },
+  { slug: 'meaning-equivalence', code: 'INT-06', nameVi: 'Meaning Equivalence Engine', descriptionVi: 'Phân tích tương đương ý nghĩa, sắc thái, văn phong và ngữ cảnh giữa tiếng Việt, tiếng Trung và tiếng Anh.', languages: ['zh', 'en'] },
+  { slug: 'language-timeline', code: 'INT-07', nameVi: 'Language Timeline', descriptionVi: 'Theo dõi tiến bộ theo thời gian, kỹ năng, kết quả và khả năng duy trì kiến thức.', languages: ['zh', 'en'] },
+  { slug: 'pronunciation-lab', code: 'INT-08', nameVi: 'Universal Pronunciation Lab', descriptionVi: 'Đánh giá phát âm theo đặc trưng âm vị của tiếng Trung và tiếng Anh.', languages: ['zh', 'en'] },
+  { slug: 'knowledge-graph', code: 'INT-09', nameVi: 'Multi-Language Knowledge Graph', descriptionVi: 'Đồ thị tri thức liên kết khái niệm, từ vựng và ngữ pháp giữa tiếng Trung và tiếng Anh.', languages: ['zh', 'en'] },
+  { slug: 'personal-corpus', code: 'INT-10', nameVi: 'Personal Language Corpus', descriptionVi: 'Kho ngữ liệu cá nhân, hỗ trợ phân tích từ vựng, cấu trúc và lỗi ngôn ngữ.', languages: ['zh', 'en'] },
+  { slug: 'context-reconstruction', code: 'INT-11', nameVi: 'Context Reconstruction', descriptionVi: 'Tái dựng bối cảnh, ý định giao tiếp, vai vế, sắc thái và ngữ dụng.', languages: ['zh', 'en'] },
+  { slug: 'comprehension-depth', code: 'INT-12', nameVi: 'Comprehension Depth Test', descriptionVi: 'Đánh giá bốn tầng hiểu: Literal, Inferential, Pragmatic, Critical.', languages: ['zh', 'en'] },
+  { slug: 'learning-recovery', code: 'INT-13', nameVi: 'Learning Recovery System', descriptionVi: 'Phát hiện kiến thức có nguy cơ quên và đề xuất kế hoạch ôn tập.', languages: ['zh', 'en'] },
+  { slug: 'language-quality', code: 'INT-14', nameVi: 'Language Quality Benchmark', descriptionVi: 'Đánh giá độ chính xác, tự nhiên, mạch lạc và phù hợp văn phong.', languages: ['zh', 'en'] },
+  { slug: 'language-observatory', code: 'INT-15', nameVi: 'Personal Language Observatory', descriptionVi: 'Trung tâm tổng hợp kết quả và đề xuất bước học tiếp theo.', languages: ['zh', 'en'] },
 ]);

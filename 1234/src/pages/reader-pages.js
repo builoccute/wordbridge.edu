@@ -9,7 +9,7 @@ import { signInUrl } from '../config/constants.js';
 import { escapeHtml } from '../utils/validation.js';
 import { htmlResponse } from '../utils/http.js';
 
-const LANG_LABELS = { zh: 'Tiếng Trung', en: 'Tiếng Anh', ru: 'Tiếng Nga' };
+const LANG_LABELS = { zh: 'Tiếng Trung', en: 'Tiếng Anh' };
 const CAT_LABELS = { general: 'Tổng quát', specialized: 'Chuyên ngành', dialogue: 'Hội thoại', guide: 'Hướng dẫn', grammar: 'Ngữ pháp' };
 
 function safeJson(str, fallback = []) {
@@ -31,7 +31,7 @@ export async function renderReaderLibraryPage({ services, user, url, runtime = n
     <section class="wb-hero">
       <span class="wb-badge wb-badge-aqua">THƯ VIỆN ĐỌC TÍCH HỢP</span>
       <h1>Thư Viện Đọc Tài Liệu WORD BRIDGE</h1>
-      <p>Đọc trực tiếp bài đọc học thuật, hội thoại mẫu và tài liệu ngoại ngữ chuyên ngành (Tiếng Trung, Tiếng Anh, Tiếng Nga) kèm bảng chú giải thuật ngữ và lưu tiến độ đọc cá nhân.</p>
+      <p>Đọc trực tiếp bài đọc học thuật, hội thoại mẫu và tài liệu ngoại ngữ chuyên ngành (Tiếng Trung và Tiếng Anh) kèm bảng chú giải thuật ngữ và lưu tiến độ đọc cá nhân.</p>
     </section>
 
     <form method="GET" action="/reader" class="wb-card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
@@ -45,7 +45,6 @@ export async function renderReaderLibraryPage({ services, user, url, runtime = n
           <option value="">Tất cả ngôn ngữ</option>
           <option value="zh" ${language === 'zh' ? 'selected' : ''}>Tiếng Trung (ZH)</option>
           <option value="en" ${language === 'en' ? 'selected' : ''}>Tiếng Anh (EN)</option>
-          <option value="ru" ${language === 'ru' ? 'selected' : ''}>Tiếng Nga (RU)</option>
         </select>
       </div>
       <div class="wb-field" style="margin:0;min-width:150px;">

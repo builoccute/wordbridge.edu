@@ -39,7 +39,7 @@ export async function renderDictionaryPage({ services, user, url, languageSlug =
       title: 'Từ điển không hỗ trợ',
       currentPath: `/dictionary/${languageSlug}`,
       user,
-      contentHtml: '<div class="wb-alert wb-alert-error">WORD BRIDGE chỉ hỗ trợ từ điển Tiếng Trung, Tiếng Anh và Tiếng Nga.</div>',
+      contentHtml: '<div class="wb-alert wb-alert-error">WORD BRIDGE hiện hỗ trợ từ điển Tiếng Trung (zh) và Tiếng Anh (en).</div>',
     }), 404);
   }
 
@@ -50,7 +50,7 @@ export async function renderDictionaryPage({ services, user, url, languageSlug =
     res = { entries: [], total: 0 };
   }
 
-  const langLabel = langCode ? OFFICIAL_LANGUAGES[langCode]?.nameVi : 'Đa ngôn ngữ (Trung – Anh – Nga)';
+  const langLabel = langCode ? OFFICIAL_LANGUAGES[langCode]?.nameVi : 'Song ngữ (Trung – Anh)';
   const currentPath = languageSlug ? `/dictionary/${languageSlug}` : '/dictionary';
 
   const contentHtml = `
@@ -60,7 +60,6 @@ export async function renderDictionaryPage({ services, user, url, languageSlug =
       <a href="/dictionary" class="wb-btn wb-btn-outline wb-btn-sm">Tất cả</a>
       <a href="/dictionary/chinese" class="wb-btn wb-btn-outline wb-btn-sm">Tiếng Trung (zh)</a>
       <a href="/dictionary/english" class="wb-btn wb-btn-outline wb-btn-sm">Tiếng Anh (en)</a>
-      <a href="/dictionary/russian" class="wb-btn wb-btn-outline wb-btn-sm">Tiếng Nga (ru)</a>
       <a href="/vocabulary/notebook" class="wb-btn wb-btn-primary wb-btn-sm">Sổ từ vựng cá nhân</a>
       <a href="/vocabulary/sets" class="wb-btn wb-btn-ghost wb-btn-sm">Bộ từ vựng</a>
       <a href="/vocabulary/flashcards" class="wb-btn wb-btn-ghost wb-btn-sm">Flashcard</a>
@@ -214,7 +213,7 @@ export async function renderVocabularyPage({ db, user, mode = 'notebook', url = 
              d.part_of_speech, d.audio_asset_id, d.collocations_json, d.examples_json
       FROM wb_vocabulary_notebook n
       JOIN wb_dictionary_entries d ON d.id = n.entry_id
-      WHERE n.account_id = ?
+      WHERE n.account_id = ? AND d.language_code IN ('zh', 'en')
       ORDER BY n.next_review_at ASC, n.created_at DESC
     `).bind(user.accountId).all(),
     db.prepare(`
@@ -283,7 +282,7 @@ export async function renderVocabularyPage({ db, user, mode = 'notebook', url = 
         <form class="wb-card wb-form" data-api-endpoint="/api/v1/vocabulary/sets" data-redirect-to="/vocabulary/sets">
           <h3 style="margin-top:0;color:var(--wb-teal);">Tạo bộ Flashcard mới</h3>
           <div class="wb-field"><label>Tên bộ thẻ *</label><input class="wb-input" name="title" required placeholder="VD: Thuật ngữ Cơ khí tuần 1" /></div>
-          <div class="wb-field"><label>Ngôn ngữ</label><select class="wb-select" name="languageCode"><option value="en">Tiếng Anh (EN)</option><option value="zh">Tiếng Trung (ZH)</option><option value="ru">Tiếng Nga (RU)</option></select></div>
+          <div class="wb-field"><label>Ngôn ngữ</label><select class="wb-select" name="languageCode"><option value="en">Tiếng Anh (EN)</option><option value="zh">Tiếng Trung (ZH)</option></select></div>
           <div class="wb-field"><label>Mô tả</label><textarea class="wb-textarea" name="description" rows="2" placeholder="Chủ đề, trình độ hoặc mục tiêu ôn tập..."></textarea></div>
           <div data-form-status></div>
           <button type="submit" class="wb-btn wb-btn-primary wb-btn-sm">Tạo bộ thẻ</button>

@@ -1,5 +1,5 @@
 /**
- * WORD BRIDGE — Strict Input Validation & Scope Enforcement
+ * WORD BRIDGE V4.2 — Strict Input Validation & Bilingual Scope Enforcement (ZH / EN)
  */
 
 import { ALLOWED_LANGUAGE_CODES, SPECIALIZED_LANGUAGE_CODES } from '../config/constants.js';
@@ -16,9 +16,12 @@ export function escapeHtml(str) {
 export function normalizeLanguageCode(input) {
   if (!input) return null;
   const map = {
-    zh: 'zh', chinese: 'zh', 'tieng-trung': 'zh',
-    en: 'en', english: 'en', 'tieng-anh': 'en',
-    ru: 'ru', russian: 'ru', 'tieng-nga': 'ru',
+    zh: 'zh',
+    chinese: 'zh',
+    'tieng-trung': 'zh',
+    en: 'en',
+    english: 'en',
+    'tieng-anh': 'en',
   };
   return map[String(input).trim().toLowerCase()] || null;
 }
@@ -26,7 +29,7 @@ export function normalizeLanguageCode(input) {
 export function assertOfficialLanguage(code) {
   const normalized = normalizeLanguageCode(code);
   if (!normalized || !ALLOWED_LANGUAGE_CODES.includes(normalized)) {
-    throw new Error('Ngôn ngữ không thuộc phạm vi chính thức của WORD BRIDGE (chỉ hỗ trợ Tiếng Trung [zh], Tiếng Anh [en] và Tiếng Nga [ru]).');
+    throw new Error('Ngôn ngữ không thuộc phạm vi hỗ trợ hiện tại của WORD BRIDGE (chỉ hỗ trợ Tiếng Trung [zh] và Tiếng Anh [en]).');
   }
   return normalized;
 }
@@ -34,7 +37,7 @@ export function assertOfficialLanguage(code) {
 export function assertSpecializedLanguage(code) {
   const normalized = assertOfficialLanguage(code);
   if (!SPECIALIZED_LANGUAGE_CODES.includes(normalized)) {
-    throw new Error('Ngoại ngữ chuyên ngành chỉ áp dụng cho Tiếng Trung (zh) và Tiếng Anh (en). Không hỗ trợ chuyên ngành Tiếng Nga.');
+    throw new Error('Ngoại ngữ chuyên ngành chỉ áp dụng cho Tiếng Trung (zh) và Tiếng Anh (en).');
   }
   return normalized;
 }
@@ -68,9 +71,9 @@ export function isAcademicSchoolEmail(email) {
 }
 
 /**
- * Section 52: 8 Mandatory Registration Fields
+ * 8 Mandatory Registration Fields:
  * 1. Họ và tên, 2. Ngày sinh, 3. Số điện thoại, 4. Email,
- * 5. Mật khẩu, 6. Xác nhận mật khẩu, 7. Trường học, 8. Nơi làm việc/tổ chức công tác
+ * 5. Mật khẩu, 6. Xác nhận mật khẩu, 7. Trường học, 8. Nơi làm việc / tổ chức công tác
  */
 export function validateRegistrationPayload(payload) {
   const errors = [];

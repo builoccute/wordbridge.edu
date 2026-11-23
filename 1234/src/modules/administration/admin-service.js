@@ -4,7 +4,16 @@
  * Zero Fake Data, Zero Exam References, Anti-Self-Elevation Guardrails.
  */
 
-import { ADMIN_CENTERS, RBAC_ROLES, ADMIN_ROLE_CODES } from '../../config/constants.js';
+import { RBAC_ROLES, ADMIN_ROLE_CODES } from '../../config/constants.js';
+const ADMIN_CENTERS = Object.freeze([
+  { id: 'overview', nameVi: 'Tổng quan' },
+  { id: 'accounts', nameVi: 'Tài khoản' },
+  { id: 'staff', nameVi: 'Nhân sự & Phân quyền' },
+  { id: 'academic', nameVi: 'Học thuật & Nội dung' },
+  { id: 'data', nameVi: 'Dữ liệu & Lưu trữ' },
+  { id: 'security', nameVi: 'Bảo mật & Kiểm toán' },
+  { id: 'operations', nameVi: 'Vận hành & Hỗ trợ' },
+]);
 import { generateId } from '../../utils/crypto.js';
 
 export class AdminService {

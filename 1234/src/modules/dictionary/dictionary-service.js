@@ -23,13 +23,13 @@ export class DictionaryService {
   }
 
   async search({ q = '', language = '', level = '', pos = '', topic = '', domain = '', limit = 30, offset = 0 } = {}) {
-    const clauses = ["review_status = 'published'"];
+    const clauses = ["review_status = 'published'", "language_code IN ('zh', 'en')"];
     const params = [];
 
     if (language) {
       const normLang = normalizeLanguageCode(language);
       if (!normLang) {
-        return { entries: [], total: 0, error: 'Ngôn ngữ tra cứu không thuộc phạm vi Trung – Anh – Nga.' };
+        return { entries: [], total: 0, error: 'Ngôn ngữ tra cứu chỉ hỗ trợ Tiếng Trung (zh) và Tiếng Anh (en).' };
       }
       clauses.push('language_code = ?');
       params.push(normLang);

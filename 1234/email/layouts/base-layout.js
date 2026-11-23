@@ -100,7 +100,7 @@ export function renderEmailLayout({
             <td style="padding:20px 28px;background-color:#F8FAFC;border-top:1px solid #E4E7EB;font-size:12px;line-height:1.6;color:#52606D;">
               <p style="margin:0 0 8px;">${supportNoteHtml}</p>
               <p style="margin:0 0 4px;"><strong>WORD BRIDGE</strong> — Where Languages Bring People Together.</p>
-              <p style="margin:0;">Nền tảng học tập và thực hành ngoại ngữ Trung – Anh – Nga | <a href="https://www.wordbridge.vn/" style="color:#146466;">https://www.wordbridge.vn/</a></p>
+              <p style="margin:0;">Nền tảng học tập và thực hành ngoại ngữ Trung – Anh – Nga | <a href="https://wordbridge.io.vn/" style="color:#146466;">https://wordbridge.io.vn/</a></p>
               <p style="margin:6px 0 0;">© 2026 WORD BRIDGE. All rights reserved.</p>
             </td>
           </tr>
@@ -121,7 +121,7 @@ export function renderEmailLayout({
     '',
     '----------------------------------------------------',
     supportNoteText,
-    'Website: https://www.wordbridge.vn/',
+    'Website: https://wordbridge.io.vn/',
     '© 2026 WORD BRIDGE. All rights reserved.',
   ].filter(Boolean).join('\n');
 

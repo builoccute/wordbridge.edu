@@ -21,7 +21,7 @@ const CORE_CAPABILITIES = [
   ['Cổng Luyện Tập 6 kỹ năng', 'Bài tập Nghe, Nói, Đọc, Viết, Từ vựng, Ngữ pháp có chấm đáp án & bộ đếm từ.', '/practice'],
   ['Learner Meet trực tuyến', 'Phòng thực hành hội thoại âm thanh và hình ảnh tập trung, không gây xao nhãng.', '/learner-meet'],
   ['15 Công cụ Phân tích Ngôn ngữ', 'Phân tích cấu trúc câu, sắc thái, văn phong học thuật và lưu lịch sử tra cứu.', '/intelligence'],
-  ['Thư viện PDF & Khảo thí trực tuyến', 'Đọc tài liệu PDF chuyên ngành và tham gia kỳ thi đánh giá năng lực bảo mật.', 'https://reader.wordbridge.io.vn/'],
+  ['Thư viện Đọc tài liệu trực tuyến', 'Đọc giáo trình, hội thoại mẫu và tài liệu chuyên ngành kèm ghi chú từ vựng trực tiếp tại /reader.', '/reader'],
 ];
 
 export function renderFeaturesPage({ user, runtime }) {

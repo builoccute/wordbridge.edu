@@ -66,7 +66,7 @@ export async function renderIntelligenceSystemPage({ services, user, systemSlug 
       </form>
       <pre id="intel-result-box" class="wb-card" style="font-size:0.82rem;overflow:auto;margin-top:16px;">Kết quả phân tích JSON sẽ hiển thị tại đây sau khi chạy.</pre>
     `
-    : `<div class="wb-alert wb-alert-info">Khách chưa đăng nhập được xem mô tả phương pháp và cấu trúc hệ thống. Vui lòng <a href="https://portal.wordbridge.io.vn/login">đăng nhập</a> để chạy phân tích cá nhân và lưu lịch sử.</div>`;
+    : `<div class="wb-alert wb-alert-info">Khách chưa đăng nhập được xem mô tả phương pháp và cấu trúc hệ thống. Vui lòng <a href="/login">đăng nhập</a> để chạy phân tích cá nhân và lưu lịch sử.</div>`;
 
   const contentHtml = `
     <span class="wb-badge">${escapeHtml(spec.code)} · Phạm vi: ${spec.languages.join(', ').toUpperCase()}</span>

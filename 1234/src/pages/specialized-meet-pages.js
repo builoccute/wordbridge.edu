@@ -172,11 +172,10 @@ export async function renderLearnerMeetPage({ db, services, user, subPath = '', 
       <div class="wb-grid-2">
         <div class="wb-card">
           <h3>Thực hành giao tiếp trực tiếp 1–1 & Nhóm</h3>
-          <p>Hỗ trợ bật/tắt micro, bật/tắt camera và kết nối theo chủ đề cho Tiếng Trung, Tiếng Anh và Tiếng Nga. Public discovery; tham gia yêu cầu đăng nhập và handoff sang Portal.</p>
+          <p>Hỗ trợ bật/tắt micro, bật/tắt camera và kết nối theo chủ đề cho Tiếng Trung, Tiếng Anh và Tiếng Nga. Tham gia trực tiếp trên nền tảng thống nhất wordbridge.io.vn sau khi đăng nhập.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
             ${user
-              ? `<a data-wb-handoff href="${escapeHtml(ECOSYSTEM.portal)}/meet" class="wb-btn wb-btn-primary wb-btn-sm">Mở Learner Meet tại Portal</a>
-                 <a href="/learner-meet/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Danh sách phiên</a>
+              ? `<a href="/learner-meet/sessions" class="wb-btn wb-btn-primary wb-btn-sm">Danh sách phiên</a>
                  <a href="/learner-meet/create" class="wb-btn wb-btn-ghost wb-btn-sm">Tạo phiên mới</a>`
               : `<a href="${escapeHtml(signInUrl('/learner-meet', 'meet.join'))}" class="wb-btn wb-btn-primary wb-btn-sm">Đăng nhập để tham gia</a>
                  <a href="/learner-meet/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Xem danh sách phiên</a>`}

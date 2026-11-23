@@ -46,13 +46,13 @@ test('V4: public dictionary view; interactive queries require auth and safe retu
     assert.equal(page.status, 200);
     const query = await run('/dictionary?q=bridge', env);
     assert.equal(query.status, 302);
-    assert.ok(query.headers.get('location').startsWith('https://portal.wordbridge.io.vn/login?'));
+    assert.ok(query.headers.get('location').startsWith('/login?'));
     const api = await run('/api/v1/dictionary/search?q=bridge', env);
     assert.equal(api.status, 401);
-    const login = new URL(signInUrl('/dictionary?q=bridge', 'dictionary.search'));
-    assert.equal(login.searchParams.get('next'), 'https://wordbridge.io.vn/dictionary?q=bridge');
+    const login = new URL(signInUrl('/dictionary?q=bridge', 'dictionary.search'), ECOSYSTEM.main);
+    assert.equal(login.searchParams.get('next'), '/dictionary?q=bridge');
     assert.equal(login.searchParams.get('intent'), 'dictionary.search');
-    assert.equal(new URL(signInUrl('https://evil.example/')).searchParams.get('next'), ECOSYSTEM.main + '/');
+    assert.equal(new URL(signInUrl('https://evil.example/'), ECOSYSTEM.main).searchParams.get('next'), '/');
   } finally { env.DB.close(); }
 });
 
@@ -62,7 +62,7 @@ test('V4: removed legacy routes return 410 and local management forwards to cont
     for (const path of ['/social','/friends','/organizations','/account/subscription']) assert.equal((await run(path, env)).status, 410);
     const admin = await run('/admin', env);
     assert.equal(admin.status, 302);
-    assert.equal(admin.headers.get('location'), ECOSYSTEM.control);
+    assert.equal(admin.headers.get('location'), '/quan-tri');
     assert.equal((await run('/page-does-not-exist',env)).status, 404);
   } finally { env.DB.close(); }
 });
@@ -90,7 +90,7 @@ test('V4: all 12 specialized data sources and all SQL migrations survive cleanup
   }
   assert.equal(records,12104);
   const migrations=fs.readdirSync('database/migrations').filter(name=>name.endsWith('.sql'));
-  assert.equal(migrations.length, 16);
+  assert.equal(migrations.length, 17);
 });
 
 test('V4 replacement: /admin and /help ownership handoffs are explicit and path-safe', async () => {
@@ -98,22 +98,21 @@ test('V4 replacement: /admin and /help ownership handoffs are explicit and path-
   try {
     const admin = await run('/admin', env);
     assert.equal(admin.status, 302);
-    assert.equal(new URL(admin.headers.get('location')).origin, ECOSYSTEM.control);
+    assert.equal(admin.headers.get('location'), '/quan-tri');
     const nested = await run('/admin/curriculum?locale=en', env);
     assert.equal(nested.status, 302);
-    const target = new URL(nested.headers.get('location'));
-    assert.equal(target.origin, ECOSYSTEM.control);
-    assert.equal(target.pathname, '/admin/curriculum');
+    const target = new URL(nested.headers.get('location'), ECOSYSTEM.main);
+    assert.equal(target.origin, ECOSYSTEM.main);
+    assert.equal(target.pathname, '/quan-tri/curriculum');
     const help = await run('/help', env);
-    assert.equal(help.status, 302);
-    assert.equal(new URL(help.headers.get('location')).origin, ECOSYSTEM.help);
+    assert.equal(help.status, 200);
   } finally { env.DB.close(); }
 });
 
 test('V4: primary learning systems render from the real Worker entrypoint', async () => {
   const env = await createTestEnv();
   try {
-    for (const path of ['/learning','/learning/path','/learning/skills','/skills/vocabulary','/skills/grammar','/skills/listening','/skills/speaking','/skills/pronunciation','/skills/reading','/skills/writing','/practice','/dictionary','/specialized','/examinations','/learner-meet','/reader','/search']) {
+    for (const path of ['/learning','/learning/path','/learning/skills','/skills/vocabulary','/skills/grammar','/skills/listening','/skills/speaking','/skills/pronunciation','/skills/reading','/skills/writing','/practice','/dictionary','/specialized','/learner-meet','/reader','/help','/search']) {
       const res = await run(path, env);
       assert.equal(res.status, 200, path);
       const html = await res.text();
@@ -128,16 +127,16 @@ test('V4: personal knowledge systems are server-protected and public actions use
     for (const path of ['/my-knowledge','/my-mistakes','/vocabulary/notebook','/vocabulary/flashcards','/vocabulary/review','/practice/history']) {
       const res = await run(path, env);
       assert.equal(res.status, 302, path);
-      const location = new URL(res.headers.get('location'));
-      assert.equal(location.origin, ECOSYSTEM.portal, path);
-      assert.ok(location.searchParams.get('next')?.startsWith(ECOSYSTEM.main + '/'), path);
+      const location = new URL(res.headers.get('location'), ECOSYSTEM.main);
+      assert.equal(location.origin, ECOSYSTEM.main, path);
+      assert.ok(location.searchParams.get('next')?.startsWith('/'), path);
     }
     const meet = await run('/learner-meet', env);
     const meetHtml = await meet.text();
-    assert.match(meetHtml, /portal\.wordbridge\.io\.vn\/login/);
+    assert.match(meetHtml, /\/login\?next=/);
     assert.doesNotMatch(meetHtml, /href="https:\/\/portal\.wordbridge\.io\.vn\/meet" class="wb-btn wb-btn-primary"/);
     const reader = await run('/reader', env);
-    assert.match(await reader.text(), /portal\.wordbridge\.io\.vn\/login/);
+    assert.match(await reader.text(), /\/login\?next=/);
   } finally { env.DB.close(); }
 });
 
@@ -145,14 +144,13 @@ test('V4: examination discovery uses existing schema and never depends on remove
   const env = await createTestEnv();
   try {
     const page = await run('/examinations', env);
-    assert.equal(page.status, 200);
+    assert.equal(page.status, 410);
     const html = await page.text();
-    assert.match(html, /CEFR A1/);
-    assert.match(html, /exam\.wordbridge\.io\.vn/);
+    assert.doesNotMatch(html, /exam\.wordbridge\.io\.vn/);
     assert.doesNotMatch(html, /undefined/);
     const detail = await run('/examinations/cefr-a1-reference-diagnostic', env);
-    assert.equal(detail.status, 200);
-    assert.match(await detail.text(), /Kết quả chỉ mang tính tham chiếu|không phải chứng chỉ/i);
+    assert.equal(detail.status, 410);
+    assert.match(await detail.text(), /Chức năng không tồn tại/i);
   } finally { env.DB.close(); }
 });
 
@@ -163,7 +161,7 @@ test('V4: shell cross-domain links go through local discovery entries and icon U
     const html = await res.text();
     assert.match(html, /href="\/learner-meet"/);
     assert.match(html, /href="\/reader"/);
-    assert.match(html, /href="\/examinations"/);
+    assert.doesNotMatch(html, /href="\/examinations"/);
     assert.doesNotMatch(html, /<button[^>]*wb-dialog-close[^>]*>\s*[×✕]/);
     assert.doesNotMatch(html, /href="#"/);
   } finally { env.DB.close(); }
@@ -186,7 +184,7 @@ test('V4: central Auth Gate intercepts public actions and anonymous search forms
     const home = await run('/', env);
     const homeHtml = await home.text();
     assert.match(homeHtml, /id="wb-auth-gate"/);
-    assert.match(homeHtml, /portal\.wordbridge\.io\.vn\/login\?next=/);
+    assert.match(homeHtml, /\/login\?next=/);
 
     const search = await run('/search', env);
     assert.match(await search.text(), /data-auth-intent="global\.search"/);
@@ -195,7 +193,7 @@ test('V4: central Auth Gate intercepts public actions and anonymous search forms
 
     const client = fs.readFileSync('public/scripts/app.js', 'utf8');
     assert.match(client, /window\.WB_AUTH = Object\.freeze/);
-    assert.match(client, /a\[href\^=.*portal\.wordbridge\.io\.vn\/login/);
+    assert.match(client, /a\[href\^=.*\/login/);
     assert.match(client, /form\[data-auth-intent\]/);
     assert.match(client, /safeReturnUrl/);
     assert.match(client, /url\.searchParams\.set\('locale'/);
@@ -293,8 +291,8 @@ test('V4 course completion requires all published lessons in its course',async t
 test('V4 actionable requests require session and preserve locale and the original search',async t=>{
   const {env}=await learnerFixture(t);
   const search='/search?q=metal+cutting&category=dictionary&locale=en';
-  const login=new URL((await run(search,env)).headers.get('location'));
-  assert.equal(login.searchParams.get('next'),ECOSYSTEM.main+search);
+  const login=new URL((await run(search,env)).headers.get('location'), ECOSYSTEM.main);
+  assert.equal(login.searchParams.get('next'),search);
   assert.equal(login.searchParams.get('locale'),'en');
   assert.equal(login.searchParams.get('intent'),'global.search');
   for(const path of ['vocabulary/notebook','vocabulary/review','practice/submit','support/tickets','lessons/notes']) {
@@ -306,7 +304,7 @@ test('V4 actionable requests require session and preserve locale and the origina
   for(const path of ['/admin/courses','/admin/programs','/admin/curriculum','/admin/lessons']) {
     const res=await run(path+'?locale=en',env);
     assert.equal(res.status,302);
-    assert.equal(res.headers.get('location'),ECOSYSTEM.control+path+'?locale=en');
+    assert.equal(res.headers.get('location'),path.replace('/admin','/quan-tri')+'?locale=en');
   }
 });
 
@@ -325,8 +323,8 @@ test('V4 authenticated search and specialized filtering resolve real terms and p
   assert.match(await search.text(),new RegExp('/'+first.slug+'"'));
   assert.equal((await (await request('/api/v1/vocabulary/notebook')).json()).items.length,0);
   const body=await (await request('/learner-meet')).text();
-  assert.match(body,/data-wb-handoff href="https:\/\/portal.wordbridge.io.vn\/meet"/);
-  assert.match(await (await request('/examinations')).text(),/data-wb-handoff href="https:\/\/exam.wordbridge.io.vn\//);
+  assert.match(body,/href="\/learner-meet\/sessions"/);
+  assert.equal((await request('/examinations')).status, 410);
 });
 
 test('V4 memory thresholds and correction on retry use saved evidence', async t=>{

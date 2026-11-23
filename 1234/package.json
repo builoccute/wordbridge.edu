@@ -1,6 +1,6 @@
 {
   "name": "word-bridge",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "private": true,
   "type": "module",
   "description": "WORD BRIDGE V4 — Nền tảng học tập, tra cứu, luyện tập và đánh giá năng lực ngoại ngữ Trung – Anh – Nga (Web Super App trên Cloudflare Workers, D1 và R2).",
@@ -15,7 +15,7 @@
     "deploy": "wrangler deploy",
     "db:migrate:local": "wrangler d1 migrations apply word --local",
     "db:migrate:remote": "wrangler d1 migrations apply word --remote",
-    "test": "node --test tests/integration/oauth-passkey-ownership.test.js tests/integration/v4-contract.test.mjs tests/unit/client-workflows.test.mjs",
+    "test": "node --test tests/integration/oauth-passkey-ownership.test.js tests/integration/v4-contract.test.mjs tests/integration/v41-one-domain-complete.test.mjs tests/unit/client-workflows.test.mjs",
     "test:v4": "node --test tests/integration/v4-contract.test.mjs tests/unit/client-workflows.test.mjs",
     "test:unit": "node --test tests/unit/*.test.js",
     "test:integration": "node --test tests/integration/*.test.js",

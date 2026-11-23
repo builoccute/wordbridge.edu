@@ -1,7 +1,8 @@
 /**
- * WORD BRIDGE V4.0 — Main Specialized Language Platform (wordbridge.io.vn)
- * Zero-D1 / Zero-R2: Routes SQLite & Storage securely to quantri.wordbridge.io.vn
- * Unified Auth Gate, Super App Learner Routes, 410 Legacy Cleanup, 500 Error Boundary
+ * WORD BRIDGE V4.1 — Unified One-Domain Platform (https://wordbridge.io.vn)
+ * Supreme Admin Center: https://wordbridge.io.vn/quan-tri
+ * Native Cloudflare D1 (`DB`) & R2 (`R2`), Unified Auth, Integrated /help & /reader,
+ * Complete Exam Removal (410 Gone), Zero Subdomain Dependencies.
  */
 
 import { EmailService } from './services/email-service.js';
@@ -12,37 +13,36 @@ import { R2StorageService } from '../storage/r2-adapter.js';
 import { DictionaryService } from './modules/dictionary/dictionary-service.js';
 import { AudioService } from './modules/audio/audio-service.js';
 import { PracticeService } from './modules/practice/practice-service.js';
-import { ExaminationService } from './modules/examination/examination-service.js';
+import { ReaderService } from './modules/reader/reader-service.js';
 import { LearnerMeetService } from './modules/learner-meet/learner-meet-service.js';
 import { IntelligenceService } from './modules/intelligence/intelligence-service.js';
 import { AdminService } from './modules/administration/admin-service.js';
 import { handleApiRequest } from './api/router.js';
-import { ECOSYSTEM, SPECIALIZED_VOCAB_DATASETS } from './config/constants.js';
+import { SPECIALIZED_VOCAB_DATASETS } from './config/constants.js';
 import { parseCookies, htmlResponse, jsonResponse, redirectResponse, SECURITY_HEADERS } from './utils/http.js';
 import { timingSafeEqual } from './utils/crypto.js';
 import { renderPublicPage } from './layouts/site-layout.js';
-import { createQuantriBridge, renderMaintenancePage } from './services/quantri-client.js';
+import { renderMaintenancePage } from './services/quantri-client.js';
 import { renderFeaturesPage } from './pages/features-page.js';
 
-import { renderHomePage, renderAboutPage, renderFaqPage, renderContactPage, renderPolicyPage, renderReaderDiscoveryPage } from './pages/public-pages.js';
+import { renderHomePage, renderAboutPage, renderFaqPage, renderContactPage, renderPolicyPage } from './pages/public-pages.js';
+import { renderHelpCenterPage } from './pages/help-pages.js';
+import { renderReaderLibraryPage, renderReaderDocumentPage } from './pages/reader-pages.js';
+import { renderQuanTriPage } from './pages/admin-pages.js';
 import { renderLearningHub, renderLanguageLearningPage, renderProgramDetailPage, renderCourseCurriculumPage, renderModuleDetailPage, renderWeekDetailPage, renderLessonDetailPage, renderLessonResultPage, renderMyLearningPage } from './pages/learning-pages.js';
 import { renderGlobalSearchPage, renderLearningPathPage, renderSkillCenterHub, renderSkillCenterPage, renderKnowledgePage, renderMistakesPage } from './pages/learning-system-pages.js';
 import { renderDictionaryPage, renderDictionaryEntryPage, renderVocabularyPage } from './pages/dictionary-pages.js';
-import { renderPracticePage, renderPracticeHistoryPage, renderPracticeResultPage, renderExaminationsHub, renderExamDetailPage, renderExamAttemptPage, renderExamResultPage, renderExamHistoryPage } from './pages/practice-exam-pages.js';
+import { renderPracticePage, renderPracticeHistoryPage, renderPracticeResultPage } from './pages/practice-exam-pages.js';
 import { renderSpecializedPage, renderLearnerMeetPage } from './pages/specialized-meet-pages.js';
 import { renderIntelligenceHub, renderIntelligenceSystemPage } from './pages/intelligence-pages.js';
 import { renderLoginPage, renderRegisterPage, renderVerifyEmailPage, renderPasswordPage, renderAccountPage } from './pages/account-pages.js';
 
-const REMOVED_LEGACY_PATHS = new Set(['/social', '/friends', '/feed', '/organizations', '/account/subscription', '/oauth/callback', '/account/linked-accounts']);
-
-function resolveBackingEnv(env) {
-  if (env.DB && env.R2) return { env, runtimeFetcher: null };
-  const bridge = createQuantriBridge(env, 'wordbridge');
-  return {
-    env: { ...env, DB: env.DB || bridge.db, R2: env.R2 || bridge.storage },
-    runtimeFetcher: bridge.getRuntimeConfig,
-  };
-}
+const REMOVED_LEGACY_PATHS = new Set([
+  '/social', '/friends', '/feed', '/organizations', '/account/subscription',
+  '/oauth/callback', '/account/linked-accounts',
+  '/examinations', '/examinations/history',
+  '/examinations/chinese', '/examinations/english', '/examinations/russian',
+]);
 
 function createServices(env) {
   const email = new EmailService(env.DB, env);
@@ -53,11 +53,31 @@ function createServices(env) {
   const dictionary = new DictionaryService(env.DB);
   const audio = new AudioService(env.DB, r2, env);
   const practice = new PracticeService(env.DB, email, env);
-  const examination = new ExaminationService(env.DB, email, env);
+  const reader = new ReaderService(env.DB, r2);
   const learnerMeet = new LearnerMeetService(env.DB, email, env);
   const intelligence = new IntelligenceService(env.DB, env);
-  const admin = new AdminService(env.DB, auth, jobs);
-  return { email, auth, studentBenefit, jobs, r2, dictionary, audio, practice, examination, learnerMeet, intelligence, admin };
+  const admin = new AdminService(env.DB, auth, jobs, r2, email);
+  return { email, auth, studentBenefit, jobs, r2, dictionary, audio, practice, reader, learnerMeet, intelligence, admin };
+}
+
+async function loadRuntimeFromD1(db) {
+  try {
+    const rows = (await db
+      .prepare("SELECT config_key, config_value FROM wb_platform_config WHERE config_key IN ('site.maintenance_mode', 'site.maintenance_message', 'site.announcement_banner')")
+      .all()).results || [];
+    const map = Object.fromEntries(rows.map((r) => [r.config_key, r.config_value]));
+    return {
+      site: {
+        display_name: 'WORD BRIDGE',
+        maintenance_mode: map['site.maintenance_mode'] === 'true',
+        maintenance_message: map['site.maintenance_message'] || '',
+        announcement_banner: map['site.announcement_banner'] || '',
+      },
+      settings: {},
+    };
+  } catch {
+    return null;
+  }
 }
 
 function inferContentType(path) {
@@ -109,17 +129,17 @@ function render500Page(path) {
   return htmlResponse(renderPublicPage({
     title: '500 — Hệ thống tạm thời không thể xử lý yêu cầu',
     currentPath: path,
-    contentHtml: `<section class="wb-alert wb-alert-error" role="alert"><h1>Hệ thống tạm thời không thể xử lý yêu cầu</h1><p>Không có dữ liệu nào được xác nhận đã lưu. Hãy thử lại hoặc liên hệ hỗ trợ.</p><a href="/" class="wb-btn wb-btn-outline">Về trang chủ</a></section>`,
+    contentHtml: `<section class="wb-alert wb-alert-error" role="alert"><h1>Hệ thống tạm thời không thể xử lý yêu cầu</h1><p>Không có dữ liệu nào được xác nhận đã lưu. Hãy thử lại hoặc liên hệ hỗ trợ tại <a href="/help">/help</a>.</p><a href="/" class="wb-btn wb-btn-outline">Về trang chủ</a></section>`,
   }), 500);
 }
 
 export default {
-  async fetch(request, rawEnv, ctx) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const path = url.pathname.length > 1 && url.pathname.endsWith('/') ? url.pathname.slice(0, -1) : url.pathname;
 
     try {
-      // 1. Cloudflare Workers Static Assets (CSS/JS/Logo/Specialized Vocab Datasets)
+      // 1. Static Assets (CSS/JS/Logo/Specialized Vocab Datasets)
       if (
         path.startsWith('/styles/') ||
         path.startsWith('/scripts/') ||
@@ -128,54 +148,58 @@ export default {
         path.startsWith('/public/')
       ) {
         const normalizedPath = path.startsWith('/public/') ? path.slice('/public'.length) : path;
-        const assetRes = await loadStaticAsset(normalizedPath, request, url, rawEnv);
+        const assetRes = await loadStaticAsset(normalizedPath, request, url, env);
         if (assetRes) return assetRes;
       }
 
-      // 2. Removed Legacy Routes -> 410 Gone
+      // 2. Removed Legacy & Exam Routes -> 410 Gone
       if (
         REMOVED_LEGACY_PATHS.has(path) ||
         path.startsWith('/social/') ||
         path.startsWith('/friends/') ||
-        path.startsWith('/organizations/')
+        path.startsWith('/organizations/') ||
+        path.startsWith('/examinations/') ||
+        path.startsWith('/examination-attempts/') ||
+        path.startsWith('/examination-results/')
       ) {
         return htmlResponse(renderPublicPage({
           title: '410 — Chức năng không tồn tại',
           currentPath: path,
-          contentHtml: `<section class="wb-alert wb-alert-warn"><h1>Chức năng không tồn tại</h1><p>Đường dẫn này đã được loại bỏ khỏi phạm vi sản phẩm WORD BRIDGE V4. Vui lòng xem các chương trình học hiện hành.</p><a href="/learning" class="wb-btn wb-btn-primary">Khám phá chương trình học</a></section>`,
+          contentHtml: `<section class="wb-alert wb-alert-warn"><h1>Chức năng không tồn tại</h1><p>Đường dẫn này đã được loại bỏ khỏi phạm vi sản phẩm WORD BRIDGE. Vui lòng sử dụng các phân hệ Học tập (/learning) hoặc Cổng Luyện Tập (/practice).</p><a href="/practice" class="wb-btn wb-btn-primary">Vào Cổng Luyện Tập</a></section>`,
         }), 410);
       }
 
-      // 3. Path-safe Redirect /quan-tri* & /admin* to Central Control Plane (quantri.wordbridge.io.vn)
-      if (path === '/quan-tri' || path.startsWith('/quan-tri/') || path === '/admin' || path.startsWith('/admin/')) {
-        const controlOrigin = rawEnv.QUANTRI_API_BASE_URL || ECOSYSTEM.control;
-        if (path === '/admin' || path === '/quan-tri') {
-          const target = url.search ? `${controlOrigin}${url.search}` : controlOrigin;
-          return redirectResponse(target, 302);
-        }
-        const target = `${controlOrigin}${path}${url.search}`;
-        return redirectResponse(target, 302);
+      // 3. Canonicalize /admin* internally to /quan-tri (same domain, NO external subdomain)
+      if (path === '/admin' || path.startsWith('/admin/')) {
+        const suffix = path === '/admin' ? '' : path.slice('/admin'.length);
+        return redirectResponse(`/quan-tri${suffix}${url.search}`, 302);
       }
 
-      // 4. Help Center Ownership Handoff
-      if (path === '/help') {
-        const helpTarget = rawEnv.HELP_BASE_URL || `${ECOSYSTEM.help}/`;
-        return redirectResponse(helpTarget, 302);
-      }
-
-      const { env, runtimeFetcher } = resolveBackingEnv(rawEnv);
-      const runtime = runtimeFetcher ? await runtimeFetcher() : null;
-
-      // 5. Zero-Code Maintenance Mode from quantri.wordbridge.io.vn
-      if (runtime?.site?.maintenance_mode && !path.startsWith('/api/v1/health')) {
-        return renderMaintenancePage(runtime.site);
+      if (!env.DB) {
+        throw new Error('Cloudflare D1 binding `DB` chưa được cấu hình.');
       }
 
       const services = createServices(env);
       const cookies = parseCookies(request);
       const user = await services.auth.authenticateSession(cookies.wb_session);
+      const runtime = await loadRuntimeFromD1(env.DB);
 
-      // 6. V4.0 Lesson Notes API (Login + CSRF Required)
+      // 4. D1-Controlled Maintenance Mode (Admins, /quan-tri, /login, /help, /api/v1/health remain accessible)
+      const bypassMaintenance =
+        path === '/login' ||
+        path === '/help' ||
+        path === '/quan-tri' ||
+        path.startsWith('/quan-tri/') ||
+        path.startsWith('/api/v1/health') ||
+        path.startsWith('/api/v1/auth/') ||
+        path.startsWith('/api/v1/admin/') ||
+        services.auth.hasAnyAdminRole(user);
+
+      if (runtime?.site?.maintenance_mode && !bypassMaintenance) {
+        return renderMaintenancePage(runtime.site);
+      }
+
+      // 5. Lesson Notes API (Login + CSRF Required)
       if (path === '/api/v1/lessons/notes') {
         if (!user) return jsonResponse({ ok: false, error: { code: 'UNAUTHORIZED', message: 'Cần đăng nhập để lưu ghi chú bài học.' } }, 401);
         await env.DB.prepare(`
@@ -223,19 +247,29 @@ export default {
           user,
           env,
           ctx,
-          loadVocabJson: (domainSlug) => loadVocabJson(domainSlug, request, url, rawEnv),
+          loadVocabJson: (domainSlug) => loadVocabJson(domainSlug, request, url, env),
         });
       }
 
-      // 7. Public, Discovery & Super App Learning Pages
+      // 6. Supreme Admin Center (/quan-tri & /quan-tri/:section)
+      if (path === '/quan-tri') return renderQuanTriPage({ services, user, section: 'overview', url, runtime });
+      if (path.startsWith('/quan-tri/')) {
+        const section = path.slice('/quan-tri/'.length).split('/')[0] || 'overview';
+        return renderQuanTriPage({ services, user, section, url, runtime });
+      }
+
+      // 7. Public, Help, Reader & Learning Pages (All on https://wordbridge.io.vn)
       if (path === '/') return renderHomePage({ user, runtime });
       if (path === '/features') return renderFeaturesPage({ user, runtime });
-      if (path === '/about') return renderAboutPage({ user });
-      if (path === '/faq') return renderFaqPage({ user });
-      if (path === '/contact') return renderContactPage({ user });
-      if (path === '/reader') return renderReaderDiscoveryPage({ user });
+      if (path === '/about') return renderAboutPage({ user, runtime });
+      if (path === '/faq') return renderFaqPage({ user, runtime });
+      if (path === '/contact') return renderContactPage({ user, runtime });
+      if (path === '/help') return renderHelpCenterPage({ services, user, runtime });
+      if (path === '/reader') return renderReaderLibraryPage({ services, user, url, runtime });
+      const readerDocMatch = path.match(/^\/reader\/([^/]+)$/);
+      if (readerDocMatch) return renderReaderDocumentPage({ services, user, slug: readerDocMatch[1], runtime });
       if (path === '/search') return renderGlobalSearchPage({ db: env.DB, user, url });
-      if (path.startsWith('/policies/')) return renderPolicyPage({ user, policySlug: path.slice('/policies/'.length) });
+      if (path.startsWith('/policies/')) return renderPolicyPage({ user, policySlug: path.slice('/policies/'.length), runtime });
 
       if (path === '/learning') return renderLearningHub({ db: env.DB, user });
       if (path === '/learning/path') return renderLearningPathPage({ db: env.DB, user });
@@ -270,6 +304,7 @@ export default {
       if (dictEntryMatch) return renderDictionaryEntryPage({ services, user, languageSlug: dictEntryMatch[1], entrySlug: dictEntryMatch[2] });
       const dictLangMatch = path.match(/^\/dictionary\/([^/]+)$/);
       if (dictLangMatch) return renderDictionaryPage({ services, user, url, languageSlug: dictLangMatch[1] });
+      if (path === '/vocabulary') return renderVocabularyPage({ db: env.DB, user, mode: 'notebook', url });
       if (path === '/vocabulary/notebook') return renderVocabularyPage({ db: env.DB, user, mode: 'notebook', url });
       if (path === '/vocabulary/sets') return renderVocabularyPage({ db: env.DB, user, mode: 'sets', url });
       if (path === '/vocabulary/flashcards') return renderVocabularyPage({ db: env.DB, user, mode: 'flashcards', url });
@@ -281,20 +316,6 @@ export default {
       if (prResMatch) return renderPracticeResultPage({ db: env.DB, user, resultId: prResMatch[1] });
       const practiceSkillMatch = path.match(/^\/practice\/(listening|speaking|reading|writing|vocabulary|grammar)$/);
       if (practiceSkillMatch) return renderPracticePage({ services, db: env.DB, user, skill: practiceSkillMatch[1] });
-
-      if (path === '/examinations') return renderExaminationsHub({ db: env.DB, user });
-      if (path === '/examinations/history') return renderExamHistoryPage({ db: env.DB, user });
-      if (['/examinations/chinese', '/examinations/english', '/examinations/russian'].includes(path)) {
-        return renderExaminationsHub({ db: env.DB, user, languageSlug: path.split('/')[2] });
-      }
-      const examInstrMatch = path.match(/^\/examinations\/([^/]+)\/instructions$/);
-      if (examInstrMatch) return renderExamDetailPage({ db: env.DB, user, examSlug: examInstrMatch[1], isInstructions: true });
-      const examSlugMatch = path.match(/^\/examinations\/([^/]+)$/);
-      if (examSlugMatch) return renderExamDetailPage({ db: env.DB, user, examSlug: examSlugMatch[1], isInstructions: false });
-      const exAttemptMatch = path.match(/^\/examination-attempts\/([^/]+)$/);
-      if (exAttemptMatch) return renderExamAttemptPage({ db: env.DB, user, attemptId: exAttemptMatch[1] });
-      const exResultMatch = path.match(/^\/examination-results\/([^/]+)$/);
-      if (exResultMatch) return renderExamResultPage({ db: env.DB, user, resultId: exResultMatch[1] });
 
       if (path === '/specialized') return renderSpecializedPage({ db: env.DB, user });
       if (path.startsWith('/specialized/')) return renderSpecializedPage({ db: env.DB, user, subSlug: path.slice('/specialized/'.length) });
@@ -312,11 +333,12 @@ export default {
       const intelPageMatch = path.match(/^\/intelligence\/([a-z0-9-]+)$/);
       if (intelPageMatch) return renderIntelligenceSystemPage({ services, user, systemSlug: intelPageMatch[1] });
 
-      if (path === '/login') return renderLoginPage({ user });
+      if (path === '/login') return renderLoginPage({ user, url });
       if (path === '/register') return renderRegisterPage({ user });
       if (path === '/verify-email') return renderVerifyEmailPage({ services, url, request });
-      if (path === '/forgot-password') return renderPasswordPage({ mode: 'forgot', user });
-      if (path === '/reset-password') return renderPasswordPage({ mode: 'reset', user });
+      if (path === '/forgot-password') return renderPasswordPage({ mode: 'forgot', user, url });
+      if (path === '/reset-password') return renderPasswordPage({ mode: 'reset', user, url });
+      if (path === '/profile') return renderAccountPage({ db: env.DB, user, subPath: 'profile-root' });
       if (path === '/account') return renderAccountPage({ db: env.DB, user, subPath: '' });
       if (path.startsWith('/account/')) return renderAccountPage({ db: env.DB, user, subPath: path.slice('/account/'.length) });
 
@@ -330,5 +352,11 @@ export default {
     } catch {
       return render500Page(path);
     }
+  },
+
+  async scheduled(event, env) {
+    if (!env.DB) return;
+    const services = createServices(env);
+    await services.jobs.runScheduledSweep();
   },
 };

@@ -7,15 +7,10 @@
  * - Real HTML5 Audio player controls, Writing counter, Passkey/SSO launcher, Toast notifications
  */
 (function () {
-  const PORTAL_LOGIN = 'https://portal.wordbridge.io.vn/login';
+  const PORTAL_LOGIN = '/login';
   const MAIN_ORIGIN = 'https://wordbridge.io.vn';
   const ALLOWED_ORIGINS = [
     MAIN_ORIGIN,
-    'https://portal.wordbridge.io.vn',
-    'https://exam.wordbridge.io.vn',
-    'https://reader.wordbridge.io.vn',
-    'https://help.wordbridge.io.vn',
-    'https://www.wordbridge.vn',
   ];
 
   function currentLocale() {
@@ -39,7 +34,8 @@
   }
 
   function buildSignInUrl(nextTarget, intent) {
-    const url = new URL(PORTAL_LOGIN);
+    const origin = (window.location && window.location.origin && window.location.origin !== 'null') ? window.location.origin : MAIN_ORIGIN;
+    const url = new URL(PORTAL_LOGIN, origin);
     url.searchParams.set('next', safeReturnUrl(nextTarget || (window.location ? window.location.href : MAIN_ORIGIN + '/')));
     if (intent) url.searchParams.set('intent', String(intent));
     url.searchParams.set('locale', currentLocale());
@@ -334,6 +330,8 @@
 
       if (redirectTo) {
         window.location.href = redirectTo;
+      } else if (form.getAttribute('data-reload-on-success') === 'true') {
+        window.location.reload();
       } else if (form.hasAttribute('data-render-json')) {
         const out = document.getElementById(form.getAttribute('data-render-json'));
         if (out) {
@@ -374,14 +372,15 @@
     }
 
     // Intercept Portal login links to ensure locale & safe return_to are attached
-    const loginLink = target.closest('a[href^="https://portal.wordbridge.io.vn/login"]');
+    const loginLink = target.closest('a[href^="/login"]');
     if (loginLink && document.body.getAttribute('data-wb-authenticated') !== 'true') {
       const href = loginLink.getAttribute('href') || PORTAL_LOGIN;
       try {
-        const parsed = new URL(href);
+        const origin = (window.location && window.location.origin && window.location.origin !== 'null') ? window.location.origin : MAIN_ORIGIN;
+        const parsed = new URL(href, origin);
         parsed.searchParams.set('next', safeReturnUrl(parsed.searchParams.get('next') || (window.location ? window.location.href : MAIN_ORIGIN + '/')));
         parsed.searchParams.set('locale', currentLocale());
-        loginLink.setAttribute('href', parsed.toString());
+        loginLink.setAttribute('href', parsed.pathname + parsed.search);
       } catch {}
     }
 
@@ -561,7 +560,7 @@
       if (data.ok && data.redirectUrl) {
         window.location.href = data.redirectUrl;
       } else {
-        showToast(data?.error?.message || 'Cần cấu hình SSO secret tại quantri.wordbridge.io.vn.', true);
+        showToast(data?.error?.message || 'Thư viện đọc đã tích hợp trực tiếp tại /reader.', true);
       }
       return;
     }

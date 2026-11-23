@@ -1,16 +1,16 @@
 /**
- * WORD BRIDGE — REST API Router (/api/v1/*) — V4.0 Security & Super App Hardened
- * - Auth Gate enforced on Audio stream, Dictionary search, Specialized terms, Support tickets, Notebook, Sets, Review, Practice
- * - Mandatory Backend CSRF verification on authenticated state-changing requests
- * - Strict SM-2 validation (422), optimistic concurrency (409), honest DB failure (503)
- * - Backend-computed Lesson Evaluation (never accepts arbitrary frontend scorePercent=100)
- * - Strict Data Ownership & Academic CMS RBAC APIs
+ * WORD BRIDGE V4.1 — Unified REST API Router (/api/v1/*)
+ * - One Domain (https://wordbridge.io.vn), Native D1 & R2
+ * - Exam APIs completely removed (410 Gone)
+ * - Full Auth (register, verify-email, login, forgot-password, reset-password, profile, change-password, passkeys)
+ * - Real Help Center Tickets API, Real Reader API, Full Super Admin & RBAC APIs
+ * - Mandatory Backend CSRF verification on all authenticated state-changing requests
  */
 
 import { jsonResponse, errorResponse, buildSessionCookie, clearSessionCookie } from '../utils/http.js';
-import { OFFICIAL_LANGUAGES, SPECIALIZED_DOMAINS, INTELLIGENCE_SYSTEMS, PLANS, ECOSYSTEM } from '../config/constants.js';
+import { OFFICIAL_LANGUAGES, SPECIALIZED_DOMAINS, INTELLIGENCE_SYSTEMS, PLANS, BRAND } from '../config/constants.js';
 import { assertOfficialLanguage, assertSpecializedLanguage } from '../utils/validation.js';
-import { generateId, hmacSha256Hex, randomTokenHex, timingSafeEqual } from '../utils/crypto.js';
+import { generateId, timingSafeEqual } from '../utils/crypto.js';
 
 async function readJsonBody(request) {
   try {
@@ -46,14 +46,30 @@ export async function handleApiRequest(request, url, ctx) {
     return errorResponse('FEATURE_PROHIBITED', 'WORD BRIDGE không cung cấp chức năng cấp chứng chỉ dưới mọi hình thức.', 404);
   }
 
+  // Exam module completely removed -> 410 Gone
+  if (
+    path.startsWith('/api/v1/examinations') ||
+    path.startsWith('/api/v1/examination-attempts') ||
+    path.startsWith('/api/v1/examination-results')
+  ) {
+    return errorResponse('EXAM_MODULE_REMOVED', 'Phân hệ Exam đã được loại bỏ hoàn toàn khỏi WORD BRIDGE. Vui lòng sử dụng Cổng Luyện Tập (/practice).', 410);
+  }
+
+  // Legacy external Reader SSO removed (Reader is now natively integrated at /reader)
+  if (path === '/api/v1/sso/reader/issue') {
+    return errorResponse('SUBDOMAIN_REMOVED', 'Thư viện đọc đã được tích hợp trực tiếp tại /reader trên wordbridge.io.vn.', 410);
+  }
+
   // Health & OpenAPI
   if (path === '/api/v1/health' && method === 'GET') {
     const langCount = await env.DB.prepare('SELECT COUNT(*) AS cnt FROM wb_languages').first();
     return jsonResponse({
       ok: true,
       service: 'WORD BRIDGE API',
-      version: '4.0.0',
+      version: '4.1.0',
+      domain: BRAND.websiteUrl,
       database: { name: 'word', status: 'connected', officialLanguages: langCount?.cnt || 0 },
+      storage: { bucket: 'word', status: services.r2.isAvailable() ? 'connected' : 'unbound' },
       emailProvider: env.EMAIL_PROVIDER || 'unconfigured',
       learnerMeetProvider: env.LEARNER_MEET_PROVIDER || 'unconfigured',
       csrfProtection: 'enforced',
@@ -64,20 +80,20 @@ export async function handleApiRequest(request, url, ctx) {
   if (path === '/api/v1/openapi.json' && method === 'GET') {
     return jsonResponse({
       openapi: '3.1.0',
-      info: { title: 'WORD BRIDGE API', version: '4.0.0' },
-      servers: [{ url: `${ECOSYSTEM.main}/api/v1` }],
+      info: { title: 'WORD BRIDGE Unified API', version: '4.1.0' },
+      servers: [{ url: `${BRAND.websiteUrl}/api/v1` }],
       paths: {
-        '/health': { get: { summary: 'Health & Integration status' } },
-        '/auth/register': { post: { summary: 'Đăng ký cá nhân 8 trường' } },
-        '/account/passkeys/register/options': { post: { summary: 'Tạo WebAuthn registration challenge' } },
+        '/health': { get: { summary: 'Health & D1/R2 status' } },
+        '/auth/register': { post: { summary: 'Đăng ký tài khoản Email/Mật khẩu' } },
+        '/auth/login': { post: { summary: 'Đăng nhập tài khoản' } },
+        '/auth/reset-password': { post: { summary: 'Đặt lại mật khẩu bằng token một lần' } },
         '/dictionary/search': { get: { summary: 'Tra cứu từ điển (yêu cầu đăng nhập)' } },
-        '/specialized/terms': { get: { summary: 'Tra cứu 12 bộ thuật ngữ chuyên ngành (yêu cầu đăng nhập)' } },
-        '/vocabulary/sets': { get: { summary: 'Quản lý bộ thẻ Flashcard' }, post: { summary: 'Tạo bộ thẻ Flashcard' } },
-        '/vocabulary/notebook': { get: { summary: 'Sổ từ vựng cá nhân' }, post: { summary: 'Lưu mục từ / thuật ngữ' } },
-        '/vocabulary/review': { post: { summary: 'Đánh giá SM-2 có kiểm tra xung đột' } },
-        '/learning/progress': { post: { summary: 'Ghi nhận tiến độ & chấm câu hỏi bài học tại backend (CSRF)' } },
-        '/audio/{id}/stream': { get: { summary: 'Phát luồng audio thực tế từ R2 (yêu cầu đăng nhập)' } },
-        '/webhooks/email': { post: { summary: 'Webhook trạng thái email có xác minh HMAC-SHA256' } },
+        '/specialized/terms': { get: { summary: 'Tra cứu 12 bộ thuật ngữ chuyên ngành' } },
+        '/reader/documents': { get: { summary: 'Danh sách tài liệu Thư viện đọc (/reader)' } },
+        '/reader/progress': { post: { summary: 'Lưu tiến độ đọc & ghi chú cá nhân' } },
+        '/support/tickets': { get: { summary: 'Theo dõi yêu cầu hỗ trợ cá nhân' }, post: { summary: 'Gửi yêu cầu hỗ trợ / liên hệ' } },
+        '/practice/submit': { post: { summary: 'Nộp bài luyện tập 6 kỹ năng' } },
+        '/admin/dashboard': { get: { summary: 'Thống kê quản trị tối cao (/quan-tri)' } },
       },
     });
   }
@@ -101,6 +117,35 @@ export async function handleApiRequest(request, url, ctx) {
       });
     } catch (err) {
       return errorResponse('AUDIO_STREAM_ERROR', err.message, 403);
+    }
+  }
+
+  // Public Reader Document Catalog & File Stream
+  if (path === '/api/v1/reader/documents' && method === 'GET') {
+    const docs = await services.reader.listDocuments({
+      language: url.searchParams.get('language') || '',
+      category: url.searchParams.get('category') || '',
+      q: url.searchParams.get('q') || '',
+    });
+    return jsonResponse({ ok: true, documents: docs });
+  }
+
+  const readerFileMatch = path.match(/^\/api\/v1\/reader\/documents\/([^/]+)\/file$/);
+  if (readerFileMatch && method === 'GET') {
+    if (!user) return errorResponse('UNAUTHORIZED', 'Cần đăng nhập để tải tệp tài liệu Reader.', 401);
+    const doc = await env.DB.prepare("SELECT * FROM wb_reader_documents WHERE id = ? AND review_status = 'published'").bind(readerFileMatch[1]).first();
+    if (!doc || !doc.r2_object_key) {
+      return errorResponse('READER_FILE_NOT_FOUND', 'Tài liệu không có tệp đính kèm trong R2.', 404);
+    }
+    try {
+      const obj = await services.r2.getObject(doc.r2_object_key, { allowPrivate: true });
+      if (!obj) return errorResponse('READER_FILE_MISSING', 'Không tìm thấy tệp trong R2 bucket `word`.', 404);
+      return new Response(obj.body, {
+        status: 200,
+        headers: { 'Content-Type': doc.content_type || 'application/pdf' },
+      });
+    } catch (err) {
+      return errorResponse('READER_FILE_ERROR', err.message, 403);
     }
   }
 
@@ -132,7 +177,7 @@ export async function handleApiRequest(request, url, ctx) {
     }
   }
 
-  // Interactive Dictionary Search — Auth Required (V4 Business Rule)
+  // Interactive Dictionary Search — Auth Required
   if (path === '/api/v1/dictionary/search' && method === 'GET') {
     if (!user) return errorResponse('UNAUTHORIZED', 'Cần đăng nhập để sử dụng tìm kiếm từ điển tương tác.', 401);
     const result = await services.dictionary.search({
@@ -162,7 +207,6 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse({ ok: true, domains: SPECIALIZED_DOMAINS });
   }
 
-  // Specialized Dataset Term Search — Auth Required (reads real JSON datasets)
   if (path === '/api/v1/specialized/terms' && method === 'GET') {
     if (!user) return errorResponse('UNAUTHORIZED', 'Cần đăng nhập để tra cứu thuật ngữ chuyên ngành.', 401);
     const domain = String(url.searchParams.get('domain') || '').trim().toLowerCase();
@@ -186,7 +230,7 @@ export async function handleApiRequest(request, url, ctx) {
     });
   }
 
-  // Signed Email Webhook (HMAC-SHA256 + Anti-Replay)
+  // Signed Email Webhook
   if (path === '/api/v1/webhooks/email' && method === 'POST') {
     const rawBody = await request.text();
     const res = await services.email.verifyAndHandleWebhook({
@@ -234,6 +278,13 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse(await services.auth.requestPasswordReset(body.email, ipAddress));
   }
 
+  if (path === '/api/v1/auth/reset-password' && method === 'POST') {
+    const body = await readJsonBody(request);
+    const res = await services.auth.resetPassword(body, { ipAddress, userAgent });
+    if (!res.ok) return errorResponse('PASSWORD_RESET_FAILED', res.error, res.status);
+    return jsonResponse(res);
+  }
+
   if (path === '/api/v1/student-benefit/confirm' && method === 'POST') {
     const body = await readJsonBody(request);
     const res = await services.studentBenefit.confirmStudentEmail(body.token);
@@ -241,12 +292,12 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse(res);
   }
 
-  // Third-party OAuth login completely removed from WORD BRIDGE
+  // Third-party OAuth login completely removed
   if (path.startsWith('/api/v1/auth/oauth/')) {
     return errorResponse('AUTH_METHOD_REMOVED', 'Phương thức đăng nhập bên thứ ba đã được gỡ bỏ hoàn toàn khỏi WORD BRIDGE. Vui lòng sử dụng Email/Mật khẩu hoặc Passkey.', 410);
   }
 
-  // Passkey Authentication (unauthenticated login with challenge)
+  // Passkey Authentication
   if (path === '/api/v1/account/passkeys/authenticate/options' && method === 'POST') {
     return jsonResponse(await services.auth.createPasskeyAuthOptions(null));
   }
@@ -265,7 +316,6 @@ export async function handleApiRequest(request, url, ctx) {
   const authErr = requireAuth(user);
   if (authErr) return authErr;
 
-  // Enforce CSRF on ALL authenticated state-changing methods
   let body = {};
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
     body = await readJsonBody(request);
@@ -273,11 +323,45 @@ export async function handleApiRequest(request, url, ctx) {
     if (csrfErr) return csrfErr;
   }
 
-  // Support/Contact Ticket (Authenticated + CSRF)
+  // Support/Contact Tickets (Create + List Own Tickets)
+  if (path === '/api/v1/support/tickets' && method === 'GET') {
+    const tickets = await services.admin.listUserSupportTickets(user.accountId);
+    return jsonResponse({ ok: true, tickets });
+  }
   if (path === '/api/v1/support/tickets' && method === 'POST') {
     const res = await services.admin.createSupportOrContactTicket({ ...body, accountId: user.accountId }, services.email);
     if (!res.ok) return errorResponse('VALIDATION_ERROR', res.error, res.status);
     return jsonResponse(res, 201);
+  }
+
+  // Reader Progress & Notes
+  if (path === '/api/v1/reader/progress' && method === 'POST') {
+    const res = await services.reader.saveProgress(user.accountId, {
+      documentId: body.documentId,
+      currentSection: body.currentSection,
+      progressPercent: body.progressPercent,
+      bookmarked: body.bookmarked === true || body.bookmarked === 'true',
+      personalNotes: body.personalNotes,
+    });
+    if (!res.ok) return errorResponse('READER_PROGRESS_ERROR', res.error, res.status);
+    return jsonResponse(res);
+  }
+
+  // Account Profile, Password, Sessions
+  if (path === '/api/v1/account/profile' && (method === 'POST' || method === 'PATCH')) {
+    const res = await services.auth.updateProfile(user.accountId, body, ipAddress);
+    if (!res.ok) return errorResponse('PROFILE_UPDATE_FAILED', res.error, res.status);
+    return jsonResponse(res);
+  }
+  if (path === '/api/v1/account/change-password' && method === 'POST') {
+    const res = await services.auth.changePassword(user.accountId, body, ipAddress);
+    if (!res.ok) return errorResponse('PASSWORD_CHANGE_FAILED', res.error, res.status);
+    return jsonResponse(res);
+  }
+  if (path === '/api/v1/account/sessions/revoke' && method === 'POST') {
+    if (!body.sessionId) return errorResponse('VALIDATION_ERROR', 'Thiếu sessionId.', 400);
+    await services.auth.revokeSession(body.sessionId, user.accountId, ipAddress);
+    return jsonResponse({ ok: true, sessionId: body.sessionId });
   }
 
   if (path === '/api/v1/auth/logout' && method === 'POST') {
@@ -297,35 +381,13 @@ export async function handleApiRequest(request, url, ctx) {
         planCode: user.planCode,
         storageQuotaBytes: user.storageQuotaBytes,
         roles: user.roles,
+        isAdmin: services.auth.hasAnyAdminRole(user),
         csrfToken: user.csrfToken,
       },
     });
   }
 
-  // Cross-App SSO Assertion Issuer for Independent WORD BRIDGE PDF READER
-  if (path === '/api/v1/sso/reader/issue' && method === 'POST') {
-    if (env.PDF_READER_SSO_ENABLED !== 'true' || !env.PDF_READER_SSO_SHARED_SECRET) {
-      return errorResponse('BLOCKED_UNCONFIGURED', 'SSO tới WORD BRIDGE PDF READER chưa được cấu hình credentials (PDF_READER_SSO_ENABLED / PDF_READER_SSO_SHARED_SECRET).', 503);
-    }
-    const nowSec = Math.floor(Date.now() / 1000);
-    const assertion = {
-      iss: env.APP_BASE_URL || 'https://www.wordbridge.vn',
-      aud: env.PDF_READER_BASE_URL || 'https://reader.wordbridge.vn',
-      sub: user.accountId,
-      email: user.email,
-      fullName: user.fullName,
-      iat: nowSec,
-      exp: nowSec + 120,
-      jti: generateId('jti'),
-      nonce: String(body.nonce || randomTokenHex(16)),
-    };
-    const canonical = [assertion.iss, assertion.aud, assertion.sub, assertion.email, assertion.fullName, assertion.iat, assertion.exp, assertion.jti, assertion.nonce].join('|');
-    const signature = await hmacSha256Hex(env.PDF_READER_SSO_SHARED_SECRET, canonical);
-    await services.auth.recordAudit(user.accountId, 'sso.reader_assertion_issued', 'wb_accounts', user.accountId, ipAddress, { jti: assertion.jti });
-    return jsonResponse({ ok: true, assertion: { ...assertion, signature } });
-  }
-
-  // Passkey Registration & Revocation (Authenticated + CSRF)
+  // Passkey Registration & Revocation
   if (path === '/api/v1/account/passkeys/register/options' && method === 'POST') {
     return jsonResponse(await services.auth.createPasskeyRegistrationOptions(user));
   }
@@ -461,7 +523,7 @@ export async function handleApiRequest(request, url, ctx) {
     }, 201);
   }
 
-  // Personal Vocabulary Sets CRUD (Strict ownership + CSRF)
+  // Personal Vocabulary Sets CRUD
   if (path === '/api/v1/vocabulary/sets' && method === 'GET') {
     const sets = await services.dictionary.listSets(user.accountId);
     return jsonResponse({ ok: true, sets });
@@ -483,7 +545,7 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse(res);
   }
 
-  // Personal Vocabulary Notebook & SRS (Strict ownership)
+  // Personal Vocabulary Notebook & SRS
   if (path === '/api/v1/vocabulary/notebook' && method === 'GET') {
     const rows = await env.DB
       .prepare('SELECT n.*, d.headword, d.phonetic, d.meaning_vi, d.language_code, d.slug, d.specialized_domain FROM wb_vocabulary_notebook n JOIN wb_dictionary_entries d ON d.id = n.entry_id WHERE n.account_id = ? ORDER BY n.created_at DESC')
@@ -525,7 +587,7 @@ export async function handleApiRequest(request, url, ctx) {
     return jsonResponse(res);
   }
 
-  // Practice Submission & Ownership-checked Result
+  // Practice Submission & Ownership-checked Result (100% Preserved)
   if (path === '/api/v1/practice/submit' && method === 'POST') {
     const res = await services.practice.submitPractice(user.accountId, body.exerciseId, body.answers);
     if (!res.ok) return errorResponse('PRACTICE_ERROR', res.error, res.status);
@@ -539,34 +601,6 @@ export async function handleApiRequest(request, url, ctx) {
       return errorResponse('FORBIDDEN', 'Không có quyền xem kết quả của người dùng khác.', 403);
     }
     return jsonResponse({ ok: true, result: row });
-  }
-
-  // Examination Start / Draft / Submit / Ownership-checked Get
-  if (path === '/api/v1/examinations/start' && method === 'POST') {
-    const res = await services.examination.startAttempt(user.accountId, body.examSlug);
-    if (!res.ok) return errorResponse('EXAM_ERROR', res.error, res.status);
-    return jsonResponse(res, 201);
-  }
-  const exDraftMatch = path.match(/^\/api\/v1\/examination-attempts\/([^/]+)\/draft$/);
-  if (exDraftMatch && method === 'PUT') {
-    const res = await services.examination.saveDraft(user.accountId, exDraftMatch[1], body.answers);
-    if (!res.ok) return errorResponse('EXAM_DRAFT_ERROR', res.error, res.status);
-    return jsonResponse(res);
-  }
-  const exSubMatch = path.match(/^\/api\/v1\/examination-attempts\/([^/]+)\/submit$/);
-  if (exSubMatch && method === 'POST') {
-    const res = await services.examination.submitAttempt(user.accountId, exSubMatch[1], body.answers);
-    if (!res.ok) return errorResponse('EXAM_SUBMIT_ERROR', res.error, res.status);
-    return jsonResponse(res);
-  }
-  const exGetMatch = path.match(/^\/api\/v1\/examination-attempts\/([^/]+)$/);
-  if (exGetMatch && method === 'GET') {
-    const row = await env.DB.prepare('SELECT * FROM wb_examination_attempts WHERE id = ?').bind(exGetMatch[1]).first();
-    if (!row) return errorResponse('NOT_FOUND', 'Không tìm thấy lượt khảo thí.', 404);
-    if (row.account_id !== user.accountId && !services.auth.hasAnyAdminRole(user)) {
-      return errorResponse('FORBIDDEN', 'Không có quyền truy cập bài làm của tài khoản khác.', 403);
-    }
-    return jsonResponse({ ok: true, attempt: row });
   }
 
   // Learner Meet
@@ -600,7 +634,7 @@ export async function handleApiRequest(request, url, ctx) {
     }
   }
 
-  // Admin APIs (Strict Backend RBAC + CSRF)
+  // ---- SUPREME ADMIN APIs (/api/v1/admin/*) — Strict Backend RBAC + CSRF ----
   if (path.startsWith('/api/v1/admin/')) {
     if (!services.auth.hasAnyAdminRole(user)) {
       return errorResponse('FORBIDDEN', 'Tài khoản của bạn không có vai trò quản trị được cấp phép.', 403);
@@ -609,9 +643,93 @@ export async function handleApiRequest(request, url, ctx) {
       const metrics = await services.admin.getDashboardMetrics();
       return jsonResponse({ ok: true, metrics, plans: PLANS, intelligenceCount: INTELLIGENCE_SYSTEMS.length });
     }
+    if (path === '/api/v1/admin/accounts' && method === 'GET') {
+      const res = await services.admin.listAccounts(user, {
+        q: url.searchParams.get('q') || '',
+        status: url.searchParams.get('status') || '',
+        verified: url.searchParams.get('verified') || '',
+        limit: url.searchParams.get('limit') || 50,
+        offset: url.searchParams.get('offset') || 0,
+      });
+      if (!res.ok) return errorResponse('RBAC_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/accounts/status' && (method === 'POST' || method === 'PATCH')) {
+      const res = await services.admin.updateAccountStatus(user, body.accountId, body.action, body.reason || '', ipAddress);
+      if (!res.ok) return errorResponse('ACCOUNT_ADMIN_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/staff' && method === 'GET') {
+      const res = await services.admin.listStaffAndRoles(user);
+      if (!res.ok) return errorResponse('RBAC_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
     if (path === '/api/v1/admin/roles/assign' && method === 'POST') {
       const res = await services.admin.assignRole(user, body.accountId, body.roleCode, ipAddress);
       if (!res.ok) return errorResponse('RBAC_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/roles/revoke' && method === 'POST') {
+      const res = await services.admin.revokeRole(user, body.accountId, body.roleCode, ipAddress);
+      if (!res.ok) return errorResponse('RBAC_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/academic' && method === 'GET') {
+      const res = await services.admin.getAcademicOverview(user);
+      if (!res.ok) return errorResponse('ACADEMIC_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/reader/documents' && method === 'POST') {
+      if (!services.auth.hasPermission(user, 'reader:manage') && !services.auth.hasPermission(user, 'curriculum:create')) {
+        return errorResponse('FORBIDDEN', 'Thiếu quyền reader:manage hoặc curriculum:create.', 403);
+      }
+      try {
+        const res = await services.reader.createDocument(user, body);
+        if (!res.ok) return errorResponse('READER_CREATE_ERROR', res.error, res.status);
+        await services.auth.recordAudit(user.accountId, 'reader.document_created', 'wb_reader_documents', res.documentId, ipAddress, { slug: res.slug });
+        return jsonResponse(res, 201);
+      } catch (err) {
+        return errorResponse('READER_CREATE_ERROR', err.message, 400);
+      }
+    }
+    if (path === '/api/v1/admin/data/status' && method === 'GET') {
+      const res = await services.admin.getDataAndStorageStatus(user);
+      if (!res.ok) return errorResponse('DATA_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/data/snapshot' && method === 'POST') {
+      const res = await services.admin.runIntegrityCheckOrBackup(user, body.snapshotType || 'integrity_check', ipAddress);
+      if (!res.ok) return errorResponse('DATA_SNAPSHOT_ERROR', res.error, res.status);
+      return jsonResponse(res, 201);
+    }
+    if (path === '/api/v1/admin/security' && method === 'GET') {
+      const res = await services.admin.getSecurityOverview(user);
+      if (!res.ok) return errorResponse('SECURITY_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/security/revoke-session' && method === 'POST') {
+      const res = await services.admin.revokeSessionByAdmin(user, body.sessionId, ipAddress);
+      if (!res.ok) return errorResponse('SECURITY_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/operations' && method === 'GET') {
+      const res = await services.admin.getOperationsOverview(user);
+      if (!res.ok) return errorResponse('OPERATIONS_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/config' && (method === 'POST' || method === 'PATCH')) {
+      const res = await services.admin.updatePlatformConfig(user, body.configKey, body.configValue, ipAddress);
+      if (!res.ok) return errorResponse('CONFIG_ERROR', res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === '/api/v1/admin/notifications' && method === 'POST') {
+      const res = await services.admin.createNotification(user, body, ipAddress);
+      if (!res.ok) return errorResponse('NOTIFICATION_ERROR', res.error, res.status);
+      return jsonResponse(res, 201);
+    }
+    if (path === '/api/v1/admin/support/reply' && method === 'POST') {
+      const res = await services.admin.replySupportTicket(user, body.ticketId, body, ipAddress);
+      if (!res.ok) return errorResponse('SUPPORT_REPLY_ERROR', res.error, res.status);
       return jsonResponse(res);
     }
     if (path === '/api/v1/admin/jobs/action' && method === 'POST') {
@@ -656,6 +774,9 @@ export async function handleApiRequest(request, url, ctx) {
       }
     }
     if (path === '/api/v1/admin/intelligence/status' && method === 'PATCH') {
+      if (!services.auth.hasPermission(user, 'operations:manage') && !services.auth.hasPermission(user, 'infrastructure:manage')) {
+        return errorResponse('FORBIDDEN', 'Thiếu quyền cập nhật trạng thái Intelligence Systems.', 403);
+      }
       const allowed = new Set(['active', 'unconfigured', 'paused', 'error', 'not_implemented']);
       if (!allowed.has(body.operationalStatus)) {
         return errorResponse('VALIDATION_ERROR', 'Trạng thái vận hành không hợp lệ.', 400);

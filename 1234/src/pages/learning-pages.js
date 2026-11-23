@@ -239,7 +239,7 @@ export async function renderModuleDetailPage({ db, user, moduleSlug }) {
         <h3>Tiến độ cá nhân trong học phần</h3>
         ${user
           ? `<p>Đã hoàn thành <strong>${completedInMod} / ${lessons.length}</strong> bài học (${progressPct}%).</p>`
-          : '<p class="wb-muted">Đăng nhập tài khoản cá nhân để theo dõi tiến độ riêng của học phần này.</p><a href="https://portal.wordbridge.io.vn/login" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập</a>'}
+          : '<p class="wb-muted">Đăng nhập tài khoản cá nhân để theo dõi tiến độ riêng của học phần này.</p><a href="/login" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập</a>'}
       </div>
     </div>
     <h2>Danh sách tuần thuộc học phần</h2>
@@ -401,7 +401,7 @@ export async function renderLessonDetailPage({ db, user, lessonSlug }) {
         <div data-form-status></div>
         <button type="submit" class="wb-btn wb-btn-primary">Nộp kiểm tra & Xem trang kết quả bài học</button>
       </form>`
-    : `<div class="wb-alert wb-alert-info">Bạn đang xem trước nội dung bài học công khai. <a href="https://portal.wordbridge.io.vn/login">Đăng nhập</a> để làm kiểm tra và lưu tiến độ cá nhân.</div>`;
+    : `<div class="wb-alert wb-alert-info">Bạn đang xem trước nội dung bài học công khai. <a href="/login">Đăng nhập</a> để làm kiểm tra và lưu tiến độ cá nhân.</div>`;
 
   const contentHtml = `
     <span class="wb-badge">${escapeHtml(lesson.language_code.toUpperCase())} · ${escapeHtml(lesson.level_ref)} · v${escapeHtml(lesson.version)}</span>
@@ -428,7 +428,7 @@ export async function renderLessonDetailPage({ db, user, lessonSlug }) {
  * Section 3 Repair: Dedicated Lesson Result Page (/lessons/:lessonSlug/result)
  */
 export async function renderLessonResultPage({ db, user, lessonSlug }) {
-  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login');
+  if (!user) return redirectResponse('/login');
   const lesson = await db.prepare('SELECT * FROM wb_lessons WHERE slug = ?').bind(lessonSlug).first();
   if (!lesson) {
     return htmlResponse(renderPublicPage({ title: 'Không tìm thấy bài học', currentPath: `/lessons/${lessonSlug}/result`, user, contentHtml: '<div class="wb-alert wb-alert-error">Bài học không tồn tại.</div>' }), 404);
@@ -485,7 +485,7 @@ export async function renderLessonResultPage({ db, user, lessonSlug }) {
 }
 
 export async function renderMyLearningPage({ db, user, subPath = '' }) {
-  if (!user) return redirectResponse('https://portal.wordbridge.io.vn/login');
+  if (!user) return redirectResponse('/login');
   const progress = (await db.prepare(`
     SELECT p.*, l.title_vi AS lesson_title, l.slug AS lesson_slug
     FROM wb_learner_progress p

@@ -135,16 +135,20 @@ test('Data Ownership Isolation: User B cannot read User A exam attempt or delete
     assert.equal(delB.status, 403);
 
     // User A starts an exam; User B tries to read it -> 403
-    const startA = await worker.fetch(new Request('https://www.wordbridge.vn/api/v1/examinations/start', {
+    const exRow = await env.DB.prepare('SELECT id, question_ids_json FROM wb_practice_exercises LIMIT 1').first();
+    const qIds = JSON.parse(exRow.question_ids_json || '[]');
+    const answers = Object.fromEntries(qIds.map((qid) => [qid, 'test']));
+    const startA = await worker.fetch(new Request('https://wordbridge.io.vn/api/v1/practice/submit', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Cookie: userA.cookie, 'X-CSRF-Token': userA.csrfToken },
-      body: JSON.stringify({ examSlug: 'cefr-a1-reference-diagnostic' }),
-    }), env, {});
-    const { attemptId } = await startA.json();
+      body: JSON.stringify({ exerciseId: exRow.id, answers }),
+    }), env);
+    assert.equal(startA.status, 201);
+    const { resultId } = await startA.json();
 
-    const readB = await worker.fetch(new Request(`https://www.wordbridge.vn/api/v1/examination-attempts/${attemptId}`, {
+    const readB = await worker.fetch(new Request(`https://wordbridge.io.vn/api/v1/practice/results/${resultId}`, {
       headers: { Cookie: userB.cookie },
-    }), env, {});
+    }), env);
     assert.equal(readB.status, 403);
   } finally {
     env.DB.close();

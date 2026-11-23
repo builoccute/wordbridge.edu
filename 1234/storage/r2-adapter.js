@@ -2,7 +2,7 @@
  * WORD BRIDGE — Cloudflare R2 Object Storage Adapter
  * Bucket: `word` (TUYỆT ĐỐI KHÔNG TẠO BUCKET THAY THẾ)
  * Enforces allowed key prefixes, content-type, size limits, public/private split,
- * and strictly blocks any Learner Meet audio/video recordings.
+ * and strictly blocks any Learner Meet audio/video recordings or prohibited scopes.
  */
 
 export const ALLOWED_R2_PREFIXES = Object.freeze([
@@ -16,15 +16,17 @@ export const ALLOWED_R2_PREFIXES = Object.freeze([
   'audio/',
   'video/',
   'exercises/',
-  'examinations/',
+  'reader/',
   'user-content/',
   'system-assets/',
+  'backups/',
 ]);
 
 export const FORBIDDEN_R2_PATTERNS = [
   /^specialized\/russian\//i,
   /^learning\/(japanese|korean)\//i,
   /^specialized\/(japanese|korean)\//i,
+  /^examinations\//i,
   /learner-meet.*record/i,
   /recordings?\//i,
   /\.\./,
@@ -45,6 +47,7 @@ export const ALLOWED_CONTENT_TYPES = new Set([
   'application/pdf',
   'application/json',
   'text/plain',
+  'text/markdown',
   'text/vtt',
 ]);
 
@@ -76,6 +79,10 @@ export function validateObjectKey(key) {
 export class R2StorageService {
   constructor(r2Bucket) {
     this.bucket = r2Bucket;
+  }
+
+  isAvailable() {
+    return Boolean(this.bucket);
   }
 
   ensureAvailable() {
@@ -138,8 +145,23 @@ export class R2StorageService {
     return obj;
   }
 
-  async listPrefix(prefix, limit = 100) {
+  async deleteObject(key) {
     this.ensureAvailable();
+    const keyCheck = validateObjectKey(key);
+    if (!keyCheck.valid) {
+      throw new Error(keyCheck.error);
+    }
+    if (typeof this.bucket.delete === 'function') {
+      await this.bucket.delete(keyCheck.key);
+    }
+    return { deleted: true, key: keyCheck.key };
+  }
+
+  async listPrefix(prefix = '', limit = 100) {
+    this.ensureAvailable();
+    if (!prefix) {
+      return this.bucket.list({ limit });
+    }
     const keyCheck = validateObjectKey(prefix.endsWith('/') ? prefix : `${prefix}/`);
     if (!keyCheck.valid) {
       throw new Error(keyCheck.error);

@@ -1,19 +1,42 @@
 /**
- * WORD BRIDGE — Authentication, Session,
- * WebAuthn/FIDO2 Passkey (Challenge/Attestation/Assertion) & RBAC Service (V3.1)
+ * WORD BRIDGE — Authentication, Session, Password Reset, Profile,
+ * WebAuthn/FIDO2 Passkey & Strict Backend RBAC Service (V4.1 One Domain)
  */
 
 import { generateId, hashPassword, verifyPassword, randomTokenHex, sha256Hex } from '../utils/crypto.js';
-import { validateRegistrationPayload, validateEmail } from '../utils/validation.js';
-import { PLANS } from '../config/constants.js';
+import { validateRegistrationPayload, validateEmail, validatePasswordStrength } from '../utils/validation.js';
+import { PLANS, ADMIN_ROLE_CODES, BRAND } from '../config/constants.js';
 
 export class AuthService {
   constructor(db, emailService, env = {}) {
     this.db = db;
     this.emailService = emailService;
     this.env = env;
-    this.baseUrl = env.APP_BASE_URL || 'https://www.wordbridge.vn';
+    this.baseUrl = String(env.APP_BASE_URL || BRAND.websiteUrl).replace(/\/+$/, '');
     this.tokenPepper = env.TOKEN_PEPPER || '';
+  }
+
+  async getSecurityPolicy() {
+    let maxAttempts = 5;
+    let lockoutMinutes = 15;
+    try {
+      const rows = (await this.db
+        .prepare("SELECT config_key, config_value FROM wb_platform_config WHERE config_key IN ('security.max_login_attempts', 'security.lockout_minutes')")
+        .all()).results || [];
+      for (const r of rows) {
+        if (r.config_key === 'security.max_login_attempts') {
+          const v = Number(r.config_value);
+          if (Number.isFinite(v) && v >= 3 && v <= 20) maxAttempts = v;
+        }
+        if (r.config_key === 'security.lockout_minutes') {
+          const v = Number(r.config_value);
+          if (Number.isFinite(v) && v >= 1 && v <= 1440) lockoutMinutes = v;
+        }
+      }
+    } catch {
+      // Fallback to safe defaults if table is unavailable
+    }
+    return { maxAttempts, lockoutMinutes };
   }
 
   async register(payload, requestMeta = {}) {
@@ -146,12 +169,17 @@ export class AuthService {
 
     const validPwd = await verifyPassword(password, account.password_hash);
     if (!validPwd) {
+      const { maxAttempts, lockoutMinutes } = await this.getSecurityPolicy();
       const attempts = (account.failed_login_attempts || 0) + 1;
-      const shouldLock = attempts >= 5;
+      const shouldLock = attempts >= maxAttempts;
       await this.db
-        .prepare("UPDATE wb_accounts SET failed_login_attempts = ?, locked_until = CASE WHEN ? = 1 THEN datetime('now', '+15 minutes') ELSE NULL END, updated_at = datetime('now') WHERE id = ?")
+        .prepare(`UPDATE wb_accounts SET failed_login_attempts = ?, locked_until = CASE WHEN ? = 1 THEN datetime('now', '+${lockoutMinutes} minutes') ELSE NULL END, updated_at = datetime('now') WHERE id = ?`)
         .bind(attempts, shouldLock ? 1 : 0, account.id)
         .run();
+      await this.recordAudit(account.id, 'auth.login_failed', 'wb_accounts', account.id, requestMeta.ipAddress, {
+        attempts,
+        locked: shouldLock,
+      });
       return { ok: false, status: 401, error: 'Email hoặc mật khẩu không chính xác.' };
     }
 
@@ -175,7 +203,9 @@ export class AuthService {
       },
     });
 
-    await this.recordAudit(account.id, 'auth.login', 'wb_sessions', session.sessionId, requestMeta.ipAddress, {});
+    await this.recordAudit(account.id, 'auth.login', 'wb_sessions', session.sessionId, requestMeta.ipAddress, {
+      userAgent: (requestMeta.userAgent || '').slice(0, 120),
+    });
     return { ok: true, account: { id: account.id, email: account.email, fullName: account.full_name }, session };
   }
 
@@ -247,14 +277,24 @@ export class AuthService {
     };
   }
 
-  hasPermission(user, permissionCode) {
-    if (!user) return false;
-    if (user.roles.includes('super_admin')) return true;
-    return user.permissions.has(permissionCode);
+  isSuperAdmin(user) {
+    return Boolean(user && Array.isArray(user.roles) && user.roles.includes('super_admin'));
   }
 
+  hasPermission(user, permissionCode) {
+    if (!user || !Array.isArray(user.roles)) return false;
+    if (user.roles.includes('super_admin')) return true;
+    return Boolean(user.permissions && typeof user.permissions.has === 'function' && user.permissions.has(permissionCode));
+  }
+
+  /**
+   * STRICT ADMIN ROLE CHECK:
+   * Only returns true when the user holds an explicitly recognized administrative role
+   * from ADMIN_ROLE_CODES (never treats arbitrary non-admin roles as admin).
+   */
   hasAnyAdminRole(user) {
-    return Boolean(user && user.roles && user.roles.length > 0);
+    if (!user || !Array.isArray(user.roles) || user.roles.length === 0) return false;
+    return user.roles.some((roleCode) => ADMIN_ROLE_CODES.has(roleCode));
   }
 
   async revokeSession(sessionId, actorAccountId, ipAddress = null) {
@@ -287,7 +327,119 @@ export class AuthService {
     return { ok: true, ...(this.env.EXPOSE_TEST_TOKENS === 'true' ? { resetToken: rawToken } : {}) };
   }
 
-  // ---- WebAuthn / FIDO2 Passkeys (Section 17) ----
+  async resetPassword({ token, newPassword, confirmPassword }, requestMeta = {}) {
+    if (!token || typeof token !== 'string') {
+      return { ok: false, status: 400, error: 'Thiếu mã đặt lại mật khẩu.' };
+    }
+    if (!newPassword || newPassword !== confirmPassword) {
+      return { ok: false, status: 400, error: 'Mật khẩu xác nhận không khớp.' };
+    }
+    const strength = validatePasswordStrength(newPassword);
+    if (!strength.valid) {
+      return { ok: false, status: 400, error: strength.error };
+    }
+
+    const tokenHash = await sha256Hex(token, this.tokenPepper);
+    const tok = await this.db
+      .prepare("SELECT id, account_id, expires_at, consumed_at FROM wb_verification_tokens WHERE token_hash = ? AND token_type = 'password_reset'")
+      .bind(tokenHash)
+      .first();
+
+    if (!tok) return { ok: false, status: 400, error: 'Liên kết đặt lại mật khẩu không hợp lệ.' };
+    if (tok.consumed_at) return { ok: false, status: 400, error: 'Liên kết đặt lại mật khẩu đã được sử dụng.' };
+
+    const expiredCheck = await this.db
+      .prepare("SELECT CASE WHEN datetime(?) < datetime('now') THEN 1 ELSE 0 END AS is_expired")
+      .bind(tok.expires_at)
+      .first();
+    if (expiredCheck?.is_expired === 1) {
+      return { ok: false, status: 400, error: 'Liên kết đặt lại mật khẩu đã hết hạn.' };
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+    await this.db.prepare("UPDATE wb_verification_tokens SET consumed_at = datetime('now') WHERE id = ?").bind(tok.id).run();
+    await this.db
+      .prepare("UPDATE wb_accounts SET password_hash = ?, failed_login_attempts = 0, locked_until = NULL, updated_at = datetime('now') WHERE id = ?")
+      .bind(passwordHash, tok.account_id)
+      .run();
+    await this.db
+      .prepare("UPDATE wb_sessions SET revoked_at = datetime('now') WHERE account_id = ? AND revoked_at IS NULL")
+      .bind(tok.account_id)
+      .run();
+
+    const account = await this.db.prepare('SELECT id, email FROM wb_accounts WHERE id = ?').bind(tok.account_id).first();
+    if (account) {
+      await this.emailService.sendEventEmail({
+        eventType: 'PasswordChanged',
+        templateKey: 'password_changed',
+        recipientEmail: account.email,
+        accountId: account.id,
+        idempotencyKey: `pwd_changed:${tok.id}`,
+        variables: { timestamp: new Date().toISOString(), ctaUrl: `${this.baseUrl}/account/security` },
+      });
+    }
+
+    await this.recordAudit(tok.account_id, 'auth.password_reset_completed', 'wb_accounts', tok.account_id, requestMeta.ipAddress, {});
+    return { ok: true, message: 'Đặt lại mật khẩu thành công. Vui lòng đăng nhập lại.' };
+  }
+
+  async updateProfile(accountId, payload, ipAddress = null) {
+    const fullName = String(payload.fullName || '').trim();
+    const phoneNumber = String(payload.phoneNumber || '').trim();
+    const schoolName = String(payload.schoolName || '').trim();
+    const workplaceName = String(payload.workplaceName || '').trim();
+    const dateOfBirth = String(payload.dateOfBirth || '').trim();
+
+    if (fullName.length < 2) {
+      return { ok: false, status: 400, error: 'Họ và tên phải có tối thiểu 2 ký tự.' };
+    }
+    if (!phoneNumber || !schoolName || !workplaceName) {
+      return { ok: false, status: 400, error: 'Số điện thoại, Trường học và Nơi làm việc không được để trống.' };
+    }
+
+    await this.db
+      .prepare(`
+        UPDATE wb_accounts
+        SET full_name = ?, phone_number = ?, school_name = ?, workplace_name = ?,
+            date_of_birth = CASE WHEN ? != '' THEN ? ELSE date_of_birth END,
+            updated_at = datetime('now')
+        WHERE id = ?
+      `)
+      .bind(fullName, phoneNumber, schoolName, workplaceName, dateOfBirth, dateOfBirth, accountId)
+      .run();
+
+    await this.recordAudit(accountId, 'account.profile_updated', 'wb_accounts', accountId, ipAddress, {});
+    return { ok: true, message: 'Đã cập nhật hồ sơ cá nhân.' };
+  }
+
+  async changePassword(accountId, { currentPassword, newPassword, confirmPassword }, ipAddress = null) {
+    if (!currentPassword || !newPassword || newPassword !== confirmPassword) {
+      return { ok: false, status: 400, error: 'Vui lòng nhập mật khẩu hiện tại và xác nhận mật khẩu mới khớp nhau.' };
+    }
+    const strength = validatePasswordStrength(newPassword);
+    if (!strength.valid) {
+      return { ok: false, status: 400, error: strength.error };
+    }
+    const account = await this.db.prepare('SELECT id, email, password_hash FROM wb_accounts WHERE id = ?').bind(accountId).first();
+    if (!account) return { ok: false, status: 404, error: 'Tài khoản không tồn tại.' };
+    const valid = await verifyPassword(currentPassword, account.password_hash);
+    if (!valid) return { ok: false, status: 401, error: 'Mật khẩu hiện tại không chính xác.' };
+
+    const newHash = await hashPassword(newPassword);
+    await this.db.prepare("UPDATE wb_accounts SET password_hash = ?, updated_at = datetime('now') WHERE id = ?").bind(newHash, accountId).run();
+    await this.emailService.sendEventEmail({
+      eventType: 'PasswordChanged',
+      templateKey: 'password_changed',
+      recipientEmail: account.email,
+      accountId: account.id,
+      idempotencyKey: `pwd_chg:${accountId}:${Date.now()}`,
+      variables: { timestamp: new Date().toISOString(), ctaUrl: `${this.baseUrl}/account/security` },
+    });
+    await this.recordAudit(accountId, 'auth.password_changed', 'wb_accounts', accountId, ipAddress, {});
+    return { ok: true, message: 'Đổi mật khẩu thành công.' };
+  }
+
+  // ---- WebAuthn / FIDO2 Passkeys ----
   async createPasskeyRegistrationOptions(account) {
     const challenge = randomTokenHex(32);
     const id = generateId('wac');
@@ -302,7 +454,7 @@ export class AuthService {
       challengeId: id,
       publicKey: {
         challenge,
-        rp: { id: this.env.WEBAUTHN_RP_ID || 'www.wordbridge.vn', name: this.env.WEBAUTHN_RP_NAME || 'WORD BRIDGE' },
+        rp: { id: this.env.WEBAUTHN_RP_ID || 'wordbridge.io.vn', name: this.env.WEBAUTHN_RP_NAME || 'WORD BRIDGE' },
         user: { id: account.accountId, name: account.email, displayName: account.fullName },
         pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
         excludeCredentials: existing.map((c) => ({ id: c.credential_id, type: 'public-key' })),
@@ -358,7 +510,7 @@ export class AuthService {
       challengeId: id,
       publicKey: {
         challenge,
-        rpId: this.env.WEBAUTHN_RP_ID || 'www.wordbridge.vn',
+        rpId: this.env.WEBAUTHN_RP_ID || 'wordbridge.io.vn',
         userVerification: 'preferred',
         timeout: 60000,
       },

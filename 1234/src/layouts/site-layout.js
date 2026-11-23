@@ -1,12 +1,10 @@
 /**
- * WORD BRIDGE — Unified Layout (100% Visual Identity Preserved)
- * - Exact 5 Header links with monochrome SVG icons
- * - VI/EN locale switcher (<select data-wb-locale>)
- * - Central Auth Gate dialog (#wb-auth-gate) with safe return_to & SVG close icon
- * - Zero href="#" fake links, zero hardcoded fake stats ("10.000+")
- * - Local discovery entries for /learner-meet, /reader, /examinations
+ * WORD BRIDGE — Unified Layout (One Domain: https://wordbridge.io.vn)
+ * - Monochrome SVG navigation, VI/EN locale switcher, central Auth Gate (#wb-auth-gate)
+ * - Zero subdomain links, zero Exam links
+ * - Shows /quan-tri button for authenticated administrators
  */
-import { BRAND, ECOSYSTEM, signInUrl } from '../config/constants.js';
+import { BRAND, ADMIN_ROLE_CODES, signInUrl } from '../config/constants.js';
 import { escapeHtml } from '../utils/validation.js';
 
 const NAV_ICONS = {
@@ -67,15 +65,18 @@ export function renderPublicPage({
   const loginHref = signInUrl(currentPath.startsWith('http') ? '/' : currentPath, 'header.login');
   const localeControl = `<select class="wb-select wb-btn-sm" data-wb-locale aria-label="Ngôn ngữ giao diện" style="width:auto;min-width:64px;padding:4px 8px;"><option value="vi">VI</option><option value="en">EN</option></select>`;
 
+  const isAdmin = Boolean(user && Array.isArray(user.roles) && user.roles.some((r) => ADMIN_ROLE_CODES.has(r)));
+  const adminBtn = isAdmin ? `<a href="/quan-tri" class="wb-btn wb-btn-accent wb-btn-sm">Quản trị</a>` : '';
+
   const authActions = user
     ? `${localeControl}
-       <a href="/account" class="wb-btn wb-btn-outline wb-btn-sm wb-hide-mobile">${escapeHtml(user.fullName || user.email)}</a>
+       ${adminBtn}
+       <a href="/profile" class="wb-btn wb-btn-outline wb-btn-sm wb-hide-mobile">${escapeHtml(user.fullName || user.email)}</a>
        <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-wb-logout>Đăng xuất</button>`
     : `${localeControl}
        <a href="${escapeHtml(loginHref)}" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập</a>
-       <a href="${escapeHtml(ECOSYSTEM.portal)}/register" class="wb-btn wb-btn-accent wb-btn-sm wb-hide-mobile">Đăng ký</a>`;
+       <a href="/register" class="wb-btn wb-btn-accent wb-btn-sm wb-hide-mobile">Đăng ký</a>`;
 
-  // Honest footer stats (never hardcoded fake "10.000+")
   const statLanguages = s.footer_stat_languages || '3 ngôn ngữ';
   const statLanguagesLabel = s.footer_stat_languages_label || 'Trung – Anh – Nga';
   const statTerms = s.footer_stat_terms || '12.104+';
@@ -91,7 +92,8 @@ export function renderPublicPage({
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>${escapeHtml(title)} | ${escapeHtml(BRAND.name)}</title>
-  <meta name="description" content="${escapeHtml(description || 'WORD BRIDGE — Nền tảng học ngôn ngữ Trung – Anh – Nga và kết nối người học toàn cầu.')}" />
+  <meta name="description" content="${escapeHtml(description || 'WORD BRIDGE — Nền tảng học ngôn ngữ Trung – Anh – Nga thống nhất tại wordbridge.io.vn.')}" />
+  <link rel="canonical" href="${escapeHtml(BRAND.websiteUrl)}${escapeHtml(currentPath.startsWith('/') ? currentPath : '/')}" />
   <link rel="icon" type="image/png" href="/branding/favicon.png" />
   ${csrfMeta}
   <link rel="stylesheet" href="/styles/design-system.css" />
@@ -145,18 +147,19 @@ export function renderPublicPage({
             <li><a href="/learning">› Chương trình học</a></li>
             <li><a href="/learning/path">› Lộ trình học tập</a></li>
             <li><a href="/specialized">› Ngoại ngữ Chuyên ngành</a></li>
-            <li><a href="/reader">› Thư Viện Tài Liệu</a></li>
+            <li><a href="/reader">› Thư Viện Đọc</a></li>
             <li><a href="/dictionary">› Từ điển Ngôn ngữ</a></li>
           </ul>
         </div>
 
         <div class="wb-footer-col">
-          <h4>Cộng đồng & Kết nối</h4>
+          <h4>Luyện tập & Kết nối</h4>
           <ul>
+            <li><a href="/practice">› Cổng Luyện Tập</a></li>
+            <li><a href="/vocabulary/flashcards">› Flashcards & Ôn tập</a></li>
             <li><a href="/learner-meet">› Learner Meet</a></li>
             <li><a href="/my-knowledge">› My Knowledge</a></li>
-            <li><a href="/practice">› Cổng Luyện Tập</a></li>
-            <li><a href="/examinations">› Cổng Khảo Thí</a></li>
+            <li><a href="/intelligence">› Trí tuệ Ngôn ngữ</a></li>
           </ul>
         </div>
 

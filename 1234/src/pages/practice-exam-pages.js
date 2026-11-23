@@ -1,14 +1,13 @@
 /**
- * WORD BRIDGE V4 — Six-Skill Practice Center, Insights & Examination Discovery
+ * WORD BRIDGE V4 — Six-Skill Practice Center & Practice Insights
  * - ZERO fake fallback exercises (ex_fallback_*)
  * - ZERO guest recorder (data-wb-record-toggle only for authenticated users)
  * - Real published audio assets with segment sync & dictation for Listening
  * - Real Reading passages (<blockquote>), real Practice Insights (weekly + per-skill)
- * - Examination discovery & honest handoff to exam.wordbridge.io.vn
  */
 
 import { renderPublicPage } from '../layouts/site-layout.js';
-import { ECOSYSTEM, signInUrl } from '../config/constants.js';
+import { signInUrl } from '../config/constants.js';
 import { escapeHtml } from '../utils/validation.js';
 import { htmlResponse, redirectResponse } from '../utils/http.js';
 
@@ -286,86 +285,4 @@ export async function renderPracticeResultPage({ db, user, resultId }) {
         </div>
       </div>`,
   }));
-}
-
-export async function renderExaminationsHub({ db, user, languageSlug = '' }) {
-  let exams = [];
-  try {
-    exams = (await db.prepare('SELECT * FROM wb_examinations ORDER BY language_code, slug').all()).results || [];
-  } catch {
-    exams = [];
-  }
-  const codeMap = { chinese: 'zh', english: 'en', russian: 'ru' };
-  const filterCode = codeMap[languageSlug] || '';
-  const filtered = filterCode ? exams.filter((e) => e.language_code === filterCode) : exams;
-
-  return htmlResponse(renderPublicPage({
-    title: 'Khảo thí Năng lực',
-    currentPath: '/examinations',
-    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Khảo thí' }],
-    user,
-    contentHtml: `
-      <section class="wb-hero">
-        <span class="wb-badge wb-badge-red">ĐÁNH GIÁ NĂNG LỰC NGOẠI NGỮ</span>
-        <h1>Trung Tâm Khảo Thí Tham Chiếu</h1>
-        <p>Miền 1 chỉ hiển thị metadata đánh giá đã phát hành và chuyển giao sang Cổng Khảo Thí (${escapeHtml(ECOSYSTEM.exam)}). Kết quả chỉ mang tính tham chiếu, không phải chứng chỉ.</p>
-        <div style="margin-top:12px;">
-          ${user
-            ? `<a data-wb-handoff href="${escapeHtml(ECOSYSTEM.exam)}/" class="wb-btn wb-btn-accent">Mở Cổng Khảo Thí Trực Tuyến</a>`
-            : `<a href="${escapeHtml(signInUrl('/examinations', 'exam.start'))}" class="wb-btn wb-btn-accent">Đăng nhập để bắt đầu đánh giá</a>`}
-        </div>
-      </section>
-      <div class="wb-grid-2">
-        ${filtered.map((ex) => `
-          <article class="wb-card">
-            <span class="wb-badge">${escapeHtml(ex.language_code.toUpperCase())} · ${escapeHtml(ex.level_ref)}</span>
-            <h3 style="margin:10px 0 6px;color:var(--wb-teal);">${escapeHtml(ex.title_vi)}</h3>
-            <p class="wb-muted">${escapeHtml(ex.instructions_vi || '')}</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-              <a href="/examinations/${escapeHtml(ex.slug)}" class="wb-btn wb-btn-outline wb-btn-sm">Xem mô tả</a>
-              ${user
-                ? `<a data-wb-handoff href="${escapeHtml(ECOSYSTEM.exam)}/" class="wb-btn wb-btn-primary wb-btn-sm">Tiếp tục tại Cổng Khảo thí</a>`
-                : `<a href="${escapeHtml(signInUrl(`/examinations/${ex.slug}`, 'exam.start'))}" class="wb-btn wb-btn-primary wb-btn-sm">Đăng nhập để dự thi</a>`}
-            </div>
-          </article>`).join('') || `<div class="wb-card"><p>Chưa có assessment đã phát hành trong dữ liệu hiện tại. Bạn vẫn có thể xem các kỳ thi khả dụng tại <a href="${escapeHtml(ECOSYSTEM.exam)}/">Cổng Khảo Thí Năng Lực</a>.</p></div>`}
-      </div>`,
-  }));
-}
-
-export async function renderExamDetailPage({ db, user, examSlug }) {
-  const ex = await db.prepare('SELECT * FROM wb_examinations WHERE slug = ?').bind(examSlug).first().catch(() => null);
-  if (!ex) {
-    return htmlResponse(renderPublicPage({
-      title: 'Không tìm thấy đánh giá',
-      currentPath: `/examinations/${examSlug}`,
-      user,
-      contentHtml: `<div class="wb-alert wb-alert-info">Không tìm thấy assessment đã phát hành. Vui lòng xem các kỳ thi đang mở tại <a href="${escapeHtml(ECOSYSTEM.exam)}/">exam.wordbridge.io.vn</a>.</div>`,
-    }), 404);
-  }
-  return htmlResponse(renderPublicPage({
-    title: ex.title_vi,
-    currentPath: `/examinations/${ex.slug}`,
-    breadcrumbs: [{ label: 'Trang chủ', href: '/' }, { label: 'Khảo thí', href: '/examinations' }, { label: ex.title_vi }],
-    user,
-    contentHtml: `
-      <div class="wb-card">
-        <span class="wb-badge">${escapeHtml(ex.language_code.toUpperCase())} · ${escapeHtml(ex.level_ref)} · ${Number(ex.duration_minutes || 0)} phút</span>
-        <h1 style="margin-top:10px;color:var(--wb-teal);">${escapeHtml(ex.title_vi)}</h1>
-        <p>${escapeHtml(ex.instructions_vi || '')}</p>
-        <div class="wb-alert wb-alert-warn"><strong>Lưu ý:</strong> Kết quả chỉ mang tính tham chiếu năng lực học tập, không phải chứng chỉ chính thức.</div>
-        ${user
-          ? `<a data-wb-handoff href="${escapeHtml(ECOSYSTEM.exam)}/" class="wb-btn wb-btn-accent">Mở Cổng Khảo Thí Trực Tuyến</a>`
-          : `<a href="${escapeHtml(signInUrl(`/examinations/${ex.slug}`, 'exam.start'))}" class="wb-btn wb-btn-accent">Đăng nhập để bắt đầu đánh giá</a>`}
-      </div>`,
-  }));
-}
-
-export async function renderExamAttemptPage({ user }) {
-  return redirectResponse(user ? `${ECOSYSTEM.exam}/` : signInUrl('/examinations', 'exam.attempt'));
-}
-export async function renderExamResultPage({ user }) {
-  return redirectResponse(user ? `${ECOSYSTEM.exam}/tra-cuu` : signInUrl('/examinations', 'exam.result'));
-}
-export async function renderExamHistoryPage({ user }) {
-  return redirectResponse(user ? `${ECOSYSTEM.exam}/my-exams` : signInUrl('/examinations', 'exam.history'));
 }

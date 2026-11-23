@@ -1,8 +1,8 @@
 /**
- * WORD BRIDGE — 15 Language Intelligence Systems Service (Section 49–50)
- * Every system has real D1-backed deterministic/rule-based analysis logic,
- * explicit methodology, confidence level, technical limitations, and run history.
- * Never invents fake AI algorithm names or fabricated metrics.
+ * WORD BRIDGE — 15 Language Intelligence Systems Service
+ * Every system uses real D1-backed deterministic/rule-based analysis logic from
+ * Learning Progress, Lesson Submissions, Vocabulary SM-2, and Practice Results.
+ * Zero dependency on removed Exam tables.
  */
 
 import { generateId } from '../../utils/crypto.js';
@@ -42,12 +42,12 @@ export class IntelligenceService {
       ? assertSpecializedLanguage(languageCode)
       : assertOfficialLanguage(languageCode);
 
-    // Gather real learner metrics from D1
-    const [progressStats, vocabStats, practiceStats, examStats] = await Promise.all([
+    // Gather real learner metrics from D1 (Learning, Lesson Checks, Vocabulary, Practice — NO Exam tables)
+    const [progressStats, vocabStats, practiceStats, lessonCheckStats] = await Promise.all([
       this.db.prepare('SELECT COUNT(*) AS total, SUM(CASE WHEN status = "completed" THEN 1 ELSE 0 END) AS completed, AVG(score_percent) AS avg_score FROM wb_learner_progress WHERE account_id = ?').bind(accountId).first(),
       this.db.prepare('SELECT COUNT(*) AS total, SUM(CASE WHEN mastery_status = "mastered" THEN 1 ELSE 0 END) AS mastered, SUM(CASE WHEN datetime(next_review_at) <= datetime("now") THEN 1 ELSE 0 END) AS due FROM wb_vocabulary_notebook WHERE account_id = ?').bind(accountId).first(),
       this.db.prepare('SELECT COUNT(*) AS total, AVG(CASE WHEN max_score > 0 AND score IS NOT NULL THEN (score * 100.0 / max_score) END) AS avg_pct FROM wb_practice_results WHERE account_id = ? AND language_code = ?').bind(accountId, lang).first(),
-      this.db.prepare('SELECT COUNT(*) AS total, AVG(score_percent) AS avg_pct FROM wb_examination_attempts WHERE account_id = ? AND status = "graded"').bind(accountId).first(),
+      this.db.prepare('SELECT COUNT(*) AS total, AVG(score_percent) AS avg_pct FROM wb_lesson_submissions WHERE account_id = ? AND score_percent IS NOT NULL').bind(accountId).first(),
     ]);
 
     const cleanText = String(inputText || '').trim();
@@ -57,25 +57,28 @@ export class IntelligenceService {
     let output = {};
     let methodology = '';
     let confidence = 'deterministic_data';
-    let technicalLimits = 'Kết quả được tính toán từ dữ liệu học tập thực tế trong D1 và quy tắc ngôn ngữ học xác định; chưa kết nối mô hình AI bên ngoài (AI_ANALYSIS_PROVIDER=unconfigured).';
+    let technicalLimits = 'Kết quả được tính toán từ dữ liệu học tập thực tế (Bài học, Kiểm tra kiến thức trong bài, Sổ từ vựng SM-2 và Luyện tập) trong D1; chưa kết nối mô hình AI bên ngoài.';
 
     switch (systemSlug) {
       case 'language-dna': {
         const vocabRatio = vocabStats?.total ? Math.round(((vocabStats.mastered || 0) / vocabStats.total) * 100) : 0;
         const practicePct = Math.round(practiceStats?.avg_pct || 0);
-        const examPct = Math.round(examStats?.avg_pct || 0);
+        const lessonCheckPct = Math.round(lessonCheckStats?.avg_pct || progressStats?.avg_score || 0);
+        const combinedComprehension = practicePct > 0 && lessonCheckPct > 0
+          ? Math.round((practicePct + lessonCheckPct) / 2)
+          : (lessonCheckPct || practicePct);
         output = {
           dimensions: {
             vocabulary: vocabRatio,
             grammar: practicePct,
             phonetics: 0, // Honest: requires ASR integration
-            pragmatics: examPct,
+            pragmatics: lessonCheckPct,
             fluency: practiceStats?.total ? Math.min(100, practiceStats.total * 10) : 0,
-            comprehensionDepth: examPct,
+            comprehensionDepth: combinedComprehension,
           },
-          dataPointsCount: (progressStats?.total || 0) + (vocabStats?.total || 0) + (practiceStats?.total || 0),
+          dataPointsCount: (progressStats?.total || 0) + (vocabStats?.total || 0) + (practiceStats?.total || 0) + (lessonCheckStats?.total || 0),
         };
-        methodology = 'Tổng hợp trực tiếp tỷ lệ thành thạo từ vựng (SM-2), điểm trung bình luyện tập và kết quả khảo thí đã chấm trong D1.';
+        methodology = 'Tổng hợp trực tiếp tỷ lệ thành thạo từ vựng (SM-2), điểm trung bình bài luyện tập (Practice) và kết quả kiểm tra kiến thức trong bài học từ D1.';
         technicalLimits = 'Chiều Ngữ âm (phonetics) giữ mức 0 cho đến khi tích hợp nhà cung cấp ASR chính thức.';
         break;
       }
@@ -224,6 +227,8 @@ export class IntelligenceService {
         break;
       }
       case 'comprehension-depth': {
+        const practiceAvg = Math.round(practiceStats?.avg_pct || 0);
+        const lessonCheckAvg = Math.round(lessonCheckStats?.avg_pct || 0);
         output = {
           fourLevels: [
             { level: 'Literal', labelVi: 'Hiểu nghĩa đen', description: 'Xác định sự kiện, số liệu và thông tin hiển ngôn.' },
@@ -231,9 +236,10 @@ export class IntelligenceService {
             { level: 'Pragmatic', labelVi: 'Hiểu ngữ dụng', description: 'Nhận diện thái độ, mục đích và sắc thái người nói/viết.' },
             { level: 'Critical', labelVi: 'Hiểu phản biện', description: 'Đánh giá lập luận, bằng chứng và tính hợp lý.' },
           ],
-          recentExamAveragePercent: Math.round(examStats?.avg_pct || 0),
+          recentPracticeAveragePercent: practiceAvg,
+          recentLessonCheckAveragePercent: lessonCheckAvg,
         };
-        methodology = 'Đánh giá theo khung 4 tầng đọc/nghe hiểu học thuật kết hợp dữ liệu khảo thí cá nhân.';
+        methodology = 'Đánh giá theo khung 4 tầng đọc/nghe hiểu học thuật kết hợp dữ liệu Practice và kiểm tra kiến thức trong bài học từ D1.';
         break;
       }
       case 'learning-recovery': {
@@ -271,17 +277,17 @@ export class IntelligenceService {
         output = {
           summary: {
             lessonsCompleted: progressStats?.completed || 0,
+            lessonChecksCompleted: lessonCheckStats?.total || 0,
             vocabularyTotal: vocabStats?.total || 0,
             vocabularyMastered: vocabStats?.mastered || 0,
             vocabularyDueForReview: vocabStats?.due || 0,
             practiceAttempts: practiceStats?.total || 0,
-            examsGraded: examStats?.total || 0,
           },
           nextRecommendedAction: (vocabStats?.due || 0) > 0
             ? 'Ưu tiên ôn tập các mục từ quá hạn tại /vocabulary/review.'
             : 'Tiếp tục tuần học kế tiếp trong lộ trình tại /my-learning.',
         };
-        methodology = 'Tổng hợp toàn bộ chỉ số học tập thực tế của người dùng từ D1 để đề xuất bước học kế tiếp.';
+        methodology = 'Tổng hợp toàn bộ chỉ số học tập thực tế (Bài học, Kiểm tra bài học, Từ vựng, Luyện tập) của người dùng từ D1.';
         break;
       }
     }

@@ -1,13 +1,16 @@
 /**
- * WORD BRIDGE — Canonical Product Constants, Ecosystem Contracts & Hard Boundaries
- * Enforces Master Specification V4.0 decisions across Backend, API, Frontend & Admin.
+ * WORD BRIDGE — Canonical Product Constants, Unified Single-Domain Contracts & Hard Boundaries
+ * One Domain — One Platform: https://wordbridge.io.vn (Admin: https://wordbridge.io.vn/quan-tri)
+ * Exam module completely removed; Practice, Learning, Dictionary, Reader, Help, Admin unified.
  */
 
 export const BRAND = Object.freeze({
   name: 'WORD BRIDGE',
   tagline: 'Where Languages Bring People Together.',
   websiteUrl: 'https://wordbridge.io.vn',
-  pdfReaderUrl: 'https://reader.wordbridge.io.vn',
+  adminUrl: 'https://wordbridge.io.vn/quan-tri',
+  readerPath: '/reader',
+  helpPath: '/help',
   copyright: '© 2026 WORD BRIDGE. All rights reserved.',
   colors: {
     deepTeal: '#146466',
@@ -19,20 +22,10 @@ export const BRAND = Object.freeze({
 
 export const ECOSYSTEM = Object.freeze({
   main: 'https://wordbridge.io.vn',
-  portal: 'https://portal.wordbridge.io.vn',
-  control: 'https://quantri.wordbridge.io.vn',
-  exam: 'https://exam.wordbridge.io.vn',
-  reader: 'https://reader.wordbridge.io.vn',
-  help: 'https://help.wordbridge.io.vn',
 });
 
 export const ALLOWED_RETURN_ORIGINS = Object.freeze([
   ECOSYSTEM.main,
-  ECOSYSTEM.portal,
-  ECOSYSTEM.exam,
-  ECOSYSTEM.reader,
-  ECOSYSTEM.help,
-  'https://www.wordbridge.vn',
 ]);
 
 export function normalizeUiLocale(locale) {
@@ -50,6 +43,8 @@ export const TRANSLATIONS = Object.freeze({
     practice: 'Cổng Luyện Tập',
     dictionary: 'Từ điển',
     specialized: 'Chuyên ngành',
+    reader: 'Thư viện đọc',
+    help: 'Trung tâm trợ giúp',
     authGateTitle: 'Đăng nhập để tiếp tục',
     authGateBody: 'Hành động này cần tài khoản. Sau đăng nhập, WORD BRIDGE sẽ quay lại trang hiện tại với intent an toàn.',
   }),
@@ -63,24 +58,26 @@ export const TRANSLATIONS = Object.freeze({
     practice: 'Practice Center',
     dictionary: 'Dictionary',
     specialized: 'Specialized',
+    reader: 'Reader Library',
+    help: 'Help Center',
     authGateTitle: 'Sign in to continue',
     authGateBody: 'This action requires an account. After sign-in, WORD BRIDGE returns to the current page with a safe intent.',
   }),
 });
 
 export function safeReturnUrl(input = '/', baseOrigin = ECOSYSTEM.main) {
-  const fallback = `${baseOrigin}/`;
+  const fallback = '/';
   const raw = String(input || '').trim();
   if (!raw) return fallback;
   try {
     if (raw.startsWith('/') && !raw.startsWith('//')) {
       const parsed = new URL(raw, baseOrigin);
-      if (parsed.origin === baseOrigin) return parsed.toString();
+      if (parsed.origin === baseOrigin) return `${parsed.pathname}${parsed.search}${parsed.hash}`;
       return fallback;
     }
     const parsed = new URL(raw);
     if (ALLOWED_RETURN_ORIGINS.includes(parsed.origin)) {
-      return parsed.toString();
+      return `${parsed.pathname}${parsed.search}${parsed.hash}`;
     }
     return fallback;
   } catch {
@@ -90,11 +87,11 @@ export function safeReturnUrl(input = '/', baseOrigin = ECOSYSTEM.main) {
 
 export function signInUrl(nextPath = '/', intent = '', locale = '') {
   const safeNext = safeReturnUrl(nextPath, ECOSYSTEM.main);
-  const url = new URL('/login', ECOSYSTEM.portal);
-  url.searchParams.set('next', safeNext);
-  if (intent) url.searchParams.set('intent', String(intent));
-  if (locale) url.searchParams.set('locale', normalizeUiLocale(locale));
-  return url.toString();
+  const params = new URLSearchParams();
+  params.set('next', safeNext);
+  if (intent) params.set('intent', String(intent));
+  if (locale) params.set('locale', normalizeUiLocale(locale));
+  return `/login?${params.toString()}`;
 }
 
 export const OFFICIAL_LANGUAGES = Object.freeze({
@@ -155,10 +152,6 @@ export const SPECIALIZED_VOCAB_DATASETS = Object.freeze([
   { slug: 'bao-tri-thiet-bi-co-dien', nameVi: 'Bảo trì Thiết bị Cơ điện', languages: ['en'], count: 1007, sample: 'preventive maintenance, bearing lubrication, vibration analysis, downtime' },
 ]);
 
-/**
- * Reconciled Specialized Domains catalog: combines the 12 real JSON datasets
- * with D1-seeded ZH/EN specialized domains (logistics, business, import-export, etc.).
- */
 export const SPECIALIZED_DOMAINS = Object.freeze([
   ...SPECIALIZED_VOCAB_DATASETS,
   { slug: 'logistics', nameVi: 'Logistics', languages: ['zh', 'en'], count: 0, sample: 'bill of lading, demurrage, 海运提单' },
@@ -173,17 +166,21 @@ export const SPECIALIZED_DOMAINS = Object.freeze([
   { slug: 'healthcare', nameVi: 'Điều dưỡng – y dược', languages: ['en'], count: 0, sample: 'vital signs, clinical care' },
 ]);
 
+/**
+ * 8 Active Administrative Roles (exam_admin removed completely)
+ */
 export const RBAC_ROLES = Object.freeze([
-  { code: 'super_admin', nameVi: 'Super Admin', descriptionVi: 'Toàn quyền quản trị hệ thống, phân quyền và cấu hình lõi.' },
-  { code: 'platform_admin', nameVi: 'Quản trị nền tảng', descriptionVi: 'Quản lý tài khoản, ngôn ngữ, cấu hình vận hành nền tảng.' },
-  { code: 'academic_admin', nameVi: 'Quản trị học thuật', descriptionVi: 'Quản lý chương trình, giáo trình, khóa học, từ điển và chuyên ngành.' },
-  { code: 'editor', nameVi: 'Biên tập viên', descriptionVi: 'Soạn thảo và cập nhật học liệu, bài học, từ vựng và ngữ pháp.' },
+  { code: 'super_admin', nameVi: 'Super Admin', descriptionVi: 'Toàn quyền quản trị tối cao toàn nền tảng, phân quyền và cấu hình lõi.' },
+  { code: 'platform_admin', nameVi: 'Quản trị viên', descriptionVi: 'Quản lý tài khoản, ngôn ngữ, cấu hình vận hành nền tảng.' },
+  { code: 'academic_admin', nameVi: 'Quản trị học thuật', descriptionVi: 'Quản lý chương trình, giáo trình, khóa học, bài học, từ điển và chuyên ngành.' },
+  { code: 'editor', nameVi: 'Biên tập viên', descriptionVi: 'Soạn thảo và cập nhật học liệu, bài học, tài liệu Reader, từ vựng và ngữ pháp.' },
   { code: 'reviewer', nameVi: 'Kiểm duyệt viên', descriptionVi: 'Rà soát, hiệu đính và phê duyệt học thuật trước khi phát hành.' },
-  { code: 'exam_admin', nameVi: 'Quản trị khảo thí', descriptionVi: 'Quản lý ngân hàng câu hỏi, đề thi, thang điểm và kết quả khảo thí.' },
-  { code: 'data_admin', nameVi: 'Quản trị dữ liệu', descriptionVi: 'Theo dõi D1, R2, sao lưu, phục hồi và tính toàn vẹn dữ liệu.' },
-  { code: 'security_admin', nameVi: 'Quản trị bảo mật', descriptionVi: 'Quản lý nhật ký kiểm toán, phiên đăng nhập, khóa tài khoản và cảnh báo.' },
-  { code: 'support_admin', nameVi: 'Quản trị hỗ trợ', descriptionVi: 'Tiếp nhận và phản hồi yêu cầu CSKH, hỗ trợ người học và liên hệ.' },
+  { code: 'support_admin', nameVi: 'Nhân sự hỗ trợ', descriptionVi: 'Tiếp nhận, phản hồi và quản lý yêu cầu hỗ trợ người học và liên hệ.' },
+  { code: 'data_admin', nameVi: 'Quản trị dữ liệu', descriptionVi: 'Theo dõi Cloudflare D1, R2, sao lưu, khôi phục và kiểm tra tính toàn vẹn dữ liệu.' },
+  { code: 'security_admin', nameVi: 'Quản trị bảo mật', descriptionVi: 'Quản lý nhật ký đăng nhập, nhật ký kiểm toán, phiên đăng nhập và bảo vệ hệ thống.' },
 ]);
+
+export const ADMIN_ROLE_CODES = Object.freeze(new Set(RBAC_ROLES.map((r) => r.code)));
 
 export const PLANS = Object.freeze({
   PERSONAL_FREE: {
@@ -221,11 +218,11 @@ export const INTELLIGENCE_SYSTEMS = Object.freeze([
 ]);
 
 export const ADMIN_CENTERS = Object.freeze([
-  { id: 'editorial', nameVi: 'Trung tâm biên tập học liệu', route: '/admin/lessons' },
-  { id: 'examination', nameVi: 'Trung tâm quản trị khảo thí', route: '/admin/examinations' },
-  { id: 'intelligence', nameVi: 'Trung tâm trí tuệ học tập', route: '/admin/language-intelligence' },
-  { id: 'multilingual', nameVi: 'Trung tâm đa ngôn ngữ', route: '/admin/languages' },
-  { id: 'quality', nameVi: 'Trung tâm chất lượng ngôn ngữ', route: '/admin/dictionary' },
-  { id: 'security', nameVi: 'Trung tâm bảo mật và kiểm toán', route: '/admin/audit-logs' },
-  { id: 'infrastructure', nameVi: 'Trung tâm vận hành hạ tầng', route: '/admin/infrastructure' },
+  { id: 'overview', nameVi: 'Tổng quan', route: '/quan-tri' },
+  { id: 'accounts', nameVi: 'Tài khoản', route: '/quan-tri/accounts' },
+  { id: 'staff', nameVi: 'Nhân sự & Phân quyền', route: '/quan-tri/staff' },
+  { id: 'academic', nameVi: 'Học thuật & Nội dung', route: '/quan-tri/academic' },
+  { id: 'data', nameVi: 'Dữ liệu & Lưu trữ', route: '/quan-tri/data' },
+  { id: 'security', nameVi: 'Bảo mật & Kiểm toán', route: '/quan-tri/security' },
+  { id: 'operations', nameVi: 'Vận hành & Hỗ trợ', route: '/quan-tri/operations' },
 ]);

@@ -14,7 +14,7 @@ export class StudentBenefitService {
     this.db = db;
     this.emailService = emailService;
     this.env = env;
-    this.baseUrl = env.APP_BASE_URL || 'https://www.wordbridge.vn';
+    this.baseUrl = env.APP_BASE_URL || 'https://wordbridge.io.vn';
     this.tokenPepper = env.TOKEN_PEPPER || '';
   }
 

@@ -101,3 +101,14 @@ export function validateRegistrationPayload(payload) {
     data: { fullName, dateOfBirth, phoneNumber, email, password, schoolName, workplaceName },
   };
 }
+
+export function validatePasswordStrength(password) {
+  const pwd = String(password || '');
+  if (pwd.length < 10 || !/[A-Z]/.test(pwd) || !/[a-z]/.test(pwd) || !/[0-9]/.test(pwd)) {
+    return {
+      valid: false,
+      error: 'Mật khẩu phải có tối thiểu 10 ký tự gồm chữ hoa, chữ thường và chữ số.',
+    };
+  }
+  return { valid: true };
+}

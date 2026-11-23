@@ -328,8 +328,9 @@
         return;
       }
 
-      if (redirectTo) {
-        window.location.href = redirectTo;
+      const targetRedirect = redirectTo || data.redirectTo;
+      if (targetRedirect) {
+        window.location.href = targetRedirect;
       } else if (form.getAttribute('data-reload-on-success') === 'true') {
         window.location.reload();
       } else if (form.hasAttribute('data-render-json')) {
@@ -682,4 +683,15 @@ document.addEventListener('click', async event => {
   } catch (error) {
     status.textContent = error.name === 'NotAllowedError' ? 'Thao tác đã hủy hoặc hết thời gian.' : error.message;
   } finally { button.disabled = false; }
+});
+
+
+// Password visibility toggle on /login and /register
+document.addEventListener('click', (ev) => {
+  const btn = ev.target && ev.target.closest ? ev.target.closest('[data-wb-toggle-pw]') : null;
+  if (!btn) return;
+  const targetId = btn.getAttribute('data-wb-toggle-pw');
+  const input = document.getElementById(targetId);
+  if (!input) return;
+  input.type = input.type === 'password' ? 'text' : 'password';
 });

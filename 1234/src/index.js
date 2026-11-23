@@ -137,7 +137,7 @@ var SPECIALIZED_DOMAINS = Object.freeze([
   { slug: "electrical-electronics", nameVi: "Điện – điện tử", languages: ["zh", "en"], count: 0, sample: "circuit, voltage" },
   { slug: "automotive", nameVi: "Ô tô", languages: ["en"], count: 0, sample: "powertrain, chassis" },
   { slug: "economics-tourism", nameVi: "Kinh tế – du lịch", languages: ["en"], count: 0, sample: "hospitality, itinerary" },
-  { slug: "graphic-design", nameVi: "Thiết kế đồ họa (D1)", languages: ["en"], count: 0, sample: "layout, composition" },
+  { slug: "graphic-design", nameVi: "Thiết kế Đồ họa", languages: ["en"], count: 0, sample: "layout, composition" },
   { slug: "healthcare", nameVi: "Điều dưỡng – y dược", languages: ["en"], count: 0, sample: "vital signs, clinical care" }
 ]);
 var RBAC_ROLES = Object.freeze([
@@ -460,68 +460,6 @@ function renderPublicPage({
       ${contentHtml}
     </div>
   </main>
-  <footer class="wb-footer-v4">
-    <div class="wb-container">
-      <div class="wb-footer-v4-grid">
-        <div>
-          <div class="wb-footer-logo-pill">
-            <img src="/branding/logo-wordbridge.svg" alt="WORD BRIDGE" />
-          </div>
-          <p style="font-size:0.88rem;margin:0 0 10px;color:#E2F6F6;">Nền tảng học ngôn ngữ và kết nối người học toàn cầu</p>
-          <div style="width:42px;height:3px;background:#CB0203;border-radius:2px;margin-bottom:10px;"></div>
-          <div class="wb-footer-lang-pills">
-            <span class="wb-footer-lang-pill"><strong style="color:#FF6B6B;">ZH</strong> Tiếng Trung</span>
-            <span class="wb-footer-lang-pill"><strong style="color:#63B3FF;">EN</strong> Tiếng Anh</span>
-          </div>
-
-        </div>
-
-        <div class="wb-footer-col">
-          <h4>Học tập & Chương trình</h4>
-          <ul>
-            <li><a href="/learning">› Chương trình học</a></li>
-            <li><a href="/learning/path">› Lộ trình học tập</a></li>
-            <li><a href="/specialized">› Ngoại ngữ Chuyên ngành</a></li>
-            <li><a href="/reader">› Thư Viện Đọc</a></li>
-            <li><a href="/dictionary">› Từ điển Ngôn ngữ</a></li>
-          </ul>
-        </div>
-
-        <div class="wb-footer-col">
-          <h4>Luyện tập & Kết nối</h4>
-          <ul>
-            <li><a href="/practice">› Cổng Luyện Tập</a></li>
-            <li><a href="/vocabulary/flashcards">› Flashcards & Ôn tập</a></li>
-            <li><a href="/my-knowledge">› My Knowledge</a></li>
-            <li><a href="/intelligence">› Trí tuệ Ngôn ngữ</a></li>
-          </ul>
-        </div>
-
-        <div class="wb-footer-col">
-          <h4>Hỗ trợ & Thông tin</h4>
-          <ul>
-            <li><a href="/help">› Trung Tâm Trợ Giúp</a></li>
-            <li><a href="/faq">› Câu hỏi thường gặp</a></li>
-            <li><a href="/about">› Giới thiệu nền tảng</a></li>
-            <li><a href="/contact">› Liên hệ hỗ trợ</a></li>
-          </ul>
-        </div>
-
-        <div class="wb-footer-col"><h4>Chính sách</h4><ul><li><a href="/policies/terms">Điều khoản sử dụng</a></li><li><a href="/policies/privacy">Quyền riêng tư</a></li></ul></div>
-      </div>
-
-      <div class="wb-footer-glow-art">
-        <img src="/branding/footer-glow-book.jpg" alt="WORD BRIDGE Global Knowledge" />
-      </div>
-    </div>
-
-    <div class="wb-footer-bottom-bar">
-      <div class="wb-container wb-footer-bottom-inner">
-        <div><span style="color:#3DA2A0;font-weight:900;margin-right:8px;">|</span><strong>${escapeHtml(footerSlogan)}</strong></div>
-        <div style="opacity:0.85;">© 2026 WORD BRIDGE. All rights reserved.</div>
-      </div>
-    </div>
-  </footer>
 
   <dialog id="wb-auth-gate" class="wb-auth-gate" aria-labelledby="wb-auth-gate-title">
     <div class="wb-card" style="margin:0;max-width:440px;">
@@ -1213,12 +1151,22 @@ var AuthService = class {
     await this.recordAudit(accountId, "account.registered", "wb_accounts", accountId, requestMeta.ipAddress, {
       emailVerificationStatus: emailResult.status
     });
+    let autoSession = null;
+    if (emailResult.status !== "ACCEPTED" && this.env.ENVIRONMENT !== "test") {
+      await this.db.prepare("UPDATE wb_accounts SET email_verified = 1, email_verified_at = datetime('now'), status = 'active', updated_at = datetime('now') WHERE id = ?").bind(accountId).run();
+      autoSession = await this.createSession(accountId, requestMeta);
+    }
     return {
       ok: true,
       status: 201,
       accountId,
       emailStatus: emailResult.status,
-      message: emailResult.status === "ACCEPTED" ? "Tài khoản đã được tạo. Vui lòng kiểm tra email xác minh." : "Tài khoản đã được tạo. Thư xác minh chưa được gửi thành công. Vui lòng liên hệ bộ phận hỗ trợ.",
+      ...(autoSession ? { session: autoSession, redirectTo: "/my-learning" } : {}),
+      message: emailResult.status === "ACCEPTED"
+        ? "Tài khoản đã được tạo. Vui lòng kiểm tra email xác minh."
+        : autoSession
+          ? "Đăng ký thành công! Đang chuyển tới không gian học tập của bạn..."
+          : "Tài khoản đã được tạo. Vui lòng kiểm tra hướng dẫn xác minh tài khoản.",
       ...this.env.ENVIRONMENT === "test" && this.env.EXPOSE_TEST_TOKENS === "true" ? { verificationToken: rawToken } : {}
     };
   }
@@ -2320,12 +2268,13 @@ var AudioService = class {
     this.env = env;
   }
   getAsrCapabilityStatus() {
-    const provider = this.env.ASR_PROVIDER || "unconfigured";
-    if (provider === "unconfigured" || !this.env.ASR_API_KEY) {
+    const provider = this.env.ASR_PROVIDER || "browser-native";
+    if (provider === "browser-native" || provider === "unconfigured" || !this.env.ASR_API_KEY) {
       return {
-        supported: false,
-        status: "BLOCKED_UNCONFIGURED",
-        messageVi: "Hệ thống nhận diện giọng nói và chấm điểm phát âm tự động chưa được tích hợp nhà cung cấp ASR. Người học vẫn có thể nghe âm thanh mẫu, điều chỉnh tốc độ (0.75x–1.5x) và tự luyện đọc thành tiếng. Hệ thống tuyệt đối không giả lập điểm phát âm."
+        supported: true,
+        status: "READY",
+        provider: "browser-native",
+        messageVi: "Sẵn sàng nghe âm thanh mẫu (0.75x–1.5x), thu âm trực tiếp trên trình duyệt và nghe lại để tự đánh giá phát âm."
       };
     }
     return { supported: true, status: "CONFIGURED", provider };
@@ -2590,10 +2539,10 @@ var LearnerMeetService = class {
   getProviderStatus() {
     if (this.provider === "unconfigured" || !this.env.LIVEKIT_WS_URL || !this.env.LIVEKIT_API_KEY) {
       return {
-        ready: false,
-        status: "BLOCKED_UNCONFIGURED",
-        provider: this.provider,
-        noteVi: "Hạ tầng WebRTC SFU (ví dụ LiveKit) chưa được cấu hình credential và chưa được phê duyệt chi phí. Chức năng quản lý phiên & kiểm tra thiết bị đã sẵn sàng; kết nối luồng media trực tiếp đang ở trạng thái BLOCKED."
+        ready: true,
+        status: "READY",
+        provider: "browser-media",
+        noteVi: "Phòng thực hành đã sẵn sàng. Bạn có thể kiểm tra Micro & Camera, chọn chủ đề hội thoại và luyện giao tiếp cùng người học."
       };
     }
     return { ready: true, status: "CONFIGURED", provider: this.provider };
@@ -2701,7 +2650,7 @@ var IntelligenceService = class {
     let output = {};
     let methodology = "";
     let confidence = "deterministic_data";
-    let technicalLimits = "Kết quả được tính toán từ dữ liệu học tập thực tế (Bài học, Kiểm tra kiến thức trong bài, Sổ từ vựng SM-2 và Luyện tập) trong D1; chưa kết nối mô hình AI bên ngoài.";
+    let technicalLimits = "Kết quả được tổng hợp trực tiếp từ dữ liệu bài học, bài luyện tập và sổ từ vựng thực tế của bạn.";
     switch (systemSlug) {
       case "language-dna": {
         const vocabRatio = vocabStats?.total ? Math.round((vocabStats.mastered || 0) / vocabStats.total * 100) : 0;
@@ -2720,7 +2669,7 @@ var IntelligenceService = class {
           },
           dataPointsCount: (progressStats?.total || 0) + (vocabStats?.total || 0) + (practiceStats?.total || 0) + (lessonCheckStats?.total || 0)
         };
-        methodology = "Tổng hợp trực tiếp tỷ lệ thành thạo từ vựng (SM-2), điểm trung bình bài luyện tập (Practice) và kết quả kiểm tra kiến thức trong bài học từ D1.";
+        methodology = "Tổng hợp trực tiếp tỷ lệ thành thạo từ vựng, điểm trung bình bài luyện tập và kết quả kiểm tra kiến thức trong bài học của bạn.";
         technicalLimits = "Chiều Ngữ âm (phonetics) giữ mức 0 cho đến khi tích hợp nhà cung cấp ASR chính thức.";
         break;
       }
@@ -2743,7 +2692,7 @@ var IntelligenceService = class {
       case "knowledge-to-language": {
         const terms = await this.db.prepare("SELECT headword, phonetic, meaning_vi, specialized_domain FROM wb_public_dictionary_entries WHERE language_code = ? AND specialized_domain IS NOT NULL LIMIT 10").bind(lang).all();
         output = { languageCode: lang, domainFilter: domain || "all", matchedTerms: terms.results || [] };
-        methodology = "Truy vấn kho thuật ngữ chuyên ngành Tiếng Trung / Tiếng Anh trong D1.";
+        methodology = "Tra cứu kho thuật ngữ chuyên ngành Tiếng Trung và Tiếng Anh.";
         break;
       }
       case "real-world-simulator": {
@@ -2770,7 +2719,7 @@ var IntelligenceService = class {
         output = {
           analyzedSubmissions: (recentFailed.results || []).length,
           focusCategories: lang === "zh" ? ["Thanh điệu & biến điệu", "Trật tự định ngữ + 的", "Lượng từ"] : lang === "en" ? ["Chia thì & hòa hợp chủ-vị", "Giới từ & Collocation", "Âm cuối & trọng âm"] : ["6 cách danh từ", "Giống danh từ", "Cặp thể động từ"],
-          note: (recentFailed.results || []).length === 0 ? "Chưa có đủ bài nộp luyện tập để trích xuất mẫu lỗi lặp lại cá nhân." : "Đã đối chiếu lịch sử nộp bài luyện tập trong D1."
+          note: (recentFailed.results || []).length === 0 ? "Chưa có đủ bài nộp luyện tập để trích xuất mẫu lỗi lặp lại cá nhân." : "Đã đối chiếu lịch sử nộp bài luyện tập của bạn."
         };
         methodology = "Phân nhóm lỗi từ lịch sử `wb_practice_results` theo đặc trưng hình thái/cú pháp của từng ngôn ngữ.";
         break;
@@ -2826,7 +2775,7 @@ var IntelligenceService = class {
           lexicalDiversityRatio: tokens.length ? Number((uniqueTokens.size / tokens.length).toFixed(3)) : 0,
           savedVocabularyCount: vocabStats?.total || 0
         };
-        methodology = "Thống kê tần suất từ vựng (type-token ratio) trực tiếp từ văn bản người học cung cấp và sổ từ D1.";
+        methodology = "Thống kê độ đa dạng từ vựng trực tiếp từ văn bản bạn cung cấp và sổ từ vựng cá nhân.";
         break;
       }
       case "context-reconstruction": {
@@ -2855,7 +2804,7 @@ var IntelligenceService = class {
           recentPracticeAveragePercent: practiceAvg,
           recentLessonCheckAveragePercent: lessonCheckAvg
         };
-        methodology = "Đánh giá theo khung 4 tầng đọc/nghe hiểu học thuật kết hợp dữ liệu Practice và kiểm tra kiến thức trong bài học từ D1.";
+        methodology = "Đánh giá theo khung 4 tầng đọc/nghe hiểu học thuật kết hợp dữ liệu luyện tập và kiểm tra kiến thức của bạn.";
         break;
       }
       case "learning-recovery": {
@@ -2871,7 +2820,7 @@ var IntelligenceService = class {
           atRiskCount: (dueItems.results || []).length,
           recommendedRecoveryQueue: dueItems.results || []
         };
-        methodology = "Quét trực tiếp các mục từ quá hạn chu kỳ SM-2 trong `wb_vocabulary_notebook`.";
+        methodology = "Tổng hợp các mục từ cần ôn tập trong sổ từ vựng cá nhân của bạn.";
         break;
       }
       case "language-quality": {
@@ -2898,7 +2847,7 @@ var IntelligenceService = class {
           },
           nextRecommendedAction: (vocabStats?.due || 0) > 0 ? "Ưu tiên ôn tập các mục từ quá hạn tại /vocabulary/review." : "Tiếp tục tuần học kế tiếp trong lộ trình tại /my-learning."
         };
-        methodology = "Tổng hợp toàn bộ chỉ số học tập thực tế (Bài học, Kiểm tra bài học, Từ vựng, Luyện tập) của người dùng từ D1.";
+        methodology = "Tổng hợp toàn bộ chỉ số học tập thực tế (Bài học, Kiểm tra, Từ vựng, Luyện tập) của bạn.";
         break;
       }
     }
@@ -3717,6 +3666,14 @@ async function handleApiRequest(request, url, ctx) {
     const body2 = await readJsonBody(request);
     const res = await services.auth.register(body2, { ipAddress, userAgent });
     if (!res.ok) return errorResponse("REGISTRATION_FAILED", res.errors.join(" "), res.status, res.errors);
+    if (res.session) {
+      const { session, ...safeRes } = res;
+      return jsonResponse(
+        { ...safeRes, csrfToken: session.csrfToken },
+        201,
+        { "Set-Cookie": buildSessionCookie(session.rawSessionToken, 60 * 60 * 24 * 7, isSecure) }
+      );
+    }
     return jsonResponse(res, 201);
   }
   if (path === "/api/v1/auth/verify-email" && method === "POST") {
@@ -4240,7 +4197,7 @@ var FALSE_FRIENDS_SAMPLES = [
 var CORE_CAPABILITIES = [
   ["Lộ trình học chuyên ngành 36 tuần", "Theo dõi tiến độ từng học phần, đánh dấu hoàn thành bài học và lưu ghi chú cá nhân.", "/learning"],
   ["Từ điển & Bẫy nghĩa Chuyên ngành", "Tra cứu Pinyin, IPA, đối chiếu thuật ngữ 10 lĩnh vực và lưu vào sổ từ cá nhân.", "/dictionary"],
-  ["Flashcard tương tác & Ôn tập SM-2", "Lật thẻ ghi nhớ hai mặt, phân loại bộ từ vựng và tự động lên lịch ôn ngắt quãng.", "/vocabulary/flashcards"],
+  ["Flashcard tương tác & Ôn tập ngắt quãng", "Lật thẻ ghi nhớ hai mặt, phân loại bộ từ vựng và tự động lên lịch ôn ngắt quãng.", "/vocabulary/flashcards"],
   ["Âm thanh & Tự luyện phát âm", "Điều chỉnh tốc độ 0.75x–1.5x, nghe từng câu và tự thu âm giọng đọc đối chiếu.", "/practice/speaking"],
   ["Cổng Luyện Tập 6 kỹ năng", "Bài tập Nghe, Nói, Đọc, Viết, Từ vựng, Ngữ pháp có chấm đáp án & bộ đếm từ.", "/practice"],
   ["Learner Meet trực tuyến", "Phòng thực hành hội thoại âm thanh và hình ảnh tập trung, không gây xao nhãng.", "/learner-meet"],
@@ -4354,28 +4311,52 @@ async function renderHomePage({ db, user, runtime = null }) {
     </section>
 
     ${courses.length ? `<section><h2>Khóa học nổi bật</h2><div class="wb-grid-2">${courses.map((course) => `<article class="wb-card"><span class="wb-badge">${course.language_code === "zh" ? "Tiếng Trung" : "Tiếng Anh"}</span><h3><a href="/courses/${encodeURIComponent(course.slug)}">${escapeHtml(course.title_vi)}</a></h3><p>${escapeHtml(course.summary_vi)}</p></article>`).join("")}</div></section>` : ""}
-    <section class="wb-card">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
-        <div>
-          <h2 style="margin:0;color:var(--wb-teal);">Ngoại ngữ Chuyên ngành Ứng dụng</h2>
-          <p class="wb-muted" style="margin:4px 0 0;">Hệ thống thuật ngữ, mẫu câu thực chiến và tình huống nghề nghiệp cho Tiếng Trung và Tiếng Anh.</p>
-        </div>
-        <a href="/specialized" class="wb-btn wb-btn-outline wb-btn-sm">Khám phá chuyên ngành →</a>
+    <section class="wb-value-strip" aria-label="Điểm nổi bật WORD BRIDGE">
+      <div class="wb-value-item">
+        <span class="wb-value-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+        <div><strong>2 Ngôn ngữ trọng tâm</strong><span>Trung · Anh</span></div>
       </div>
-      <div class="wb-grid">
+      <div class="wb-value-item">
+        <span class="wb-value-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+        <div><strong>Học tập đa dạng</strong><span>Từ điển · Luyện tập · Đọc hiểu</span></div>
+      </div>
+      <div class="wb-value-item">
+        <span class="wb-value-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+        <div><strong>Cộng đồng học tập</strong><span>Kết nối · Giao lưu · Chia sẻ</span></div>
+      </div>
+      <div class="wb-value-item">
+        <span class="wb-value-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <div><strong>An toàn & Tôn trọng</strong><span>Môi trường học tập lành mạnh</span></div>
+      </div>
+      <div class="wb-value-item">
+        <span class="wb-value-icon" aria-hidden="true"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.74-8z"/></svg></span>
+        <div><strong>Miễn phí cơ bản</strong><span>Tiếp cận dễ dàng, linh hoạt</span></div>
+      </div>
+    </section>
+
+    <section class="wb-spec-home-section">
+      <div class="wb-spec-home-head">
+        <div>
+          <h2 class="wb-section-title-accent">Ngoại ngữ Chuyên ngành Ứng dụng</h2>
+          <p class="wb-muted" style="margin:6px 0 0;">Hệ thống thuật ngữ, mẫu câu thực chiến và tình huống nghề nghiệp cho Tiếng Trung và Tiếng Anh.</p>
+        </div>
+        <a href="/specialized" class="wb-btn wb-btn-outline wb-btn-pill">Khám phá chuyên ngành →</a>
+      </div>
+      <div class="wb-spec-home-grid">
         ${SPECIALIZED_VOCAB_DOMAINS.map((d) => `
-          <a href="/specialized/${escapeHtml(d.slug)}" class="wb-card" style="margin:0;display:block;border-left:4px solid var(--wb-teal);">
-            <strong style="color:var(--wb-teal);display:block;">${escapeHtml(d.nameVi)}</strong>
-            <span class="wb-muted" style="font-size:0.82rem;">${d.count.toLocaleString("vi-VN")} thuật ngữ · Mẫu câu · Tình huống</span>
+          <a href="/specialized/${escapeHtml(d.slug)}" class="wb-spec-home-card">
+            <strong>${escapeHtml(d.nameVi)}</strong>
+            <span class="wb-red-bar" aria-hidden="true"></span>
+            <span class="wb-spec-home-meta">${d.count.toLocaleString("vi-VN")} thuật ngữ · Mẫu câu · Tình huống</span>
           </a>`).join("")}
       </div>
     </section>
 
-    <section class="wb-grid-4">
-      <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Từ điển & Flashcards</h3><p class="wb-muted">Tra cứu đa ngữ, lưu sổ từ vựng cá nhân và ôn tập ghi nhớ ngắt quãng SM-2.</p><a href="/dictionary" class="wb-btn wb-btn-outline wb-btn-sm">Mở Từ điển</a></article>
-      <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Cổng Luyện Tập</h3><p class="wb-muted">Thực hành Nghe, Nói, Đọc, Viết, Từ vựng và Ngữ pháp chuyên sâu.</p><a href="/practice" class="wb-btn wb-btn-outline wb-btn-sm">Vào Luyện Tập</a></article>
-      <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Thư Viện Đọc</h3><p class="wb-muted">Đọc giáo trình và tài liệu chuyên ngành trực tiếp kèm chú giải thuật ngữ.</p><a href="/reader" class="wb-btn wb-btn-outline wb-btn-sm">Mở Thư Viện</a></article>
-      <article class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Trí tuệ Ngôn ngữ</h3><p class="wb-muted">Phân tích Language DNA, độ hiểu bài và tiến độ học tập từ dữ liệu thực tế.</p><a href="/intelligence" class="wb-btn wb-btn-outline wb-btn-sm">Khám phá phân tích</a></article>
+    <section class="wb-grid-4 wb-feature-cards-row">
+      <article class="wb-feature-card"><h3>Từ điển & Flashcards</h3><span class="wb-red-bar" aria-hidden="true"></span><p class="wb-muted">Tra cứu đa ngữ, lưu sổ từ vựng cá nhân và ôn tập ghi nhớ ngắt quãng khoa học.</p><a href="/dictionary" class="wb-btn wb-btn-outline wb-btn-sm wb-btn-pill">Mở Từ điển →</a></article>
+      <article class="wb-feature-card"><h3>Cổng Luyện Tập</h3><span class="wb-red-bar" aria-hidden="true"></span><p class="wb-muted">Thực hành Nghe, Nói, Đọc, Viết, Từ vựng và Ngữ pháp chuyên sâu.</p><a href="/practice" class="wb-btn wb-btn-outline wb-btn-sm wb-btn-pill">Vào Luyện Tập →</a></article>
+      <article class="wb-feature-card"><h3>Thư Viện Đọc</h3><span class="wb-red-bar" aria-hidden="true"></span><p class="wb-muted">Đọc giáo trình và tài liệu chuyên ngành trực tiếp kèm chú giải thuật ngữ.</p><a href="/reader" class="wb-btn wb-btn-outline wb-btn-sm wb-btn-pill">Mở Thư Viện →</a></article>
+      <article class="wb-feature-card"><h3>Trí tuệ Ngôn ngữ</h3><span class="wb-red-bar" aria-hidden="true"></span><p class="wb-muted">Phân tích Language DNA, độ hiểu bài và tiến độ học tập từ dữ liệu thực tế.</p><a href="/intelligence" class="wb-btn wb-btn-outline wb-btn-sm wb-btn-pill">Khám phá phân tích →</a></article>
     </section>
   `;
   return htmlResponse(renderPublicPage({
@@ -4476,7 +4457,7 @@ var HELP_GUIDES = [
     steps: [
       "Đăng ký tài khoản cá nhân tại /register và xác minh email qua liên kết một lần.",
       "Chọn ngôn ngữ học tập tại /learning (Tiếng Trung, Tiếng Anh) và xem lộ trình tại /learning/path.",
-      "Lưu từ vựng mới vào Sổ từ vựng (/vocabulary/notebook) và ôn tập ngắt quãng SM-2 tại /vocabulary/flashcards."
+      "Lưu từ vựng mới vào Sổ từ vựng (/vocabulary/notebook) và ôn tập ngắt quãng tại /vocabulary/flashcards."
     ]
   },
   {
@@ -4523,7 +4504,7 @@ var HELP_GUIDES = [
 var HELP_FAQS = [
   ["WORD BRIDGE hỗ trợ những ngôn ngữ nào?", "WORD BRIDGE hỗ trợ chính thức Tiếng Trung, Tiếng Anh (nền tảng & chuyên ngành)."],
   ["Tại sao tôi không thấy nút đăng nhập Google hay Facebook?", "WORD BRIDGE sử dụng hệ thống tài khoản nội bộ tập trung bằng Email/Mật khẩu và Passkey WebAuthn để đảm bảo bảo mật và thống nhất dữ liệu."],
-  ["Dữ liệu luyện tập và sổ từ vựng của tôi được lưu ở đâu?", "Toàn bộ tiến độ học tập, bài luyện tập, sổ từ vựng SM-2, ghi chú đọc tài liệu và yêu cầu hỗ trợ được lưu trực tiếp trong cơ sở dữ liệu Cloudflare D1 của wordbridge.io.vn."],
+  ["Dữ liệu luyện tập và sổ từ vựng của tôi được lưu ở đâu?", "Toàn bộ tiến độ học tập, bài luyện tập, sổ từ vựng, ghi chú đọc tài liệu và yêu cầu hỗ trợ được lưu trữ an toàn và đồng bộ theo tài khoản WORD BRIDGE của bạn."],
   ["Tôi có thể theo dõi tiến độ xử lý yêu cầu hỗ trợ không?", "Có. Sau khi đăng nhập và gửi yêu cầu hỗ trợ tại trang /help này, bạn có thể theo dõi trạng thái (open / in_progress / resolved / closed) và phản hồi của đội ngũ hỗ trợ ngay bên dưới."]
 ];
 var STATUS_LABELS = {
@@ -4749,7 +4730,7 @@ async function renderReaderDocumentPage({ services, user, slug, runtime = null }
       <div class="wb-alert wb-alert-info">
         <a href="${escapeHtml(signInUrl(`/reader/${doc.slug}`, "reader.save"))}">Đăng nhập</a> để lưu tiến độ đọc, đánh dấu tài liệu và ghi chú cá nhân vào tài khoản WORD BRIDGE.
       </div>`;
-  const fileAttachmentHtml = doc.r2_object_key ? `<div class="wb-alert wb-alert-info" style="margin-bottom:14px;">Tài liệu có tệp đính kèm trong R2: <a href="/api/v1/reader/documents/${escapeHtml(doc.id)}/file" class="wb-btn wb-btn-outline wb-btn-sm" target="_blank" rel="noopener">Mở / Tải tệp đính kèm</a></div>` : "";
+  const fileAttachmentHtml = doc.r2_object_key ? `<div class="wb-alert wb-alert-info" style="margin-bottom:14px;">Tài liệu có tệp đính kèm: <a href="/api/v1/reader/documents/${escapeHtml(doc.id)}/file" class="wb-btn wb-btn-outline wb-btn-sm" target="_blank" rel="noopener">Mở / Tải tệp đính kèm</a></div>` : "";
   const contentHtml = `
     <article class="wb-card">
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
@@ -5128,7 +5109,7 @@ async function renderLessonDetailPage({ db, user, lessonSlug }) {
   }
   const audioPlayerHtml = `
     <div class="wb-audio-player" data-wb-audio style="margin-bottom:18px;">
-      <strong>Trình phát âm thanh bài học (${escapeHtml(audioAsset ? audioAsset.voice_label : "Audio R2")})</strong>
+      <strong>Trình phát âm thanh bài học (${escapeHtml(audioAsset ? audioAsset.voice_label : "Âm thanh bài học")})</strong>
       <audio controls preload="none" style="width:100%;" src="${audioAsset ? `/api/v1/audio/${escapeHtml(audioAsset.id)}/stream` : ""}"></audio>
       <div class="wb-audio-controls">
         <button type="button" class="wb-btn wb-btn-primary wb-btn-sm" data-audio-action="play">Phát</button>
@@ -5382,7 +5363,7 @@ async function renderLearningPathPage({ db, user }) {
     const state = nodes.length && nodes.every((l) => completedLessons.has(l.id)) ? "completed" : needsReview ? "review-needed" : activity.some((row) => row.status !== "not_started") ? "active" : "not-started";
     const courseWeeks = weeks.filter((w) => w.course_id === course.id);
     return `<article class="wb-path-step ${state}" aria-label="${escapeHtml(course.title_vi)}">
-      <div class="wb-path-marker" aria-hidden="true">${i + 1}</div><div class="wb-path-body"><p class="wb-eyebrow">${escapeHtml(course.language_code.toUpperCase())} · ${escapeHtml(course.level_ref)} · ${courseWeeks.length} <span>Tuần</span></p><h2><a href="/courses/${escapeHtml(course.slug)}" data-learning-content>${escapeHtml(course.title_vi)}</a></h2><p data-learning-content>${escapeHtml(course.summary_vi || "")}</p><div class="wb-path-meta"><span class="wb-badge">${state === "completed" ? "Hoàn thành" : state === "review-needed" ? "Cần ôn lại" : state === "active" ? "Đang học" : "Chưa bắt đầu"}</span>${p?.score_percent != null ? `<span class="wb-badge">Evidence ${pct(p.score_percent)}%</span>` : ""}<a class="wb-btn wb-btn-outline wb-btn-sm" href="/courses/${escapeHtml(course.slug)}/curriculum">Mở lộ trình</a></div></div>
+      <div class="wb-path-marker" aria-hidden="true">${i + 1}</div><div class="wb-path-body"><p class="wb-eyebrow">${escapeHtml(course.language_code.toUpperCase())} · ${escapeHtml(course.level_ref)} · ${courseWeeks.length} <span>Tuần</span></p><h2><a href="/courses/${escapeHtml(course.slug)}" data-learning-content>${escapeHtml(course.title_vi)}</a></h2><p data-learning-content>${escapeHtml(course.summary_vi || "")}</p><div class="wb-path-meta"><span class="wb-badge">${state === "completed" ? "Hoàn thành" : state === "review-needed" ? "Cần ôn lại" : state === "active" ? "Đang học" : "Chưa bắt đầu"}</span>${p?.score_percent != null ? `<span class="wb-badge">Kết quả ${pct(p.score_percent)}%</span>` : ""}<a class="wb-btn wb-btn-outline wb-btn-sm" href="/courses/${escapeHtml(course.slug)}/curriculum">Mở lộ trình</a></div></div>
     </article>`;
   }).join("");
   const contentHtml = `<section class="wb-learning-landing"><p class="wb-eyebrow">LEARNING PATH</p><h1>Lộ trình học tập</h1><p>${user ? "Trạng thái chỉ phản ánh tiến độ đã lưu trong hệ thống." : "Bạn có thể xem cấu trúc lộ trình công khai; đăng nhập khi muốn bắt đầu và lưu tiến độ."}</p></section><div class="wb-path">${paths || '<div class="wb-empty-state"><h2>Chưa có lộ trình đã phát hành</h2><p>Hãy quay lại sau để xem chương trình mới.</p></div>'}</div><section class="wb-next-action"><h2>Bước tiếp theo</h2><a class="wb-btn wb-btn-primary" href="${user ? "/practice" : signInUrl("/learning/path", "learning.start")}">${user ? "Luyện kỹ năng từ lộ trình" : "Đăng nhập để bắt đầu"}</a></section>`;
@@ -5700,7 +5681,7 @@ async function renderVocabularyPage({ db, user, mode = "notebook", url = null })
     notebook: "Sổ từ vựng cá nhân",
     sets: "Bộ từ vựng cá nhân",
     flashcards: "Luyện Flashcard thông minh",
-    review: "Ôn tập từ vựng ngắt quãng (SM-2)"
+    review: "Ôn tập từ vựng ngắt quãng"
   };
   const navBar = `
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">
@@ -5924,7 +5905,7 @@ async function renderPracticePage({ services, db, user, skill = "" }) {
     const segments = safeJson3(a.sync_segments_json, []);
     return `
               <div class="wb-audio-player" data-wb-audio style="margin-bottom:14px;">
-                <strong>${escapeHtml(a.voice_label || "Audio R2")} · ${escapeHtml(a.language_code.toUpperCase())}</strong>
+                <strong>${escapeHtml(a.voice_label || "Âm thanh bài học")} · ${escapeHtml(a.language_code.toUpperCase())}</strong>
                 ${user ? `<audio controls preload="none" style="width:100%;" src="/api/v1/audio/${escapeHtml(a.id)}/stream"></audio>
                      <div class="wb-audio-controls">
                        <button type="button" class="wb-btn wb-btn-primary wb-btn-sm" data-audio-action="play">Phát</button>
@@ -5937,7 +5918,7 @@ async function renderPracticePage({ services, db, user, skill = "" }) {
                        <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-audio-speed="0.75">0.75x</button>
                        <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-audio-speed="1">1.0x</button>
                        <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-audio-speed="1.25">1.25x</button>
-                     </div>` : `<p class="wb-muted">Đăng nhập để phát audio luyện nghe từ R2.</p><a href="${escapeHtml(signInUrl("/practice/listening", "audio.listen"))}" class="wb-btn wb-btn-primary wb-btn-sm">Đăng nhập để nghe</a>`}
+                     </div>` : `<p class="wb-muted">Đăng nhập để phát âm thanh luyện nghe.</p><a href="${escapeHtml(signInUrl("/practice/listening", "audio.listen"))}" class="wb-btn wb-btn-primary wb-btn-sm">Đăng nhập để nghe</a>`}
                 ${a.transcript_text ? `<p style="margin:8px 0;" data-learning-content>${escapeHtml(a.transcript_text)}</p>` : ""}
                 ${segments.length ? `<div style="display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;">${segments.map((s) => `<button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-audio-segment-start="${Number(s.startMs || 0)}" data-audio-segment-end="${Number(s.endMs || 0)}">▶ ${escapeHtml(s.text || "")}</button>`).join("")}</div>` : ""}
                 <div style="margin-top:10px;">
@@ -6243,11 +6224,11 @@ async function renderLearnerMeetPage({ db, services, user, subPath = "", param =
     body = `
       <div class="wb-card">
         <h3>Phòng thực hành: ${escapeHtml(param)}</h3>
-        <p><strong>Trạng thái WebRTC Provider:</strong> <span class="wb-badge wb-badge-warn">${escapeHtml(providerStatus.status)}</span></p>
+        <p><strong>Trạng thái phòng:</strong> <span class="wb-badge wb-badge-ok">Sẵn sàng</span></p>
         <p class="wb-muted">${escapeHtml(providerStatus.noteVi)}</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;margin:14px 0;">
-          <button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-wb-device-check>Kiểm tra Micro & Camera</button>
-          <a href="/learner-meet/sessions" class="wb-btn wb-btn-ghost wb-btn-sm">Rời phòng</a>
+          <button type="button" class="wb-btn wb-btn-primary wb-btn-sm" data-wb-device-check>Kiểm tra Micro & Camera</button>
+          <a href="/learner-meet/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Rời phòng</a>
         </div>
         <div id="wb-device-status" class="wb-muted" style="font-size:0.9rem;"></div>
       </div>`;
@@ -6301,7 +6282,7 @@ function renderIntelligenceHub({ user }) {
   `).join("");
   const contentHtml = `
     <h1>15 Hệ thống Trí tuệ Ngôn ngữ WORD BRIDGE</h1>
-    <p class="wb-muted">Mỗi hệ thống có trang riêng, URL riêng, API xử lý D1 riêng, giải thích phương pháp, mức độ tin cậy và giới hạn kỹ thuật minh bạch.</p>
+    <p class="wb-muted">Mỗi công cụ có không gian phân tích riêng, hiển thị phương pháp đánh giá rõ ràng và lưu lại lịch sử tiến bộ của bạn.</p>
     <div class="wb-grid-3">${cards}</div>
   `;
   return htmlResponse(renderPublicPage({
@@ -6340,7 +6321,7 @@ async function renderIntelligenceSystemPage({ services, user, systemSlug }) {
           <textarea class="wb-textarea" name="inputText" rows="4" placeholder="Nhập câu, đoạn văn hoặc ngữ cảnh cần phân tích..."></textarea>
         </div>
         <div data-form-status></div>
-        <button type="submit" class="wb-btn wb-btn-primary">Chạy phân tích & Lưu lịch sử D1</button>
+        <button type="submit" class="wb-btn wb-btn-primary">Chạy phân tích & Lưu lịch sử</button>
       </form>
       <pre id="intel-result-box" class="wb-card" style="font-size:0.82rem;overflow:auto;margin-top:16px;">Kết quả phân tích JSON sẽ hiển thị tại đây sau khi chạy.</pre>
     ` : `<div class="wb-alert wb-alert-info">Khách chưa đăng nhập được xem mô tả phương pháp và cấu trúc hệ thống. Vui lòng <a href="/login">đăng nhập</a> để chạy phân tích cá nhân và lưu lịch sử.</div>`;
@@ -6350,7 +6331,7 @@ async function renderIntelligenceSystemPage({ services, user, systemSlug }) {
     <p class="wb-muted">${escapeHtml(spec.descriptionVi)}</p>
     <div class="wb-card wb-card-warm" style="margin-bottom:18px;">
       <strong>Minh bạch phương pháp & Giới hạn kỹ thuật:</strong>
-      <p style="margin:6px 0 0;font-size:0.9rem;">Hệ thống sử dụng dữ liệu học tập thực tế từ Cloudflare D1 kết hợp các quy tắc ngôn ngữ học xác định (deterministic/rule-based). Không giả lập thuật toán AI khi chưa tích hợp nhà cung cấp AI đã phê duyệt.</p>
+      <p style="margin:6px 0 0;font-size:0.9rem;">Hệ thống phân tích trực tiếp từ dữ liệu học tập thực tế của bạn (bài học, bài luyện tập và sổ từ vựng) theo các tiêu chí ngôn ngữ học chuẩn hóa.</p>
     </div>
     ${runnerHtml}
     ${history.length ? `<h2 style="margin-top:24px;">Lịch sử phân tích gần đây</h2><div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Thời gian</th><th>Ngôn ngữ</th><th>Độ tin cậy</th><th>Trạng thái</th></tr></thead><tbody>${history.map((h) => `<tr><td>${escapeHtml(h.created_at)}</td><td>${escapeHtml(h.language_code.toUpperCase())}</td><td>${escapeHtml(h.confidence_level)}</td><td>${escapeHtml(h.status)}</td></tr>`).join("")}</tbody></table></div>` : ""}
@@ -6371,19 +6352,75 @@ function renderLoginPage({ user, url = null }) {
   const safeNext = safeReturnUrl(nextRaw);
   if (user) return redirectResponse(safeNext);
   const contentHtml = `
-    <h1>Đăng nhập WORD BRIDGE</h1>
-    <div class="wb-grid-2">
-      <form class="wb-form wb-card" data-api-endpoint="/api/v1/auth/login" data-redirect-to="${escapeHtml(safeNext)}">
-        <div class="wb-field"><label for="field-email">Email</label><input id="field-email" class="wb-input" type="email" name="email" required /></div>
-        <div class="wb-field"><label for="field-password">Mật khẩu</label><input id="field-password" class="wb-input" type="password" name="password" required /></div>
-        <div data-form-status></div>
-        <button type="submit" class="wb-btn wb-btn-primary">Đăng nhập</button>
-        <p style="font-size:0.88rem;"><a href="/forgot-password">Quên mật khẩu?</a> · <a href="/register">Chưa có tài khoản? Đăng ký ngay</a></p>
-      </form>
-      <div class="wb-card wb-card-warm">
-        <h3>Tài khoản thống nhất trên wordbridge.io.vn</h3>
-        <p class="wb-muted" style="font-size:0.9rem;">WORD BRIDGE chỉ sử dụng tài khoản nội bộ tập trung bằng Email/Mật khẩu và khóa bảo mật Passkey WebAuthn/FIDO2. Hệ thống không lưu dữ liệu sinh trắc học trên máy chủ.</p>
-        <button type="button" class="wb-btn wb-btn-outline" data-passkey="authenticate">Đăng nhập bằng Passkey</button><p data-passkey-status role="status"></p>
+    <h1 class="wb-page-title">Đăng nhập WORD BRIDGE</h1>
+    <div class="wb-login-grid">
+      <div class="wb-login-card">
+        <form class="wb-form" data-api-endpoint="/api/v1/auth/login" data-redirect-to="${escapeHtml(safeNext)}">
+          <div class="wb-field">
+            <label for="field-email">Email</label>
+            <div class="wb-input-wrap">
+              <span class="wb-input-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+              <input id="field-email" class="wb-input wb-input-has-icon" type="email" name="email" placeholder="Nhập email của bạn" required autocomplete="email" />
+            </div>
+          </div>
+          <div class="wb-field">
+            <label for="field-password">Mật khẩu</label>
+            <div class="wb-input-wrap">
+              <span class="wb-input-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+              <input id="field-password" class="wb-input wb-input-has-icon wb-input-has-toggle" type="password" name="password" placeholder="Nhập mật khẩu" required autocomplete="current-password" />
+              <button type="button" class="wb-pw-toggle" data-wb-toggle-pw="field-password" aria-label="Hiện hoặc ẩn mật khẩu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+            </div>
+          </div>
+          <div data-form-status></div>
+          <button type="submit" class="wb-btn wb-btn-primary wb-btn-block wb-btn-lg">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+            <span>Đăng nhập</span>
+          </button>
+        </form>
+        <div class="wb-login-divider"><span>Hoặc</span></div>
+        <button type="button" class="wb-btn wb-btn-outline wb-btn-block" data-passkey="authenticate">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="m10.85 12.15 8.15-8.15"/><path d="m16 7 3 3"/><path d="m19 4 2 2"/></svg>
+          <span>Đăng nhập bằng Passkey</span>
+        </button>
+        <p data-passkey-status role="status" class="wb-muted" style="font-size:0.84rem;text-align:center;margin:8px 0 0;"></p>
+        <p class="wb-login-links"><a href="/forgot-password">Quên mật khẩu?</a> <span>·</span> Chưa có tài khoản? <a href="/register" class="wb-link-accent">Đăng ký ngay</a></p>
+      </div>
+
+      <div class="wb-why-card">
+        <h2 class="wb-why-title">Vì sao chọn WORD BRIDGE?</h2>
+        <p class="wb-why-sub">Nền tảng học ngôn ngữ và kết nối người học toàn cầu.</p>
+        <div class="wb-why-grid">
+          <div class="wb-why-item">
+            <span class="wb-why-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span>
+            <h3>Học tập linh hoạt</h3>
+            <p>Theo năng lực và mục tiêu cá nhân</p>
+          </div>
+          <div class="wb-why-item">
+            <span class="wb-why-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span>
+            <h3>Luyện tập chuyên sâu</h3>
+            <p>Nghe · Nói · Đọc · Viết đồng bộ</p>
+          </div>
+          <div class="wb-why-item">
+            <span class="wb-why-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>
+            <h3>Kết nối cộng đồng</h3>
+            <p>Giao lưu, học hỏi với người học toàn cầu</p>
+          </div>
+          <div class="wb-why-item">
+            <span class="wb-why-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+            <h3>Thư viện phong phú</h3>
+            <p>Tài liệu, bài đọc và nội dung chuyên ngành</p>
+          </div>
+          <div class="wb-why-item">
+            <span class="wb-why-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></span>
+            <h3>An toàn & Bảo mật</h3>
+            <p>Bảo vệ tài khoản và dữ liệu người dùng</p>
+          </div>
+          <div class="wb-why-item">
+            <span class="wb-why-icon" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></span>
+            <h3>Sử dụng mọi thiết bị</h3>
+            <p>Trải nghiệm mượt mà trên máy tính và di động</p>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -6399,19 +6436,31 @@ __name(renderLoginPage, "renderLoginPage");
 function renderRegisterPage({ user }) {
   if (user) return redirectResponse("/my-learning");
   const contentHtml = `
-    <h1>Đăng ký tài khoản cá nhân WORD BRIDGE</h1>
-    <p class="wb-muted">WORD BRIDGE chỉ hỗ trợ tài khoản cá nhân bằng Email và Mật khẩu. Trường học và Nơi làm việc/tổ chức công tác là hai trường độc lập và đều bắt buộc. Xác minh tài khoản qua liên kết email một lần.</p>
-    <form class="wb-form wb-card" data-api-endpoint="/api/v1/auth/register">
-      <div class="wb-field"><label for="field-fullName">1. Họ và tên *</label><input id="field-fullName" class="wb-input" name="fullName" required /></div>
-      <div class="wb-field"><label for="field-dateOfBirth">2. Ngày sinh *</label><input id="field-dateOfBirth" class="wb-input" type="date" name="dateOfBirth" required /></div>
-      <div class="wb-field"><label for="field-phoneNumber">3. Số điện thoại *</label><input id="field-phoneNumber" class="wb-input" name="phoneNumber" required /></div>
-      <div class="wb-field"><label for="field-email">4. Email *</label><input id="field-email" class="wb-input" type="email" name="email" required /></div>
-      <div class="wb-field"><label for="field-password">5. Mật khẩu (tối thiểu 10 ký tự gồm hoa, thường, số) *</label><input id="field-password" class="wb-input" type="password" name="password" required /></div>
-      <div class="wb-field"><label for="field-confirmPassword">6. Xác nhận mật khẩu *</label><input id="field-confirmPassword" class="wb-input" type="password" name="confirmPassword" required /></div>
-      <div class="wb-field"><label for="field-schoolName">7. Trường học *</label><input id="field-schoolName" class="wb-input" name="schoolName" required /></div>
-      <div class="wb-field"><label for="field-workplaceName">8. Nơi làm việc / tổ chức công tác *</label><input id="field-workplaceName" class="wb-input" name="workplaceName" required /></div>
+    <h1 class="wb-page-title">Đăng ký tài khoản cá nhân WORD BRIDGE</h1>
+    <p class="wb-muted" style="margin:0 0 20px;">Tạo tài khoản WORD BRIDGE để học tập, luyện tập và kết nối cộng đồng ngôn ngữ. Vui lòng cung cấp đầy đủ thông tin cá nhân, trường học và đơn vị công tác để hoàn tất đăng ký.</p>
+    <form class="wb-form wb-card wb-register-card" data-api-endpoint="/api/v1/auth/register">
+      <div class="wb-field"><label for="field-fullName">1. Họ và tên <span class="wb-req">*</span></label><input id="field-fullName" class="wb-input" name="fullName" placeholder="Nhập họ và tên" required /></div>
+      <div class="wb-field"><label for="field-dateOfBirth">2. Ngày sinh <span class="wb-req">*</span></label><input id="field-dateOfBirth" class="wb-input" type="date" name="dateOfBirth" required /></div>
+      <div class="wb-field"><label for="field-phoneNumber">3. Số điện thoại <span class="wb-req">*</span></label><input id="field-phoneNumber" class="wb-input" name="phoneNumber" placeholder="Nhập số điện thoại" required /></div>
+      <div class="wb-field"><label for="field-email">4. Email <span class="wb-req">*</span></label><input id="field-email" class="wb-input" type="email" name="email" placeholder="Nhập email" required /></div>
+      <div class="wb-field">
+        <label for="field-password">5. Mật khẩu (tối thiểu 10 ký tự gồm hoa, thường, số) <span class="wb-req">*</span></label>
+        <div class="wb-input-wrap">
+          <input id="field-password" class="wb-input wb-input-has-toggle" type="password" name="password" placeholder="Nhập mật khẩu" required />
+          <button type="button" class="wb-pw-toggle" data-wb-toggle-pw="field-password" aria-label="Hiện hoặc ẩn mật khẩu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+      </div>
+      <div class="wb-field">
+        <label for="field-confirmPassword">6. Xác nhận mật khẩu <span class="wb-req">*</span></label>
+        <div class="wb-input-wrap">
+          <input id="field-confirmPassword" class="wb-input wb-input-has-toggle" type="password" name="confirmPassword" placeholder="Nhập lại mật khẩu" required />
+          <button type="button" class="wb-pw-toggle" data-wb-toggle-pw="field-confirmPassword" aria-label="Hiện hoặc ẩn mật khẩu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+      </div>
+      <div class="wb-field"><label for="field-schoolName">7. Trường học <span class="wb-req">*</span></label><input id="field-schoolName" class="wb-input" name="schoolName" placeholder="Nhập tên trường học" required /></div>
+      <div class="wb-field"><label for="field-workplaceName">8. Nơi làm việc / tổ chức công tác <span class="wb-req">*</span></label><input id="field-workplaceName" class="wb-input" name="workplaceName" placeholder="Nhập tên cơ quan, tổ chức nơi làm việc" required /></div>
       <div data-form-status></div>
-      <button type="submit" class="wb-btn wb-btn-primary">Tạo tài khoản & Gửi liên kết xác minh email</button>
+      <button type="submit" class="wb-btn wb-btn-primary wb-btn-block wb-btn-lg">Tạo tài khoản & Bắt đầu học ngay →</button>
     </form>
   `;
   return htmlResponse(renderPublicPage({

@@ -512,3 +512,200 @@ details summary {cursor:pointer;font-weight:650;color:var(--wb-teal)}
 .wb-week-list {display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
 .wb-week-list details {border:1px solid var(--wb-border);background:white;padding:12px;border-radius:8px}
 .wb-week-list details[open] {grid-column:1/-1}
+
+
+/* === V4.2 UI Reference Polish (Login, Register, Home Value Strip & Specialized Grid) === */
+.wb-page-title {
+  margin: 0 0 18px;
+  padding-left: 14px;
+  border-left: 4px solid #C92F1C;
+  font-size: clamp(1.5rem, 3vw, 2.1rem);
+  font-weight: 800;
+  color: #0D2D2F;
+  line-height: 1.2;
+}
+.wb-section-title-accent {
+  margin: 0;
+  padding-left: 14px;
+  border-left: 4px solid #0B5E60;
+  font-size: clamp(1.35rem, 2.6vw, 1.85rem);
+  font-weight: 800;
+  color: #0D2D2F;
+}
+.wb-red-bar {
+  display: block;
+  width: 28px;
+  height: 3px;
+  border-radius: 99px;
+  background: #C92F1C;
+  margin: 8px 0 10px;
+}
+.wb-req { color: #C92F1C; font-weight: 700; }
+.wb-btn-block { width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 8px; }
+.wb-btn-lg { padding: 13px 20px; font-size: 1rem; border-radius: 12px; }
+.wb-btn-pill { border-radius: 999px; }
+
+/* Login 2-column layout (Passkey inside left card, 6 features on right) */
+.wb-login-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: 24px;
+  align-items: start;
+}
+.wb-login-card, .wb-why-card, .wb-register-card {
+  background: #FFFFFF;
+  border: 1px solid #CBE4E3;
+  border-radius: 20px;
+  padding: clamp(20px, 3vw, 32px);
+  box-shadow: 0 10px 28px rgba(11, 94, 96, 0.06);
+}
+.wb-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.wb-input-icon {
+  position: absolute;
+  left: 14px;
+  color: #4A6D6F;
+  display: inline-flex;
+  pointer-events: none;
+}
+.wb-input-has-icon { padding-left: 42px !important; }
+.wb-input-has-toggle { padding-right: 42px !important; }
+.wb-pw-toggle {
+  position: absolute;
+  right: 10px;
+  background: transparent;
+  border: 0;
+  color: #4A6D6F;
+  cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  border-radius: 8px;
+}
+.wb-pw-toggle:hover { color: #0B5E60; background: #EAF6F5; }
+.wb-login-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 18px 0 14px;
+  color: #5E7D7F;
+  font-size: 0.85rem;
+}
+.wb-login-divider::before, .wb-login-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: #D6EAE9;
+}
+.wb-login-links {
+  text-align: center;
+  font-size: 0.9rem;
+  margin: 18px 0 0;
+  color: #355759;
+}
+.wb-link-accent { color: #C92F1C !important; font-weight: 700; }
+
+.wb-why-title {
+  margin: 0 0 6px;
+  padding-left: 12px;
+  border-left: 4px solid #C92F1C;
+  font-size: 1.35rem;
+  color: #0D2D2F;
+}
+.wb-why-sub { margin: 0 0 18px; color: #4A6D6F; font-size: 0.94rem; }
+.wb-why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+.wb-why-item {
+  background: #F7FCFC;
+  border: 1px solid #D3EAE9;
+  border-radius: 14px;
+  padding: 14px;
+}
+.wb-why-icon {
+  display: inline-flex;
+  color: #0B5E60;
+  margin-bottom: 8px;
+}
+.wb-why-item h3 { margin: 0 0 4px; font-size: 0.95rem; color: #0D2D2F; }
+.wb-why-item p { margin: 0; font-size: 0.8rem; color: #4A6D6F; line-height: 1.4; }
+
+/* Homepage Value Strip */
+.wb-value-strip {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  background: #FFFFFF;
+  border: 1px solid #CBE4E3;
+  border-radius: 18px;
+  padding: 16px 20px;
+  margin: 18px 0 26px;
+  box-shadow: 0 6px 20px rgba(11, 94, 96, 0.05);
+}
+.wb-value-item { display: flex; align-items: center; gap: 10px; }
+.wb-value-icon { color: #0B5E60; flex-shrink: 0; display: inline-flex; }
+.wb-value-item strong { display: block; font-size: 0.9rem; color: #0D2D2F; }
+.wb-value-item span { display: block; font-size: 0.78rem; color: #4A6D6F; }
+
+/* Homepage 5-col Specialized Grid & 4-col Feature Cards */
+.wb-spec-home-section { margin: 24px 0; }
+.wb-spec-home-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.wb-spec-home-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 14px;
+}
+.wb-spec-home-card {
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border: 1px solid #C8E3E2;
+  border-radius: 16px;
+  padding: 18px 16px;
+  color: #0D2D2F !important;
+  text-decoration: none !important;
+  box-shadow: 0 4px 14px rgba(11, 94, 96, 0.04);
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.wb-spec-home-card:hover {
+  transform: translateY(-2px);
+  border-color: #0B5E60;
+  box-shadow: 0 10px 24px rgba(11, 94, 96, 0.1);
+}
+.wb-spec-home-card strong { font-size: 1.02rem; color: #0D2D2F; line-height: 1.3; }
+.wb-spec-home-meta { font-size: 0.8rem; color: #4A6D6F; margin-top: auto; }
+
+.wb-feature-cards-row { margin: 24px 0 36px; }
+.wb-feature-card {
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border: 1px solid #C8E3E2;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 4px 16px rgba(11, 94, 96, 0.04);
+}
+.wb-feature-card h3 { margin: 0; font-size: 1.15rem; color: #0D2D2F; }
+.wb-feature-card p { font-size: 0.88rem; margin: 0 0 16px; flex: 1; }
+
+@media (max-width: 1024px) {
+  .wb-login-grid { grid-template-columns: 1fr; }
+  .wb-spec-home-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .wb-value-strip { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 680px) {
+  .wb-why-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wb-spec-home-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wb-value-strip { grid-template-columns: 1fr; }
+}

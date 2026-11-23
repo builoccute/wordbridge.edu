@@ -1,0 +1,21 @@
+-- Read-only publication layer. Existing D1 records remain available internally.
+CREATE VIEW IF NOT EXISTS wb_public_programs AS SELECT * FROM wb_programs WHERE language_code IN ('zh','en') AND review_status='published';
+CREATE VIEW IF NOT EXISTS wb_public_courses AS SELECT * FROM wb_courses WHERE language_code IN ('zh','en') AND review_status='published';
+CREATE VIEW IF NOT EXISTS wb_public_lessons AS SELECT * FROM wb_lessons WHERE language_code IN ('zh','en') AND review_status='published';
+CREATE VIEW IF NOT EXISTS wb_public_learning_resources AS SELECT * FROM wb_learning_resources WHERE language_code IN ('zh','en');
+CREATE VIEW IF NOT EXISTS wb_public_dictionary_entries AS SELECT * FROM wb_dictionary_entries WHERE language_code IN ('zh','en') AND review_status='published';
+CREATE VIEW IF NOT EXISTS wb_public_audio_assets AS SELECT * FROM wb_audio_assets WHERE language_code IN ('zh','en') AND review_status='published';
+CREATE VIEW IF NOT EXISTS wb_public_vocabulary_sets AS SELECT * FROM wb_vocabulary_sets WHERE language_code IN ('zh','en');
+CREATE VIEW IF NOT EXISTS wb_public_grammar_topics AS SELECT * FROM wb_grammar_topics WHERE language_code IN ('zh','en') AND review_status='published';
+CREATE VIEW IF NOT EXISTS wb_public_question_bank AS SELECT * FROM wb_question_bank WHERE language_code IN ('zh','en') AND review_status='published';
+CREATE VIEW IF NOT EXISTS wb_public_practice_exercises AS SELECT * FROM wb_practice_exercises WHERE language_code IN ('zh','en');
+CREATE VIEW IF NOT EXISTS wb_public_practice_results AS SELECT rowid AS result_order, * FROM wb_practice_results WHERE language_code IN ('zh','en');
+CREATE VIEW IF NOT EXISTS wb_public_learner_meet_sessions AS SELECT * FROM wb_learner_meet_sessions WHERE language_code IN ('zh','en');
+CREATE VIEW IF NOT EXISTS wb_public_intelligence_runs AS SELECT * FROM wb_intelligence_runs WHERE language_code IN ('zh','en');
+CREATE VIEW IF NOT EXISTS wb_public_reader_documents AS SELECT * FROM wb_reader_documents WHERE language_code IN ('zh','en') AND review_status='published';
+CREATE VIEW IF NOT EXISTS wb_public_languages AS SELECT * FROM wb_languages WHERE code IN ('zh','en') AND is_active=1;
+CREATE VIEW IF NOT EXISTS wb_public_modules AS SELECT * FROM wb_modules WHERE course_id IN (SELECT id FROM wb_public_courses);
+CREATE VIEW IF NOT EXISTS wb_public_weeks AS SELECT * FROM wb_weeks WHERE course_id IN (SELECT id FROM wb_public_courses);
+CREATE VIEW IF NOT EXISTS wb_public_learner_progress AS SELECT * FROM wb_learner_progress WHERE lesson_id IN (SELECT id FROM wb_public_lessons) OR (lesson_id IS NULL AND course_id IN (SELECT id FROM wb_public_courses));
+CREATE VIEW IF NOT EXISTS wb_public_lesson_submissions AS SELECT * FROM wb_lesson_submissions WHERE lesson_id IN (SELECT id FROM wb_public_lessons);
+CREATE VIEW IF NOT EXISTS wb_public_vocabulary_notebook AS SELECT * FROM wb_vocabulary_notebook WHERE entry_id IN (SELECT id FROM wb_public_dictionary_entries);

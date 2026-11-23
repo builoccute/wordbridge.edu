@@ -61,9 +61,11 @@ export class SQLiteD1Database {
 
   async applyAllMigrations(migrationsDir = path.resolve(process.cwd(), 'database/migrations')) {
     const files = fs.readdirSync(migrationsDir).filter((f) => f.endsWith('.sql')).sort();
+    await this.exec("CREATE TABLE IF NOT EXISTS local_applied_migrations (name TEXT PRIMARY KEY)");
     for (const file of files) {
+      if (await this.prepare('SELECT name FROM local_applied_migrations WHERE name=?').bind(file).first()) continue;
       const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
-      await this.exec(sql);
+      await this.exec("BEGIN;\n" + sql + "\nINSERT INTO local_applied_migrations(name) VALUES('" + file.replaceAll("'", "''") + "');\nCOMMIT;");
     }
     return files;
   }
@@ -109,6 +111,7 @@ export async function createTestEnv(extraEnv = {}) {
     APP_BASE_URL: 'https://wordbridge.io.vn',
     EMAIL_PROVIDER: 'unconfigured',
     LEARNER_MEET_PROVIDER: 'unconfigured',
+    ENVIRONMENT: 'test',
     EXPOSE_TEST_TOKENS: 'true',
     TOKEN_PEPPER: 'test-pepper',
     ...extraEnv,

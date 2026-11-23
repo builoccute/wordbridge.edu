@@ -243,7 +243,7 @@
     }
   });
 
-  // Live Word & Character Counter for Writing exercises (CJK / Latin)
+  // Live Word & Character Counter for Writing exercises (CJK / Latin / Cyrillic)
   document.addEventListener('input', (ev) => {
     const ta = ev.target && ev.target.closest ? ev.target.closest('textarea[data-wb-counter]') : null;
     if (!ta) return;
@@ -335,7 +335,18 @@
       } else if (form.hasAttribute('data-render-json')) {
         const out = document.getElementById(form.getAttribute('data-render-json'));
         if (out) {
-          out.innerHTML = `<div class="wb-card" style="border-left:4px solid var(--wb-aqua);"><h4 style="margin-top:0;color:var(--wb-teal);">Kết quả phân tích</h4><pre style="white-space:pre-wrap;margin:0;font-family:var(--wb-font-mono);font-size:0.84rem;">${JSON.stringify(data, null, 2)}</pre></div>`;
+          if (data.resultId) {
+            window.location.assign('/practice/results/' + encodeURIComponent(data.resultId));
+          } else if (data.output) {
+            const heading = document.createElement('h3');
+            heading.textContent = data.system?.nameVi || 'Kết quả phân tích';
+            const values = document.createElement('pre');
+            values.style.whiteSpace = 'pre-wrap';
+            values.textContent = JSON.stringify(data.output, null, 2);
+            out.replaceChildren(heading, values);
+          } else {
+            out.textContent = data.message || 'Đã lưu.';
+          }
         }
       }
     } else {
@@ -644,3 +655,31 @@
     }
   });
 })();
+
+document.addEventListener('click', async event => {
+  const button = event.target.closest('[data-passkey]');
+  if (!button) return;
+  const status = document.querySelector('[data-passkey-status]');
+  const action = button.dataset.passkey;
+  const register = action === 'register';
+  button.disabled = true;
+  async function post(step, body) {
+    const res = await fetch('/api/v1/account/passkeys/' + action + '/' + step, {
+      method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name="wb-csrf-token"]')?.content || ''},
+      body:JSON.stringify(body)});
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error?.message || 'Vui lòng thử lại.');
+    return data;
+  }
+  try {
+    const parser = register ? window.PublicKeyCredential?.parseCreationOptionsFromJSON : window.PublicKeyCredential?.parseRequestOptionsFromJSON;
+    if (!parser) throw new Error('Vui lòng cập nhật trình duyệt để sử dụng Passkey.');
+    const options = await post('options', {});
+    const publicKey = parser.call(PublicKeyCredential, options.publicKey);
+    const key = register ? await navigator.credentials.create({publicKey}) : await navigator.credentials.get({publicKey});
+    await post('verify', {challengeId:options.challengeId, credential:key.toJSON()});
+    location.assign(register ? '/account/passkeys' : '/my-learning');
+  } catch (error) {
+    status.textContent = error.name === 'NotAllowedError' ? 'Thao tác đã hủy hoặc hết thời gian.' : error.message;
+  } finally { button.disabled = false; }
+});

@@ -1,56 +1,38 @@
-# WORD BRIDGE V4.2
+# WORD BRIDGE
 
-Nền tảng học tập, tra cứu từ điển, luyện tập 7 kỹ năng, ngoại ngữ chuyên ngành và thư viện đọc cho **Tiếng Trung (中文)** và **Tiếng Anh (English)** trên một tên miền thống nhất (`https://wordbridge.io.vn`), vận hành bằng **Cloudflare Workers**, **Cloudflare D1**, **Cloudflare R2** và **Static Assets**.
+Website học tiếng Trung và tiếng Anh, giao diện VI/EN. Tệp vào của Worker là `src/index.js`. Wrangler phục vụ tài sản từ `public/`, truy cập D1 qua `DB` và đọc học liệu R2 qua `R2`.
 
-## Phạm vi sản phẩm V4.2
-- **Hai ngôn ngữ học tập chính thức:** Tiếng Trung (`zh`) và Tiếng Anh (`en`). Tiếng Nga đã được ngừng phát hành an toàn và lưu trữ bằng migration không phá hủy (`0014`).
-- **Không có cổng quản trị công khai:** Mọi đường dẫn `/quan-tri*` và `/admin*` bị chặn công khai (`404`, không chuyển hướng, không lộ cấu trúc). Các nghiệp vụ backend quản trị (`/api/v1/admin/*`) được tách bạch hoàn toàn sau xác thực phiên, RBAC và CSRF.
-- **Không có phân hệ Exam / cấp chứng chỉ / OAuth mạng xã hội.**
-- **Bảng màu Design System:** Deep Teal `#146466`, Vermilion Red `#C92F1C`, Aqua `#5AABA9`, Warm Ivory `#E2E2C4`.
+## Chạy trên máy cá nhân
 
-## Hướng dẫn chạy Local
-Yêu cầu: Node.js `>= 18.18.0` và Python 3 (cho SQLite test shim).
+Cần Node.js 22.12 trở lên, npm và Python 3. Chạy tại thư mục có `package.json`.
 
-```bash
-# 1. Kiểm tra cú pháp & preflight build
-npm run lint:check
+```sh
+npm ci
 npm run build
-
-# 2. Chạy toàn bộ bộ kiểm thử tự động (34 tests)
 npm test
-
-# 3. Chạy server local (Node) hoặc Wrangler dev
 npm run dev:local
-# hoặc khi có wrangler:
-npm run db:migrate:local
-npm run dev
 ```
 
-## Hướng dẫn cấu hình & triển khai Cloudflare
-1. Kiểm tra `wrangler.toml`:
-   - Entrypoint: `main = "src/index.js"`
-   - Static Assets: `[assets] directory = "./public", binding = "ASSETS"`
-   - D1 Database: `binding = "DB"`, `database_name = "word"`, `database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"`
-   - R2 Bucket: `binding = "R2"`, `bucket_name = "word"`
-   - `compatibility_flags = ["nodejs_compat"]`
-2. Thiết lập secrets (không commit vào git):
-   ```bash
-   wrangler secret put SESSION_SECRET
-   wrangler secret put CSRF_SECRET
-   wrangler secret put EMAIL_API_KEY
-   ```
-3. Sao lưu D1 trước khi chạy migration 0014 lên production:
-   ```bash
-   ./scripts/d1-backup.sh
-   npm run db:migrate:remote
-   # Nếu cần khôi phục: dùng database/rollbacks/0014_v42_rollback.sql
-   ```
-4. Triển khai Worker:
-   ```bash
-   npm run build && npm run deploy
-   ```
+Mở http://localhost:8787. Server phát triển dùng SQLite từ các migration và R2 trong bộ nhớ. Biến `WB_LOCAL_DB` cho phép chọn đường dẫn SQLite mới. Giữ database thử nghiệm bên ngoài thư mục bàn giao. Build chạy Wrangler ở chế độ dry-run. Các bài kiểm thử tự tạo database riêng.
 
-## Tài liệu nghiệm thu & kỹ thuật
-- `docs/UI-REFERENCE-MAP.md` — Bảng ánh xạ 22 ảnh giao diện tham chiếu.
-- `docs/CLOUDFLARE-1101-INCIDENT-REPORT.md` — Báo cáo điều tra & khắc phục lỗi Cloudflare 1101.
-- `docs/PRODUCTION-READINESS-AND-HANDOFF.md` — Danh sách route, báo cáo kiểm thử và các hạng mục cần đầu vào production.
+Để kiểm tra Chromium, cài Python Playwright bằng `python3 -m pip install playwright`, cài trình duyệt bằng `python3 -m playwright install chromium`, rồi chạy `npm run test:e2e`. Có thể đặt `CHROME_BIN` tới Chromium có sẵn. Kịch bản chạy trên cổng 8799 với tài khoản và bộ xác thực ảo cục bộ.
+
+## Cloudflare
+
+Tên Worker trong ZIP là `wordbridge-edu`. D1 `word` mang ID `ce84cc48-6d49-409b-b45a-13ba3bc4a771`, bucket R2 là `word`, ASSETS dùng `./public`. Cron chạy mỗi 15 phút. Kiểm tra migrations của bản sạch bằng `npm run db:migrate:local`. Để chạy workerd trên máy có hỗ trợ, dùng `npm run dev` sau khi áp dụng migration local. Dùng một bộ binding staging riêng cho nghiệm thu trước khi chuyển phiên bản.
+
+Đối chiếu phiên bản Worker và binding được gắn với từng hostname trong Dashboard. ZIP hiện cấu hình `APP_BASE_URL=https://wordbridge.io.vn`, RP ID là `wordbridge.io.vn`. Cookie phiên được tạo theo host. Liên kết email và origin WebAuthn dùng APP_BASE_URL. Cần chốt host sau khi xem cấu hình thực tế của apex và www. Bản sửa không thêm quy tắc chuyển hướng.
+
+Đặt `TOKEN_PEPPER`, `RESEND_API_KEY`, `EMAIL_WEBHOOK_SECRET` bằng Workers Secrets. Duy trì pepper hiện có khi nâng cấp. Đặt `EMAIL_PROVIDER=resend` khi đã xác nhận tên miền gửi của nhà cung cấp. Địa chỉ gửi trong mã nguồn dùng `wordbridge.vn`; cần đối chiếu quyền sở hữu, DNS và webhook trước khi gửi thật. Các trạng thái gửi được lưu qua EmailService. Khi dịch vụ thư chưa hoạt động, luồng đăng ký có thể tạo tài khoản chờ xác minh.
+
+## Dữ liệu và hoàn tác
+
+Migration 0014 tạo các view chỉ đọc cho học liệu được phát hành. Bản ghi cũ và khóa ngoại được giữ trong bảng gốc. Migration 0015 tạo bảng ôn tập và đưa bảng ghi chú bài học ra khỏi đường xử lý request. Với D1 hiện hữu, so sánh lịch sử migration theo **tên tệp đầy đủ**, đặc biệt các tệp lịch sử trùng tiền tố số. Migration lịch sử 0013 có thao tác gỡ vai trò Exam. Cần đối chiếu trước khi áp dụng lên dữ liệu đã có.
+
+Trước thay đổi production, chủ dự án phê duyệt cửa sổ bảo trì, xuất bản sao D1, lưu an toàn và phục hồi thử vào database tách biệt. Lệnh sao lưu là `npx wrangler d1 export word --remote --output=word-backup.sql`; giữ bản xuất ngoài thư mục public. Xem SQL hoàn tác trong `database/rollbacks/`. Khi hoàn tác 0014, ngừng phiên bản Worker phụ thuộc vào view trước khi gỡ view. Giữ bảng 0015 để bảo toàn tiến độ mới ghi. Cần tiếp tục chặn các đường quản trị và việc phát hành tiếng Nga trong mọi phiên bản khôi phục.
+
+## Cấu trúc bản thu gọn
+
+Mã nguồn Worker nằm trong src/index.js, gộp theo module với chú thích đường dẫn nguồn và giữ tên hàm. Chỉnh sửa trực tiếp file này. Các ca kiểm thử nằm trong tests/release.test.mjs. Các URL dữ liệu chuyên ngành vẫn dùng tên miền kiến thức tương ứng; Worker đọc bộ dữ liệu từ một trong ba tệp JSON nhóm. Giữ nguyên tên đầy đủ và thứ tự của 19 migration.
+
+docs/ACCEPTANCE.md tập hợp báo cáo nghiệm thu RC, sự cố 1101, route và kiểm kê đầu vào. docs/UI-REFERENCE-MAP.md liên kết 22 ảnh gốc trong docs/reference-images với trang tương ứng.

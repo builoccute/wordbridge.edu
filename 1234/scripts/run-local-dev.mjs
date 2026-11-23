@@ -10,7 +10,7 @@ import worker from '../src/index.js';
 import { SQLiteD1Database, MemoryR2Bucket } from '../tests/helpers/sqlite-d1-shim.js';
 
 const PORT = Number(process.env.PORT || 8787);
-const db = new SQLiteD1Database(path.resolve(process.cwd(), '.local-word-bridge.sqlite3'));
+const db = new SQLiteD1Database(process.env.WB_LOCAL_DB || path.resolve(process.cwd(), '.local-word-bridge.sqlite3'));
 await db.applyAllMigrations();
 
 const mimeTypes = {
@@ -25,6 +25,8 @@ const env = {
   DB: db,
   R2: new MemoryR2Bucket(),
   APP_BASE_URL: `http://localhost:${PORT}`,
+  ENVIRONMENT: 'local',
+  WEBAUTHN_RP_ID: 'localhost',
   EMAIL_PROVIDER: process.env.EMAIL_PROVIDER || 'unconfigured',
   LEARNER_MEET_PROVIDER: process.env.LEARNER_MEET_PROVIDER || 'unconfigured',
   STATIC_ASSETS_LOADER: async (reqPath) => {
@@ -52,7 +54,7 @@ const server = http.createServer(async (req, res) => {
     res.end(buf);
   } catch (err) {
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' });
-    res.end(`Internal Error: ${err.message}`);
+    res.end('Dịch vụ tạm thời chưa khả dụng.');
   }
 });
 

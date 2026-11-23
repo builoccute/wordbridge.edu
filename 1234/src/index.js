@@ -4335,40 +4335,56 @@ async function renderHomePage({ db, user, runtime = null }) {
   const heroTagline = s.brand_tagline || "Where Languages Bring People Together.";
   const heroSubtitle = s.hero_subtitle || "Nền tảng học tập, tra cứu từ điển, luyện tập ngôn ngữ chuyên ngành, thư viện đọc và kết nối người học thống nhất trên một tên miền duy nhất wordbridge.io.vn.";
   const contentHtml = `
-    <section class="wb-hero-visual">
-      <div>
-        <div class="wb-hero-pill">${escapeHtml(heroBadge)}</div>
-        <h1>${escapeHtml(heroTitle)}<em>${escapeHtml(heroTagline)}</em></h1>
-        <p>${escapeHtml(heroSubtitle)}</p>
-        <div class="wb-hero-ctas">
-          <a href="/learning" class="wb-btn wb-hero-btn-white">Khám phá Học tập</a>
-          <a href="/reader" class="wb-btn wb-hero-btn-glass">Mở Thư Viện Đọc</a>
-          ${user ? '<a href="/my-learning" class="wb-btn wb-hero-btn-red">Vào lộ trình của tôi</a>' : '<a href="/register" class="wb-btn wb-hero-btn-red">Đăng ký tài khoản miễn phí</a>'}
+    <section class="wb-home-hero-stage" aria-label="Giới thiệu WORD BRIDGE">
+      <div class="wb-home-hero-banner">
+        <img class="wb-home-hero-bg" src="/branding/hero-home.jpg" alt="WORD BRIDGE — Nền tảng học ngôn ngữ Trung – Anh" />
+        <div class="wb-home-hero-scrim" aria-hidden="true"></div>
+        <div class="wb-home-hero-content">
+          <div class="wb-home-hero-pill">${escapeHtml(heroBadge)}</div>
+          <h1 class="wb-home-hero-title">
+            <span class="wb-title-word">WORD</span>
+            <span class="wb-title-bridge">BRIDGE<svg class="wb-bridge-swoosh" viewBox="0 0 260 22" fill="none" aria-hidden="true"><path d="M4 16C74 4 176 2 254 11" stroke="#E63225" stroke-width="5" stroke-linecap="round"/><path d="M160 15C198 11 232 10 256 12" stroke="#FF6B5B" stroke-width="2.2" stroke-linecap="round"/></svg></span>
+          </h1>
+          <p class="wb-home-hero-tagline">${escapeHtml(heroTagline)}</p>
+          <p class="wb-home-hero-desc">Nền tảng học tập, tra cứu từ điển, luyện tập ngôn ngữ chuyên ngành, thư viện đọc và kết nối người học thống nhất trên một tên miền duy nhất <strong>wordbridge.io.vn.</strong></p>
+          <div class="wb-home-hero-ctas">
+            <a href="/learning" class="wb-btn wb-home-cta-white">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+              <span>Khám phá Học tập</span>
+            </a>
+            <a href="/reader" class="wb-btn wb-home-cta-glass">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              <span>Mở Thư Viện Đọc</span>
+            </a>
+            ${user
+              ? '<a href="/my-learning" class="wb-btn wb-home-cta-red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg><span>Vào lộ trình của tôi</span></a>'
+              : '<a href="/register" class="wb-btn wb-home-cta-red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg><span>Đăng ký tài khoản miễn phí</span></a>'}
+          </div>
         </div>
       </div>
-      <div class="wb-hero-art">
-        <img src="/branding/footer-glow-book.jpg" alt="Tiếng Trung, Tiếng Anh — WORD BRIDGE" />
+
+      <div class="wb-lang-cards-v2" aria-label="Hai hệ thống ngôn ngữ">
+        <a href="/learning/chinese" class="wb-lang-card-v2 wb-lang-card-zh">
+          <img class="wb-lang-card-bg" src="/branding/card-zh.jpg" alt="Tiếng Trung (中文)" />
+          <div class="wb-lang-card-overlay"></div>
+          <div class="wb-lang-card-content">
+            <span class="wb-lang-pill wb-lang-pill-zh">ZH</span>
+            <h3>Tiếng Trung<br /><span>(中文)</span></h3>
+            <p class="wb-lang-sub">Học &nbsp;·&nbsp; Giao tiếp &nbsp;·&nbsp; Ứng dụng</p>
+            <span class="wb-lang-btn">Xem chương trình <span aria-hidden="true">→</span></span>
+          </div>
+        </a>
+        <a href="/learning/english" class="wb-lang-card-v2 wb-lang-card-en">
+          <img class="wb-lang-card-bg" src="/branding/card-en.jpg" alt="Tiếng Anh (English)" />
+          <div class="wb-lang-card-overlay"></div>
+          <div class="wb-lang-card-content">
+            <span class="wb-lang-pill wb-lang-pill-en">EN</span>
+            <h3>Tiếng Anh<br /><span>(English)</span></h3>
+            <p class="wb-lang-sub">Học &nbsp;·&nbsp; Giao tiếp &nbsp;·&nbsp; Ứng dụng</p>
+            <span class="wb-lang-btn">Xem chương trình <span aria-hidden="true">→</span></span>
+          </div>
+        </a>
       </div>
-    </section>
-
-    <section class="wb-lang-cards" aria-label="Hai hệ thống ngôn ngữ">
-      <a href="/learning/chinese" class="wb-lang-card">
-        <img class="wb-lang-bg" src="/branding/card-zh.jpg" alt="Tiếng Trung" />
-        <div class="wb-lang-card-body">
-          <span class="wb-lang-code wb-lang-code-zh">ZH</span>
-          <h3>Tiếng Trung (中文)</h3>
-          <span class="wb-lang-cta">Xem chương trình →</span>
-        </div>
-      </a>
-      <a href="/learning/english" class="wb-lang-card">
-        <img class="wb-lang-bg" src="/branding/card-en.jpg" alt="Tiếng Anh" />
-        <div class="wb-lang-card-body">
-          <span class="wb-lang-code wb-lang-code-en">EN</span>
-          <h3>Tiếng Anh (English)</h3>
-          <span class="wb-lang-cta">Xem chương trình →</span>
-        </div>
-      </a>
-
     </section>
 
     ${courses.length ? `<section><h2>Khóa học nổi bật</h2><div class="wb-grid-2">${courses.map((course) => `<article class="wb-card"><span class="wb-badge">${course.language_code === "zh" ? "Tiếng Trung" : "Tiếng Anh"}</span><h3><a href="/courses/${encodeURIComponent(course.slug)}">${escapeHtml(course.title_vi)}</a></h3><p>${escapeHtml(course.summary_vi)}</p></article>`).join("")}</div></section>` : ""}

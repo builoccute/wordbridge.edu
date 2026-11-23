@@ -21,7 +21,8 @@
     "test:integration": "npm test",
     "test:e2e": "python3 tests/e2e/browser.py",
     "qa:browser": "npm run test:e2e",
-    "lint:check": "node --check src/index.js && node --check tests/release.test.mjs && node --check public/scripts/app.js && node --check public/scripts/i18n.js"
+    "lint:check": "node --check src/index.js && node --check tests/release.test.mjs && node --check public/scripts/app.js && node --check public/scripts/i18n.js",
+    "db:fix:remote": "node scripts/fix-remote-d1.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.16.0"

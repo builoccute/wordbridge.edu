@@ -3541,13 +3541,21 @@ async function handleApiRequest(request, url, ctx) {
     return errorResponse("SUBDOMAIN_REMOVED", "Thư viện đọc đã được tích hợp trực tiếp tại /reader trên wordbridge.io.vn.", 410);
   }
   if (path === "/api/v1/health" && method === "GET") {
-    const langCount = await env.DB.prepare("SELECT COUNT(*) AS cnt FROM wb_public_languages").first();
+    let langCount = null;
+    let dbStatus = "connected";
+    let schemaHint = void 0;
+    try {
+      langCount = await env.DB.prepare("SELECT COUNT(*) AS cnt FROM wb_public_languages").first();
+    } catch {
+      dbStatus = "schema_incomplete";
+      schemaHint = "Run npm run db:fix:remote to apply D1 migrations 0001-0015";
+    }
     return jsonResponse({
-      ok: true,
+      ok: dbStatus === "connected",
       service: "WORD BRIDGE API",
       version: "4.1.0",
       domain: BRAND.websiteUrl,
-      database: { name: "word", status: "connected", officialLanguages: langCount?.cnt || 0 },
+      database: { name: "word", status: dbStatus, officialLanguages: langCount?.cnt || 0, ...schemaHint ? { hint: schemaHint } : {} },
       storage: { bucket: "word", status: services.r2.isAvailable() ? "connected" : "unbound" },
       emailProvider: env.EMAIL_PROVIDER || "unconfigured",
       learnerMeetProvider: env.LEARNER_MEET_PROVIDER || "unconfigured",
@@ -4289,9 +4297,20 @@ __name(renderFeaturesPage, "renderFeaturesPage");
 // src/pages/public-pages.js
 var SPECIALIZED_VOCAB_DOMAINS = SPECIALIZED_VOCAB_DATASETS;
 async function renderHomePage({ db, user, runtime = null }) {
-  const courses = (await db.prepare(`SELECT language_code,title_vi,slug,summary_vi FROM
+  let courses = [];
+  try {
+    courses = (await db.prepare(`SELECT language_code,title_vi,slug,summary_vi FROM
     (SELECT *,row_number() OVER (PARTITION BY language_code ORDER BY slug) AS position FROM wb_public_courses)
-    WHERE position=1 ORDER BY language_code DESC`).all()).results;
+    WHERE position=1 ORDER BY language_code DESC`).all()).results || [];
+  } catch {
+    try {
+      courses = (await db.prepare(`SELECT language_code,title_vi,slug,summary_vi FROM
+      (SELECT *,row_number() OVER (PARTITION BY language_code ORDER BY slug) AS position FROM wb_courses WHERE language_code IN ('zh','en') AND review_status='published')
+      WHERE position=1 ORDER BY language_code DESC`).all()).results || [];
+    } catch {
+      courses = [];
+    }
+  }
   const s = runtime?.settings || {};
   const heroBadge = s.hero_badge || "Nền tảng học ngôn ngữ Trung – Anh";
   const heroTitle = s.hero_title || "WORD BRIDGE";
@@ -4623,7 +4642,7 @@ async function renderReaderLibraryPage({ services, user, url, runtime = null }) 
   const language = url?.searchParams?.get("language") || "";
   const category = url?.searchParams?.get("category") || "";
   const q = url?.searchParams?.get("q") || "";
-  const docs = await services.reader.listDocuments({ language, category, q });
+  const docs = await services.reader.listDocuments({ language, category, q }).catch(() => []);
   const contentHtml = `
     <section class="wb-hero">
       <span class="wb-badge wb-badge-aqua">THƯ VIỆN ĐỌC TÍCH HỢP</span>
@@ -4781,7 +4800,16 @@ __name(renderReaderDocumentPage, "renderReaderDocumentPage");
 
 // src/pages/learning-pages.js
 async function renderLearningHub({ db, user }) {
-  const programs = (await db.prepare("SELECT * FROM wb_public_programs ORDER BY language_code, code").all()).results;
+  let programs = [];
+  try {
+    programs = (await db.prepare("SELECT * FROM wb_public_programs ORDER BY language_code, code").all()).results || [];
+  } catch {
+    try {
+      programs = (await db.prepare("SELECT * FROM wb_programs WHERE language_code IN ('zh','en') AND review_status='published' ORDER BY language_code, code").all()).results || [];
+    } catch {
+      programs = [];
+    }
+  }
   let recentPractice = [];
   let dueCount = 0;
   if (user && db) {
@@ -5854,7 +5882,7 @@ function safeJson3(raw, fallback = []) {
 }
 __name(safeJson3, "safeJson");
 async function renderPracticePage({ services, db, user, skill = "" }) {
-  const exercises = await services.practice.listExercises({ skill });
+  const exercises = await services.practice.listExercises({ skill }).catch(() => []);
   const exercisesWithQuestions = [];
   for (const ex of exercises) {
     const qIds = safeJson3(ex.question_ids_json, []);

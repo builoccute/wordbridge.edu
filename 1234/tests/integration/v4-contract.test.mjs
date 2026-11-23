@@ -159,7 +159,7 @@ test('V4: shell cross-domain links go through local discovery entries and icon U
   try {
     const res = await run('/', env);
     const html = await res.text();
-    assert.match(html, /href="\/learner-meet"/);
+    assert.doesNotMatch(html, /learner-meet|Learner Meet/i);
     assert.match(html, /href="\/reader"/);
     assert.doesNotMatch(html, /href="\/examinations"/);
     assert.doesNotMatch(html, /<button[^>]*wb-dialog-close[^>]*>\s*[×✕]/);

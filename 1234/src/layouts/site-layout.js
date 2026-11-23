@@ -10,7 +10,7 @@ import { escapeHtml } from '../utils/validation.js';
 const NAV_ICONS = {
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V20h14V9.5"/></svg>',
   learn: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>',
-  meet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 3-5 6-5s6 2 6 5"/><path d="M15 19c0-2 1.8-3.6 4-4"/></svg>',
+  reader: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 0 4 22V5.5Z"/><path d="M4 18.5A2.5 2.5 0 0 1 6.5 16H20"/></svg>',
   practice: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="M12 2v3M22 12h-3"/></svg>',
   help: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.8 2.1c-.8.5-1.3 1-1.3 1.9"/><circle cx="12" cy="17" r=".8" fill="currentColor"/></svg>',
   close: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>',
@@ -20,7 +20,7 @@ const NAV_ICONS = {
 const PUBLIC_NAV_ITEMS = [
   { label: 'Trang chủ', href: '/', icon: NAV_ICONS.home },
   { label: 'Học tập', href: '/learning', icon: NAV_ICONS.learn },
-  { label: 'Learner Meet', href: '/learner-meet', icon: NAV_ICONS.meet },
+  { label: 'Thư viện đọc', href: '/reader', icon: NAV_ICONS.reader },
   { label: 'Cổng Luyện Tập', href: '/practice', icon: NAV_ICONS.practice },
   { label: 'Trung Tâm Trợ Giúp', href: '/help', icon: NAV_ICONS.help },
 ];
@@ -157,7 +157,6 @@ export function renderPublicPage({
           <ul>
             <li><a href="/practice">› Cổng Luyện Tập</a></li>
             <li><a href="/vocabulary/flashcards">› Flashcards & Ôn tập</a></li>
-            <li><a href="/learner-meet">› Learner Meet</a></li>
             <li><a href="/my-knowledge">› My Knowledge</a></li>
             <li><a href="/intelligence">› Trí tuệ Ngôn ngữ</a></li>
           </ul>

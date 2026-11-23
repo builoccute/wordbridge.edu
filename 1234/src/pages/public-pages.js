@@ -24,7 +24,7 @@ export function renderHomePage({ user, runtime = null }) {
         <p>${escapeHtml(heroSubtitle)}</p>
         <div class="wb-hero-ctas">
           <a href="/learning" class="wb-btn wb-hero-btn-white">Khám phá Học tập</a>
-          <a href="/learner-meet" class="wb-btn wb-hero-btn-glass">Tham gia Learner Meet</a>
+          <a href="/reader" class="wb-btn wb-hero-btn-glass">Mở Thư Viện Đọc</a>
           ${user
             ? '<a href="/my-learning" class="wb-btn wb-hero-btn-red">Vào lộ trình của tôi</a>'
             : '<a href="/register" class="wb-btn wb-hero-btn-red">Đăng ký tài khoản miễn phí</a>'}

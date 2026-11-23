@@ -1,4 +1,4 @@
-name = "word-bridge-main"
+name = "wordbridge-edu"
 main = "src/index.js"
 compatibility_date = "2026-11-01"
 compatibility_flags = ["nodejs_compat"]
@@ -9,11 +9,10 @@ directory = "./public"
 binding = "ASSETS"
 
 # Native Cloudflare D1 Database (One Domain — One Platform)
-# Thay database_id bằng ID thực tế từ Cloudflare Dashboard trước khi deploy Production
 [[d1_databases]]
 binding = "DB"
 database_name = "word"
-database_id = "REPLACE_WITH_PRODUCTION_D1_DATABASE_ID"
+database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
 migrations_dir = "database/migrations"
 
 # Native Cloudflare R2 Bucket (Audio, Reader PDFs, Learning Assets)

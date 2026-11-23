@@ -1310,8 +1310,11 @@ var AuthService = class {
   }
   async authenticateSession(rawSessionToken) {
     if (!rawSessionToken) return null;
-    const tokenHash = await sha256Hex(rawSessionToken, this.tokenPepper);
-    const row = await this.db.prepare(`
+    try {
+      const tokenHash = await sha256Hex(rawSessionToken, this.tokenPepper);
+      let row = null;
+      try {
+        row = await this.db.prepare(`
         SELECT s.id AS session_id, s.csrf_token, s.account_id,
                a.email, a.full_name, a.status, a.email_verified,
                a.school_name, a.workplace_name, a.phone_number, a.date_of_birth,
@@ -1324,10 +1327,24 @@ var AuthService = class {
           AND datetime(s.expires_at) > datetime('now')
           AND a.status = 'active'
       `).bind(tokenHash).first();
-    if (!row) return null;
-    const rolesResult = await this.db.prepare("SELECT r.code, r.name_vi FROM wb_account_roles ar JOIN wb_roles r ON r.id = ar.role_id WHERE ar.account_id = ?").bind(row.account_id).all();
-    const permsResult = await this.db.prepare("SELECT DISTINCT p.code FROM wb_account_roles ar JOIN wb_role_permissions rp ON rp.role_id = ar.role_id JOIN wb_permissions p ON p.id = rp.permission_id WHERE ar.account_id = ?").bind(row.account_id).all();
-    return {
+      } catch {
+        row = await this.db.prepare(`
+        SELECT s.id AS session_id, s.csrf_token, s.account_id,
+               a.email, a.full_name, a.status, a.email_verified,
+               e.plan_code, e.storage_quota_bytes, e.expires_at AS plan_expires_at
+        FROM wb_sessions s
+        JOIN wb_accounts a ON a.id = s.account_id
+        LEFT JOIN wb_entitlements e ON e.account_id = a.id
+        WHERE s.session_token_hash = ?
+          AND s.revoked_at IS NULL
+          AND datetime(s.expires_at) > datetime('now')
+          AND a.status = 'active'
+      `).bind(tokenHash).first();
+      }
+      if (!row) return null;
+      const rolesResult = await this.db.prepare("SELECT r.code, r.name_vi FROM wb_account_roles ar JOIN wb_roles r ON r.id = ar.role_id WHERE ar.account_id = ?").bind(row.account_id).all();
+      const permsResult = await this.db.prepare("SELECT DISTINCT p.code FROM wb_account_roles ar JOIN wb_role_permissions rp ON rp.role_id = ar.role_id JOIN wb_permissions p ON p.id = rp.permission_id WHERE ar.account_id = ?").bind(row.account_id).all();
+      return {
       sessionId: row.session_id,
       csrfToken: row.csrf_token,
       accountId: row.account_id,
@@ -1340,10 +1357,13 @@ var AuthService = class {
       planCode: row.plan_code || "PERSONAL_FREE",
       storageQuotaBytes: row.storage_quota_bytes || PLANS.PERSONAL_FREE.storageQuotaBytes,
       planExpiresAt: row.plan_expires_at,
-      roles: (rolesResult.results || []).map((r) => r.code),
-      roleLabels: (rolesResult.results || []).map((r) => r.name_vi),
-      permissions: new Set((permsResult.results || []).map((p) => p.code))
-    };
+        roles: (rolesResult.results || []).map((r) => r.code),
+        roleLabels: (rolesResult.results || []).map((r) => r.name_vi),
+        permissions: new Set((permsResult.results || []).map((p) => p.code))
+      };
+    } catch {
+      return null;
+    }
   }
   isSuperAdmin(user) {
     return Boolean(user && Array.isArray(user.roles) && user.roles.includes("super_admin"));
@@ -6535,18 +6555,77 @@ function createServices(env) {
   return { email, auth, studentBenefit, jobs, r2, dictionary, audio, practice, reader, learnerMeet, intelligence, admin };
 }
 __name(createServices, "createServices");
+var publicSchemaEnsured = false;
+var PUBLIC_CATALOG_DDL = Object.freeze([
+  "CREATE VIEW IF NOT EXISTS wb_public_programs AS SELECT * FROM wb_programs WHERE language_code IN ('zh','en') AND review_status='published'",
+  "CREATE VIEW IF NOT EXISTS wb_public_courses AS SELECT * FROM wb_courses WHERE language_code IN ('zh','en') AND review_status='published'",
+  "CREATE VIEW IF NOT EXISTS wb_public_lessons AS SELECT * FROM wb_lessons WHERE language_code IN ('zh','en') AND review_status='published'",
+  "CREATE VIEW IF NOT EXISTS wb_public_learning_resources AS SELECT * FROM wb_learning_resources WHERE language_code IN ('zh','en')",
+  "CREATE VIEW IF NOT EXISTS wb_public_dictionary_entries AS SELECT * FROM wb_dictionary_entries WHERE language_code IN ('zh','en') AND review_status='published'",
+  "CREATE VIEW IF NOT EXISTS wb_public_audio_assets AS SELECT * FROM wb_audio_assets WHERE language_code IN ('zh','en') AND review_status='published'",
+  "CREATE VIEW IF NOT EXISTS wb_public_vocabulary_sets AS SELECT * FROM wb_vocabulary_sets WHERE language_code IN ('zh','en')",
+  "CREATE VIEW IF NOT EXISTS wb_public_grammar_topics AS SELECT * FROM wb_grammar_topics WHERE language_code IN ('zh','en') AND review_status='published'",
+  "CREATE VIEW IF NOT EXISTS wb_public_question_bank AS SELECT * FROM wb_question_bank WHERE language_code IN ('zh','en') AND review_status='published'",
+  "CREATE VIEW IF NOT EXISTS wb_public_practice_exercises AS SELECT * FROM wb_practice_exercises WHERE language_code IN ('zh','en')",
+  "CREATE VIEW IF NOT EXISTS wb_public_practice_results AS SELECT rowid AS result_order, * FROM wb_practice_results WHERE language_code IN ('zh','en')",
+  "CREATE VIEW IF NOT EXISTS wb_public_learner_meet_sessions AS SELECT * FROM wb_learner_meet_sessions WHERE language_code IN ('zh','en')",
+  "CREATE VIEW IF NOT EXISTS wb_public_intelligence_runs AS SELECT * FROM wb_intelligence_runs WHERE language_code IN ('zh','en')",
+  "CREATE VIEW IF NOT EXISTS wb_public_reader_documents AS SELECT * FROM wb_reader_documents WHERE language_code IN ('zh','en') AND review_status='published'",
+  "CREATE VIEW IF NOT EXISTS wb_public_languages AS SELECT * FROM wb_languages WHERE code IN ('zh','en') AND is_active=1",
+  "CREATE VIEW IF NOT EXISTS wb_public_modules AS SELECT * FROM wb_modules WHERE course_id IN (SELECT id FROM wb_public_courses)",
+  "CREATE VIEW IF NOT EXISTS wb_public_weeks AS SELECT * FROM wb_weeks WHERE course_id IN (SELECT id FROM wb_public_courses)",
+  "CREATE VIEW IF NOT EXISTS wb_public_learner_progress AS SELECT * FROM wb_learner_progress WHERE lesson_id IN (SELECT id FROM wb_public_lessons) OR (lesson_id IS NULL AND course_id IN (SELECT id FROM wb_public_courses))",
+  "CREATE VIEW IF NOT EXISTS wb_public_lesson_submissions AS SELECT * FROM wb_lesson_submissions WHERE lesson_id IN (SELECT id FROM wb_public_lessons)",
+  "CREATE VIEW IF NOT EXISTS wb_public_vocabulary_notebook AS SELECT * FROM wb_vocabulary_notebook WHERE entry_id IN (SELECT id FROM wb_public_dictionary_entries)",
+  "CREATE TABLE IF NOT EXISTS wb_skill_reviews (account_id TEXT NOT NULL REFERENCES wb_accounts(id), lesson_id TEXT NOT NULL REFERENCES wb_lessons(id), skill TEXT NOT NULL CHECK(skill IN ('grammar','listening','speaking','reading','writing')), remembered INTEGER NOT NULL CHECK(remembered IN (0,1)), response_text TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(account_id, lesson_id, skill))",
+  "CREATE TABLE IF NOT EXISTS wb_lesson_notes (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, lesson_slug TEXT NOT NULL, note_content TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(account_id, lesson_slug))"
+]);
+async function ensurePublicCatalogSchema(db) {
+  if (publicSchemaEnsured || !db) return;
+  try {
+    const existing = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'view' AND name = 'wb_public_courses'").first();
+    if (existing) {
+      publicSchemaEnsured = true;
+      return;
+    }
+    const baseTable = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'wb_courses'").first();
+    if (!baseTable) return;
+    for (const ddl of PUBLIC_CATALOG_DDL) {
+      try {
+        await db.prepare(ddl).run();
+      } catch {
+      }
+    }
+    publicSchemaEnsured = true;
+  } catch {
+  }
+}
+__name(ensurePublicCatalogSchema, "ensurePublicCatalogSchema");
 async function loadRuntimeFromD1(db) {
-  const rows = (await db.prepare("SELECT config_key, config_value FROM wb_platform_config WHERE config_key IN ('site.maintenance_mode', 'site.maintenance_message', 'site.announcement_banner')").all()).results || [];
-  const map = Object.fromEntries(rows.map((r) => [r.config_key, r.config_value]));
-  return {
+  const fallback = {
     site: {
       display_name: "WORD BRIDGE",
-      maintenance_mode: map["site.maintenance_mode"] === "true",
-      maintenance_message: map["site.maintenance_message"] || "",
-      announcement_banner: map["site.announcement_banner"] || ""
+      maintenance_mode: false,
+      maintenance_message: "",
+      announcement_banner: ""
     },
     settings: {}
   };
+  try {
+    const rows = (await db.prepare("SELECT config_key, config_value FROM wb_platform_config WHERE config_key IN ('site.maintenance_mode', 'site.maintenance_message', 'site.announcement_banner')").all()).results || [];
+    const map = Object.fromEntries(rows.map((r) => [r.config_key, r.config_value]));
+    return {
+      site: {
+        display_name: "WORD BRIDGE",
+        maintenance_mode: map["site.maintenance_mode"] === "true",
+        maintenance_message: map["site.maintenance_message"] || "",
+        announcement_banner: map["site.announcement_banner"] || ""
+      },
+      settings: {}
+    };
+  } catch {
+    return fallback;
+  }
 }
 __name(loadRuntimeFromD1, "loadRuntimeFromD1");
 function inferContentType(path) {
@@ -6626,7 +6705,9 @@ __name(failure, "failure");
 var errorTitles = { 400: "Yêu cầu không hợp lệ", 401: "Vui lòng đăng nhập", 403: "Bạn chưa có quyền truy cập", 404: "Không tìm thấy trang", 408: "Yêu cầu đã hết hạn", 409: "Dữ liệu vừa được cập nhật", 410: "Trang đã ngừng cung cấp", 413: "Tệp quá lớn", 415: "Định dạng chưa được hỗ trợ", 422: "Vui lòng kiểm tra dữ liệu", 429: "Vui lòng thử lại sau", 500: "Hệ thống tạm thời gặp sự cố", 502: "Kết nối bị gián đoạn", 503: "Dịch vụ tạm thời chưa khả dụng", 504: "Dịch vụ phản hồi chậm" };
 function logFailure(err, route, id, status, rayId = null) {
   const frames = String(err?.stack || "").split("\n").filter((line) => /^\s+at /.test(line)).slice(0, 12);
-  console.error(JSON.stringify({ time: (/* @__PURE__ */ new Date()).toISOString(), requestId: id, rayId: /^[a-f0-9]{16,32}(?:-[A-Z]{3})?$/i.test(rayId || "") ? rayId : void 0, route, type: err?.name || "Error", stack: frames, status }));
+  const message = String(err?.message || "").slice(0, 300) || void 0;
+  const cause = err?.cause ? String(err.cause?.message || err.cause).slice(0, 200) : void 0;
+  console.error(JSON.stringify({ time: (/* @__PURE__ */ new Date()).toISOString(), requestId: id, rayId: /^[a-f0-9]{16,32}(?:-[A-Z]{3})?$/i.test(rayId || "") ? rayId : void 0, route, type: err?.name || "Error", message, cause, stack: frames, status }));
 }
 __name(logFailure, "logFailure");
 var index_default = {
@@ -6654,6 +6735,7 @@ var index_default = {
         logFailure(new Error("Missing D1 binding"), "fetch", id, 503);
         return failure(503, request, id);
       }
+      await ensurePublicCatalogSchema(env.DB);
       const services = createServices(env);
       const cookies = parseCookies(request);
       const user = await services.auth.authenticateSession(cookies.wb_session);

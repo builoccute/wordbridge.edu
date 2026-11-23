@@ -460,6 +460,67 @@ function renderPublicPage({
       ${contentHtml}
     </div>
   </main>
+  <footer class="wb-footer-v4">
+    <div class="wb-container">
+      <div class="wb-footer-v4-grid">
+        <div>
+          <div class="wb-footer-logo-pill">
+            <img src="/branding/logo-wordbridge.svg" alt="WORD BRIDGE" />
+          </div>
+          <p style="font-size:0.88rem;margin:0 0 10px;color:#E2F6F6;">Nền tảng học ngôn ngữ và kết nối người học toàn cầu</p>
+          <div style="width:42px;height:3px;background:#CB0203;border-radius:2px;margin-bottom:10px;"></div>
+          <div class="wb-footer-lang-pills">
+            <span class="wb-footer-lang-pill"><strong style="color:#FF6B6B;">ZH</strong> Tiếng Trung</span>
+            <span class="wb-footer-lang-pill"><strong style="color:#63B3FF;">EN</strong> Tiếng Anh</span>
+          </div>
+        </div>
+
+        <div class="wb-footer-col">
+          <h4>Học tập & Chương trình</h4>
+          <ul>
+            <li><a href="/learning">› Chương trình học</a></li>
+            <li><a href="/learning/path">› Lộ trình học tập</a></li>
+            <li><a href="/specialized">› Ngoại ngữ Chuyên ngành</a></li>
+            <li><a href="/reader">› Thư Viện Đọc</a></li>
+            <li><a href="/dictionary">› Từ điển Ngôn ngữ</a></li>
+          </ul>
+        </div>
+
+        <div class="wb-footer-col">
+          <h4>Luyện tập & Kết nối</h4>
+          <ul>
+            <li><a href="/practice">› Cổng Luyện Tập</a></li>
+            <li><a href="/vocabulary/flashcards">› Flashcards & Ôn tập</a></li>
+            <li><a href="/my-knowledge">› My Knowledge</a></li>
+            <li><a href="/intelligence">› Trí tuệ Ngôn ngữ</a></li>
+          </ul>
+        </div>
+
+        <div class="wb-footer-col">
+          <h4>Hỗ trợ & Thông tin</h4>
+          <ul>
+            <li><a href="/help">› Trung Tâm Trợ Giúp</a></li>
+            <li><a href="/faq">› Câu hỏi thường gặp</a></li>
+            <li><a href="/about">› Giới thiệu nền tảng</a></li>
+            <li><a href="/contact">› Liên hệ hỗ trợ</a></li>
+          </ul>
+        </div>
+
+        <div class="wb-footer-col"><h4>Chính sách</h4><ul><li><a href="/policies/terms">Điều khoản sử dụng</a></li><li><a href="/policies/privacy">Quyền riêng tư</a></li></ul></div>
+      </div>
+
+      <div class="wb-footer-glow-art">
+        <img src="/branding/footer-glow-book.jpg" alt="WORD BRIDGE Global Knowledge" />
+      </div>
+    </div>
+
+    <div class="wb-footer-bottom-bar">
+      <div class="wb-container wb-footer-bottom-inner">
+        <div><span style="color:#3DA2A0;font-weight:900;margin-right:8px;">|</span><strong>${escapeHtml(footerSlogan)}</strong></div>
+        <div style="opacity:0.85;">© 2026 WORD BRIDGE. All rights reserved.</div>
+      </div>
+    </div>
+  </footer>
 
   <dialog id="wb-auth-gate" class="wb-auth-gate" aria-labelledby="wb-auth-gate-title">
     <div class="wb-card" style="margin:0;max-width:440px;">

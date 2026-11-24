@@ -2,7 +2,7 @@ import { LegalPolicyService, renderFullPolicyHtml } from "./modules/legal-polici
 import { OAuthService } from "./modules/oauth-service.js";
 import { AdminPinService, buildAdminSessionCookie, clearAdminSessionCookie, renderAdminPinLockPage, renderAdminCenterHtml } from "./modules/admin-pin-pages.js";
 import { LanguageServicesAdapter } from "./modules/language-api-adapters.js";
-import { CHINESE_FOUNDATION_22, ENGLISH_FOUNDATION_22, SPECIALIZED_100_DOMAINS, CONTACT_CATEGORIES_12, renderContactPageV42, renderSessionInvalidContent } from "./modules/academic-catalog.js";
+import { CHINESE_FOUNDATION_22, ENGLISH_FOUNDATION_22, SPECIALIZED_100_DOMAINS, CONTACT_CATEGORIES_12, renderContactPageV42, renderSessionInvalidContent, renderErrorSystemHubHtml, renderErrorWaveSvg } from "./modules/academic-catalog.js";
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
@@ -4894,7 +4894,22 @@ async function renderHelpCenterPage({ services, user, runtime = null }) {
   const contentHtml = `
     <section class="wb-hero">
       <span class="wb-badge wb-badge-aqua">TRUNG TÂM TRỢ GIÚP NỘI BỘ</span>
-      <h1>Trung Tâm Trợ Giúp WORD BRIDGE</h1>
+      <section class="wb-hero-teal-banner">
+      <div>
+        <span class="wb-hero-pill">HƯỚNG DẪN &amp; HỖ TRỢ</span>
+        <h1>Trung Tâm Trợ Giúp WORD BRIDGE</h1>
+        <svg class="wb-swoosh-red-left" viewBox="0 0 160 12" fill="none"><path d="M4 9C52 2 108 2 156 7" stroke="#C92F1C" stroke-width="4" stroke-linecap="round"/></svg>
+        <p>Hướng dẫn sử dụng, giải đáp thắc mắc và hỗ trợ kỹ thuật. Giúp bạn học tập, luyện tập và kết nối cộng đồng ngôn ngữ Trung – Anh trên WORD BRIDGE một cách hiệu quả, an toàn và thuận tiện.</p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <a href="#help-guides" class="wb-btn wb-home-cta-white">Xem hướng dẫn ›</a>
+          <a href="/contact" class="wb-btn wb-home-cta-glass">Gửi yêu cầu CSKH</a>
+        </div>
+      </div>
+      <div style="text-align:center;" aria-hidden="true">
+        <svg viewBox="0 0 200 150" width="180" fill="none"><rect x="36" y="72" width="110" height="28" rx="6" fill="#5AABA9"/><rect x="28" y="100" width="124" height="30" rx="6" fill="#C92F1C"/><rect x="44" y="22" width="54" height="44" rx="10" fill="#fff"/><text x="64" y="53" fill="#146466" font-size="28" font-weight="900">?</text><rect x="112" y="34" width="56" height="36" rx="10" fill="#e6f5f5"/><circle cx="128" cy="52" r="3" fill="#146466"/><circle cx="140" cy="52" r="3" fill="#146466"/><circle cx="152" cy="52" r="3" fill="#146466"/></svg>
+      </div>
+    </section>
+    <div id="help-guides" class="wb-section-bar"><h2>Hướng dẫn sử dụng theo phân hệ</h2></div>
       <p>Hướng dẫn sử dụng đầy đủ các phân hệ học tập, tài khoản, luyện tập, thư viện đọc và hệ thống tiếp nhận — theo dõi yêu cầu hỗ trợ trực tiếp tại wordbridge.io.vn/help.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap;">
         <a href="#guides" class="wb-btn wb-btn-primary">Xem hướng dẫn</a>
@@ -5149,7 +5164,16 @@ async function renderLearningHub({ db, user }) {
       <a href="/programs/${escapeHtml(p.slug)}" class="wb-btn wb-btn-outline wb-btn-sm">Xem chi tiết chương trình</a>
     </article>`).join("");
   const contentHtml = `
-    <h1>Hệ thống Học ngoại ngữ WORD BRIDGE</h1>
+    <h1 style="font-size:2.1rem;margin:0 0 6px;">Hệ thống Học ngoại ngữ <span style="color:#146466;">WORD</span> <span style="color:#C92F1C;">BRIDGE</span></h1>
+    <p class="wb-muted" style="margin:0 0 14px;">Lộ trình học tập bài bản theo từng ngôn ngữ (Tiếng Trung – Tiếng Anh), chương trình và chuyên ngành ứng dụng.</p>
+    <div class="wb-pill-bar">
+      <a href="/learning/chinese" class="wb-pill-link active">中 Tiếng Trung (zh)</a>
+      <a href="/learning/english" class="wb-pill-link">EN Tiếng Anh (en)</a>
+      <a href="/learning/path" class="wb-pill-link">Lộ trình học tập</a>
+      <a href="/learning/skills" class="wb-pill-link">Trung tâm kỹ năng</a>
+      <a href="/my-knowledge" class="wb-pill-link">My Knowledge</a>
+      <a href="/my-learning" class="wb-pill-link">Lộ trình cá nhân</a>
+    </div>
     <p class="wb-muted">Lộ trình học tập bài bản theo từng ngôn ngữ, chương trình và chuyên ngành ứng dụng.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin:16px 0 24px;">
       <a href="/learning/chinese" class="wb-btn wb-btn-primary wb-btn-sm">Tiếng Trung (zh)</a>
@@ -5695,9 +5719,9 @@ async function renderGlobalSearchPage({ db, user, url }) {
 __name(renderGlobalSearchPage, "renderGlobalSearchPage");
 async function renderLearningPathPage({ db, user }) {
   const courses = (await db.prepare(`SELECT c.id,c.slug,c.title_vi,c.language_code,c.summary_vi,COALESCE(pl.framework_ref,'') AS level_ref,COALESCE(pl.sort_order,999) AS sort_order FROM wb_public_courses c LEFT JOIN wb_program_levels pl ON pl.id=c.level_id WHERE c.review_status='published' ORDER BY c.language_code,COALESCE(pl.sort_order,999),c.title_vi`).all()).results || [];
-  const weeks = (await db.prepare(`SELECT id, course_id, slug, week_number, topic_vi, required_knowledge, sessions_count FROM wb_public_weeks ORDER BY course_id, week_number`).all()).results || [];
+  const weeks = await safeQueryAll(db, `SELECT id, course_id, slug, week_number, topic_vi, required_knowledge, sessions_count FROM wb_public_weeks ORDER BY course_id, week_number`);
   let progress = [];
-  if (user) progress = (await db.prepare(`SELECT course_id, lesson_id, status, score_percent, updated_at FROM wb_public_learner_progress WHERE account_id=? ORDER BY updated_at DESC`).bind(user.accountId).all()).results || [];
+  if (user) progress = await safeQueryAll(db, `SELECT course_id, lesson_id, status, score_percent, updated_at FROM wb_public_learner_progress WHERE account_id=? ORDER BY updated_at DESC`, [user.accountId]);
   const lessons = (await db.prepare("SELECT l.id,w.course_id FROM wb_public_lessons l JOIN wb_public_weeks w ON w.id=l.week_id WHERE l.review_status='published'").all()).results;
   const completedLessons = new Set(progress.filter((p) => p.status === "completed").map((p) => p.lesson_id));
   const paths = courses.map((course, i) => {
@@ -5720,8 +5744,8 @@ async function renderSkillCenterPage({ db, user, skill = "" }) {
   const meta = Object.hasOwn(SKILLS, skill) && SKILLS[skill];
   if (!meta) return htmlResponse(renderPublicPage({ title: "Kỹ năng không tồn tại", currentPath: `/skills/${skill}`, user, contentHtml: '<section class="wb-alert wb-alert-error"><h1>Kỹ năng không tồn tại</h1><a href="/learning/skills">Xem Trung tâm kỹ năng</a></section>' }), 404);
   const dbSkill = skill === "pronunciation" ? "speaking" : skill;
-  const exercises = (await db.prepare(`SELECT id, slug, language_code, skill, title_vi, level_ref, topic, instructions_vi FROM wb_public_practice_exercises WHERE skill=? ORDER BY language_code, level_ref, title_vi`).bind(dbSkill).all()).results || [];
-  const questions = (await db.prepare(`SELECT id, language_code, skill, question_type, level_ref, topic, prompt_text, audio_asset_id, auto_gradable FROM wb_public_question_bank WHERE skill=? AND review_status='published' ORDER BY language_code, level_ref LIMIT 20`).bind(dbSkill).all()).results || [];
+  const exercises = await safeQueryAll(db, `SELECT id, slug, language_code, skill, title_vi, level_ref, topic, instructions_vi FROM wb_public_practice_exercises WHERE skill=? ORDER BY language_code, level_ref, title_vi`, [dbSkill]);
+  const questions = await safeQueryAll(db, `SELECT id, language_code, skill, question_type, level_ref, topic, prompt_text, audio_asset_id, auto_gradable FROM wb_public_question_bank WHERE skill=? AND review_status='published' ORDER BY language_code, level_ref LIMIT 20`, [dbSkill]);
   const references = skill === "pronunciation" ? (await db.prepare("SELECT headword,ipa_or_pinyin,stress_pattern,tone_pattern,language_code,slug FROM wb_public_dictionary_entries WHERE review_status='published' AND coalesce(ipa_or_pinyin,'') != '' ORDER BY language_code,headword LIMIT 12").all()).results : [];
   const personal = user && skill !== "pronunciation" ? await db.prepare("SELECT count(*) count,max(submitted_at) latest FROM wb_public_practice_results WHERE account_id=? AND skill=?").bind(user.accountId, skill).first() : null;
   const specialPron = skill === "pronunciation";
@@ -5791,10 +5815,54 @@ async function renderMistakesPage({ db, user }) {
 }
 __name(renderMistakesPage, "renderMistakesPage");
 function renderSkillCenterHub({ user }) {
-  const contentHtml = `<section class="wb-learning-landing"><p class="wb-eyebrow">SKILL CENTER · 7 SYSTEMS</p><h1>Trung tâm kỹ năng</h1><p>Chọn một kỹ năng để xem bài học, luyện tập và ôn lại nội dung đã học.</p></section>
-    <div class="wb-skill-hub">${Object.entries(SKILLS).map(([key, item]) => `<a href="/skills/${key}"><span class="wb-eyebrow">${escapeHtml(item.en.toUpperCase())}</span><strong>${escapeHtml(item.vi)}</strong><span>Khám phá →</span></a>`).join("")}</div>
-    <section class="wb-next-action"><h2>Practice & review</h2><a href="/practice" class="wb-btn wb-btn-primary">Mở Practice Center</a><a href="/vocabulary/review" class="wb-btn wb-btn-outline">Ôn tập</a></section>`;
-  return htmlResponse(renderPublicPage({ title: "Trung tâm kỹ năng", currentPath: "/learning/skills", breadcrumbs: [{ label: "Học", href: "/learning" }, { label: "Kỹ năng" }], user, contentHtml }));
+  const skills = [
+    ["vocabulary", "Từ vựng", "Mở rộng, ghi nhớ và vận dụng từ vựng theo chủ đề, ngữ cảnh.", "/skills/vocabulary"],
+    ["grammar", "Ngữ pháp", "Nắm vững cấu trúc, quy tắc và cách sử dụng trong thực tế.", "/skills/grammar"],
+    ["listening", "Nghe", "Luyện nghe hiểu qua hội thoại, đoạn văn và tình huống thực tế.", "/skills/listening"],
+    ["speaking", "Nói", "Luyện phản xạ, diễn đạt tự nhiên và giao tiếp tự tin.", "/skills/speaking"],
+    ["pronunciation", "Phát âm", "Luyện phát âm chuẩn, cải thiện ngữ điệu và độ lưu loát.", "/skills/pronunciation"],
+    ["reading", "Đọc", "Rèn luyện kỹ năng đọc hiểu, phân tích và nắm ý chính.", "/skills/reading"],
+    ["writing", "Viết", "Phát triển kỹ năng viết rõ ràng, logic và đúng ngữ pháp.", "/skills/writing"]
+  ];
+  const contentHtml = `
+    <span class="wb-badge" style="background:#e6f5f5;color:#146466;">SKILL CENTER · 7 SYSTEMS</span>
+    <h1 style="margin:8px 0 6px;font-size:2rem;color:#0f172a;">Trung tâm kỹ năng</h1>
+    <p class="wb-muted" style="margin:0 0 18px;">Mỗi kỹ năng có luồng luyện tập và bộ thẻ riêng. Nội dung luyện tập chỉ xuất hiện khi nguồn có bài tập hoặc dữ liệu đã kiểm duyệt.</p>
+    <div class="wb-skill-layout">
+      <aside class="wb-skill-sidebar" aria-label="Danh sách 7 kỹ năng">
+        ${skills.map(([slug, name, _d, href], i) => `<a href="${href}" class="wb-skill-side-item${i === 0 ? " active" : ""}"><span class="wb-soft-icon" style="width:34px;height:34px;" aria-hidden="true">●</span><div><strong style="display:block;font-size:0.94rem;">${escapeHtml(name)}</strong><span class="wb-muted" style="font-size:0.78rem;">Xem workflow →</span></div></a>`).join("")}
+      </aside>
+      <div>
+        <div class="wb-skill-cards-grid">
+          ${skills.map(([slug, name, desc, href]) => `
+            <article class="wb-skill-card">
+              <div>
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+                  <span class="wb-soft-icon" aria-hidden="true">◆</span>
+                  <h2 style="margin:0;font-size:1.15rem;color:#0f172a;">${escapeHtml(name)}</h2>
+                </div>
+                <p class="wb-muted" style="margin:0;font-size:0.9rem;">${escapeHtml(desc)}</p>
+              </div>
+              <a href="${href}" class="wb-btn wb-btn-outline wb-btn-sm wb-btn-pill">Bắt đầu luyện tập →</a>
+            </article>`).join("")}
+        </div>
+        <div style="margin-top:22px;padding-top:16px;border-top:1px solid #e2e8f0;">
+          <h3 style="margin:0 0 10px;color:#0f172a;">Practice &amp; review</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <a href="/practice" class="wb-btn wb-btn-primary">Mở Practice Center</a>
+            <a href="/vocabulary/flashcards" class="wb-btn wb-btn-outline">Ôn tập Flashcards</a>
+            <a href="/my-mistakes" class="wb-btn wb-btn-outline">Phân tích lỗi (My Mistakes)</a>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  return htmlResponse(renderPublicPage({
+    title: "Trung tâm kỹ năng",
+    currentPath: "/learning/skills",
+    breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: "Học tập", href: "/learning" }, { label: "Kỹ năng" }],
+    user,
+    contentHtml
+  }));
 }
 __name(renderSkillCenterHub, "renderSkillCenterHub");
 
@@ -5973,7 +6041,7 @@ __name(filterCardsForStudyMode, "filterCardsForStudyMode");
 async function renderVocabularyPage({ db, user, mode = "notebook", url = null }) {
   const currentPath = `/vocabulary/${mode}`;
   if (!user && mode === "flashcards") {
-    const card = await db.prepare("SELECT headword,phonetic,meaning_vi FROM wb_public_dictionary_entries ORDER BY language_code DESC,id LIMIT 1").first();
+    const card = await safeQueryFirst(db, "SELECT headword,phonetic,meaning_vi FROM wb_public_dictionary_entries ORDER BY language_code DESC,id LIMIT 1");
     const contentHtml = `<h1>Flashcard · Từ vựng</h1><article class="wb-study-card"><span class="wb-badge">Từ vựng</span>
       ${card ? `<h2 data-learning-content>${escapeHtml(card.headword)}</h2><p>${escapeHtml(card.phonetic)}</p><p>${escapeHtml(card.meaning_vi)}</p>` : "<p>Nội dung đang được cập nhật.</p>"}
       <a class="wb-btn wb-btn-primary" href="${escapeHtml(signInUrl(currentPath, "vocabulary.flashcards"))}">Đăng nhập để ôn tập</a></article>`;
@@ -7081,23 +7149,125 @@ var PUBLIC_CATALOG_DDL = Object.freeze([
   "CREATE TABLE IF NOT EXISTS wb_skill_reviews (account_id TEXT NOT NULL REFERENCES wb_accounts(id), lesson_id TEXT NOT NULL REFERENCES wb_lessons(id), skill TEXT NOT NULL CHECK(skill IN ('grammar','listening','speaking','reading','writing')), remembered INTEGER NOT NULL CHECK(remembered IN (0,1)), response_text TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(account_id, lesson_id, skill))",
   "CREATE TABLE IF NOT EXISTS wb_lesson_notes (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, lesson_slug TEXT NOT NULL, note_content TEXT NOT NULL DEFAULT '', updated_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(account_id, lesson_slug))"
 ]);
+
+function isMissingTableError(err) {
+  return /no such table|no such column/i.test(String(err?.message || err || ""));
+}
+async function safeQueryAll(db, sql, params = []) {
+  try {
+    const stmt = db.prepare(sql);
+    const res = params.length ? await stmt.bind(...params).all() : await stmt.all();
+    return res?.results || [];
+  } catch (err) {
+    if (isMissingTableError(err)) return [];
+    throw err;
+  }
+}
+async function safeQueryFirst(db, sql, params = []) {
+  try {
+    const stmt = db.prepare(sql);
+    return params.length ? await stmt.bind(...params).first() : await stmt.first();
+  } catch (err) {
+    if (isMissingTableError(err)) return null;
+    throw err;
+  }
+}
+var V42_RUNTIME_TABLES_DDL = Object.freeze([
+  "CREATE TABLE IF NOT EXISTS wb_reader_documents (id TEXT PRIMARY KEY, slug TEXT UNIQUE NOT NULL, title_vi TEXT NOT NULL, title_en TEXT NOT NULL DEFAULT '', language_code TEXT NOT NULL DEFAULT 'en', category TEXT NOT NULL DEFAULT 'article', cefr_or_hsk_level TEXT DEFAULT 'A1', summary_vi TEXT DEFAULT '', content_text TEXT DEFAULT '', r2_object_key TEXT, content_type TEXT DEFAULT 'text/plain', review_status TEXT NOT NULL DEFAULT 'published', created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_support_requests (id TEXT PRIMARY KEY, request_type TEXT NOT NULL DEFAULT 'support', account_id TEXT, sender_name TEXT NOT NULL, sender_email TEXT NOT NULL, subject TEXT NOT NULL, message_body TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'received', created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_admin_pins (account_id TEXT PRIMARY KEY, pin_hash TEXT NOT NULL, failed_attempts INTEGER NOT NULL DEFAULT 0, locked_until TEXT, must_reset INTEGER NOT NULL DEFAULT 0, reset_token_hash TEXT, reset_token_expires_at TEXT, updated_by TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_admin_sessions (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, parent_session_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, csrf_token TEXT NOT NULL, ip_address TEXT, user_agent TEXT, expires_at TEXT NOT NULL, revoked_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_policy_documents (slug TEXT PRIMARY KEY, title_vi TEXT NOT NULL, title_en TEXT NOT NULL, current_version TEXT NOT NULL DEFAULT '1.0', effective_date TEXT, operator_name TEXT, privacy_email TEXT, support_email TEXT, legal_email TEXT, updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_policy_versions (id TEXT PRIMARY KEY, policy_slug TEXT NOT NULL, version TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'draft', change_level TEXT NOT NULL DEFAULT 'minor', summary_vi TEXT NOT NULL DEFAULT '', content_vi TEXT NOT NULL, content_en TEXT NOT NULL DEFAULT '', effective_date TEXT, created_by TEXT, reviewed_by TEXT, approved_by TEXT, published_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(policy_slug, version))",
+  "CREATE TABLE IF NOT EXISTS wb_user_policy_consents (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, policy_type TEXT NOT NULL, policy_version TEXT NOT NULL, policy_effective_date TEXT, acceptance_status TEXT NOT NULL, consent_purpose TEXT NOT NULL DEFAULT 'account_agreement', source TEXT NOT NULL DEFAULT 'web', metadata_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_privacy_requests (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, request_type TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'received', details TEXT NOT NULL DEFAULT '', resolution_note TEXT NOT NULL DEFAULT '', handled_by TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_oauth_states (id TEXT PRIMARY KEY, provider TEXT NOT NULL, state_hash TEXT NOT NULL UNIQUE, redirect_to TEXT NOT NULL DEFAULT '/my-learning', expires_at TEXT NOT NULL, consumed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_oauth_identities (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, provider TEXT NOT NULL, provider_user_id TEXT NOT NULL, provider_email TEXT, phone_verified_after_oauth INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(provider, provider_user_id))",
+  "CREATE TABLE IF NOT EXISTS wb_api_providers (id TEXT PRIMARY KEY, service_type TEXT NOT NULL, provider_code TEXT NOT NULL, display_name TEXT NOT NULL, is_primary INTEGER NOT NULL DEFAULT 0, is_fallback INTEGER NOT NULL DEFAULT 0, config_status TEXT NOT NULL DEFAULT 'NOT_CONFIGURED', daily_quota_limit INTEGER NOT NULL DEFAULT 1000, monthly_quota_limit INTEGER NOT NULL DEFAULT 25000, data_region TEXT NOT NULL DEFAULT 'unverified', retention_policy TEXT NOT NULL DEFAULT 'minimal', updated_at TEXT NOT NULL DEFAULT (datetime('now')), UNIQUE(service_type, provider_code))",
+  "CREATE TABLE IF NOT EXISTS wb_api_usage_logs (id TEXT PRIMARY KEY, account_id TEXT, service_type TEXT NOT NULL, provider_code TEXT NOT NULL, request_id TEXT NOT NULL, status_code INTEGER NOT NULL, latency_ms INTEGER NOT NULL DEFAULT 0, input_units INTEGER NOT NULL DEFAULT 0, estimated_cost_usd REAL, error_code TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_api_jobs (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, service_type TEXT NOT NULL, idempotency_key TEXT UNIQUE, status TEXT NOT NULL DEFAULT 'queued', input_ref TEXT, result_json TEXT, error_reason TEXT, attempts INTEGER NOT NULL DEFAULT 0, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_reading_attempts (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, document_id TEXT, language_code TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'in_progress', answers_json TEXT NOT NULL DEFAULT '{}', comprehension_layers_json TEXT NOT NULL DEFAULT '{}', score REAL, feedback_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT (datetime('now')), submitted_at TEXT)",
+  "CREATE TABLE IF NOT EXISTS wb_listening_attempts (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, task_id TEXT, language_code TEXT NOT NULL, transcript_hidden INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'in_progress', answers_json TEXT NOT NULL DEFAULT '{}', score REAL, error_analysis_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT (datetime('now')), submitted_at TEXT)",
+  "CREATE TABLE IF NOT EXISTS wb_speaking_sessions (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, language_code TEXT NOT NULL, target_text TEXT NOT NULL, target_phonetic TEXT NOT NULL DEFAULT '', r2_audio_key TEXT, audio_content_type TEXT, audio_size_bytes INTEGER NOT NULL DEFAULT 0, retain_long_term INTEGER NOT NULL DEFAULT 0, audio_expires_at TEXT, transcript_text TEXT, evaluation_status TEXT NOT NULL DEFAULT 'created', evaluation_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_pronunciation_assessments (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, speaking_session_id TEXT, language_code TEXT NOT NULL, target_text TEXT NOT NULL, provider_code TEXT NOT NULL DEFAULT 'unconfigured', status TEXT NOT NULL DEFAULT 'not_configured', overall_score REAL, pronunciation_score REAL, fluency_score REAL, accuracy_score REAL, completeness_score REAL, word_results_json TEXT NOT NULL DEFAULT '[]', phoneme_results_json TEXT NOT NULL DEFAULT '[]', improvement_guide_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_writing_submissions (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, language_code TEXT NOT NULL, prompt_title TEXT NOT NULL DEFAULT '', original_content TEXT NOT NULL, version_number INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'draft', evaluation_json TEXT NOT NULL DEFAULT '{}', rubric_score REAL, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_specialized_domains_catalog (slug TEXT PRIMARY KEY, category_code TEXT NOT NULL, category_name_vi TEXT NOT NULL, item_number INTEGER NOT NULL, name_vi TEXT NOT NULL, name_en TEXT NOT NULL, target_terms_en INTEGER NOT NULL DEFAULT 500, target_terms_zh INTEGER NOT NULL DEFAULT 500, published_terms_en INTEGER NOT NULL DEFAULT 0, published_terms_zh INTEGER NOT NULL DEFAULT 0, dataset_slug TEXT, status TEXT NOT NULL DEFAULT 'cataloged', updated_at TEXT NOT NULL DEFAULT (datetime('now')))"
+]);
+
+
+function wrapSafeStatement(stmt, isReadOnly) {
+  if (!stmt || !isReadOnly) return stmt;
+  const wrap = (st) => new Proxy(st, {
+    get(target, prop, receiver) {
+      if (prop === "bind") {
+        return (...args) => wrap(target.bind(...args));
+      }
+      if (prop === "all") {
+        return async () => {
+          try { return await target.all(); } catch (err) {
+            if (isMissingTableError(err)) return { results: [], success: true, meta: {} };
+            throw err;
+          }
+        };
+      }
+      if (prop === "first") {
+        return async (...args) => {
+          try { return await target.first(...args); } catch (err) {
+            if (isMissingTableError(err)) return null;
+            throw err;
+          }
+        };
+      }
+      const val = Reflect.get(target, prop, receiver);
+      return typeof val === "function" ? val.bind(target) : val;
+    }
+  });
+  return wrap(stmt);
+}
+function createResilientEnv(rawEnv) {
+  if (!rawEnv?.DB) return rawEnv;
+  const rawDb = rawEnv.DB;
+  const safeDb = new Proxy(rawDb, {
+    get(target, prop, receiver) {
+      if (prop === "prepare") {
+        return (sql) => {
+          const isReadOnly = /^\s*(?:SELECT|WITH)\b/i.test(String(sql || ""));
+          return wrapSafeStatement(target.prepare(sql), isReadOnly);
+        };
+      }
+      const val = Reflect.get(target, prop, receiver);
+      return typeof val === "function" ? val.bind(target) : val;
+    }
+  });
+  return new Proxy(rawEnv, {
+    get(target, prop, receiver) {
+      if (prop === "DB") return safeDb;
+      const val = Reflect.get(target, prop, receiver);
+      return typeof val === "function" ? val.bind(target) : val;
+    }
+  });
+}
+
 async function ensurePublicCatalogSchema(db) {
   if (publicSchemaEnsured || !db) return;
   try {
-    const baseTable = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'wb_courses'").first();
-    if (!baseTable) return;
     const existingRows = (await db.prepare("SELECT name FROM sqlite_master WHERE type IN ('view','table')").all()).results || [];
     const existingSet = new Set(existingRows.map((r) => r.name));
-    const requiredChecks = ["wb_public_courses", "wb_public_languages", "wb_public_reader_documents", "wb_skill_reviews", "wb_lesson_notes"];
+    const requiredChecks = ["wb_public_courses", "wb_public_languages", "wb_public_reader_documents", "wb_skill_reviews", "wb_lesson_notes", "wb_admin_pins", "wb_policy_documents", "wb_api_providers"];
     if (requiredChecks.every((n) => existingSet.has(n))) {
       publicSchemaEnsured = true;
       return;
     }
-    for (const ddl of PUBLIC_CATALOG_DDL) {
-      try {
-        await db.prepare(ddl).run();
-      } catch (ddlErr) {
-        console.warn("[WB-SCHEMA-GUARD] DDL skipped:", String(ddlErr?.message || ddlErr).slice(0, 140));
+    for (const ddl of V42_RUNTIME_TABLES_DDL) {
+      try { await db.prepare(ddl).run(); } catch (ddlErr) {
+        console.warn("[WB-SCHEMA-GUARD] V42 DDL:", String(ddlErr?.message || ddlErr).slice(0, 120));
+      }
+    }
+    if (existingSet.has("wb_courses")) {
+      for (const ddl of PUBLIC_CATALOG_DDL) {
+        try { await db.prepare(ddl).run(); } catch (ddlErr) {
+          console.warn("[WB-SCHEMA-GUARD] Public DDL:", String(ddlErr?.message || ddlErr).slice(0, 120));
+        }
       }
     }
     publicSchemaEnsured = true;
@@ -7205,7 +7375,11 @@ function failure(status, request, id) {
   if (new URL(request.url).pathname.startsWith("/api/")) {
     return jsonResponse({ ok: false, error: { code: String(status), message: errorTitles[status] }, requestId: id }, status);
   }
-  return htmlResponse(renderPublicPage({ title: errorTitles[status], contentHtml: `<section class="wb-error-state"><strong>${status}</strong><h1>${errorTitles[status]}</h1><p>${id ? "Mã yêu cầu " + id : "Bạn có thể quay lại trang chủ hoặc tìm hướng dẫn."}</p><a class="wb-btn wb-btn-primary" href="/">Trang chủ</a> <a href="/help">Trợ giúp</a></section>` }), status);
+  const subtitle = status === 404 ? "Trang bạn đang truy cập không tồn tại, đã được di chuyển hoặc tạm thời không khả dụng." : id ? `Mã yêu cầu: ${id}. Vui lòng thử lại sau hoặc gửi mã này cho bộ phận CSKH.` : "Bạn có thể quay lại trang chủ hoặc xem hướng dẫn tại Trung Tâm Trợ Giúp.";
+  return htmlResponse(renderPublicPage({
+    title: errorTitles[status] || `Lỗi ${status}`,
+    contentHtml: `<section class="wb-error-state" style="max-width:640px;margin:28px auto;text-align:center;background:#fff;border:1px solid #d7e6e6;border-radius:18px;padding:36px 24px 0;overflow:hidden;"><strong style="font-size:5.2rem;font-weight:900;color:#146466;line-height:1;display:block;">${status}</strong><svg class="wb-swoosh-red" viewBox="0 0 120 12" fill="none"><path d="M4 9C40 2 82 2 116 7" stroke="#C92F1C" stroke-width="4" stroke-linecap="round"/></svg><h1 style="margin:0 0 10px;font-size:1.9rem;">${escapeHtml(errorTitles[status] || "Đã xảy ra lỗi")}</h1><p class="wb-muted" style="margin:0 0 22px;">${escapeHtml(subtitle)}</p><div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;"><a class="wb-btn wb-btn-primary" href="/">Về Trang chủ</a><a class="wb-btn wb-btn-outline" href="/help/errors">Quay lại / Hướng dẫn lỗi</a></div>${renderErrorWaveSvg()}</section>`
+  }), status);
 }
 __name(failure, "failure");
 var errorTitles = { 400: "Yêu cầu không hợp lệ", 401: "Vui lòng đăng nhập", 403: "Bạn chưa có quyền truy cập", 404: "Không tìm thấy trang", 408: "Yêu cầu đã hết hạn", 409: "Dữ liệu vừa được cập nhật", 410: "Trang đã ngừng cung cấp", 413: "Tệp quá lớn", 415: "Định dạng chưa được hỗ trợ", 422: "Vui lòng kiểm tra dữ liệu", 429: "Vui lòng thử lại sau", 500: "Hệ thống tạm thời gặp sự cố", 502: "Kết nối bị gián đoạn", 503: "Dịch vụ tạm thời chưa khả dụng", 504: "Dịch vụ phản hồi chậm" };
@@ -7242,6 +7416,7 @@ var index_default = {
         return failure(503, request, id);
       }
       await ensurePublicCatalogSchema(env.DB);
+      env = createResilientEnv(env);
       const services = createServices(env);
       const cookies = parseCookies(request);
       const user = await services.auth.authenticateSession(cookies.wb_session);
@@ -7278,8 +7453,7 @@ var index_default = {
         });
       }
       if (path === "/help/errors") {
-        const cards = Object.entries(errorTitles).map(([code, title]) => `<a class="wb-card" href="/help/errors/${code}"><strong>${code}</strong><h2>${title}</h2></a>`).join("");
-        return htmlResponse(renderPublicPage({ title: "Hướng dẫn thông báo lỗi", currentPath: path, user, contentHtml: `<h1>Hướng dẫn thông báo lỗi</h1><div class="wb-grid-3">${cards}<a class="wb-card" href="/help/errors/1101"><strong>1101</strong><h2>Sự cố xử lý tại máy chủ</h2></a></div>` }));
+        return htmlResponse(renderPublicPage({ title: "Bộ trang lỗi hệ thống", currentPath: path, breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: "Trung Tâm Trợ Giúp", href: "/help" }, { label: "Bộ trang lỗi hệ thống" }], user, contentHtml: renderErrorSystemHubHtml({ escapeHtml }) }));
       }
       if (path.startsWith("/help/errors/")) {
         const code = path.slice("/help/errors/".length);

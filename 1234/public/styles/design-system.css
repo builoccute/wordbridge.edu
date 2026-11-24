@@ -938,3 +938,54 @@ details summary {cursor:pointer;font-weight:650;color:var(--wb-teal)}
   .wb-home-hero-scrim { background: linear-gradient(180deg, rgba(3, 46, 52, 0.92) 0%, rgba(5, 62, 68, 0.72) 65%, rgba(5, 62, 68, 0.45) 100%); }
   .wb-lang-cards-v2 { grid-template-columns: 1fr; margin: 16px 0 0; }
 }
+
+/* V4.2 10-SCREEN UI SYSTEM */
+.wb-swoosh-red { display: block; width: 120px; height: 10px; margin: 4px auto 14px; }
+.wb-swoosh-red-left { display: block; width: 150px; height: 10px; margin: 4px 0 12px; }
+.wb-wave-footer { width: 100%; height: 42px; display: block; margin-top: 24px; border-radius: 0 0 14px 14px; }
+.wb-err-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+.wb-err-card { background: #fff; border: 1px solid #d7e6e6; border-radius: 16px; padding: 22px 20px 0; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; box-shadow: 0 4px 18px rgba(20,100,102,0.06); }
+.wb-err-card-top { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 10px; }
+.wb-err-code { font-size: 3rem; font-weight: 900; color: #146466; line-height: 1; }
+.wb-err-card h2 { text-align: center; font-size: 1.2rem; margin: 6px 0 6px; color: #0f172a; }
+.wb-err-card p { text-align: center; font-size: 0.9rem; color: #475569; margin: 0 0 14px; min-height: 40px; }
+.wb-err-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 14px; }
+.wb-err-other-bar { margin-top: 18px; background: #f0f9f9; border: 1px solid #cde5e5; border-radius: 14px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.wb-err-pill { display: inline-flex; align-items: center; gap: 8px; background: #fff; border: 1px solid #d7e6e6; border-radius: 999px; padding: 5px 12px 5px 6px; font-size: 0.86rem; color: #1e293b; text-decoration: none; }
+.wb-err-pill strong { background: #146466; color: #fff; border-radius: 8px; padding: 2px 8px; font-size: 0.8rem; }
+.wb-hero-teal-banner { position: relative; background: linear-gradient(125deg, #0d4f52 0%, #146466 55%, #1d7a7d 100%); color: #fff; border-radius: 20px; border-left: 6px solid #C92F1C; padding: 30px 32px; display: grid; grid-template-columns: 1.35fr 0.65fr; gap: 20px; align-items: center; overflow: hidden; margin-bottom: 22px; }
+.wb-hero-teal-banner h1 { color: #fff; margin: 10px 0 4px; font-size: 2rem; line-height: 1.2; }
+.wb-hero-teal-banner p { color: #e2f5f5; margin: 0 0 18px; max-width: 580px; }
+.wb-hero-pill { display: inline-block; padding: 5px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; color: #fff; }
+.wb-pill-bar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 16px 0 22px; }
+.wb-pill-link { display: inline-flex; align-items: center; gap: 7px; padding: 9px 16px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; color: #0f172a; font-weight: 600; font-size: 0.9rem; text-decoration: none; transition: all 0.15s ease; }
+.wb-pill-link:hover, .wb-pill-link.active { background: #146466; color: #fff; border-color: #146466; }
+.wb-lang-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.wb-lang-code-badge { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 10px; font-weight: 800; color: #fff; font-size: 1rem; }
+.wb-lang-code-badge.zh { background: #C92F1C; }
+.wb-lang-code-badge.en { background: #146466; }
+.wb-lang-info-card { background: linear-gradient(90deg, #f3fbfb 0%, #ffffff 55%, #edf7f7 100%); border: 1px solid #d6e9e9; border-radius: 18px; padding: 22px 26px; display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; margin-bottom: 24px; }
+.wb-week-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 16px; }
+.wb-week-tab { padding: 8px 16px; border-radius: 999px; border: 1px solid #cbd5e1; background: #fff; color: #146466; font-weight: 600; text-decoration: none; font-size: 0.88rem; }
+.wb-week-tab.active, .wb-week-tab:hover { background: #146466; color: #fff; border-color: #146466; }
+.wb-skill-layout { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 18px; }
+.wb-skill-sidebar { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; padding: 10px; display: flex; flex-direction: column; gap: 4px; }
+.wb-skill-side-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 10px; text-decoration: none; color: #0f172a; }
+.wb-skill-side-item:hover, .wb-skill-side-item.active { background: #e6f4f4; color: #146466; }
+.wb-skill-cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.wb-skill-card { background: #fff; border: 1px solid #dceaea; border-radius: 16px; padding: 20px; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+.wb-soft-icon { width: 42px; height: 42px; border-radius: 12px; background: #e6f5f5; color: #146466; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.wb-section-bar { display: flex; align-items: center; gap: 10px; margin: 26px 0 14px; }
+.wb-section-bar::before { content: ""; width: 4px; height: 24px; border-radius: 4px; background: #C92F1C; display: inline-block; }
+.wb-section-bar h2 { margin: 0; color: #0f172a; font-size: 1.35rem; }
+.wb-contact-split { display: grid; grid-template-columns: 1.25fr 0.75fr; gap: 28px; align-items: center; }
+.wb-contact-art { display: flex; align-items: center; justify-content: center; padding: 16px; }
+@media (max-width: 960px) {
+  .wb-err-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wb-hero-teal-banner, .wb-contact-split, .wb-skill-layout, .wb-lang-info-card { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .wb-err-grid { grid-template-columns: 1fr; }
+  .wb-hero-teal-banner { padding: 22px 18px; }
+  .wb-hero-teal-banner h1 { font-size: 1.5rem; }
+}

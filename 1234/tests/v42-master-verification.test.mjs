@@ -46,7 +46,7 @@ test("1. P0 Health, Missing DB 503, Error Codes 1100/1101 & Session Invalid 401"
     assert.equal(health.status, 200);
     const hJson = await health.json();
     assert.equal(hJson.ok, true);
-    assert.equal(hJson.version, "4.2.0");
+    assert.equal(hJson.version, "4.2.1");
 
     const noDb = await worker.fetch(new Request("https://wordbridge.io.vn/"), { R2: new MemoryR2Bucket() }, {});
     assert.equal(noDb.status, 503);

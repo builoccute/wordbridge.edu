@@ -1,6 +1,6 @@
 {
   "name": "word-bridge",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "private": true,
   "type": "module",
   "description": "WORD BRIDGE V4 — Nền tảng học tập, tra cứu, luyện tập và đánh giá năng lực ngoại ngữ Trung – Anh (Web Super App trên Cloudflare Workers, D1 và R2).",

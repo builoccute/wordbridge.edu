@@ -6,6 +6,13 @@ import { CHINESE_FOUNDATION_22, ENGLISH_FOUNDATION_22, SPECIALIZED_100_DOMAINS, 
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
+
+function safeJsonParse(raw, fallback = null) {
+  if (raw === null || raw === undefined || raw === "") return fallback;
+  if (typeof raw === "object") return raw;
+  try { return JSON.parse(String(raw)); } catch { return fallback; }
+}
+
 // src/config/constants.js
 var BRAND = Object.freeze({
   name: "WORD BRIDGE",
@@ -558,7 +565,7 @@ async function renderSkillCards({ db, user, skill, url }) {
     WHERE l.language_code=? ORDER BY l.slug`, [user?.accountId || "", skill, language]) }).results;
   const review = url.searchParams.get("review") === "1";
   const cards = rows.filter((r) => !review || r.remembered !== 1).map((row) => {
-    const parts = JSON.parse(row.components_json);
+    const parts = safeJsonParse(row.components_json, {});
     const prompt = [parts[skill]].flat().filter((x) => typeof x === "string").join(" · ");
     const example = Array.isArray(parts.examples) ? parts.examples.find((x) => typeof x === "string") || "" : "";
     return { row, prompt, example };
@@ -1014,7 +1021,7 @@ var EmailService = class {
       await this.db.prepare("UPDATE wb_email_events SET delivery_status = 'FAILED', next_retry_at = NULL, updated_at = datetime('now') WHERE id = ?").bind(eventId).run();
       return { ok: false, status: "FAILED", reason: "Đã chạm giới hạn số lần thử lại." };
     }
-    const vars = JSON.parse(row.variables_json || "{}");
+    const vars = safeJsonParse(row.variables_json, {});
     const rendered = renderEmailTemplate(row.template_key, vars, {
       officialSvgUrl: this.env.OFFICIAL_LOGO_SVG_URL || null
     });
@@ -1115,7 +1122,7 @@ var EmailService = class {
     if (seen) {
       return { ok: true, status: 200, deduplicated: true, message: "Sự kiện webhook đã được xử lý trước đó." };
     }
-    const body = JSON.parse(rawBody || "{}");
+    const body = safeJsonParse(rawBody, {});
     const webhookEventType = body.type || body.webhookEventType;
     const providerMessageId = body.data?.email_id || body.providerMessageId;
     await this.db.prepare("INSERT INTO wb_webhook_events (event_id, provider, event_type, signature_verified) VALUES (?, ?, ?, 1)").bind(webhookEventId, this.providerName, String(webhookEventType || "unknown")).run();
@@ -2436,7 +2443,7 @@ var PracticeService = class {
     const exercise = await this.db.prepare("SELECT * FROM wb_public_practice_exercises WHERE id = ?").bind(exerciseId).first();
     if (!exercise) return { ok: false, status: 404, error: "Không tìm thấy bài luyện tập." };
     const safeAnswers = answers && typeof answers === "object" ? answers : {};
-    const questionIds = JSON.parse(exercise.question_ids_json || "[]");
+    const questionIds = safeJsonParse(exercise.question_ids_json, []);
     const hasNonEmpty = questionIds.length ? questionIds.some((qId) => {
       const val = safeAnswers[qId];
       return Array.isArray(val) ? val.length > 0 : String(val ?? "").trim().length > 0;
@@ -2454,7 +2461,7 @@ var PracticeService = class {
       maxScore += q.max_score;
       const userAns = safeAnswers[qId];
       if (q.auto_gradable === 1 && q.correct_answer_json) {
-        const expected = JSON.parse(q.correct_answer_json);
+        const expected = safeJsonParse(q.correct_answer_json, {});
         const isCorrect = Array.isArray(expected) ? Array.isArray(userAns) && JSON.stringify([...expected].sort()) === JSON.stringify([...userAns].sort()) : String(userAns ?? "").trim().toLowerCase() === String(expected).trim().toLowerCase();
         if (isCorrect) autoScore += q.max_score;
         itemFeedback.push({
@@ -2476,7 +2483,7 @@ var PracticeService = class {
           given: userAns ?? "",
           graded: false,
           noteVi: "Câu hỏi tự luận/nói cần đánh giá chuyên sâu theo rubric; hệ thống không tự tạo điểm giả.",
-          rubric: q.rubric_json ? JSON.parse(q.rubric_json) : null
+          rubric: q.rubric_json ? safeJsonParse(q.rubric_json, {}) : null
         });
       }
     }
@@ -3618,9 +3625,10 @@ async function handleApiRequest(request, url, ctx) {
     return jsonResponse({
       ok: dbStatus === "connected",
       service: "WORD BRIDGE API",
-      version: "4.2.0",
+      version: "4.2.1",
       domain: BRAND.websiteUrl,
       database: { name: "word", status: dbStatus, officialLanguages: langCount?.cnt || 0, ...schemaHint ? { hint: schemaHint } : {} },
+      buildTag: "v4.2.1-anti500-noproxy-safejson",
       storage: { bucket: "word", status: services.r2.isAvailable() ? "connected" : "unbound" },
       emailProvider: env.EMAIL_PROVIDER || "unconfigured",
       learnerMeetProvider: env.LEARNER_MEET_PROVIDER || "unconfigured",
@@ -3631,7 +3639,7 @@ async function handleApiRequest(request, url, ctx) {
   if (path === "/api/v1/openapi.json" && method === "GET") {
     return jsonResponse({
       openapi: "3.1.0",
-      info: { title: "WORD BRIDGE Unified API", version: "4.2.0" },
+      info: { title: "WORD BRIDGE Unified API", version: "4.2.1" },
       servers: [{ url: `${BRAND.websiteUrl}/api/v1` }],
       paths: {
         "/health": { get: { summary: "Health & D1/R2 status" } },
@@ -4011,7 +4019,7 @@ async function handleApiRequest(request, url, ctx) {
     if (!body.lessonId) return errorResponse("VALIDATION_ERROR", "Thiếu lessonId.", 400);
     const lesson = await apiDb.prepare("SELECT * FROM wb_public_lessons WHERE id = ?").bind(body.lessonId).first();
     if (!lesson) return errorResponse("LESSON_NOT_FOUND", "Bài học không tồn tại.", 404);
-    const comp = JSON.parse(lesson.components_json || "{}");
+    const comp = safeJsonParse(lesson.components_json, {});
     const checkQIds = Array.isArray(comp.checkQuestionIds) ? comp.checkQuestionIds : [];
     const submittedAnswers = body.answers && typeof body.answers === "object" ? body.answers : {};
     const hasAnswers = Object.keys(submittedAnswers).length > 0;
@@ -4028,7 +4036,7 @@ async function handleApiRequest(request, url, ctx) {
         const q = await apiDb.prepare("SELECT * FROM wb_public_question_bank WHERE id = ?").bind(qId).first();
         if (!q || q.auto_gradable !== 1 || !q.correct_answer_json) continue;
         total += q.max_score;
-        const expected = JSON.parse(q.correct_answer_json);
+        const expected = safeJsonParse(q.correct_answer_json, {});
         const given = submittedAnswers[qId];
         const correct = String(given ?? "").trim().toLowerCase() === String(expected).trim().toLowerCase();
         if (correct) earned += q.max_score;
@@ -4968,7 +4976,7 @@ var LANG_LABELS = { zh: "Tiếng Trung", en: "Tiếng Anh" };
 var CAT_LABELS = { general: "Tổng quát", specialized: "Chuyên ngành", dialogue: "Hội thoại", guide: "Hướng dẫn", grammar: "Ngữ pháp" };
 function safeJson(str, fallback = []) {
   try {
-    return JSON.parse(str || "");
+    return safeJsonParse(str || "", {});
   } catch {
     return fallback;
   }
@@ -5405,10 +5413,10 @@ async function renderWeekDetailPage({ db, user, weekSlug }) {
   }
   const sessions = (await db.prepare("SELECT * FROM wb_study_sessions WHERE week_id = ? ORDER BY position_in_week").bind(week.id).all()).results || [];
   const lessons = (await db.prepare("SELECT id, session_id, slug, title_vi, level_ref FROM wb_public_lessons WHERE week_id = ? ORDER BY slug").bind(week.id).all()).results || [];
-  const vocab = JSON.parse(week.core_vocabulary_json || "[]");
-  const grammar = JSON.parse(week.core_grammar_json || "[]");
-  const materials = JSON.parse(week.study_materials_json || "[]");
-  const exercises = JSON.parse(week.exercises_json || "[]");
+  const vocab = safeJsonParse(week.core_vocabulary_json, []);
+  const grammar = safeJsonParse(week.core_grammar_json, []);
+  const materials = safeJsonParse(week.study_materials_json, []);
+  const exercises = safeJsonParse(week.exercises_json, []);
   const contentHtml = `
     <span class="wb-badge">Tuần ${String(week.week_number).padStart(2, "0")} · ${sessions.length || week.sessions_count} buổi học thực tế</span>
     <h1>${escapeHtml(week.name_vi)}</h1>
@@ -5469,9 +5477,9 @@ async function renderLessonDetailPage({ db, user, lessonSlug }) {
   if (!lesson) {
     return htmlResponse(renderPublicPage({ title: "Không tìm thấy bài học", currentPath: `/lessons/${lessonSlug}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Bài học không tồn tại.</div>' }), 404);
   }
-  const c = JSON.parse(lesson.components_json || "{}");
+  const c = safeJsonParse(lesson.components_json, {});
   const audioAsset = await db.prepare("SELECT a.* FROM wb_public_audio_assets a JOIN wb_public_learning_resources r ON r.r2_object_key=a.r2_object_key WHERE r.lesson_id=? LIMIT 1").bind(lesson.id).first();
-  const segments = audioAsset ? JSON.parse(audioAsset.sync_segments_json || "[]") : [];
+  const segments = audioAsset ? safeJsonParse(audioAsset.sync_segments_json, []) : [];
   const checkQIds = Array.isArray(c.checkQuestionIds) ? c.checkQuestionIds : [];
   const questions = [];
   for (const qid of checkQIds) {
@@ -5502,7 +5510,7 @@ async function renderLessonDetailPage({ db, user, lessonSlug }) {
       <div id="wb-mic-status" class="wb-muted" style="font-size:0.84rem;">Micro chỉ bật khi bạn chủ động nhấn nút.</div>
     </div>`;
   const quizFields = questions.map((q) => {
-    const opts = JSON.parse(q.options_json || "[]");
+    const opts = safeJsonParse(q.options_json, []);
     return `
       <div class="wb-field">
         <label>${escapeHtml(q.prompt_text)}</label>
@@ -5558,8 +5566,8 @@ async function renderLessonResultPage({ db, user, lessonSlug }) {
       contentHtml: `<h1>Kết quả bài học: ${escapeHtml(lesson.title_vi)}</h1><div class="wb-alert wb-alert-info">Bạn chưa có lượt nộp hoặc hoàn thành nào cho bài học này. <a href="/lessons/${escapeHtml(lesson.slug)}">Quay lại bài học</a>.</div>`
     }));
   }
-  const breakdown = JSON.parse(sub.breakdown_json || "[]");
-  const skills = JSON.parse(sub.skills_assessed_json || "[]");
+  const breakdown = safeJsonParse(sub.breakdown_json, []);
+  const skills = safeJsonParse(sub.skills_assessed_json, []);
   const correctCount = breakdown.filter((b) => b.correct).length;
   const incorrectCount = breakdown.filter((b) => !b.correct).length;
   const contentHtml = `
@@ -5639,7 +5647,7 @@ var SKILLS = Object.freeze({
 });
 function safeJson2(value, fallback = null) {
   try {
-    return JSON.parse(value ?? "");
+    return safeJsonParse(value ?? "", {});
   } catch {
     return fallback;
   }
@@ -5870,7 +5878,7 @@ __name(renderSkillCenterHub, "renderSkillCenterHub");
 // src/pages/dictionary-pages.js
 function safeJsonArray(raw) {
   try {
-    const parsed = JSON.parse(raw || "[]");
+    const parsed = safeJsonParse(raw, []);
     return Array.isArray(parsed) ? parsed : [];
   } catch {
     return [];
@@ -6271,7 +6279,7 @@ var SKILL_LABELS = {
 };
 function safeJson3(raw, fallback = []) {
   try {
-    return JSON.parse(raw || "");
+    return safeJsonParse(raw || "", {});
   } catch {
     return fallback;
   }
@@ -7154,7 +7162,7 @@ var PUBLIC_CATALOG_DDL = Object.freeze([
 
 function isMissingTableError(err) {
   const combined = `${err?.message || ""} ${err?.cause?.message || ""} ${err?.cause || ""} ${err || ""}`;
-  return /no such table|no such column|has no column named|no such view/i.test(combined);
+  return /no such table|no such column|has no column named|no such view|SQLITE_ERROR/i.test(combined);
 }
 async function safeQueryAll(db, sql, params = []) {
   try {

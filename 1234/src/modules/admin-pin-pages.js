@@ -217,6 +217,7 @@ export function renderAdminPinLockPage({ user, pinStatus, escapeHtml }) {
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="wb-csrf-token" content="${escapeHtml(user.csrfToken || "")}" />
   <meta name="csrf-token" content="${escapeHtml(user.csrfToken || "")}" />
   <title>${escapeHtml(heading)} — Quản trị WORD BRIDGE</title>
   <link rel="stylesheet" href="/styles/design-system.css" />
@@ -378,6 +379,7 @@ export async function renderAdminCenterHtml({ section = "", user, adminSession, 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="wb-csrf-token" content="${escapeHtml(user.csrfToken || "")}" />
   <meta name="csrf-token" content="${escapeHtml(user.csrfToken || "")}" />
   <meta name="admin-csrf-token" content="${escapeHtml(adminSession?.csrf_token || "")}" />
   <title>${escapeHtml(pageTitle)} — Trung tâm Quản trị WORD BRIDGE</title>

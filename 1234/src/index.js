@@ -1,3 +1,8 @@
+import { LegalPolicyService, renderFullPolicyHtml } from "./modules/legal-policies.js";
+import { OAuthService } from "./modules/oauth-service.js";
+import { AdminPinService, buildAdminSessionCookie, clearAdminSessionCookie, renderAdminPinLockPage, renderAdminCenterHtml } from "./modules/admin-pin-pages.js";
+import { LanguageServicesAdapter } from "./modules/language-api-adapters.js";
+import { CHINESE_FOUNDATION_22, ENGLISH_FOUNDATION_22, SPECIALIZED_100_DOMAINS, CONTACT_CATEGORIES_12, renderContactPageV42, renderSessionInvalidContent } from "./modules/academic-catalog.js";
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
@@ -275,8 +280,7 @@ function validateRegistrationPayload(payload) {
     errors.push("Mật khẩu phải gồm chữ hoa, chữ thường và chữ số.");
   }
   if (password !== confirmPassword) errors.push("Xác nhận mật khẩu không khớp.");
-  if (schoolName.length < 2) errors.push("Trường học là trường bắt buộc (độc lập với nơi làm việc).");
-  if (workplaceName.length < 2) errors.push("Nơi làm việc/tổ chức công tác là trường bắt buộc (độc lập với trường học).");
+  if (schoolName.length < 2 && workplaceName.length < 2) errors.push("Vui lòng cung cấp ít nhất một thông tin (tối thiểu 2 ký tự): Trường học hoặc Nơi làm việc / tổ chức.");
   return {
     valid: errors.length === 0,
     errors,
@@ -1461,8 +1465,8 @@ var AuthService = class {
     if (fullName.length < 2) {
       return { ok: false, status: 400, error: "Họ và tên phải có tối thiểu 2 ký tự." };
     }
-    if (!phoneNumber || !schoolName || !workplaceName) {
-      return { ok: false, status: 400, error: "Số điện thoại, Trường học và Nơi làm việc không được để trống." };
+    if (!phoneNumber || (!schoolName && !workplaceName)) {
+      return { ok: false, status: 400, error: "Số điện thoại và ít nhất một trong hai thông tin (Trường học hoặc Nơi làm việc) không được để trống." };
     }
     await this.db.prepare(`
         UPDATE wb_accounts
@@ -1787,10 +1791,11 @@ var JobsService = class {
   static {
     __name(this, "JobsService");
   }
-  constructor(db, emailService, studentBenefitService) {
+  constructor(db, emailService, studentBenefitService, r2Service = null) {
     this.db = db;
     this.emailService = emailService;
     this.studentBenefitService = studentBenefitService;
+    this.r2Service = r2Service;
   }
   async runJob(jobName) {
     const job = await this.db.prepare("SELECT * FROM wb_background_jobs WHERE job_name = ?").bind(jobName).first();
@@ -1812,11 +1817,27 @@ var JobsService = class {
         const resSessions = await this.db.prepare("DELETE FROM wb_sessions WHERE datetime(expires_at) < datetime('now', '-30 days')").run();
         const resStates = await this.db.prepare("DELETE FROM wb_oauth_states WHERE datetime(expires_at) < datetime('now', '-1 days')").run();
         const resChallenges = await this.db.prepare("DELETE FROM wb_webauthn_challenges WHERE datetime(expires_at) < datetime('now', '-1 days')").run();
+        const resAdminSess = await this.db.prepare("DELETE FROM wb_admin_sessions WHERE datetime(expires_at) < datetime('now')").run().catch(() => ({ meta: { changes: 0 } }));
+        let cleanedTempAudio = 0;
+        try {
+          const expiredAudio = (await this.db.prepare(
+            "SELECT id, r2_audio_key FROM wb_speaking_sessions WHERE retain_long_term = 0 AND r2_audio_key IS NOT NULL AND audio_expires_at IS NOT NULL AND datetime(audio_expires_at) <= datetime('now') LIMIT 50"
+          ).all()).results || [];
+          for (const row of expiredAudio) {
+            if (this.r2Service?.isAvailable() && this.r2Service.bucket?.delete) {
+              await this.r2Service.bucket.delete(row.r2_audio_key).catch(() => {});
+            }
+            await this.db.prepare("UPDATE wb_speaking_sessions SET r2_audio_key = NULL, updated_at = datetime('now') WHERE id = ?").bind(row.id).run();
+            cleanedTempAudio++;
+          }
+        } catch {}
         summary = {
           cleanedTokens: resTokens.meta?.changes || 0,
           cleanedSessions: resSessions.meta?.changes || 0,
           cleanedOAuthStates: resStates.meta?.changes || 0,
-          cleanedWebAuthnChallenges: resChallenges.meta?.changes || 0
+          cleanedWebAuthnChallenges: resChallenges.meta?.changes || 0,
+          cleanedAdminSessions: resAdminSess.meta?.changes || 0,
+          cleanedTempAudio
         };
       } else if (jobName === "email_retry_dispatcher") {
         const pending = await this.db.prepare(`
@@ -1879,7 +1900,7 @@ var ALLOWED_R2_PREFIXES = Object.freeze([
   "branding/",
   "learning/chinese/",
   "learning/english/",
-  "learning/russian/",
+  "private/speaking/",
   "specialized/chinese/",
   "specialized/english/",
   "dictionary/",
@@ -3233,6 +3254,9 @@ var AdminService = class {
     if (newStatus === "published" && !this.authService.hasPermission(actor, "curriculum:publish")) {
       return { ok: false, status: 403, error: "Bạn không có quyền phát hành nội dung học thuật chính thức (yêu cầu curriculum:publish)." };
     }
+    if ((newStatus === "approved" || newStatus === "published") && !this.authService.hasPermission(actor, "curriculum:review") && !actor.roles?.includes("super_admin")) {
+      return { ok: false, status: 403, error: "Biên tập viên (Editor) không được tự phê duyệt hoặc xuất bản nội dung do chính mình biên soạn." };
+    }
     if (!this.authService.hasPermission(actor, "curriculum:review") && !this.authService.hasPermission(actor, "curriculum:create")) {
       return { ok: false, status: 403, error: "Thiếu quyền cập nhật trạng thái học thuật." };
     }
@@ -3478,13 +3502,22 @@ var AdminService = class {
     return { ok: true, jobName, status: newStatus };
   }
   async createSupportOrContactTicket(payload, emailService) {
-    const type = payload.requestType === "contact_partnership" ? "contact_partnership" : "support";
+    const rawCat = String(payload.requestType || "support").trim();
+    const catMap = Object.fromEntries(CONTACT_CATEGORIES_12);
+    const type = rawCat === "contact_partnership" || rawCat === "partnership_development" ? "contact_partnership" : "support";
     const senderName = String(payload.senderName || "").trim();
     const senderEmail = String(payload.senderEmail || "").trim().toLowerCase();
-    const subject = String(payload.subject || "").trim();
+    const rawSubject = String(payload.subject || "").trim();
+    const subject = catMap[rawCat] && !rawSubject.startsWith("[") ? `[${catMap[rawCat]}] ${rawSubject}` : rawSubject;
     const messageBody = String(payload.messageBody || "").trim();
-    if (!senderName || !senderEmail || !subject || messageBody.length < 10) {
+    if (!senderName || !senderEmail || !rawSubject || messageBody.length < 10) {
       return { ok: false, status: 400, error: "Vui lòng điền đầy đủ họ tên, email, tiêu đề và nội dung tối thiểu 10 ký tự." };
+    }
+    const recentDup = await this.db.prepare(
+      "SELECT id FROM wb_support_requests WHERE sender_email = ? AND subject = ? AND created_at > datetime('now', '-5 minutes') LIMIT 1"
+    ).bind(senderEmail, subject).first().catch(() => null);
+    if (recentDup) {
+      return { ok: false, status: 429, error: "Bạn vừa gửi một yêu cầu trùng lặp. Vui lòng chờ vài phút trước khi gửi lại." };
     }
     const ticketId = generateId(type === "support" ? "cskh" : "cnt");
     await this.db.prepare(`
@@ -3534,6 +3567,21 @@ function requireCsrf(request, user, parsedBody = {}) {
   return null;
 }
 __name(requireCsrf, "requireCsrf");
+
+var RATE_LIMIT_BUCKETS = new Map();
+function checkRateLimit(key, maxReqs = 30, windowMs = 60000) {
+  const now = Date.now();
+  const list = (RATE_LIMIT_BUCKETS.get(key) || []).filter((ts) => now - ts < windowMs);
+  if (list.length >= maxReqs) {
+    RATE_LIMIT_BUCKETS.set(key, list);
+    return { allowed: false, retryAfterSec: Math.ceil((windowMs - (now - list[0])) / 1000) };
+  }
+  list.push(now);
+  RATE_LIMIT_BUCKETS.set(key, list);
+  if (RATE_LIMIT_BUCKETS.size > 5000) RATE_LIMIT_BUCKETS.clear();
+  return { allowed: true };
+}
+
 async function handleApiRequest(request, url, ctx) {
   const { services, user, env, loadVocabJson: loadVocabJson2 } = ctx;
   const path = url.pathname;
@@ -3541,6 +3589,12 @@ async function handleApiRequest(request, url, ctx) {
   const ipAddress = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
   const userAgent = request.headers.get("User-Agent") || "Unknown";
   const isSecure = url.protocol === "https:";
+  if (method === "POST" && env.ENVIRONMENT !== "test" && (path === "/api/v1/auth/login" || path === "/api/v1/auth/register" || path === "/api/v1/admin/pin/verify" || path === "/api/v1/support/tickets")) {
+    const rl = checkRateLimit(`${ipAddress}:${path}`, path === "/api/v1/support/tickets" ? 15 : 40, 60000);
+    if (!rl.allowed) {
+      return jsonResponse({ ok: false, error: { code: "RATE_LIMITED", message: "Bạn gửi quá nhiều yêu cầu. Vui lòng thử lại sau." } }, 429, { "Retry-After": String(rl.retryAfterSec) });
+    }
+  }
   if (path.includes("certificate")) {
     return errorResponse("FEATURE_PROHIBITED", "WORD BRIDGE không cung cấp chức năng cấp chứng chỉ dưới mọi hình thức.", 404);
   }
@@ -3563,7 +3617,7 @@ async function handleApiRequest(request, url, ctx) {
     return jsonResponse({
       ok: dbStatus === "connected",
       service: "WORD BRIDGE API",
-      version: "4.1.0",
+      version: "4.2.0",
       domain: BRAND.websiteUrl,
       database: { name: "word", status: dbStatus, officialLanguages: langCount?.cnt || 0, ...schemaHint ? { hint: schemaHint } : {} },
       storage: { bucket: "word", status: services.r2.isAvailable() ? "connected" : "unbound" },
@@ -3576,7 +3630,7 @@ async function handleApiRequest(request, url, ctx) {
   if (path === "/api/v1/openapi.json" && method === "GET") {
     return jsonResponse({
       openapi: "3.1.0",
-      info: { title: "WORD BRIDGE Unified API", version: "4.1.0" },
+      info: { title: "WORD BRIDGE Unified API", version: "4.2.0" },
       servers: [{ url: `${BRAND.websiteUrl}/api/v1` }],
       paths: {
         "/health": { get: { summary: "Health & D1/R2 status" } },
@@ -3587,7 +3641,30 @@ async function handleApiRequest(request, url, ctx) {
         "/specialized/terms": { get: { summary: "Tra cứu 12 bộ thuật ngữ chuyên ngành" } },
         "/reader/documents": { get: { summary: "Danh sách tài liệu Thư viện đọc (/reader)" } },
         "/reader/progress": { post: { summary: "Lưu tiến độ đọc & ghi chú cá nhân" } },
-        "/support/tickets": { get: { summary: "Theo dõi yêu cầu hỗ trợ cá nhân" }, post: { summary: "Gửi yêu cầu hỗ trợ / liên hệ" } },
+        "/auth/providers": { get: { summary: "Trạng thái 6 phương thức đăng nhập (Email, Passkey, OAuth)" } },
+        "/auth/oauth/{provider}/start": { get: { summary: "Khởi tạo OAuth2 (Google, Facebook, Microsoft, Apple) khi đã cấu hình" } },
+        "/auth/oauth/verify-phone": { post: { summary: "Xác minh số điện thoại sau đăng nhập OAuth" } },
+        "/specialized/catalog-100": { get: { summary: "Danh mục 100 lĩnh vực chuyên ngành (103 mã độc lập) & 44 chủ điểm nền tảng" } },
+        "/language-services/status": { get: { summary: "Trạng thái cấu hình các nhà cung cấp API ngôn ngữ" } },
+        "/reader/documents/{id}": { get: { summary: "Chi tiết tài liệu Thư viện đọc" } },
+        "/skills/reading/attempts": { post: { summary: "Tạo phiên đọc hiểu 4 tầng" } },
+        "/skills/reading/attempts/{id}/submit": { post: { summary: "Chấm bài đọc hiểu 4 tầng" } },
+        "/speech/tts": { post: { summary: "Chuyển văn bản thành giọng nói TTS (Trung/Anh)" } },
+        "/skills/listening/attempts": { post: { summary: "Tạo phiên luyện nghe" } },
+        "/skills/listening/attempts/{id}/submit": { post: { summary: "Chấm bài nghe & phân tích lỗi" } },
+        "/skills/speaking/sessions": { post: { summary: "Tạo phiên luyện nói (lưu tạm tối đa 24h)" } },
+        "/skills/speaking/sessions/{id}/audio": { post: { summary: "Tải bản ghi âm riêng tư lên R2" } },
+        "/skills/speaking/sessions/{id}/transcribe": { post: { summary: "Chuyển giọng nói thành văn bản STT" } },
+        "/skills/speaking/sessions/{id}/evaluate": { post: { summary: "Đánh giá bài nói" } },
+        "/pronunciation/assessments": { post: { summary: "Đánh giá phát âm độc lập (Trung/Anh)" } },
+        "/skills/writing/submissions": { post: { summary: "Lưu bản nháp bài viết theo phiên bản" } },
+        "/skills/writing/submissions/{id}/evaluate": { post: { summary: "Đánh giá bài viết theo tiêu chí (không ghi đè bài gốc)" } },
+        "/translation/translate": { post: { summary: "Dịch thuật hai chiều Trung–Anh–Việt (Zero User Data Storage)" } },
+        "/ocr/extract": { post: { summary: "Trích xuất văn bản OCR tài liệu riêng tư" } },
+        "/learning/progress": { get: { summary: "Tổng hợp tiến độ học tập 4 kỹ năng, khóa học & từ vựng" } },
+        "/privacy/requests": { get: { summary: "Danh sách yêu cầu quyền riêng tư" }, post: { summary: "Gửi yêu cầu truy cập/sửa/xóa/rút đồng ý dữ liệu" } },
+        "/privacy/consents": { get: { summary: "Lịch sử xác nhận chính sách & đồng ý" }, post: { summary: "Ghi nhận trạng thái đồng ý theo phiên bản" } },
+        "/support/tickets": { get: { summary: "Theo dõi yêu cầu CSKH cá nhân" }, post: { summary: "Gửi yêu cầu CSKH / Liên hệ 12 nhóm" } },
         "/practice/submit": { post: { summary: "Nộp bài luyện tập 6 kỹ năng" } }
       }
     });
@@ -3727,6 +3804,10 @@ async function handleApiRequest(request, url, ctx) {
     const body2 = await readJsonBody(request);
     const res = await services.auth.register(body2, { ipAddress, userAgent });
     if (!res.ok) return errorResponse("REGISTRATION_FAILED", res.errors.join(" "), res.status, res.errors);
+    if (body2.termsAccepted && res.accountId) {
+      await services.legal.recordConsent(res.accountId, { policyType: "terms", policyVersion: "1.0", acceptanceStatus: "accepted", consentPurpose: "account_agreement", source: "register" }).catch(() => {});
+      await services.legal.recordConsent(res.accountId, { policyType: "privacy", policyVersion: "1.0", acceptanceStatus: "notified", consentPurpose: "privacy_notice", source: "register" }).catch(() => {});
+    }
     if (res.session) {
       const { session, ...safeRes } = res;
       return jsonResponse(
@@ -3773,8 +3854,49 @@ async function handleApiRequest(request, url, ctx) {
     if (!res.ok) return errorResponse("STUDENT_BENEFIT_CONFIRM_FAILED", res.error, res.status);
     return jsonResponse(res);
   }
-  if (path.startsWith("/api/v1/auth/oauth/")) {
-    return errorResponse("AUTH_METHOD_REMOVED", "Phương thức đăng nhập bên thứ ba đã được gỡ bỏ hoàn toàn khỏi WORD BRIDGE. Vui lòng sử dụng Email/Mật khẩu hoặc Passkey.", 410);
+  if (path === "/api/v1/auth/providers" && method === "GET") {
+    return jsonResponse({
+      ok: true,
+      methods: [
+        { id: "email_password", label: "Email & Mật khẩu", status: "CONFIGURED" },
+        { id: "passkey", label: "Passkeys / WebAuthn", status: "CONFIGURED" },
+        ...services.oauth.listAllProvidersStatus().map((p) => ({ id: p.provider, label: p.label, status: p.status, requiredSecrets: p.requiredSecrets }))
+      ]
+    });
+  }
+  const oauthStartMatch = path.match(/^\/api\/v1\/auth\/oauth\/(google|facebook|microsoft|apple)\/start$/);
+  if (oauthStartMatch && method === "GET") {
+    const res = await services.oauth.createAuthorizationStart(oauthStartMatch[1], url.searchParams.get("next") || "/my-learning");
+    if (!res.ok) return errorResponse(res.code || "OAUTH_ERROR", res.error, res.status, res.providerStatus);
+    return jsonResponse(res, 200);
+  }
+  const oauthCbMatch = path.match(/^\/api\/v1\/auth\/oauth\/(google|facebook|microsoft|apple)\/callback$/);
+  if (oauthCbMatch && (method === "GET" || method === "POST")) {
+    const providerId = oauthCbMatch[1];
+    const st = services.oauth.getProviderStatus(providerId);
+    if (!st?.configured) return errorResponse("OAUTH_NOT_CONFIGURED", `Nhà cung cấp ${providerId} chưa được cấu hình Workers Secrets.`, 503);
+    const state = url.searchParams.get("state") || "";
+    const consumed = await services.oauth.consumeState(providerId, state);
+    if (!consumed) return errorResponse("OAUTH_STATE_INVALID", "Mã state chống CSRF không hợp lệ hoặc đã hết hạn.", 400);
+    return errorResponse("OAUTH_CODE_EXCHANGE_PENDING", "Đã xác minh state CSRF. Vui lòng hoàn tất trao đổi mã ủy quyền OAuth với endpoint nhà cung cấp thực tế.", 501);
+  }
+  if (path === "/api/v1/specialized/catalog-100" && method === "GET") {
+    return jsonResponse({
+      ok: true,
+      totalTaxonomyItems: 100,
+      independentDomainKeys: SPECIALIZED_100_DOMAINS.length,
+      domains: SPECIALIZED_100_DOMAINS,
+      foundationTopics: { zh: CHINESE_FOUNDATION_22, en: ENGLISH_FOUNDATION_22 }
+    });
+  }
+  if (path === "/api/v1/language-services/status" && method === "GET") {
+    return jsonResponse({ ok: true, providers: services.languageApi.getProviderInventory() });
+  }
+  const readerDocGetMatch = path.match(/^\/api\/v1\/reader\/documents\/([^/]+)$/);
+  if (readerDocGetMatch && method === "GET") {
+    const doc = await env.DB.prepare("SELECT * FROM wb_public_reader_documents WHERE id = ? OR slug = ?").bind(readerDocGetMatch[1], readerDocGetMatch[1]).first();
+    if (!doc) return errorResponse("NOT_FOUND", "Không tìm thấy tài liệu trong Thư viện đọc.", 404);
+    return jsonResponse({ ok: true, document: doc });
   }
   if (path === "/api/v1/account/passkeys/authenticate/options" && method === "POST") {
     return jsonResponse(await services.auth.createPasskeyAuthOptions(null));
@@ -4078,7 +4200,157 @@ async function handleApiRequest(request, url, ctx) {
       return errorResponse("INVALID_LANGUAGE_SCOPE", err.message, 400);
     }
   }
+  if (path === "/api/v1/auth/oauth/verify-phone" && method === "POST") {
+    const res = await services.oauth.verifyPostOAuthPhone(user.accountId, body.phoneNumber, ipAddress);
+    if (!res.ok) return errorResponse("VALIDATION_ERROR", res.error, res.status);
+    return jsonResponse(res, 200);
+  }
+  if (path === "/api/v1/privacy/requests" && method === "GET") {
+    return jsonResponse({ ok: true, requests: await services.legal.listUserPrivacyRequests(user.accountId) });
+  }
+  if (path === "/api/v1/privacy/requests" && method === "POST") {
+    const res = await services.legal.createPrivacyRequest(user.accountId, body);
+    if (!res.ok) return errorResponse("VALIDATION_ERROR", res.error, res.status);
+    return jsonResponse(res, 201);
+  }
+  if (path === "/api/v1/privacy/consents" && method === "GET") {
+    return jsonResponse({ ok: true, consents: await services.legal.listUserConsents(user.accountId) });
+  }
+  if (path === "/api/v1/privacy/consents" && method === "POST") {
+    const res = await services.legal.recordConsent(user.accountId, body);
+    if (!res.ok) return errorResponse("VALIDATION_ERROR", res.error, res.status);
+    return jsonResponse(res, 201);
+  }
+  const delRecMatch = path.match(/^\/api\/v1\/privacy\/recordings\/([^/]+)$/);
+  if (delRecMatch && method === "DELETE") {
+    const row = await env.DB.prepare("SELECT id, r2_audio_key FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(delRecMatch[1], user.accountId).first();
+    if (!row) return errorResponse("NOT_FOUND", "Không tìm thấy bản ghi âm của bạn.", 404);
+    if (row.r2_audio_key && services.r2?.isAvailable()) await services.r2.deleteObject(row.r2_audio_key).catch(() => {});
+    await env.DB.prepare("DELETE FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(row.id, user.accountId).run();
+    return jsonResponse({ ok: true, message: "Đã xóa bản ghi âm khỏi tài khoản và bộ nhớ lưu trữ." });
+  }
+  const delWrtMatch = path.match(/^\/api\/v1\/privacy\/writings\/([^/]+)$/);
+  if (delWrtMatch && method === "DELETE") {
+    await env.DB.prepare("DELETE FROM wb_writing_submissions WHERE id = ? AND account_id = ?").bind(delWrtMatch[1], user.accountId).run();
+    return jsonResponse({ ok: true, message: "Đã xóa bài viết cá nhân." });
+  }
+  // ---- F1-F9 Language Services API Endpoints ----
+  const reqId = (globalThis.crypto || nodeWebCrypto).randomUUID();
+  if (path === "/api/v1/learning/progress" && method === "GET") {
+    return jsonResponse(await services.languageApi.getUnifiedProgress(user.accountId));
+  }
+  if (path === "/api/v1/skills/reading/attempts" && method === "POST") {
+    const res = await services.languageApi.createReadingAttempt(user.accountId, body);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse("READING_ERROR", res.error, res.status);
+  }
+  const readSubMatch = path.match(/^\/api\/v1\/skills\/reading\/attempts\/([^/]+)\/submit$/);
+  if (readSubMatch && method === "POST") {
+    const res = await services.languageApi.submitReadingAttempt(user.accountId, readSubMatch[1], body);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse("READING_ERROR", res.error, res.status);
+  }
+  if (path === "/api/v1/speech/tts" && method === "POST") {
+    const res = await services.languageApi.synthesizeTts(user.accountId, body, reqId);
+    if (!res.ok) return errorResponse(res.code || "TTS_ERROR", res.error, res.status, { providerStatus: res.providerStatus });
+    return new Response(res.audioBuffer, { status: 200, headers: { "Content-Type": res.contentType, "X-Request-Id": reqId, ...SECURITY_HEADERS } });
+  }
+  if (path === "/api/v1/skills/listening/attempts" && method === "POST") {
+    const res = await services.languageApi.createListeningAttempt(user.accountId, body);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse("LISTENING_ERROR", res.error, res.status);
+  }
+  const listSubMatch = path.match(/^\/api\/v1\/skills\/listening\/attempts\/([^/]+)\/submit$/);
+  if (listSubMatch && method === "POST") {
+    const res = await services.languageApi.submitListeningAttempt(user.accountId, listSubMatch[1], body);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse("LISTENING_ERROR", res.error, res.status);
+  }
+  if (path === "/api/v1/skills/speaking/sessions" && method === "POST") {
+    const res = await services.languageApi.createSpeakingSession(user.accountId, body);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse("SPEAKING_ERROR", res.error, res.status);
+  }
+  const spkAudioMatch = path.match(/^\/api\/v1\/skills\/speaking\/sessions\/([^/]+)\/audio$/);
+  if (spkAudioMatch && method === "POST") {
+    const raw = body.audioBase64 ? Uint8Array.from(atob(String(body.audioBase64)), (c) => c.charCodeAt(0)) : new Uint8Array(0);
+    const res = await services.languageApi.attachSpeakingAudio(user.accountId, spkAudioMatch[1], { audioBytes: raw, contentType: body.contentType || "audio/webm" });
+    return res.ok ? jsonResponse(res, res.status) : errorResponse("SPEAKING_AUDIO_ERROR", res.error, res.status);
+  }
+  const spkTransMatch = path.match(/^\/api\/v1\/skills\/speaking\/sessions\/([^/]+)\/transcribe$/);
+  if (spkTransMatch && method === "POST") {
+    const res = await services.languageApi.transcribeSpeakingSession(user.accountId, spkTransMatch[1], reqId);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse(res.code || "STT_ERROR", res.error, res.status);
+  }
+  const spkEvalMatch = path.match(/^\/api\/v1\/skills\/speaking\/sessions\/([^/]+)\/evaluate$/);
+  if (spkEvalMatch && method === "POST") {
+    const sess = await env.DB.prepare("SELECT language_code, target_text FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(spkEvalMatch[1], user.accountId).first();
+    if (!sess) return errorResponse("NOT_FOUND", "Không tìm thấy phiên luyện nói.", 404);
+    const res = await services.languageApi.evaluatePronunciation(user.accountId, { speakingSessionId: spkEvalMatch[1], languageCode: sess.language_code, targetText: sess.target_text }, reqId);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse(res.code || "SPEAKING_EVAL_ERROR", res.error, res.status, res);
+  }
+  if (path === "/api/v1/pronunciation/assessments" && method === "POST") {
+    const res = await services.languageApi.evaluatePronunciation(user.accountId, body, reqId);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse(res.code || "PRONUNCIATION_ERROR", res.error, res.status, res);
+  }
+  if (path === "/api/v1/skills/writing/submissions" && method === "POST") {
+    const res = await services.languageApi.saveWritingSubmission(user.accountId, body);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse("WRITING_ERROR", res.error, res.status);
+  }
+  const wrtEvalMatch = path.match(/^\/api\/v1\/skills\/writing\/submissions\/([^/]+)\/evaluate$/);
+  if (wrtEvalMatch && method === "POST") {
+    const res = await services.languageApi.evaluateWritingSubmission(user.accountId, wrtEvalMatch[1], reqId);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse("WRITING_EVAL_ERROR", res.error, res.status);
+  }
+  if (path === "/api/v1/translation/translate" && method === "POST") {
+    const res = await services.languageApi.translateText(user.accountId, body, reqId);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse(res.code || "TRANSLATION_ERROR", res.error, res.status, res);
+  }
+  if (path === "/api/v1/ocr/extract" && method === "POST") {
+    const res = await services.languageApi.runOcr(user.accountId, body, reqId);
+    return res.ok ? jsonResponse(res, res.status) : errorResponse(res.code || "OCR_ERROR", res.error, res.status, res);
+  }
   if (path.startsWith("/api/v1/admin/")) {
+    if (!services.auth.hasAnyAdminRole(user)) {
+      return errorResponse("FORBIDDEN", "Tài khoản của bạn không có vai trò quản trị RBAC.", 403);
+    }
+    if (path === "/api/v1/admin/pin/setup" && method === "POST") {
+      const res = await services.adminPin.setOrUpdatePin(user, body, ipAddress);
+      if (!res.ok) return errorResponse("ADMIN_PIN_SETUP_FAILED", res.error, res.status);
+      const unlocked = await services.adminPin.verifyPinAndCreateAdminSession(user, body.pin, { ipAddress, userAgent });
+      if (!unlocked.ok) return jsonResponse(res, 200);
+      return jsonResponse(
+        { ok: true, message: res.message, adminCsrfToken: unlocked.csrfToken, redirectTo: "/quan-tri" },
+        200,
+        { "Set-Cookie": buildAdminSessionCookie(unlocked.rawToken, isSecure) }
+      );
+    }
+    if (path === "/api/v1/admin/pin/verify" && method === "POST") {
+      const res = await services.adminPin.verifyPinAndCreateAdminSession(user, body.pin, { ipAddress, userAgent });
+      if (!res.ok) return errorResponse(res.code || "ADMIN_PIN_INVALID", res.error, res.status);
+      return jsonResponse(
+        { ok: true, message: "Xác minh mã PIN 6 chữ số thành công.", adminCsrfToken: res.csrfToken, redirectTo: "/quan-tri" },
+        200,
+        { "Set-Cookie": buildAdminSessionCookie(res.rawToken, isSecure) }
+      );
+    }
+    if (path === "/api/v1/admin/pin/lock" && method === "POST") {
+      const cookies2 = parseCookies(request);
+      await services.adminPin.revokeAdminSession(cookies2.wb_admin_session, user.accountId, ipAddress);
+      return jsonResponse({ ok: true, message: "Đã khóa phiên Trung tâm Quản trị." }, 200, { "Set-Cookie": clearAdminSessionCookie(isSecure) });
+    }
+    const cookies2 = parseCookies(request);
+    const adminSession = await services.adminPin.authenticateAdminSession(user, cookies2.wb_admin_session);
+    if (!adminSession) {
+      return errorResponse("ADMIN_PIN_REQUIRED", "Bắt buộc xác minh mã PIN 6 chữ số hợp lệ trước khi gọi API quản trị.", 403);
+    }
+    if (path === "/api/v1/admin/pin/force-reset" && method === "POST") {
+      const res = await services.adminPin.markPinForResetBySuperAdmin(user, body.targetAccountId, ipAddress);
+      return res.ok ? jsonResponse(res) : errorResponse("FORBIDDEN", res.error, res.status);
+    }
+    if (path === "/api/v1/admin/policies/draft" && method === "POST") {
+      const res = await services.legal.createPolicyDraft(user, body);
+      return res.ok ? jsonResponse(res, 201) : errorResponse("POLICY_DRAFT_ERROR", res.error, res.status);
+    }
+    if (path === "/api/v1/admin/policies/transition" && method === "POST") {
+      const res = await services.legal.transitionPolicyVersion(user, body.versionId, body.action);
+      return res.ok ? jsonResponse(res) : errorResponse("POLICY_TRANSITION_ERROR", res.error, res.status);
+    }
     if (!services.auth.hasAnyAdminRole(user)) {
       return errorResponse("FORBIDDEN", "Tài khoản của bạn không có vai trò quản trị được cấp phép.", 403);
     }
@@ -4480,47 +4752,37 @@ function renderFaqPage({ user, runtime = null }) {
   }));
 }
 __name(renderFaqPage, "renderFaqPage");
-function renderContactPage({ user, runtime = null }) {
-  const formHtml = user ? `
-      <form class="wb-form" data-api-endpoint="/api/v1/support/tickets">
-        <input type="hidden" name="requestType" value="contact_partnership" />
-        <div class="wb-field"><label>Họ và tên *</label><input class="wb-input" name="senderName" value="${escapeHtml(user.fullName || "")}" required /></div>
-        <div class="wb-field"><label>Email *</label><input class="wb-input" type="email" name="senderEmail" value="${escapeHtml(user.email || "")}" required /></div>
-        <div class="wb-field"><label>Tiêu đề liên hệ *</label><input class="wb-input" name="subject" required /></div>
-        <div class="wb-field"><label>Nội dung *</label><textarea class="wb-input" name="messageBody" rows="4" required></textarea></div>
-        <div data-form-status></div>
-        <button type="submit" class="wb-btn wb-btn-primary">Gửi thông tin liên hệ</button>
-      </form>` : `<div class="wb-alert wb-alert-info">Vui lòng <a href="${escapeHtml(signInUrl("/contact", "contact.send"))}">đăng nhập</a> để gửi biểu mẫu liên hệ trực tuyến hoặc xem hướng dẫn tại <a href="/help">Trung Tâm Trợ Giúp</a>.</div>`;
+function renderContactPage({ user, runtime = null, env = {} }) {
   return htmlResponse(renderPublicPage({
-    title: "Liên hệ hỗ trợ",
+    title: "Liên hệ WORD BRIDGE",
     currentPath: "/contact",
     breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: "Liên hệ" }],
     user,
     runtime,
-    contentHtml: `
-      <div class="wb-card" style="max-width:680px;">
-        <h1 style="margin-top:0;color:var(--wb-teal);">Liên hệ WORD BRIDGE</h1>
-        <p>Đội ngũ hỗ trợ luôn sẵn sàng đồng hành cùng bạn trong suốt quá trình học tập và hợp tác học thuật.</p>
-        ${formHtml}
-      </div>`
+    contentHtml: renderContactPageV42({ user, runtime, env, signInUrl, escapeHtml })
   }));
 }
 __name(renderContactPage, "renderContactPage");
-function renderPolicyPage({ user, policySlug, runtime = null }) {
-  const titles = {
-    terms: "Điều khoản sử dụng",
-    privacy: "Chính sách quyền riêng tư",
-    "data-protection": "Bảo vệ dữ liệu cá nhân",
-    "platform-usage": "Quy tắc sử dụng nền tảng"
-  };
-  const title = titles[policySlug] || "Chính sách nền tảng";
+async function renderPolicyPage({ services, user, policySlug, runtime = null }) {
+  const slug = policySlug === "platform-usage" ? "community" : policySlug;
+  const meta = services?.legal ? await services.legal.getPolicyMetadata(slug) : { doc: null, latestPublished: null };
+  const rendered = renderFullPolicyHtml({ policySlug: slug, docMeta: meta.doc, latestPublished: meta.latestPublished, escapeHtml });
+  if (!rendered) {
+    return htmlResponse(renderPublicPage({
+      title: "Không tìm thấy trang chính sách",
+      currentPath: `/policies/${policySlug}`,
+      user,
+      runtime,
+      contentHtml: `<section class="wb-error-state"><strong>404</strong><h1>Không tìm thấy trang chính sách</h1><p>Đường dẫn chính sách không tồn tại.</p><a class="wb-btn wb-btn-primary" href="/policies/terms">Điều khoản sử dụng</a> <a class="wb-btn wb-btn-outline" href="/policies/privacy">Chính sách quyền riêng tư</a></section>`
+    }), 404);
+  }
   return htmlResponse(renderPublicPage({
-    title,
-    currentPath: `/policies/${policySlug}`,
-    breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: title }],
+    title: rendered.title,
+    currentPath: `/policies/${slug}`,
+    breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: rendered.title }],
     user,
     runtime,
-    contentHtml: `<div class="wb-card"><h1 style="margin-top:0;color:var(--wb-teal);">${escapeHtml(title)}</h1><p>WORD BRIDGE cam kết minh bạch trong việc lưu trữ dữ liệu học tập và bảo vệ quyền riêng tư của thành viên trên nền tảng thống nhất wordbridge.io.vn.</p></div>`
+    contentHtml: rendered.html
   }));
 }
 __name(renderPolicyPage, "renderPolicyPage");
@@ -4955,12 +5217,19 @@ async function renderLanguageLearningPage({ db, user, languageSlug }) {
         </article>`).join("")}
     </div>
   `;
+  const topics22 = lang.code === "zh" ? CHINESE_FOUNDATION_22 : ENGLISH_FOUNDATION_22;
+  const topicsHtml = `
+    <section class="wb-card" style="margin-top:24px;">
+      <h2 style="margin-top:0;color:var(--wb-teal);">Khung 22 chủ điểm nền tảng ${escapeHtml(lang.name_vi)} (${lang.code === "zh" ? "tham chiếu HSK" : "tham chiếu CEFR"})</h2>
+      <p class="wb-muted" style="margin-top:0;">Chương trình học thuật chuẩn hóa, không cấp chứng chỉ hay văn bằng chính thức.</p>
+      <div class="wb-grid-3">${topics22.map((t) => `<div style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;"><strong>${t.no}. ${escapeHtml(t.titleVi)}</strong><br/><span class="wb-muted" style="font-size:0.82rem;">${escapeHtml(t.level)}</span></div>`).join("")}</div>
+    </section>`;
   return htmlResponse(renderPublicPage({
     title: `Học ${lang.nameVi}`,
     currentPath: `/learning/${lang.slug}`,
     breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: "Học ngoại ngữ", href: "/learning" }, { label: lang.nameVi }],
     user,
-    contentHtml
+    contentHtml: contentHtml + topicsHtml
   }));
 }
 __name(renderLanguageLearningPage, "renderLanguageLearningPage");
@@ -6250,12 +6519,36 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
       </div>
     </section>
   `;
+  const publishedMap = Object.fromEntries(SPECIALIZED_VOCAB_DATASETS.map((d) => [d.slug, d.count]));
+  const grouped100 = SPECIALIZED_100_DOMAINS.reduce((acc, item) => {
+    (acc[item.categoryNameVi] ||= []).push(item);
+    return acc;
+  }, {});
+  const catalog100Html = `
+    <section class="wb-card" style="margin-top:24px;">
+      <h2 style="margin-top:0;color:var(--wb-teal);">Danh mục 100 lĩnh vực chuyên ngành Trung – Anh (${SPECIALIZED_100_DOMAINS.length} mã chuyên ngành độc lập)</h2>
+      <p class="wb-muted">Số lượng thuật ngữ hiển thị động theo dữ liệu thực đã kiểm duyệt và xuất bản (mục 100 đã tách độc lập thành Thời trang, Bất động sản, Quản lý sự kiện và Dịch vụ khách hàng).</p>
+      ${Object.entries(grouped100).map(([cat, items]) => `
+        <details style="margin-bottom:10px;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px;">
+          <summary style="cursor:pointer;font-weight:700;color:var(--wb-teal);">${escapeHtml(cat)} (${items.length} chuyên ngành)</summary>
+          <div class="wb-grid-3" style="margin-top:10px;">
+            ${items.map((it) => {
+              const cnt = it.datasetSlug ? publishedMap[it.datasetSlug] || 0 : 0;
+              return `<div style="padding:8px 10px;background:#f8fafc;border-radius:8px;font-size:0.88rem;">
+                <strong>${it.itemNumber}. ${escapeHtml(it.nameVi)}</strong><br/>
+                <span class="wb-muted">${escapeHtml(it.nameEn)}</span><br/>
+                ${cnt > 0 ? `<a href="/specialized/${escapeHtml(it.datasetSlug)}" style="color:var(--wb-teal);font-weight:600;">${cnt.toLocaleString("vi-VN")} thuật ngữ đã xuất bản →</a>` : `<span class="wb-muted" style="font-size:0.8rem;">Đang biên soạn theo lộ trình (0 thuật ngữ đã xuất bản)</span>`}
+              </div>`;
+            }).join("")}
+          </div>
+        </details>`).join("")}
+    </section>`;
   return htmlResponse(renderPublicPage({
     title: heading,
     currentPath: subSlug ? `/specialized/${subSlug}` : "/specialized",
     breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: "Ngoại ngữ chuyên ngành", href: "/specialized" }, ...subSlug ? [{ label: heading }] : []],
     user,
-    contentHtml
+    contentHtml: contentHtml + catalog100Html
   }));
 }
 __name(renderSpecializedPage, "renderSpecializedPage");
@@ -6424,7 +6717,7 @@ async function renderIntelligenceSystemPage({ services, user, systemSlug }) {
 __name(renderIntelligenceSystemPage, "renderIntelligenceSystemPage");
 
 // src/pages/account-pages.js
-function renderLoginPage({ user, url = null }) {
+function renderLoginPage({ user, url = null, services = null }) {
   const nextRaw = url?.searchParams?.get("next") || "/my-learning";
   const safeNext = safeReturnUrl(nextRaw);
   if (user) return redirectResponse(safeNext);
@@ -6460,6 +6753,11 @@ function renderLoginPage({ user, url = null }) {
           <span>Đăng nhập bằng Passkey</span>
         </button>
         <p data-passkey-status role="status" class="wb-muted" style="font-size:0.84rem;text-align:center;margin:8px 0 0;"></p>
+        ${(() => {
+          const configuredOAuth = (services?.oauth?.listAllProvidersStatus?.() || []).filter((p) => p.configured);
+          if (!configuredOAuth.length) return "";
+          return `<div class="wb-login-divider"><span>Đăng nhập nhanh (OAuth)</span></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">${configuredOAuth.map((p) => `<a class="wb-btn wb-btn-outline wb-btn-sm" href="/api/v1/auth/oauth/${p.provider}/start?next=${encodeURIComponent(safeNext)}">${escapeHtml(p.label)}</a>`).join("")}</div>`;
+        })()}
         <p class="wb-login-links"><a href="/forgot-password">Quên mật khẩu?</a> <span>·</span> Chưa có tài khoản? <a href="/register" class="wb-link-accent">Đăng ký ngay</a></p>
       </div>
 
@@ -6534,8 +6832,14 @@ function renderRegisterPage({ user }) {
           <button type="button" class="wb-pw-toggle" data-wb-toggle-pw="field-confirmPassword" aria-label="Hiện hoặc ẩn mật khẩu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
         </div>
       </div>
-      <div class="wb-field"><label for="field-schoolName">7. Trường học <span class="wb-req">*</span></label><input id="field-schoolName" class="wb-input" name="schoolName" placeholder="Nhập tên trường học" required /></div>
-      <div class="wb-field"><label for="field-workplaceName">8. Nơi làm việc / tổ chức công tác <span class="wb-req">*</span></label><input id="field-workplaceName" class="wb-input" name="workplaceName" placeholder="Nhập tên cơ quan, tổ chức nơi làm việc" required /></div>
+      <div class="wb-field"><label for="field-schoolName">7. Trường học (nhập Trường học hoặc Nơi làm việc) *</label><input id="field-schoolName" class="wb-input" name="schoolName" placeholder="Nhập tên trường học" /></div>
+      <div class="wb-field"><label for="field-workplaceName">8. Nơi làm việc / tổ chức công tác</label><input id="field-workplaceName" class="wb-input" name="workplaceName" placeholder="Nhập tên cơ quan, tổ chức nơi làm việc" /></div>
+      <div class="wb-field" style="grid-column:1/-1;">
+        <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;">
+          <input type="checkbox" name="termsAccepted" value="1" required />
+          <span>Tôi đã đọc và đồng ý với <a href="/policies/terms" target="_blank">Điều khoản sử dụng</a> (phiên bản 1.0) và đã được thông báo về việc xử lý dữ liệu theo <a href="/policies/privacy" target="_blank">Chính sách quyền riêng tư</a>.</span>
+        </label>
+      </div>
       <div data-form-status></div>
       <button type="submit" class="wb-btn wb-btn-primary wb-btn-block wb-btn-lg">Tạo tài khoản & Bắt đầu học ngay →</button>
     </form>
@@ -6608,6 +6912,7 @@ async function renderAccountPage({ db, user, subPath = "" }) {
       <a href="/account/security" class="wb-btn wb-btn-outline wb-btn-sm">Bảo mật & Đổi mật khẩu</a>
       <a href="/account/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Phiên đăng nhập</a>
       <a href="/account/passkeys" class="wb-btn wb-btn-outline wb-btn-sm">Passkey</a>
+      <a href="/account/privacy" class="wb-btn wb-btn-outline wb-btn-sm">Trung tâm quyền riêng tư</a>
       <a href="/account/student-benefit" class="wb-btn wb-btn-primary wb-btn-sm">Quyền lợi sinh viên</a>
     </div>`;
   let body = "";
@@ -6641,6 +6946,44 @@ async function renderAccountPage({ db, user, subPath = "" }) {
     title = "Quản lý phiên đăng nhập";
     const sessions = (await db.prepare("SELECT id, ip_address, user_agent, created_at, expires_at, revoked_at FROM wb_sessions WHERE account_id = ? ORDER BY created_at DESC LIMIT 15").bind(user.accountId).all()).results || [];
     body = `<div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Mã phiên</th><th>Thiết bị</th><th>IP</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${sessions.map((s) => `<tr><td><code>${escapeHtml(s.id)}</code></td><td>${escapeHtml(s.user_agent || "")}</td><td>${escapeHtml(s.ip_address || "")}</td><td>${s.revoked_at ? "Đã thu hồi" : s.id === user.sessionId ? "Phiên hiện tại" : "Đang hoạt động"}</td><td>${!s.revoked_at ? `<form class="wb-form" data-api-endpoint="/api/v1/account/sessions/revoke" data-reload-on-success="true"><input type="hidden" name="sessionId" value="${escapeHtml(s.id)}" /><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Thu hồi</button></form>` : "—"}</td></tr>`).join("")}</tbody></table></div>`;
+  } else if (subPath === "privacy") {
+    title = "Trung tâm quyền riêng tư & Dữ liệu cá nhân";
+    const consents = (await db.prepare("SELECT policy_type, policy_version, acceptance_status, consent_purpose, created_at FROM wb_user_policy_consents WHERE account_id = ? ORDER BY created_at DESC LIMIT 20").bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    const reqs = (await db.prepare("SELECT id, request_type, status, details, created_at FROM wb_privacy_requests WHERE account_id = ? ORDER BY created_at DESC LIMIT 20").bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    const recs = (await db.prepare("SELECT id, language_code, target_text, retain_long_term, created_at FROM wb_speaking_sessions WHERE account_id = ? ORDER BY created_at DESC LIMIT 15").bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    const drafts = (await db.prepare("SELECT id, language_code, prompt_title, status, updated_at FROM wb_writing_submissions WHERE account_id = ? ORDER BY updated_at DESC LIMIT 15").bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    body = `
+      <div class="wb-grid-2">
+        <div class="wb-card">
+          <h3 style="margin-top:0;color:var(--wb-teal);">Gửi yêu cầu quyền dữ liệu cá nhân</h3>
+          <p class="wb-muted">Thực hiện quyền theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và <a href="/policies/privacy">Chính sách quyền riêng tư</a>.</p>
+          <form class="wb-form" data-api-endpoint="/api/v1/privacy/requests" data-reload-on-success="true">
+            <div class="wb-field"><label for="prv-type">Loại yêu cầu *</label>
+              <select id="prv-type" class="wb-input" name="requestType" required>
+                <option value="access">Truy cập dữ liệu cá nhân</option>
+                <option value="rectify">Yêu cầu chỉnh sửa dữ liệu</option>
+                <option value="delete">Yêu cầu xóa dữ liệu / đóng tài khoản</option>
+                <option value="withdraw_consent">Rút lại sự đồng ý xử lý dữ liệu</option>
+                <option value="restrict_processing">Hạn chế xử lý dữ liệu</option>
+              </select>
+            </div>
+            <div class="wb-field"><label for="prv-details">Chi tiết yêu cầu</label><textarea id="prv-details" class="wb-input" name="details" rows="3"></textarea></div>
+            <div data-form-status></div>
+            <button type="submit" class="wb-btn wb-btn-primary">Gửi yêu cầu quyền riêng tư</button>
+          </form>
+        </div>
+        <div class="wb-card">
+          <h3 style="margin-top:0;color:var(--wb-teal);">Chính sách &amp; Lịch sử xác nhận (${consents.length})</h3>
+          <p><a href="/policies/terms">Điều khoản sử dụng</a> · <a href="/policies/privacy">Chính sách quyền riêng tư</a></p>
+          <ul>${consents.map((c) => `<li><code>${escapeHtml(c.policy_type)}</code> v${escapeHtml(c.policy_version)} — <strong>${escapeHtml(c.acceptance_status)}</strong> (${escapeHtml(c.consent_purpose)}, ${escapeHtml(c.created_at)})</li>`).join("") || "<li>Chưa có bản ghi đồng ý bổ sung.</li>"}</ul>
+          <h4 style="color:var(--wb-teal);">Trạng thái yêu cầu quyền dữ liệu (${reqs.length})</h4>
+          <ul>${reqs.map((r) => `<li><code>${escapeHtml(r.id)}</code> · ${escapeHtml(r.request_type)} · <strong>${escapeHtml(r.status)}</strong></li>`).join("") || "<li>Chưa có yêu cầu nào.</li>"}</ul>
+        </div>
+      </div>
+      <div class="wb-grid-2" style="margin-top:16px;">
+        <div class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Bản ghi âm đã lưu (${recs.length})</h3><ul>${recs.map((r) => `<li>${escapeHtml(r.target_text.slice(0, 60))} (${escapeHtml(r.language_code)}) <form class="wb-form" data-api-endpoint="/api/v1/privacy/recordings/${encodeURIComponent(r.id)}" data-api-method="DELETE" data-reload-on-success="true" style="display:inline;"><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Xóa</button></form></li>`).join("") || "<li>Không có bản ghi âm nào đang lưu.</li>"}</ul></div>
+        <div class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Bài viết &amp; Bản nháp cá nhân (${drafts.length})</h3><ul>${drafts.map((d) => `<li>${escapeHtml(d.prompt_title || d.id)} (${escapeHtml(d.status)}) <form class="wb-form" data-api-endpoint="/api/v1/privacy/writings/${encodeURIComponent(d.id)}" data-api-method="DELETE" data-reload-on-success="true" style="display:inline;"><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Xóa</button></form></li>`).join("") || "<li>Không có bản nháp nào đang lưu.</li>"}</ul></div>
+      </div>`;
   } else if (subPath === "passkeys") {
     title = "Passkey (WebAuthn / FIDO2)";
     const keys = (await db.prepare("SELECT id, display_name, created_at, revoked_at FROM wb_passkeys WHERE account_id = ? ORDER BY created_at DESC").bind(user.accountId).all()).results || [];
@@ -6697,8 +7040,8 @@ function createServices(env) {
   const email = new EmailService(env.DB, env);
   const auth = new AuthService(env.DB, email, env);
   const studentBenefit = new StudentBenefitService(env.DB, email, env);
-  const jobs = new JobsService(env.DB, email, studentBenefit);
   const r2 = new R2StorageService(env.R2);
+  const jobs = new JobsService(env.DB, email, studentBenefit, r2);
   const dictionary = new DictionaryService(env.DB);
   const audio = new AudioService(env.DB, r2, env);
   const practice = new PracticeService(env.DB, email, env);
@@ -6706,7 +7049,11 @@ function createServices(env) {
   const learnerMeet = new LearnerMeetService(env.DB, email, env);
   const intelligence = new IntelligenceService(env.DB, env);
   const admin = new AdminService(env.DB, auth, jobs, r2, email);
-  return { email, auth, studentBenefit, jobs, r2, dictionary, audio, practice, reader, learnerMeet, intelligence, admin };
+  const legal = new LegalPolicyService(env.DB, env);
+  const oauth = new OAuthService(env.DB, auth, env, { randomTokenHex, sha256Hex, generateId });
+  const adminPin = new AdminPinService(env.DB, auth, env, { hashPassword, verifyPassword, randomTokenHex, sha256Hex, generateId, timingSafeEqual });
+  const languageApi = new LanguageServicesAdapter(env.DB, r2, env, { generateId });
+  return { email, auth, studentBenefit, jobs, r2, dictionary, audio, practice, reader, learnerMeet, intelligence, admin, legal, oauth, adminPin, languageApi };
 }
 __name(createServices, "createServices");
 var publicSchemaEnsured = false;
@@ -6737,21 +7084,25 @@ var PUBLIC_CATALOG_DDL = Object.freeze([
 async function ensurePublicCatalogSchema(db) {
   if (publicSchemaEnsured || !db) return;
   try {
-    const existing = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'view' AND name = 'wb_public_courses'").first();
-    if (existing) {
+    const baseTable = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'wb_courses'").first();
+    if (!baseTable) return;
+    const existingRows = (await db.prepare("SELECT name FROM sqlite_master WHERE type IN ('view','table')").all()).results || [];
+    const existingSet = new Set(existingRows.map((r) => r.name));
+    const requiredChecks = ["wb_public_courses", "wb_public_languages", "wb_public_reader_documents", "wb_skill_reviews", "wb_lesson_notes"];
+    if (requiredChecks.every((n) => existingSet.has(n))) {
       publicSchemaEnsured = true;
       return;
     }
-    const baseTable = await db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'wb_courses'").first();
-    if (!baseTable) return;
     for (const ddl of PUBLIC_CATALOG_DDL) {
       try {
         await db.prepare(ddl).run();
-      } catch {
+      } catch (ddlErr) {
+        console.warn("[WB-SCHEMA-GUARD] DDL skipped:", String(ddlErr?.message || ddlErr).slice(0, 140));
       }
     }
     publicSchemaEnsured = true;
-  } catch {
+  } catch (err) {
+    console.warn("[WB-SCHEMA-GUARD] Failed:", String(err?.message || err).slice(0, 140));
   }
 }
 __name(ensurePublicCatalogSchema, "ensurePublicCatalogSchema");
@@ -6817,7 +7168,8 @@ async function loadStaticAsset(normalizedPath, request, url, rawEnv) {
   }
   if (rawEnv.ASSETS) {
     const assetUrl = new URL(normalizedPath, url.origin);
-    const assetRes = await rawEnv.ASSETS.fetch(new Request(assetUrl.toString(), request));
+    const safeMethod = request.method === "HEAD" ? "HEAD" : "GET";
+    const assetRes = await rawEnv.ASSETS.fetch(new Request(assetUrl.toString(), { method: safeMethod, headers: request.headers }));
     if (assetRes && assetRes.status !== 404) return assetRes;
   }
   if (rawEnv.STATIC_ASSETS_LOADER) {
@@ -6882,10 +7234,10 @@ var index_default = {
       if (REMOVED_LEGACY_PATHS.has(path) || path.startsWith("/social/") || path.startsWith("/friends/") || path.startsWith("/organizations/") || path.startsWith("/examinations/") || path.startsWith("/examination-attempts/") || path.startsWith("/examination-results/")) {
         return failure(410, request);
       }
-      if (/^\/(?:api\/v1\/)?(?:admin|quan-tri)(?:\/|$)/i.test(path)) return failure(404, request);
+      if (/^\/admin(?:\/|$)/i.test(path)) return failure(404, request);
       if (/\/(?:russian|ru|tieng-nga)(?:\/|$)/i.test(path)) return failure(410, request);
       if (!env.DB) {
-        const id = crypto.randomUUID();
+        const id = (globalThis.crypto || nodeWebCrypto).randomUUID();
         logFailure(new Error("Missing D1 binding"), "fetch", id, 503);
         return failure(503, request, id);
       }
@@ -6898,13 +7250,40 @@ var index_default = {
       if (runtime?.site?.maintenance_mode && !bypassMaintenance) {
         return await renderMaintenancePage(runtime.site);
       }
+      if (path === "/session-invalid") {
+        return htmlResponse(renderPublicPage({
+          title: "Phiên đăng nhập không hợp lệ",
+          currentPath: "/session-invalid",
+          user: null,
+          runtime,
+          contentHtml: renderSessionInvalidContent({ escapeHtml })
+        }), 401);
+      }
+      if (path === "/quan-tri" || path.startsWith("/quan-tri/")) {
+        if (!user) return redirectResponse(signInUrl("/quan-tri", "admin.access"));
+        if (!services.auth.hasAnyAdminRole(user)) return failure(403, request);
+        const adminSession = await services.adminPin.authenticateAdminSession(user, cookies.wb_admin_session);
+        if (!adminSession) {
+          const pinStatus = await services.adminPin.getPinStatus(user.accountId);
+          return new Response(renderAdminPinLockPage({ user, pinStatus, escapeHtml }), {
+            status: 200,
+            headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", ...SECURITY_HEADERS }
+          });
+        }
+        const section = path === "/quan-tri" ? "" : path.slice("/quan-tri/".length);
+        const html = await renderAdminCenterHtml({ section, user, adminSession, services, db: env.DB, escapeHtml });
+        return new Response(html, {
+          status: 200,
+          headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", ...SECURITY_HEADERS }
+        });
+      }
       if (path === "/help/errors") {
         const cards = Object.entries(errorTitles).map(([code, title]) => `<a class="wb-card" href="/help/errors/${code}"><strong>${code}</strong><h2>${title}</h2></a>`).join("");
         return htmlResponse(renderPublicPage({ title: "Hướng dẫn thông báo lỗi", currentPath: path, user, contentHtml: `<h1>Hướng dẫn thông báo lỗi</h1><div class="wb-grid-3">${cards}<a class="wb-card" href="/help/errors/1101"><strong>1101</strong><h2>Sự cố xử lý tại máy chủ</h2></a></div>` }));
       }
       if (path.startsWith("/help/errors/")) {
         const code = path.slice("/help/errors/".length);
-        const title = code === "1101" ? "Sự cố xử lý tại máy chủ" : errorTitles[Number(code)];
+        const title = code === "1101" ? "Sự cố ngoại lệ Worker (Cloudflare 1101)" : code === "1100" ? "Sự cố lớp mạng biên (Cloudflare 1100)" : errorTitles[Number(code)];
         if (!title) return failure(404, request);
         const advice = code === "1101" ? "Worker gặp ngoại lệ khi xử lý yêu cầu. Hãy thử lại sau và cung cấp Ray ID cho bộ phận hỗ trợ." : code === "401" ? "Đăng nhập lại để tiếp tục." : code === "413" ? "Chọn tệp nhỏ hơn rồi gửi lại." : code === "415" ? "Kiểm tra định dạng của tệp trước khi gửi." : code === "409" ? "Tải lại trang để xem phiên bản mới nhất." : ["400", "422"].includes(code) ? "Kiểm tra thông tin đã nhập rồi gửi lại." : "Bạn có thể quay lại trang chủ hoặc liên hệ bộ phận hỗ trợ.";
         return htmlResponse(renderPublicPage({ title, currentPath: path, user, contentHtml: `<section class="wb-error-state"><strong>${Number(code)}</strong><h1>${title}</h1><p>${advice}</p><a class="wb-btn wb-btn-primary" href="${code === "401" ? "/login" : "/help"}">${code === "401" ? "Đăng nhập" : "Trợ giúp"}</a> <a href="/">Trang chủ</a></section>` }));
@@ -6951,13 +7330,13 @@ var index_default = {
       if (path === "/features") return await renderFeaturesPage({ user, runtime });
       if (path === "/about") return await renderAboutPage({ user, runtime });
       if (path === "/faq") return await renderFaqPage({ user, runtime });
-      if (path === "/contact") return await renderContactPage({ user, runtime });
+      if (path === "/contact") return await renderContactPage({ user, runtime, env });
       if (path === "/help") return await renderHelpCenterPage({ services, user, runtime });
       if (path === "/reader") return await renderReaderLibraryPage({ services, user, url, runtime });
       const readerDocMatch = path.match(/^\/reader\/([^/]+)$/);
       if (readerDocMatch) return await renderReaderDocumentPage({ services, user, slug: readerDocMatch[1], runtime });
       if (path === "/search") return await renderGlobalSearchPage({ db: env.DB, user, url });
-      if (path.startsWith("/policies/")) return await renderPolicyPage({ user, policySlug: path.slice("/policies/".length), runtime });
+      if (path.startsWith("/policies/")) return await renderPolicyPage({ services, user, policySlug: path.slice("/policies/".length), runtime });
       if (path === "/learning") return await renderLearningHub({ db: env.DB, user });
       if (path === "/learning/path") return await renderLearningPathPage({ db: env.DB, user });
       if (path === "/learning/skills") return await renderSkillCenterHub({ user });
@@ -7015,7 +7394,7 @@ var index_default = {
       if (path === "/intelligence") return await renderIntelligenceHub({ user });
       const intelPageMatch = path.match(/^\/intelligence\/([a-z0-9-]+)$/);
       if (intelPageMatch) return await renderIntelligenceSystemPage({ services, user, systemSlug: intelPageMatch[1] });
-      if (path === "/login") return await renderLoginPage({ user, url });
+      if (path === "/login") return await renderLoginPage({ user, url, services });
       if (path === "/register") return await renderRegisterPage({ user });
       if (path === "/verify-email") return await renderVerifyEmailPage({ services, url, request });
       if (path === "/forgot-password") return await renderPasswordPage({ mode: "forgot", user, url });
@@ -7025,7 +7404,7 @@ var index_default = {
       if (path.startsWith("/account/")) return await renderAccountPage({ db: env.DB, user, subPath: path.slice("/account/".length) });
       return failure(404, request);
     } catch (err) {
-      const id = crypto.randomUUID();
+      const id = (globalThis.crypto || nodeWebCrypto).randomUUID();
       const section = path.split("/")[1];
       const route = ["learning", "practice", "account", "api", "lessons", "dictionary", "flashcards", "skills", "reader", "styles", "my-knowledge", "my-mistakes"].includes(section) ? "/" + section : "/";
       logFailure(err, route, id, 500, request.headers.get("cf-ray"));
@@ -7037,7 +7416,7 @@ var index_default = {
       const results = await createServices(env).jobs.runScheduledSweep();
       if (results.some((result) => result?.ok === false)) throw new Error("Scheduled job failed");
     } catch (err) {
-      logFailure(err, "scheduled", crypto.randomUUID(), 500);
+      logFailure(err, "scheduled", (globalThis.crypto || nodeWebCrypto).randomUUID(), 500);
       throw new Error("Scheduled job failed");
     }
   }

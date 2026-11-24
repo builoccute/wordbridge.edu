@@ -1,6 +1,6 @@
 {
   "name": "word-bridge",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "private": true,
   "type": "module",
   "description": "WORD BRIDGE V4 — Nền tảng học tập, tra cứu, luyện tập và đánh giá năng lực ngoại ngữ Trung – Anh (Web Super App trên Cloudflare Workers, D1 và R2).",
@@ -21,7 +21,7 @@
     "test:integration": "npm test",
     "test:e2e": "python3 tests/e2e/browser.py",
     "qa:browser": "npm run test:e2e",
-    "lint:check": "node --check src/index.js && node --check tests/release.test.mjs && node --check public/scripts/app.js && node --check public/scripts/i18n.js",
+    "lint:check": "node --check src/index.js && node --check src/modules/legal-policies.js && node --check src/modules/oauth-service.js && node --check src/modules/admin-pin-pages.js && node --check src/modules/language-api-adapters.js && node --check src/modules/academic-catalog.js && node --check tests/release.test.mjs && node --check public/scripts/app.js && node --check public/scripts/i18n.js",
     "db:fix:remote": "node scripts/fix-remote-d1.mjs"
   },
   "devDependencies": {

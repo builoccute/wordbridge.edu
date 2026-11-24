@@ -553,9 +553,9 @@ var cardSkills = Object.freeze({ grammar: "Ngữ pháp", listening: "Nghe", spea
 async function renderSkillCards({ db, user, skill, url }) {
   const language = url.searchParams.get("language") === "en" ? "en" : "zh";
   const path = "/flashcards/" + skill;
-  const rows = (await db.prepare(`SELECT l.id,l.slug,l.title_vi,l.components_json,r.remembered,r.response_text
+  const rows = ({ results: await safeQueryAll(db, `SELECT l.id,l.slug,l.title_vi,l.components_json,r.remembered,r.response_text
     FROM wb_public_lessons l LEFT JOIN wb_skill_reviews r ON r.lesson_id=l.id AND r.account_id=? AND r.skill=?
-    WHERE l.language_code=? ORDER BY l.slug`).bind(user?.accountId || "", skill, language).all()).results;
+    WHERE l.language_code=? ORDER BY l.slug`, [user?.accountId || "", skill, language]) }).results;
   const review = url.searchParams.get("review") === "1";
   const cards = rows.filter((r) => !review || r.remembered !== 1).map((row) => {
     const parts = JSON.parse(row.components_json);
@@ -3583,7 +3583,8 @@ function checkRateLimit(key, maxReqs = 30, windowMs = 60000) {
 }
 
 async function handleApiRequest(request, url, ctx) {
-  const { services, user, env, loadVocabJson: loadVocabJson2 } = ctx;
+  const { services, user, env, db: ctxDb, loadVocabJson: loadVocabJson2 } = ctx;
+  const apiDb = ctxDb || env.DB;
   const path = url.pathname;
   const method = request.method.toUpperCase();
   const ipAddress = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
@@ -3609,7 +3610,7 @@ async function handleApiRequest(request, url, ctx) {
     let dbStatus = "connected";
     let schemaHint = void 0;
     try {
-      langCount = await env.DB.prepare("SELECT COUNT(*) AS cnt FROM wb_public_languages").first();
+      langCount = await apiDb.prepare("SELECT COUNT(*) AS cnt FROM wb_public_languages").first();
     } catch {
       dbStatus = "schema_incomplete";
       schemaHint = "Run npm run db:fix:remote to apply D1 migrations 0001-0015";
@@ -3672,7 +3673,7 @@ async function handleApiRequest(request, url, ctx) {
   const audioStreamMatch = path.match(/^\/api\/v1\/audio\/([^/]+)\/stream$/);
   if (audioStreamMatch && method === "GET") {
     if (!user) return errorResponse("UNAUTHORIZED", "Cần đăng nhập tài khoản WORD BRIDGE để nghe phát âm và audio học tập.", 401);
-    const asset = await env.DB.prepare("SELECT * FROM wb_public_audio_assets WHERE id = ?").bind(audioStreamMatch[1]).first();
+    const asset = await apiDb.prepare("SELECT * FROM wb_public_audio_assets WHERE id = ?").bind(audioStreamMatch[1]).first();
     if (!asset || asset.review_status !== "published") {
       return errorResponse("AUDIO_NOT_FOUND", "Không tìm thấy bản ghi âm thanh đã xuất bản.", 404);
     }
@@ -3700,7 +3701,7 @@ async function handleApiRequest(request, url, ctx) {
   const readerFileMatch = path.match(/^\/api\/v1\/reader\/documents\/([^/]+)\/file$/);
   if (readerFileMatch && method === "GET") {
     if (!user) return errorResponse("UNAUTHORIZED", "Cần đăng nhập để tải tệp tài liệu Reader.", 401);
-    const doc = await env.DB.prepare("SELECT * FROM wb_public_reader_documents WHERE id = ? AND review_status = 'published'").bind(readerFileMatch[1]).first();
+    const doc = await apiDb.prepare("SELECT * FROM wb_public_reader_documents WHERE id = ? AND review_status = 'published'").bind(readerFileMatch[1]).first();
     if (!doc || !doc.r2_object_key) {
       return errorResponse("READER_FILE_NOT_FOUND", "Tài liệu không có tệp đính kèm trong R2.", 404);
     }
@@ -3734,7 +3735,7 @@ async function handleApiRequest(request, url, ctx) {
         params.push(typeParam);
       }
       const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
-      const res = await env.DB.prepare(`SELECT * FROM wb_public_programs ${where} ORDER BY language_code, code`).bind(...params).all();
+      const res = await apiDb.prepare(`SELECT * FROM wb_public_programs ${where} ORDER BY language_code, code`).bind(...params).all();
       return jsonResponse({ ok: true, programs: res.results || [] });
     } catch (err) {
       return errorResponse("INVALID_LANGUAGE_SCOPE", err.message, 400);
@@ -3894,7 +3895,7 @@ async function handleApiRequest(request, url, ctx) {
   }
   const readerDocGetMatch = path.match(/^\/api\/v1\/reader\/documents\/([^/]+)$/);
   if (readerDocGetMatch && method === "GET") {
-    const doc = await env.DB.prepare("SELECT * FROM wb_public_reader_documents WHERE id = ? OR slug = ?").bind(readerDocGetMatch[1], readerDocGetMatch[1]).first();
+    const doc = await apiDb.prepare("SELECT * FROM wb_public_reader_documents WHERE id = ? OR slug = ?").bind(readerDocGetMatch[1], readerDocGetMatch[1]).first();
     if (!doc) return errorResponse("NOT_FOUND", "Không tìm thấy tài liệu trong Thư viện đọc.", 404);
     return jsonResponse({ ok: true, document: doc });
   }
@@ -3924,9 +3925,9 @@ async function handleApiRequest(request, url, ctx) {
     if (!["grammar", "listening", "speaking", "reading", "writing"].includes(skill) || !["0", "1"].includes(String(remembered)) || typeof lessonId !== "string" || typeof responseText !== "string" || responseText.length > 4e3) {
       return errorResponse("INVALID_REVIEW", "Vui lòng kiểm tra nội dung ôn tập.", 422);
     }
-    const lesson = await env.DB.prepare("SELECT id FROM wb_public_lessons WHERE id=?").bind(lessonId).first();
+    const lesson = await apiDb.prepare("SELECT id FROM wb_public_lessons WHERE id=?").bind(lessonId).first();
     if (!lesson) return errorResponse("NOT_FOUND", "Bài học hiện chưa khả dụng.", 404);
-    await env.DB.prepare(`INSERT INTO wb_skill_reviews(account_id,lesson_id,skill,remembered,response_text)
+    await apiDb.prepare(`INSERT INTO wb_skill_reviews(account_id,lesson_id,skill,remembered,response_text)
       VALUES(?,?,?,?,?) ON CONFLICT(account_id,lesson_id,skill) DO UPDATE SET remembered=excluded.remembered,
       response_text=excluded.response_text,updated_at=CURRENT_TIMESTAMP`).bind(user.accountId, lesson.id, skill, Number(remembered), responseText).run();
     return jsonResponse({ ok: true, message: "Đã lưu tiến độ ôn tập." });
@@ -4008,7 +4009,7 @@ async function handleApiRequest(request, url, ctx) {
   }
   if (path === "/api/v1/learning/progress" && method === "POST") {
     if (!body.lessonId) return errorResponse("VALIDATION_ERROR", "Thiếu lessonId.", 400);
-    const lesson = await env.DB.prepare("SELECT * FROM wb_public_lessons WHERE id = ?").bind(body.lessonId).first();
+    const lesson = await apiDb.prepare("SELECT * FROM wb_public_lessons WHERE id = ?").bind(body.lessonId).first();
     if (!lesson) return errorResponse("LESSON_NOT_FOUND", "Bài học không tồn tại.", 404);
     const comp = JSON.parse(lesson.components_json || "{}");
     const checkQIds = Array.isArray(comp.checkQuestionIds) ? comp.checkQuestionIds : [];
@@ -4024,7 +4025,7 @@ async function handleApiRequest(request, url, ctx) {
       let earned = 0;
       let total = 0;
       for (const qId of checkQIds) {
-        const q = await env.DB.prepare("SELECT * FROM wb_public_question_bank WHERE id = ?").bind(qId).first();
+        const q = await apiDb.prepare("SELECT * FROM wb_public_question_bank WHERE id = ?").bind(qId).first();
         if (!q || q.auto_gradable !== 1 || !q.correct_answer_json) continue;
         total += q.max_score;
         const expected = JSON.parse(q.correct_answer_json);
@@ -4056,7 +4057,7 @@ async function handleApiRequest(request, url, ctx) {
       scorePercent = null;
     }
     const subId = generateId("lsub");
-    await env.DB.prepare(`
+    await apiDb.prepare(`
         INSERT INTO wb_lesson_submissions (
           id, account_id, lesson_id, lifecycle_status, answers_json, breakdown_json,
           score, max_score, score_percent, skills_assessed_json, improvement_notes_vi, next_recommendation_vi
@@ -4075,9 +4076,9 @@ async function handleApiRequest(request, url, ctx) {
       scorePercent !== null && scorePercent < 70 ? "Cần ôn lại phần từ vựng và cấu trúc ngữ pháp trọng tâm của bài trước khi chuyển buổi tiếp theo." : "Đã ghi nhận tiến độ bài học từ backend (không dùng điểm mặc định phía client).",
       "Ôn tập flashcard tại /vocabulary/review hoặc làm bài luyện tập tại /practice."
     ).run();
-    const existing = await env.DB.prepare("SELECT id FROM wb_public_learner_progress WHERE account_id = ? AND lesson_id = ?").bind(user.accountId, lesson.id).first();
+    const existing = await apiDb.prepare("SELECT id FROM wb_public_learner_progress WHERE account_id = ? AND lesson_id = ?").bind(user.accountId, lesson.id).first();
     if (existing) {
-      await env.DB.prepare(`
+      await apiDb.prepare(`
           UPDATE wb_learner_progress
           SET status = ?, score_percent = ?,
               time_spent_seconds = time_spent_seconds + ?,
@@ -4086,7 +4087,7 @@ async function handleApiRequest(request, url, ctx) {
           WHERE id = ?
         `).bind(progressStatus, scorePercent, Number(body.timeSpentSeconds || 0), progressStatus, existing.id).run();
     } else {
-      await env.DB.prepare(`
+      await apiDb.prepare(`
           INSERT INTO wb_learner_progress (id, account_id, week_id, lesson_id, status, score_percent, time_spent_seconds, completed_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, CASE WHEN ? = 'completed' THEN datetime('now') ELSE NULL END)
         `).bind(generateId("prg"), user.accountId, lesson.week_id, lesson.id, progressStatus, scorePercent, Number(body.timeSpentSeconds || 0), progressStatus).run();
@@ -4123,7 +4124,7 @@ async function handleApiRequest(request, url, ctx) {
     return jsonResponse(res);
   }
   if (path === "/api/v1/vocabulary/notebook" && method === "GET") {
-    const rows = await env.DB.prepare("SELECT n.*, d.headword, d.phonetic, d.meaning_vi, d.language_code, d.slug, d.specialized_domain FROM wb_public_vocabulary_notebook n JOIN wb_public_dictionary_entries d ON d.id = n.entry_id WHERE n.account_id = ? ORDER BY n.created_at DESC").bind(user.accountId).all();
+    const rows = await apiDb.prepare("SELECT n.*, d.headword, d.phonetic, d.meaning_vi, d.language_code, d.slug, d.specialized_domain FROM wb_public_vocabulary_notebook n JOIN wb_public_dictionary_entries d ON d.id = n.entry_id WHERE n.account_id = ? ORDER BY n.created_at DESC").bind(user.accountId).all();
     return jsonResponse({ ok: true, items: rows.results || [] });
   }
   if (path === "/api/v1/vocabulary/notebook" && method === "POST") {
@@ -4146,10 +4147,10 @@ async function handleApiRequest(request, url, ctx) {
     return jsonResponse(res);
   }
   if (nbItemMatch && method === "DELETE") {
-    const existing = await env.DB.prepare("SELECT id, account_id FROM wb_public_vocabulary_notebook WHERE id = ?").bind(nbItemMatch[1]).first();
+    const existing = await apiDb.prepare("SELECT id, account_id FROM wb_public_vocabulary_notebook WHERE id = ?").bind(nbItemMatch[1]).first();
     if (!existing) return errorResponse("NOT_FOUND", "Không tìm thấy mục từ.", 404);
     if (existing.account_id !== user.accountId) return errorResponse("FORBIDDEN", "Bạn không có quyền xóa dữ liệu của tài khoản khác.", 403);
-    await env.DB.prepare("DELETE FROM wb_vocabulary_notebook WHERE id = ?").bind(existing.id).run();
+    await apiDb.prepare("DELETE FROM wb_vocabulary_notebook WHERE id = ?").bind(existing.id).run();
     return jsonResponse({ ok: true });
   }
   if (path === "/api/v1/vocabulary/review" && method === "POST") {
@@ -4166,7 +4167,7 @@ async function handleApiRequest(request, url, ctx) {
   }
   const prGetMatch = path.match(/^\/api\/v1\/practice\/results\/([^/]+)$/);
   if (prGetMatch && method === "GET") {
-    const row = await env.DB.prepare("SELECT * FROM wb_public_practice_results WHERE id = ?").bind(prGetMatch[1]).first();
+    const row = await apiDb.prepare("SELECT * FROM wb_public_practice_results WHERE id = ?").bind(prGetMatch[1]).first();
     if (!row) return errorResponse("NOT_FOUND", "Không tìm thấy kết quả luyện tập.", 404);
     if (row.account_id !== user.accountId && !services.auth.hasAnyAdminRole(user)) {
       return errorResponse("FORBIDDEN", "Không có quyền xem kết quả của người dùng khác.", 403);
@@ -4223,15 +4224,15 @@ async function handleApiRequest(request, url, ctx) {
   }
   const delRecMatch = path.match(/^\/api\/v1\/privacy\/recordings\/([^/]+)$/);
   if (delRecMatch && method === "DELETE") {
-    const row = await env.DB.prepare("SELECT id, r2_audio_key FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(delRecMatch[1], user.accountId).first();
+    const row = await apiDb.prepare("SELECT id, r2_audio_key FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(delRecMatch[1], user.accountId).first();
     if (!row) return errorResponse("NOT_FOUND", "Không tìm thấy bản ghi âm của bạn.", 404);
     if (row.r2_audio_key && services.r2?.isAvailable()) await services.r2.deleteObject(row.r2_audio_key).catch(() => {});
-    await env.DB.prepare("DELETE FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(row.id, user.accountId).run();
+    await apiDb.prepare("DELETE FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(row.id, user.accountId).run();
     return jsonResponse({ ok: true, message: "Đã xóa bản ghi âm khỏi tài khoản và bộ nhớ lưu trữ." });
   }
   const delWrtMatch = path.match(/^\/api\/v1\/privacy\/writings\/([^/]+)$/);
   if (delWrtMatch && method === "DELETE") {
-    await env.DB.prepare("DELETE FROM wb_writing_submissions WHERE id = ? AND account_id = ?").bind(delWrtMatch[1], user.accountId).run();
+    await apiDb.prepare("DELETE FROM wb_writing_submissions WHERE id = ? AND account_id = ?").bind(delWrtMatch[1], user.accountId).run();
     return jsonResponse({ ok: true, message: "Đã xóa bài viết cá nhân." });
   }
   // ---- F1-F9 Language Services API Endpoints ----
@@ -4279,7 +4280,7 @@ async function handleApiRequest(request, url, ctx) {
   }
   const spkEvalMatch = path.match(/^\/api\/v1\/skills\/speaking\/sessions\/([^/]+)\/evaluate$/);
   if (spkEvalMatch && method === "POST") {
-    const sess = await env.DB.prepare("SELECT language_code, target_text FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(spkEvalMatch[1], user.accountId).first();
+    const sess = await apiDb.prepare("SELECT language_code, target_text FROM wb_speaking_sessions WHERE id = ? AND account_id = ?").bind(spkEvalMatch[1], user.accountId).first();
     if (!sess) return errorResponse("NOT_FOUND", "Không tìm thấy phiên luyện nói.", 404);
     const res = await services.languageApi.evaluatePronunciation(user.accountId, { speakingSessionId: spkEvalMatch[1], languageCode: sess.language_code, targetText: sess.target_text }, reqId);
     return res.ok ? jsonResponse(res, res.status) : errorResponse(res.code || "SPEAKING_EVAL_ERROR", res.error, res.status, res);
@@ -4464,7 +4465,7 @@ async function handleApiRequest(request, url, ctx) {
       try {
         const lang = body.programType === "specialized" ? assertSpecializedLanguage(body.languageCode) : assertOfficialLanguage(body.languageCode);
         const id = generateId("prg");
-        await env.DB.prepare(`
+        await apiDb.prepare(`
             INSERT INTO wb_programs (id, code, slug, name_vi, language_code, program_type, entry_level, target_level, target_audience, prerequisites, total_modules, total_weeks, sessions_per_week, estimated_hours, overall_objectives, learning_outcomes, assessment_methods, completion_criteria, review_status, author_name)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', ?)
           `).bind(
@@ -4502,7 +4503,7 @@ async function handleApiRequest(request, url, ctx) {
       if (!allowed.has(body.operationalStatus)) {
         return errorResponse("VALIDATION_ERROR", "Trạng thái vận hành không hợp lệ.", 400);
       }
-      await env.DB.prepare("UPDATE wb_intelligence_status SET operational_status = ?, admin_note_vi = COALESCE(?, admin_note_vi), updated_by = ?, updated_at = datetime('now') WHERE system_slug = ?").bind(body.operationalStatus, body.adminNoteVi ?? null, user.accountId, body.systemSlug).run();
+      await apiDb.prepare("UPDATE wb_intelligence_status SET operational_status = ?, admin_note_vi = COALESCE(?, admin_note_vi), updated_by = ?, updated_at = datetime('now') WHERE system_slug = ?").bind(body.operationalStatus, body.adminNoteVi ?? null, user.accountId, body.systemSlug).run();
       await services.auth.recordAudit(user.accountId, "intelligence.status_updated", "wb_intelligence_status", body.systemSlug, ipAddress, { operationalStatus: body.operationalStatus });
       return jsonResponse({ ok: true, systemSlug: body.systemSlug, operationalStatus: body.operationalStatus });
     }
@@ -5137,7 +5138,7 @@ __name(renderReaderDocumentPage, "renderReaderDocumentPage");
 async function renderLearningHub({ db, user }) {
   let programs = [];
   try {
-    programs = (await db.prepare("SELECT * FROM wb_public_programs ORDER BY language_code, code").all()).results || [];
+    programs = await safeQueryAll(db, "SELECT * FROM wb_public_programs ORDER BY language_code, code");
   } catch {
     try {
       programs = (await db.prepare("SELECT * FROM wb_programs WHERE language_code IN ('zh','en') AND review_status='published' ORDER BY language_code, code").all()).results || [];
@@ -5149,7 +5150,7 @@ async function renderLearningHub({ db, user }) {
   let dueCount = 0;
   if (user && db) {
     try {
-      recentPractice = (await db.prepare("SELECT id, skill, score, max_score, grading_status, submitted_at FROM wb_public_practice_results WHERE account_id = ? ORDER BY submitted_at DESC LIMIT 5").bind(user.accountId).all()).results || [];
+      recentPractice = await safeQueryAll(db, "SELECT id, skill, score, max_score, grading_status, submitted_at FROM wb_public_practice_results WHERE account_id = ? ORDER BY submitted_at DESC LIMIT 5", [user.accountId]);
       const dueRow = await db.prepare("SELECT COUNT(*) AS cnt FROM wb_public_vocabulary_notebook WHERE account_id = ? AND datetime(next_review_at) <= datetime('now')").bind(user.accountId).first();
       dueCount = dueRow?.cnt || 0;
     } catch {
@@ -5718,7 +5719,7 @@ async function renderGlobalSearchPage({ db, user, url }) {
 }
 __name(renderGlobalSearchPage, "renderGlobalSearchPage");
 async function renderLearningPathPage({ db, user }) {
-  const courses = (await db.prepare(`SELECT c.id,c.slug,c.title_vi,c.language_code,c.summary_vi,COALESCE(pl.framework_ref,'') AS level_ref,COALESCE(pl.sort_order,999) AS sort_order FROM wb_public_courses c LEFT JOIN wb_program_levels pl ON pl.id=c.level_id WHERE c.review_status='published' ORDER BY c.language_code,COALESCE(pl.sort_order,999),c.title_vi`).all()).results || [];
+  const courses = await safeQueryAll(db, `SELECT c.id,c.slug,c.title_vi,c.language_code,c.summary_vi,COALESCE(pl.framework_ref,'') AS level_ref,COALESCE(pl.sort_order,999) AS sort_order FROM wb_public_courses c LEFT JOIN wb_program_levels pl ON pl.id=c.level_id WHERE c.review_status='published' ORDER BY c.language_code,COALESCE(pl.sort_order,999),c.title_vi`);
   const weeks = await safeQueryAll(db, `SELECT id, course_id, slug, week_number, topic_vi, required_knowledge, sessions_count FROM wb_public_weeks ORDER BY course_id, week_number`);
   let progress = [];
   if (user) progress = await safeQueryAll(db, `SELECT course_id, lesson_id, status, score_percent, updated_at FROM wb_public_learner_progress WHERE account_id=? ORDER BY updated_at DESC`, [user.accountId]);
@@ -6284,7 +6285,7 @@ async function renderPracticePage({ services, db, user, skill = "" }) {
     const questions = [];
     if (db && Array.isArray(qIds)) {
       for (const qId of qIds) {
-        const q = await db.prepare("SELECT * FROM wb_public_question_bank WHERE id = ?").bind(qId).first().catch(() => null);
+        const q = await safeQueryFirst(db, "SELECT * FROM wb_public_question_bank WHERE id = ?", [qId]).catch(() => null);
         if (q) questions.push(q);
       }
     }
@@ -6293,7 +6294,7 @@ async function renderPracticePage({ services, db, user, skill = "" }) {
   let publishedAudio = [];
   if (skill === "listening" && db) {
     try {
-      publishedAudio = (await db.prepare("SELECT * FROM wb_public_audio_assets WHERE review_status = 'published' ORDER BY created_at DESC LIMIT 10").all()).results || [];
+      publishedAudio = await safeQueryAll(db, "SELECT * FROM wb_public_audio_assets WHERE review_status = 'published' ORDER BY created_at DESC LIMIT 10");
     } catch {
       publishedAudio = [];
     }
@@ -6301,7 +6302,7 @@ async function renderPracticePage({ services, db, user, skill = "" }) {
   let readingPassages = [];
   if (skill === "reading" && db) {
     try {
-      const rows = (await db.prepare("SELECT id, slug, title_vi, language_code, level_ref, components_json FROM wb_public_lessons WHERE review_status = 'published' LIMIT 6").all()).results || [];
+      const rows = await safeQueryAll(db, "SELECT id, slug, title_vi, language_code, level_ref, components_json FROM wb_public_lessons WHERE review_status = 'published' LIMIT 6");
       readingPassages = rows.map((r) => {
         const comp = safeJson3(r.components_json, {});
         return { ...r, readingText: comp.reading || "" };
@@ -6506,10 +6507,10 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
   let terms = [];
   if (subSlug === "chinese") {
     heading = "Tiếng Trung chuyên ngành";
-    terms = (await db.prepare("SELECT * FROM wb_public_dictionary_entries WHERE language_code = 'zh' AND specialized_domain IS NOT NULL LIMIT 30").all()).results || [];
+    terms = await safeQueryAll(db, "SELECT * FROM wb_public_dictionary_entries WHERE language_code = 'zh' AND specialized_domain IS NOT NULL LIMIT 30");
   } else if (subSlug === "english") {
     heading = "Tiếng Anh chuyên ngành";
-    terms = (await db.prepare("SELECT * FROM wb_public_dictionary_entries WHERE language_code = 'en' AND specialized_domain IS NOT NULL LIMIT 30").all()).results || [];
+    terms = await safeQueryAll(db, "SELECT * FROM wb_public_dictionary_entries WHERE language_code = 'en' AND specialized_domain IS NOT NULL LIMIT 30");
   } else if (subSlug) {
     const dom = SPECIALIZED_DOMAINS.find((d) => d.slug === subSlug);
     if (!dom) {
@@ -6517,13 +6518,13 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
     }
     heading = `Ngoại ngữ chuyên ngành: ${dom.nameVi}`;
     try {
-      terms = (await db.prepare("SELECT * FROM wb_public_dictionary_entries WHERE specialized_domain = ? LIMIT 30").bind(subSlug).all()).results || [];
+      terms = await safeQueryAll(db, "SELECT * FROM wb_public_dictionary_entries WHERE specialized_domain = ? LIMIT 30", [subSlug]);
     } catch {
       terms = [];
     }
   } else {
     try {
-      terms = (await db.prepare("SELECT * FROM wb_public_dictionary_entries WHERE specialized_domain IS NOT NULL LIMIT 18").all()).results || [];
+      terms = await safeQueryAll(db, "SELECT * FROM wb_public_dictionary_entries WHERE specialized_domain IS NOT NULL LIMIT 18");
     } catch {
       terms = [];
     }
@@ -7104,23 +7105,24 @@ var REMOVED_LEGACY_PATHS = /* @__PURE__ */ new Set([
   "/examinations/english",
   "/examinations/russian"
 ]);
-function createServices(env) {
-  const email = new EmailService(env.DB, env);
-  const auth = new AuthService(env.DB, email, env);
-  const studentBenefit = new StudentBenefitService(env.DB, email, env);
+function createServices(env, dbOverride = null) {
+  const db = dbOverride || env.DB;
+  const email = new EmailService(db, env);
+  const auth = new AuthService(db, email, env);
+  const studentBenefit = new StudentBenefitService(db, email, env);
   const r2 = new R2StorageService(env.R2);
-  const jobs = new JobsService(env.DB, email, studentBenefit, r2);
-  const dictionary = new DictionaryService(env.DB);
-  const audio = new AudioService(env.DB, r2, env);
-  const practice = new PracticeService(env.DB, email, env);
-  const reader = new ReaderService(env.DB, r2);
-  const learnerMeet = new LearnerMeetService(env.DB, email, env);
-  const intelligence = new IntelligenceService(env.DB, env);
-  const admin = new AdminService(env.DB, auth, jobs, r2, email);
-  const legal = new LegalPolicyService(env.DB, env);
-  const oauth = new OAuthService(env.DB, auth, env, { randomTokenHex, sha256Hex, generateId });
-  const adminPin = new AdminPinService(env.DB, auth, env, { hashPassword, verifyPassword, randomTokenHex, sha256Hex, generateId, timingSafeEqual });
-  const languageApi = new LanguageServicesAdapter(env.DB, r2, env, { generateId });
+  const jobs = new JobsService(db, email, studentBenefit, r2);
+  const dictionary = new DictionaryService(db);
+  const audio = new AudioService(db, r2, env);
+  const practice = new PracticeService(db, email, env);
+  const reader = new ReaderService(db, r2);
+  const learnerMeet = new LearnerMeetService(db, email, env);
+  const intelligence = new IntelligenceService(db, env);
+  const admin = new AdminService(db, auth, jobs, r2, email);
+  const legal = new LegalPolicyService(db, env);
+  const oauth = new OAuthService(db, auth, env, { randomTokenHex, sha256Hex, generateId });
+  const adminPin = new AdminPinService(db, auth, env, { hashPassword, verifyPassword, randomTokenHex, sha256Hex, generateId, timingSafeEqual });
+  const languageApi = new LanguageServicesAdapter(db, r2, env, { generateId });
   return { email, auth, studentBenefit, jobs, r2, dictionary, audio, practice, reader, learnerMeet, intelligence, admin, legal, oauth, adminPin, languageApi };
 }
 __name(createServices, "createServices");
@@ -7151,7 +7153,8 @@ var PUBLIC_CATALOG_DDL = Object.freeze([
 ]);
 
 function isMissingTableError(err) {
-  return /no such table|no such column/i.test(String(err?.message || err || ""));
+  const combined = `${err?.message || ""} ${err?.cause?.message || ""} ${err?.cause || ""} ${err || ""}`;
+  return /no such table|no such column|has no column named|no such view/i.test(combined);
 }
 async function safeQueryAll(db, sql, params = []) {
   try {
@@ -7195,57 +7198,40 @@ var V42_RUNTIME_TABLES_DDL = Object.freeze([
 ]);
 
 
-function wrapSafeStatement(stmt, isReadOnly) {
-  if (!stmt || !isReadOnly) return stmt;
-  const wrap = (st) => new Proxy(st, {
-    get(target, prop, receiver) {
-      if (prop === "bind") {
-        return (...args) => wrap(target.bind(...args));
+
+
+function wrapD1Statement(st, isReadOnly) {
+  if (!st || !isReadOnly) return st;
+  const make = (inner) => ({
+    bind(...args) { return make(inner.bind(...args)); },
+    async all() {
+      try { return await inner.all(); } catch (err) {
+        if (isMissingTableError(err)) return { results: [], success: true, meta: {} };
+        throw err;
       }
-      if (prop === "all") {
-        return async () => {
-          try { return await target.all(); } catch (err) {
-            if (isMissingTableError(err)) return { results: [], success: true, meta: {} };
-            throw err;
-          }
-        };
+    },
+    async first(...args) {
+      try { return await inner.first(...args); } catch (err) {
+        if (isMissingTableError(err)) return null;
+        throw err;
       }
-      if (prop === "first") {
-        return async (...args) => {
-          try { return await target.first(...args); } catch (err) {
-            if (isMissingTableError(err)) return null;
-            throw err;
-          }
-        };
-      }
-      const val = Reflect.get(target, prop, receiver);
-      return typeof val === "function" ? val.bind(target) : val;
-    }
+    },
+    async run() { return inner.run(); },
+    async raw(...args) { return inner.raw(...args); }
   });
-  return wrap(stmt);
+  return make(st);
 }
-function createResilientEnv(rawEnv) {
-  if (!rawEnv?.DB) return rawEnv;
-  const rawDb = rawEnv.DB;
-  const safeDb = new Proxy(rawDb, {
-    get(target, prop, receiver) {
-      if (prop === "prepare") {
-        return (sql) => {
-          const isReadOnly = /^\s*(?:SELECT|WITH)\b/i.test(String(sql || ""));
-          return wrapSafeStatement(target.prepare(sql), isReadOnly);
-        };
-      }
-      const val = Reflect.get(target, prop, receiver);
-      return typeof val === "function" ? val.bind(target) : val;
-    }
-  });
-  return new Proxy(rawEnv, {
-    get(target, prop, receiver) {
-      if (prop === "DB") return safeDb;
-      const val = Reflect.get(target, prop, receiver);
-      return typeof val === "function" ? val.bind(target) : val;
-    }
-  });
+function createSafeD1Adapter(rawDb) {
+  if (!rawDb || typeof rawDb.prepare !== "function") return rawDb;
+  return {
+    prepare(sql) {
+      const isReadOnly = /^\s*(?:SELECT|WITH)\b/i.test(String(sql || ""));
+      return wrapD1Statement(rawDb.prepare(sql), isReadOnly);
+    },
+    batch(stmts) { return rawDb.batch(stmts); },
+    exec(sql) { return rawDb.exec(sql); },
+    dump() { return rawDb.dump ? rawDb.dump() : undefined; }
+  };
 }
 
 async function ensurePublicCatalogSchema(db) {
@@ -7339,7 +7325,7 @@ async function loadStaticAsset(normalizedPath, request, url, rawEnv) {
   if (rawEnv.ASSETS) {
     const assetUrl = new URL(normalizedPath, url.origin);
     const safeMethod = request.method === "HEAD" ? "HEAD" : "GET";
-    const assetRes = await rawEnv.ASSETS.fetch(new Request(assetUrl.toString(), { method: safeMethod, headers: request.headers }));
+    const assetRes = await rawEnv.ASSETS.fetch(new Request(assetUrl.toString(), { method: safeMethod }));
     if (assetRes && assetRes.status !== 404) return assetRes;
   }
   if (rawEnv.STATIC_ASSETS_LOADER) {
@@ -7416,11 +7402,11 @@ var index_default = {
         return failure(503, request, id);
       }
       await ensurePublicCatalogSchema(env.DB);
-      env = createResilientEnv(env);
-      const services = createServices(env);
+      const safeDb = createSafeD1Adapter(env.DB);
+      const services = createServices(env, safeDb);
       const cookies = parseCookies(request);
       const user = await services.auth.authenticateSession(cookies.wb_session);
-      const runtime = await loadRuntimeFromD1(env.DB);
+      const runtime = await loadRuntimeFromD1(safeDb);
       const bypassMaintenance = path === "/login" || path === "/help" || path.startsWith("/api/v1/health") || path.startsWith("/api/v1/auth/") || services.auth.hasAnyAdminRole(user);
       if (runtime?.site?.maintenance_mode && !bypassMaintenance) {
         return await renderMaintenancePage(runtime.site);
@@ -7446,7 +7432,7 @@ var index_default = {
           });
         }
         const section = path === "/quan-tri" ? "" : path.slice("/quan-tri/".length);
-        const html = await renderAdminCenterHtml({ section, user, adminSession, services, db: env.DB, escapeHtml });
+        const html = await renderAdminCenterHtml({ section, user, adminSession, services, db: safeDb, escapeHtml });
         return new Response(html, {
           status: 200,
           headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", ...SECURITY_HEADERS }
@@ -7472,19 +7458,19 @@ var index_default = {
           }
           const lessonSlug = String(b.lessonSlug || "").trim();
           const noteContent = String(b.noteContent || "").trim();
-          await env.DB.prepare(
+          await safeDb.prepare(
             `INSERT INTO wb_lesson_notes (id, account_id, lesson_slug, note_content, updated_at)
              VALUES (?, ?, ?, ?, datetime('now'))
              ON CONFLICT(account_id, lesson_slug) DO UPDATE SET note_content=excluded.note_content, updated_at=datetime('now')`
           ).bind(`ln_${Date.now()}`, user.accountId, lessonSlug, noteContent).run();
           return jsonResponse({ ok: true, message: "Đã lưu ghi chú bài học." });
         }
-        const rows = (await env.DB.prepare("SELECT lesson_slug, note_content, updated_at FROM wb_lesson_notes WHERE account_id = ?").bind(user.accountId).all()).results || [];
+        const rows = (await safeDb.prepare("SELECT lesson_slug, note_content, updated_at FROM wb_lesson_notes WHERE account_id = ?").bind(user.accountId).all()).results || [];
         return jsonResponse({ ok: true, notes: rows });
       }
       if (path === "/api/v1/vocabulary/export" && request.method === "GET") {
         if (!user) return jsonResponse({ ok: false, error: { code: "UNAUTHORIZED", message: "Cần đăng nhập để xuất sổ từ vựng." } }, 401);
-        const rows = (await env.DB.prepare(
+        const rows = (await safeDb.prepare(
           `SELECT e.headword, e.phonetic, e.language_code, e.meaning_vi, n.mastery_status, n.interval_days
            FROM wb_public_vocabulary_notebook n JOIN wb_public_dictionary_entries e ON e.id = n.entry_id WHERE n.account_id = ?`
         ).bind(user.accountId).all()).results || [];
@@ -7496,11 +7482,12 @@ var index_default = {
           services,
           user,
           env,
+          db: safeDb,
           ctx,
           loadVocabJson: /* @__PURE__ */ __name((domainSlug) => loadVocabJson(domainSlug, request, url, env), "loadVocabJson")
         });
       }
-      if (path === "/") return await renderHomePage({ db: env.DB, user, runtime });
+      if (path === "/") return await renderHomePage({ db: safeDb, user, runtime });
       if (path === "/features") return await renderFeaturesPage({ user, runtime });
       if (path === "/about") return await renderAboutPage({ user, runtime });
       if (path === "/faq") return await renderFaqPage({ user, runtime });
@@ -7509,62 +7496,62 @@ var index_default = {
       if (path === "/reader") return await renderReaderLibraryPage({ services, user, url, runtime });
       const readerDocMatch = path.match(/^\/reader\/([^/]+)$/);
       if (readerDocMatch) return await renderReaderDocumentPage({ services, user, slug: readerDocMatch[1], runtime });
-      if (path === "/search") return await renderGlobalSearchPage({ db: env.DB, user, url });
+      if (path === "/search") return await renderGlobalSearchPage({ db: safeDb, user, url });
       if (path.startsWith("/policies/")) return await renderPolicyPage({ services, user, policySlug: path.slice("/policies/".length), runtime });
-      if (path === "/learning") return await renderLearningHub({ db: env.DB, user });
-      if (path === "/learning/path") return await renderLearningPathPage({ db: env.DB, user });
+      if (path === "/learning") return await renderLearningHub({ db: safeDb, user });
+      if (path === "/learning/path") return await renderLearningPathPage({ db: safeDb, user });
       if (path === "/learning/skills") return await renderSkillCenterHub({ user });
-      if (path.startsWith("/skills/")) return await renderSkillCenterPage({ db: env.DB, user, skill: path.slice("/skills/".length) });
-      if (path === "/my-knowledge") return await renderKnowledgePage({ db: env.DB, user });
-      if (path === "/my-mistakes") return await renderMistakesPage({ db: env.DB, user });
-      if (path.startsWith("/learning/")) return await renderLanguageLearningPage({ db: env.DB, user, languageSlug: path.slice("/learning/".length) });
+      if (path.startsWith("/skills/")) return await renderSkillCenterPage({ db: safeDb, user, skill: path.slice("/skills/".length) });
+      if (path === "/my-knowledge") return await renderKnowledgePage({ db: safeDb, user });
+      if (path === "/my-mistakes") return await renderMistakesPage({ db: safeDb, user });
+      if (path.startsWith("/learning/")) return await renderLanguageLearningPage({ db: safeDb, user, languageSlug: path.slice("/learning/".length) });
       const progLevelMatch = path.match(/^\/programs\/([^/]+)\/levels\/([^/]+)$/);
-      if (progLevelMatch) return await renderProgramDetailPage({ db: env.DB, user, programSlug: progLevelMatch[1] });
+      if (progLevelMatch) return await renderProgramDetailPage({ db: safeDb, user, programSlug: progLevelMatch[1] });
       const progMatch = path.match(/^\/programs\/([^/]+)$/);
-      if (progMatch) return await renderProgramDetailPage({ db: env.DB, user, programSlug: progMatch[1] });
+      if (progMatch) return await renderProgramDetailPage({ db: safeDb, user, programSlug: progMatch[1] });
       const courseCurMatch = path.match(/^\/courses\/([^/]+)\/curriculum$/);
-      if (courseCurMatch) return await renderCourseCurriculumPage({ db: env.DB, user, courseSlug: courseCurMatch[1], showCurriculumOnly: true });
+      if (courseCurMatch) return await renderCourseCurriculumPage({ db: safeDb, user, courseSlug: courseCurMatch[1], showCurriculumOnly: true });
       const courseMatch = path.match(/^\/courses\/([^/]+)$/);
-      if (courseMatch) return await renderCourseCurriculumPage({ db: env.DB, user, courseSlug: courseMatch[1], showCurriculumOnly: false });
+      if (courseMatch) return await renderCourseCurriculumPage({ db: safeDb, user, courseSlug: courseMatch[1], showCurriculumOnly: false });
       const modMatch = path.match(/^\/modules\/([^/]+)$/);
-      if (modMatch) return await renderModuleDetailPage({ db: env.DB, user, moduleSlug: modMatch[1] });
+      if (modMatch) return await renderModuleDetailPage({ db: safeDb, user, moduleSlug: modMatch[1] });
       const weekMatch = path.match(/^\/weeks\/([^/]+)$/);
-      if (weekMatch) return await renderWeekDetailPage({ db: env.DB, user, weekSlug: weekMatch[1] });
+      if (weekMatch) return await renderWeekDetailPage({ db: safeDb, user, weekSlug: weekMatch[1] });
       const lessonResMatch = path.match(/^\/lessons\/([^/]+)\/result$/);
-      if (lessonResMatch) return await renderLessonResultPage({ db: env.DB, user, lessonSlug: lessonResMatch[1] });
+      if (lessonResMatch) return await renderLessonResultPage({ db: safeDb, user, lessonSlug: lessonResMatch[1] });
       const lessonMatch = path.match(/^\/lessons\/([^/]+)$/);
-      if (lessonMatch) return await renderLessonDetailPage({ db: env.DB, user, lessonSlug: lessonMatch[1] });
-      if (path === "/my-learning") return await renderMyLearningPage({ db: env.DB, user, subPath: "" });
-      if (path === "/my-learning/history") return await renderMyLearningPage({ db: env.DB, user, subPath: "history" });
-      if (path === "/my-learning/vocabulary") return await renderMyLearningPage({ db: env.DB, user, subPath: "vocabulary" });
+      if (lessonMatch) return await renderLessonDetailPage({ db: safeDb, user, lessonSlug: lessonMatch[1] });
+      if (path === "/my-learning") return await renderMyLearningPage({ db: safeDb, user, subPath: "" });
+      if (path === "/my-learning/history") return await renderMyLearningPage({ db: safeDb, user, subPath: "history" });
+      if (path === "/my-learning/vocabulary") return await renderMyLearningPage({ db: safeDb, user, subPath: "vocabulary" });
       const drill = path.match(/^\/flashcards\/([a-z]+)$/);
-      if (drill && Object.hasOwn(cardSkills, drill[1])) return await renderSkillCards({ db: env.DB, user, skill: drill[1], url });
+      if (drill && Object.hasOwn(cardSkills, drill[1])) return await renderSkillCards({ db: safeDb, user, skill: drill[1], url });
       if (path === "/dictionary") return await renderDictionaryPage({ services, user, url });
       const dictEntryMatch = path.match(/^\/dictionary\/([^/]+)\/([^/]+)$/);
       if (dictEntryMatch) return await renderDictionaryEntryPage({ services, user, languageSlug: dictEntryMatch[1], entrySlug: dictEntryMatch[2] });
       const dictLangMatch = path.match(/^\/dictionary\/([^/]+)$/);
       if (dictLangMatch) return await renderDictionaryPage({ services, user, url, languageSlug: dictLangMatch[1] });
-      if (path === "/vocabulary") return await renderVocabularyPage({ db: env.DB, user, mode: "notebook", url });
-      if (path === "/vocabulary/notebook") return await renderVocabularyPage({ db: env.DB, user, mode: "notebook", url });
-      if (path === "/vocabulary/sets") return await renderVocabularyPage({ db: env.DB, user, mode: "sets", url });
-      if (path === "/vocabulary/flashcards") return await renderVocabularyPage({ db: env.DB, user, mode: "flashcards", url });
-      if (path === "/vocabulary/review") return await renderVocabularyPage({ db: env.DB, user, mode: "review", url });
-      if (path === "/practice") return await renderPracticePage({ services, db: env.DB, user });
-      if (path === "/practice/history") return await renderPracticeHistoryPage({ db: env.DB, user });
+      if (path === "/vocabulary") return await renderVocabularyPage({ db: safeDb, user, mode: "notebook", url });
+      if (path === "/vocabulary/notebook") return await renderVocabularyPage({ db: safeDb, user, mode: "notebook", url });
+      if (path === "/vocabulary/sets") return await renderVocabularyPage({ db: safeDb, user, mode: "sets", url });
+      if (path === "/vocabulary/flashcards") return await renderVocabularyPage({ db: safeDb, user, mode: "flashcards", url });
+      if (path === "/vocabulary/review") return await renderVocabularyPage({ db: safeDb, user, mode: "review", url });
+      if (path === "/practice") return await renderPracticePage({ services, db: safeDb, user });
+      if (path === "/practice/history") return await renderPracticeHistoryPage({ db: safeDb, user });
       const prResMatch = path.match(/^\/practice\/results\/([^/]+)$/);
-      if (prResMatch) return await renderPracticeResultPage({ db: env.DB, user, resultId: prResMatch[1] });
+      if (prResMatch) return await renderPracticeResultPage({ db: safeDb, user, resultId: prResMatch[1] });
       const practiceSkillMatch = path.match(/^\/practice\/(listening|speaking|reading|writing|vocabulary|grammar)$/);
-      if (practiceSkillMatch) return await renderPracticePage({ services, db: env.DB, user, skill: practiceSkillMatch[1] });
-      if (path === "/specialized") return await renderSpecializedPage({ db: env.DB, user });
-      if (path.startsWith("/specialized/")) return await renderSpecializedPage({ db: env.DB, user, subSlug: path.slice("/specialized/".length) });
-      if (path === "/learner-meet") return await renderLearnerMeetPage({ db: env.DB, services, user });
-      if (path === "/learner-meet/sessions") return await renderLearnerMeetPage({ db: env.DB, services, user, subPath: "sessions" });
-      if (path === "/learner-meet/create") return await renderLearnerMeetPage({ db: env.DB, services, user, subPath: "create" });
-      if (path === "/learner-meet/history") return await renderLearnerMeetPage({ db: env.DB, services, user, subPath: "history" });
+      if (practiceSkillMatch) return await renderPracticePage({ services, db: safeDb, user, skill: practiceSkillMatch[1] });
+      if (path === "/specialized") return await renderSpecializedPage({ db: safeDb, user });
+      if (path.startsWith("/specialized/")) return await renderSpecializedPage({ db: safeDb, user, subSlug: path.slice("/specialized/".length) });
+      if (path === "/learner-meet") return await renderLearnerMeetPage({ db: safeDb, services, user });
+      if (path === "/learner-meet/sessions") return await renderLearnerMeetPage({ db: safeDb, services, user, subPath: "sessions" });
+      if (path === "/learner-meet/create") return await renderLearnerMeetPage({ db: safeDb, services, user, subPath: "create" });
+      if (path === "/learner-meet/history") return await renderLearnerMeetPage({ db: safeDb, services, user, subPath: "history" });
       const lmJoinMatch = path.match(/^\/learner-meet\/join\/([^/]+)$/);
-      if (lmJoinMatch) return await renderLearnerMeetPage({ db: env.DB, services, user, subPath: "room", param: lmJoinMatch[1] });
+      if (lmJoinMatch) return await renderLearnerMeetPage({ db: safeDb, services, user, subPath: "room", param: lmJoinMatch[1] });
       const lmRoomMatch = path.match(/^\/learner-meet\/room\/([^/]+)$/);
-      if (lmRoomMatch) return await renderLearnerMeetPage({ db: env.DB, services, user, subPath: "room", param: lmRoomMatch[1] });
+      if (lmRoomMatch) return await renderLearnerMeetPage({ db: safeDb, services, user, subPath: "room", param: lmRoomMatch[1] });
       if (path === "/intelligence") return await renderIntelligenceHub({ user });
       const intelPageMatch = path.match(/^\/intelligence\/([a-z0-9-]+)$/);
       if (intelPageMatch) return await renderIntelligenceSystemPage({ services, user, systemSlug: intelPageMatch[1] });
@@ -7573,16 +7560,20 @@ var index_default = {
       if (path === "/verify-email") return await renderVerifyEmailPage({ services, url, request });
       if (path === "/forgot-password") return await renderPasswordPage({ mode: "forgot", user, url });
       if (path === "/reset-password") return await renderPasswordPage({ mode: "reset", user, url });
-      if (path === "/profile") return await renderAccountPage({ db: env.DB, user, subPath: "profile-root" });
-      if (path === "/account") return await renderAccountPage({ db: env.DB, user, subPath: "" });
-      if (path.startsWith("/account/")) return await renderAccountPage({ db: env.DB, user, subPath: path.slice("/account/".length) });
+      if (path === "/profile") return await renderAccountPage({ db: safeDb, user, subPath: "profile-root" });
+      if (path === "/account") return await renderAccountPage({ db: safeDb, user, subPath: "" });
+      if (path.startsWith("/account/")) return await renderAccountPage({ db: safeDb, user, subPath: path.slice("/account/".length) });
       return failure(404, request);
     } catch (err) {
       const id = (globalThis.crypto || nodeWebCrypto).randomUUID();
       const section = path.split("/")[1];
       const route = ["learning", "practice", "account", "api", "lessons", "dictionary", "flashcards", "skills", "reader", "styles", "my-knowledge", "my-mistakes"].includes(section) ? "/" + section : "/";
       logFailure(err, route, id, 500, request.headers.get("cf-ray"));
-      return failure(500, request, id);
+      const res500 = failure(500, request, id);
+      const errClass = /D1_ERROR|SQLITE/i.test(String(err?.message || "")) ? "WB_D1_ERROR" : /Illegal invocation|TypeError/i.test(String(err?.name || "") + " " + String(err?.message || "")) ? "WB_RUNTIME_TYPE_ERROR" : "WB_WORKER_ERROR";
+      res500.headers.set("X-WB-Request-Id", id);
+      res500.headers.set("X-WB-Error-Class", errClass);
+      return res500;
     }
   },
   async scheduled(event, env) {

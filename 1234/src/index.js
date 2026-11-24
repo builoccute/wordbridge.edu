@@ -126,18 +126,18 @@ var OFFICIAL_LANGUAGES = Object.freeze({
 var ALLOWED_LANGUAGE_CODES = Object.freeze(["zh", "en"]);
 var SPECIALIZED_LANGUAGE_CODES = Object.freeze(["zh", "en"]);
 var SPECIALIZED_VOCAB_DATASETS = Object.freeze([
-  { slug: "ke-toan-doanh-nghiep", nameVi: "Kế toán Doanh nghiệp", languages: ["en"], count: 1e3, sample: "balance sheet, general ledger, accounts payable, audit trail" },
-  { slug: "quan-tri-mang-may-tinh", nameVi: "Quản trị Mạng Máy tính", languages: ["en"], count: 1e3, sample: "subnet mask, firewall, routing table, packet loss" },
-  { slug: "cong-nghe-o-to", nameVi: "Công nghệ Ô tô", languages: ["en"], count: 1e3, sample: "internal combustion engine, turbocharger, ABS, crankshaft" },
-  { slug: "ky-thuat-may-lanh-dhkk", nameVi: "Kỹ thuật Máy lạnh & ĐHKK", languages: ["en"], count: 1e3, sample: "compressor, evaporator, refrigerant, condenser" },
-  { slug: "sua-chua-lap-rap-may-tinh", nameVi: "Sửa chữa & Lắp ráp Máy tính", languages: ["en"], count: 1012, sample: "motherboard, BIOS/UEFI, thermal paste, power supply unit" },
-  { slug: "thiet-ke-do-hoa", nameVi: "Thiết kế Đồ họa", languages: ["en"], count: 1017, sample: "typography, vector graphics, color palette, kerning" },
-  { slug: "dien-cong-nghiep", nameVi: "Điện Công nghiệp", languages: ["en"], count: 1012, sample: "circuit breaker, transformer, three-phase motor, contactor" },
-  { slug: "dien-tu-cong-nghiep", nameVi: "Điện tử Công nghiệp", languages: ["en"], count: 1015, sample: "microcontroller, oscilloscope, rectifier, printed circuit board" },
-  { slug: "co-dien-tu", nameVi: "Cơ Điện tử", languages: ["en"], count: 1023, sample: "PLC, actuator, pneumatic cylinder, servo motor" },
-  { slug: "cat-got-kim-loai", nameVi: "Cắt gọt Kim loại", languages: ["en"], count: 1005, sample: "metal cutting, machining, CNC lathe, milling cutter" },
-  { slug: "nguoi-sua-chua-may-cong-cu", nameVi: "Nguội Sửa chữa Máy công cụ", languages: ["en"], count: 1013, sample: "bench work, micrometer, spindle alignment, backlash" },
-  { slug: "bao-tri-thiet-bi-co-dien", nameVi: "Bảo trì Thiết bị Cơ điện", languages: ["en"], count: 1007, sample: "preventive maintenance, bearing lubrication, vibration analysis, downtime" }
+  { slug: "ke-toan-doanh-nghiep", nameVi: "Kế toán Doanh nghiệp", languages: ["en", "zh"], count: 3000, enCount: 1500, zhCount: 1500, authoredCount: 1000, sample: "balance sheet, general ledger, 合并资产负债表, audit trail" },
+  { slug: "quan-tri-mang-may-tinh", nameVi: "Quản trị Mạng Máy tính", languages: ["en", "zh"], count: 3000, enCount: 1500, zhCount: 1500, authoredCount: 1000, sample: "subnet mask, firewall, 边界网关路由, zero-trust segmentation" },
+  { slug: "cong-nghe-o-to", nameVi: "Công nghệ Ô tô", languages: ["en", "zh"], count: 3000, enCount: 1500, zhCount: 1500, authoredCount: 1000, sample: "internal combustion engine, BMS, 动力电池管理系统, ABS" },
+  { slug: "ky-thuat-may-lanh-dhkk", nameVi: "Kỹ thuật Máy lạnh & ĐHKK", languages: ["en", "zh"], count: 3000, enCount: 1500, zhCount: 1500, authoredCount: 1000, sample: "refrigeration cycle, VRF, 离心式冷水机组, ASHRAE" },
+  { slug: "sua-chua-lap-rap-may-tinh", nameVi: "Sửa chữa & Lắp ráp Máy tính", languages: ["en", "zh"], count: 3012, enCount: 1512, zhCount: 1500, authoredCount: 1000, sample: "motherboard, BIOS/UEFI, 供电调节模块VRM, NVMe" },
+  { slug: "thiet-ke-do-hoa", nameVi: "Thiết kế Đồ họa", languages: ["en", "zh"], count: 3017, enCount: 1517, zhCount: 1500, authoredCount: 1000, sample: "typography, design tokens, 国际色彩配置文件, WCAG" },
+  { slug: "dien-cong-nghiep", nameVi: "Điện Công nghiệp", languages: ["en", "zh"], count: 3012, enCount: 1512, zhCount: 1500, authoredCount: 1000, sample: "circuit breaker, VFD, 中压真空断路器, LOTO" },
+  { slug: "dien-tu-cong-nghiep", nameVi: "Điện tử Công nghiệp", languages: ["en", "zh"], count: 3015, enCount: 1515, zhCount: 1500, authoredCount: 1000, sample: "microcontroller, SiC MOSFET, 电磁兼容屏蔽设计, FPGA" },
+  { slug: "co-dien-tu", nameVi: "Cơ Điện tử", languages: ["en", "zh"], count: 3023, enCount: 1523, zhCount: 1500, authoredCount: 1000, sample: "PLC, EtherCAT, 六轴关节工业机器人, Digital Twin" },
+  { slug: "cat-got-kim-loai", nameVi: "Cắt gọt Kim loại", languages: ["en", "zh"], count: 3005, enCount: 1505, zhCount: 1500, authoredCount: 1000, sample: "metal cutting, GD&T, 五轴联动数控铣削, CMM" },
+  { slug: "nguoi-sua-chua-may-cong-cu", nameVi: "Nguội Sửa chữa Máy công cụ", languages: ["en", "zh"], count: 3013, enCount: 1513, zhCount: 1500, authoredCount: 1000, sample: "bench work, ISO 230, 激光干涉仪螺距误差补偿, backlash" },
+  { slug: "bao-tri-thiet-bi-co-dien", nameVi: "Bảo trì Thiết bị Cơ điện", languages: ["en", "zh"], count: 3007, enCount: 1507, zhCount: 1500, authoredCount: 1000, sample: "preventive maintenance, RCM, 快速傅里叶振动频谱, ISO 55000" }
 ]);
 var SPECIALIZED_DOMAINS = Object.freeze([
   ...SPECIALIZED_VOCAB_DATASETS,
@@ -895,6 +895,7 @@ function timingSafeEqual(a, b) {
   return diff === 0;
 }
 __name(timingSafeEqual, "timingSafeEqual");
+var PBKDF2_ITERATIONS = 1e5;
 async function hashPassword(password) {
   const salt = new Uint8Array(16);
   webCrypto.getRandomValues(salt);
@@ -905,7 +906,7 @@ async function hashPassword(password) {
     false,
     ["deriveBits"]
   );
-  const iterations = 1e5;
+  const iterations = PBKDF2_ITERATIONS;
   const derived = await webCrypto.subtle.deriveBits(
     { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
     keyMaterial,
@@ -919,21 +920,27 @@ async function verifyPassword(password, storedHash) {
   const parts = storedHash.split("$");
   if (parts.length !== 4 || parts[0] !== "pbkdf2_sha256") return false;
   const iterations = Number(parts[1]);
-  const salt = fromHex(parts[2]);
-  const expectedHex = parts[3];
-  const keyMaterial = await webCrypto.subtle.importKey(
-    "raw",
-    encoder.encode(password),
-    { name: "PBKDF2" },
-    false,
-    ["deriveBits"]
-  );
-  const derived = await webCrypto.subtle.deriveBits(
-    { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
-    keyMaterial,
-    256
-  );
-  return timingSafeEqual(toHex(derived), expectedHex);
+  if (!Number.isInteger(iterations) || iterations < 1000 || iterations > PBKDF2_ITERATIONS) return false;
+  try {
+    const salt = fromHex(parts[2]);
+    if (!salt || salt.length < 8) return false;
+    const expectedHex = parts[3];
+    const keyMaterial = await webCrypto.subtle.importKey(
+      "raw",
+      encoder.encode(password),
+      { name: "PBKDF2" },
+      false,
+      ["deriveBits"]
+    );
+    const derived = await webCrypto.subtle.deriveBits(
+      { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+      keyMaterial,
+      256
+    );
+    return timingSafeEqual(toHex(derived), expectedHex);
+  } catch {
+    return false;
+  }
 }
 __name(verifyPassword, "verifyPassword");
 
@@ -2517,47 +2524,155 @@ var ReaderService = class {
   static {
     __name(this, "ReaderService");
   }
-  constructor(db, r2Service = null) {
+  constructor(db, r2Service = null, libraryLoader = null) {
     this.db = db;
     this.r2Service = r2Service;
+    this.libraryLoader = libraryLoader;
   }
-  async listDocuments({ language = "", category = "", q = "", includeDrafts = false } = {}) {
-    const clauses = [];
-    const params = [];
-    if (!includeDrafts) {
-      clauses.push("review_status = 'published'");
+  async getBuiltInArticles() {
+    if (typeof this.libraryLoader !== "function") return [];
+    try {
+      const lib = await this.libraryLoader();
+      return Array.isArray(lib?.articles) ? lib.articles : [];
+    } catch {
+      return [];
     }
-    if (language && !["zh", "en"].includes(language)) return [];
-    if (language) {
-      clauses.push("language_code = ?");
-      params.push(language);
+  }
+  normalizeBuiltInDoc(a) {
+    return {
+      id: a.id,
+      slug: a.slug,
+      title_vi: a.title_vi,
+      subtitle_vi: a.subtitle_vi || "",
+      language_code: a.language_code,
+      category: a.category || "specialized",
+      domain_group_code: a.domain_group_code || "",
+      domain_group_vi: a.domain_group_vi || "",
+      specialized_domain_slug: a.specialized_domain_slug || null,
+      sub_field_index: a.sub_field_index || null,
+      sub_field_vi: a.sub_field_vi || "",
+      level_ref: a.level_ref || "B2",
+      summary_vi: a.summary_vi || "",
+      content_text: a.content_text || "",
+      vocabulary_notes_json: JSON.stringify(a.vocabulary_notes || []),
+      references: Array.isArray(a.references) ? a.references : [],
+      r2_object_key: null,
+      estimated_minutes: Number(a.estimated_minutes || 12),
+      author_name: a.author_name || "Hội đồng Học thuật WORD BRIDGE",
+      review_status: "published",
+      source_origin: "builtin_web_library"
+    };
+  }
+  async listDocumentsPaginated({ language = "", category = "", domainGroup = "", q = "", page = 1, limit = 24, includeDrafts = false } = {}) {
+    if (language && !["zh", "en"].includes(language)) {
+      return { items: [], total: 0, page: 1, totalPages: 1, stats: { totalAll: 0, zhCount: 0, enCount: 0 } };
     }
-    if (category && ["general", "specialized", "guide", "grammar", "dialogue"].includes(category)) {
-      clauses.push("category = ?");
-      params.push(category);
+    const d1Docs = await this.listD1Documents({ language, category, q, includeDrafts });
+    const builtInRaw = await this.getBuiltInArticles();
+    const d1Slugs = new Set(d1Docs.map((d) => d.slug));
+    const builtInAll = builtInRaw.filter((a) => !d1Slugs.has(a.slug));
+    const totalAll = d1Docs.length + builtInAll.length;
+    const zhCount = d1Docs.filter((d) => d.language_code === "zh").length + builtInAll.filter((a) => a.language_code === "zh").length;
+    const enCount = d1Docs.filter((d) => d.language_code === "en").length + builtInAll.filter((a) => a.language_code === "en").length;
+
+    const qLower = String(q || "").trim().toLowerCase();
+    const filteredBuiltIn = builtInAll.filter((a) => {
+      if (language && a.language_code !== language) return false;
+      if (category && ["general", "specialized", "guide", "grammar", "dialogue"].includes(category) && (a.category || "specialized") !== category) return false;
+      if (domainGroup && a.domain_group_code !== domainGroup) return false;
+      if (qLower) {
+        const hay = `${a.title_vi || ""} ${a.subtitle_vi || ""} ${a.summary_vi || ""} ${a.sub_field_vi || ""} ${a.domain_group_vi || ""}`.toLowerCase();
+        if (!hay.includes(qLower)) return false;
+      }
+      return true;
+    }).map((a) => this.normalizeBuiltInDoc(a));
+
+    const filteredD1 = domainGroup ? [] : d1Docs;
+    const merged = [...filteredBuiltIn, ...filteredD1];
+    const safeLimit = Math.min(100, Math.max(1, Number(limit) || 24));
+    const total = merged.length;
+    const totalPages = Math.max(1, Math.ceil(total / safeLimit));
+    const safePage = Math.min(totalPages, Math.max(1, Number(page) || 1));
+    const start = (safePage - 1) * safeLimit;
+    return {
+      items: merged.slice(start, start + safeLimit),
+      total,
+      page: safePage,
+      totalPages,
+      stats: { totalAll, zhCount, enCount }
+    };
+  }
+  async listD1Documents({ language = "", category = "", q = "", includeDrafts = false } = {}) {
+    try {
+      const clauses = [];
+      const params = [];
+      if (!includeDrafts) clauses.push("review_status = 'published'");
+      if (language) { clauses.push("language_code = ?"); params.push(language); }
+      if (category && ["general", "specialized", "guide", "grammar", "dialogue"].includes(category)) {
+        clauses.push("category = ?"); params.push(category);
+      }
+      if (q) {
+        clauses.push("(LOWER(title_vi) LIKE ? OR LOWER(summary_vi) LIKE ? OR LOWER(content_text) LIKE ?)");
+        const pat = `%${String(q).trim().toLowerCase()}%`;
+        params.push(pat, pat, pat);
+      }
+      const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+      const res = await this.db.prepare(`SELECT * FROM ${includeDrafts ? "wb_reader_documents" : "wb_public_reader_documents"} ${where} ORDER BY updated_at DESC, id ASC`).bind(...params).all();
+      return res.results || [];
+    } catch {
+      return [];
     }
-    if (q) {
-      clauses.push("(LOWER(title_vi) LIKE ? OR LOWER(summary_vi) LIKE ? OR LOWER(content_text) LIKE ?)");
-      const pat = `%${String(q).trim().toLowerCase()}%`;
-      params.push(pat, pat, pat);
+  }
+  async listDocuments({ language = "", category = "", domainGroup = "", q = "", page = 1, limit = 50, includeDrafts = false } = {}) {
+    const res = await this.listDocumentsPaginated({ language, category, domainGroup, q, page, limit, includeDrafts });
+    return res.items;
+  }
+  async getDocumentByIdOrSlug(idOrSlug) {
+    let doc = null;
+    try {
+      doc = await this.db.prepare("SELECT * FROM wb_public_reader_documents WHERE (id = ? OR slug = ?) AND review_status = 'published'").bind(idOrSlug, idOrSlug).first();
+    } catch {
+      doc = null;
     }
-    const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
-    const res = await this.db.prepare(`SELECT * FROM ${includeDrafts ? "wb_reader_documents" : "wb_public_reader_documents"} ${where} ORDER BY updated_at DESC, id ASC`).bind(...params).all();
-    return res.results || [];
+    if (doc) return doc;
+    const builtIn = await this.getBuiltInArticles();
+    const hit = builtIn.find((a) => a.id === idOrSlug || a.slug === idOrSlug);
+    return hit ? this.normalizeBuiltInDoc(hit) : null;
   }
   async getDocumentBySlug(slug, accountId = null) {
-    const doc = await this.db.prepare("SELECT * FROM wb_public_reader_documents WHERE slug = ? AND review_status = 'published'").bind(slug).first();
+    const doc = await this.getDocumentByIdOrSlug(slug);
     if (!doc) return null;
     let progress = null;
     if (accountId) {
-      progress = await this.db.prepare("SELECT * FROM wb_reader_progress WHERE account_id = ? AND document_id = ?").bind(accountId, doc.id).first();
+      try {
+        progress = await this.db.prepare("SELECT * FROM wb_reader_progress WHERE account_id = ? AND document_id = ?").bind(accountId, doc.id).first();
+      } catch {
+        progress = null;
+      }
     }
     return { doc, progress };
   }
   async saveProgress(accountId, { documentId, currentSection = 1, progressPercent = 0, bookmarked = false, personalNotes = "" }) {
     if (!documentId) return { ok: false, status: 400, error: "Thiếu documentId." };
-    const doc = await this.db.prepare("SELECT id FROM wb_public_reader_documents WHERE id = ? AND review_status = 'published'").bind(documentId).first();
-    if (!doc) return { ok: false, status: 404, error: "Tài liệu không tồn tại." };
+    let doc = await this.db.prepare("SELECT id FROM wb_public_reader_documents WHERE id = ? AND review_status = 'published'").bind(documentId).first().catch(() => null);
+    if (!doc) {
+      const builtIn = await this.getDocumentByIdOrSlug(documentId);
+      if (!builtIn) return { ok: false, status: 404, error: "Tài liệu không tồn tại." };
+      // Ensure lightweight row exists in wb_reader_documents for FK integrity
+      await this.db.prepare(`
+        INSERT OR IGNORE INTO wb_reader_documents (
+          id, slug, title_vi, subtitle_vi, language_code, category, specialized_domain_slug,
+          level_ref, summary_vi, content_text, vocabulary_notes_json, r2_object_key,
+          estimated_minutes, author_name, review_status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, 'published')
+      `).bind(
+        builtIn.id, builtIn.slug, builtIn.title_vi, builtIn.subtitle_vi || "", builtIn.language_code,
+        builtIn.category || "specialized", builtIn.specialized_domain_slug || null, builtIn.level_ref || "B2",
+        builtIn.summary_vi || builtIn.title_vi, builtIn.content_text || "", builtIn.vocabulary_notes_json || "[]",
+        builtIn.estimated_minutes || 10, builtIn.author_name || "Hội đồng Học thuật WORD BRIDGE"
+      ).run().catch(() => {});
+      doc = { id: builtIn.id };
+    }
     const safePercent = Math.max(0, Math.min(100, Number(progressPercent) || 0));
     const safeSection = Math.max(1, Number(currentSection) || 1);
     const safeBookmark = bookmarked ? 1 : 0;
@@ -2571,8 +2686,8 @@ var ReaderService = class {
           bookmarked = excluded.bookmarked,
           personal_notes = excluded.personal_notes,
           last_read_at = datetime('now')
-      `).bind(generateId("rpr"), accountId, documentId, safeSection, safePercent, safeBookmark, safeNotes).run();
-    return { ok: true, documentId, currentSection: safeSection, progressPercent: safePercent, bookmarked: Boolean(safeBookmark) };
+      `).bind(generateId("rpr"), accountId, doc.id, safeSection, safePercent, safeBookmark, safeNotes).run();
+    return { ok: true, documentId: doc.id, currentSection: safeSection, progressPercent: safePercent, bookmarked: Boolean(safeBookmark) };
   }
   async createDocument(actor, payload) {
     const titleVi = String(payload.titleVi || "").trim();
@@ -3699,12 +3814,22 @@ async function handleApiRequest(request, url, ctx) {
     }
   }
   if (path === "/api/v1/reader/documents" && method === "GET") {
-    const docs = await services.reader.listDocuments({
+    const res = await services.reader.listDocumentsPaginated({
       language: url.searchParams.get("language") || "",
       category: url.searchParams.get("category") || "",
-      q: url.searchParams.get("q") || ""
+      domainGroup: url.searchParams.get("domainGroup") || "",
+      q: url.searchParams.get("q") || "",
+      page: Number(url.searchParams.get("page") || 1),
+      limit: Number(url.searchParams.get("limit") || 24)
     });
-    return jsonResponse({ ok: true, documents: docs });
+    return jsonResponse({
+      ok: true,
+      total: res.total,
+      page: res.page,
+      totalPages: res.totalPages,
+      stats: res.stats,
+      documents: res.items
+    });
   }
   const readerFileMatch = path.match(/^\/api\/v1\/reader\/documents\/([^/]+)\/file$/);
   if (readerFileMatch && method === "GET") {
@@ -3779,23 +3904,40 @@ async function handleApiRequest(request, url, ctx) {
   if (path === "/api/v1/specialized/terms" && method === "GET") {
     if (!user) return errorResponse("UNAUTHORIZED", "Cần đăng nhập để tra cứu thuật ngữ chuyên ngành.", 401);
     const domain = String(url.searchParams.get("domain") || "").trim().toLowerCase();
+    const lang = String(url.searchParams.get("lang") || "").trim().toLowerCase();
+    const srcFilter = String(url.searchParams.get("src") || "").trim().toLowerCase();
     const q = String(url.searchParams.get("q") || "").trim().toLowerCase();
     const topic = String(url.searchParams.get("topic") || "").trim().toLowerCase();
     const limit = Math.min(100, Math.max(1, Number(url.searchParams.get("limit") || 50)));
+    const page = Math.max(1, Number(url.searchParams.get("page") || 1));
     const dataset = typeof loadVocabJson2 === "function" ? await loadVocabJson2(domain) : null;
     if (!dataset || !Array.isArray(dataset.words)) {
       return errorResponse("DOMAIN_NOT_FOUND", `Không tìm thấy bộ thuật ngữ chuyên ngành: ${domain}`, 404);
     }
     let words = dataset.words;
+    if (lang === "en" || lang === "zh") words = words.filter((w) => (w.l || "en") === lang);
+    if (srcFilter === "excel" || srcFilter === "wb_v43") words = words.filter((w) => (w.src || "excel") === srcFilter);
     if (topic) words = words.filter((w) => String(w.t || "").toLowerCase().includes(topic));
-    if (q) words = words.filter((w) => `${w.w || ""} ${w.m || ""} ${w.i || ""} ${w.t || ""}`.toLowerCase().includes(q));
+    if (q) words = words.filter((w) => `${w.w || ""} ${w.m || ""} ${w.i || ""} ${w.t || ""} ${w.ex || ""}`.toLowerCase().includes(q));
+    const total = words.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * limit;
+    const topics = lang === "zh" ? (dataset.topicsZh || dataset.topics || []) : lang === "en" ? (dataset.topicsEn || dataset.topics || []) : (dataset.topics || []);
     return jsonResponse({
       ok: true,
       domain: dataset.slug,
       nameVi: dataset.nameVi,
       language: dataset.language,
-      total: words.length,
-      words: words.slice(0, limit)
+      languages: dataset.languages || ["en", "zh"],
+      enCount: dataset.enCount || 0,
+      zhCount: dataset.zhCount || 0,
+      authoredTotalCount: dataset.authoredTotalCount || 1000,
+      page: safePage,
+      totalPages,
+      total,
+      topics,
+      words: words.slice(start, start + limit)
     });
   }
   if (path === "/api/v1/webhooks/email" && method === "POST") {
@@ -3903,7 +4045,7 @@ async function handleApiRequest(request, url, ctx) {
   }
   const readerDocGetMatch = path.match(/^\/api\/v1\/reader\/documents\/([^/]+)$/);
   if (readerDocGetMatch && method === "GET") {
-    const doc = await apiDb.prepare("SELECT * FROM wb_public_reader_documents WHERE id = ? OR slug = ?").bind(readerDocGetMatch[1], readerDocGetMatch[1]).first();
+    const doc = await services.reader.getDocumentByIdOrSlug(readerDocGetMatch[1]);
     if (!doc) return errorResponse("NOT_FOUND", "Không tìm thấy tài liệu trong Thư viện đọc.", 404);
     return jsonResponse({ ok: true, document: doc });
   }
@@ -4982,63 +5124,98 @@ function safeJson(str, fallback = []) {
   }
 }
 __name(safeJson, "safeJson");
+var READER_DOMAIN_GROUPS = Object.freeze([
+  ["economics_finance", "Kinh tế, kinh doanh và tài chính"],
+  ["trade_logistics", "Thương mại, logistics và chuỗi cung ứng"],
+  ["marketing_media_design", "Marketing, truyền thông và thiết kế"],
+  ["it_data", "Công nghệ thông tin và dữ liệu"],
+  ["management_org", "Quản lý và quản trị tổ chức"],
+  ["education_society", "Giáo dục, ngôn ngữ và xã hội"],
+  ["engineering_manufacturing", "Kỹ thuật và sản xuất"],
+  ["science_health", "Khoa học, môi trường và sức khỏe"],
+  ["services_social", "Dịch vụ và các lĩnh vực xã hội"]
+]);
 async function renderReaderLibraryPage({ services, user, url, runtime = null }) {
   const language = url?.searchParams?.get("language") || "";
   const category = url?.searchParams?.get("category") || "";
+  const domainGroup = url?.searchParams?.get("domainGroup") || "";
   const q = url?.searchParams?.get("q") || "";
-  const docs = await services.reader.listDocuments({ language, category, q }).catch(() => []);
+  const page = Math.max(1, Number(url?.searchParams?.get("page") || 1));
+  const result = await services.reader.listDocumentsPaginated({ language, category, domainGroup, q, page, limit: 24 }).catch(() => ({
+    items: [], total: 0, page: 1, totalPages: 1, stats: { totalAll: 0, zhCount: 0, enCount: 0 }
+  }));
+  const docs = result.items || [];
+  const buildPageHref = (p) => {
+    const sp = new URLSearchParams();
+    if (q) sp.set("q", q);
+    if (language) sp.set("language", language);
+    if (category) sp.set("category", category);
+    if (domainGroup) sp.set("domainGroup", domainGroup);
+    sp.set("page", String(p));
+    return `/reader?${sp.toString()}`;
+  };
   const contentHtml = `
     <section class="wb-hero">
-      <span class="wb-badge wb-badge-aqua">THƯ VIỆN ĐỌC TÍCH HỢP</span>
-      <h1>Thư Viện Đọc Tài Liệu WORD BRIDGE</h1>
-      <p>Đọc trực tiếp bài đọc học thuật, hội thoại mẫu và tài liệu ngoại ngữ chuyên ngành (Tiếng Trung, Tiếng Anh) kèm bảng chú giải thuật ngữ và lưu tiến độ đọc cá nhân.</p>
+      <span class="wb-badge wb-badge-aqua">THƯ VIỆN ĐỌC TRỰC TIẾP TẠI WEB · KHÔNG PDF TRUNG GIAN</span>
+      <h1>Thư Viện Đọc Học Thuật WORD BRIDGE (${result.stats.totalAll.toLocaleString("vi-VN")} Tài Liệu)</h1>
+      <p>Đọc trực tiếp ngay trên web <strong>${result.stats.zhCount.toLocaleString("vi-VN")} bài đọc Tiếng Trung (500 phân ngành)</strong> và <strong>${result.stats.enCount.toLocaleString("vi-VN")} bài đọc Tiếng Anh (500 phân ngành)</strong> tham chiếu chuẩn khảo thí & tiêu chuẩn quốc tế (CEFR, Cambridge, IELTS, ETS TOEFL, CLEC HSK 3.0, IEEE, IFRS, SAE, IETF, NIST).</p>
     </section>
 
     <form method="GET" action="/reader" class="wb-card" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
       <div class="wb-field" style="margin:0;flex:1;min-width:180px;">
         <label>Tìm kiếm tài liệu</label>
-        <input class="wb-input" name="q" value="${escapeHtml(q)}" placeholder="Nhập từ khóa tiêu đề hoặc nội dung..." />
+        <input class="wb-input" name="q" value="${escapeHtml(q)}" placeholder="Nhập tên chuyên ngành, phân ngành hoặc từ khóa..." />
       </div>
       <div class="wb-field" style="margin:0;min-width:150px;">
         <label>Ngôn ngữ</label>
         <select class="wb-select" name="language">
-          <option value="">Tất cả ngôn ngữ</option>
-          <option value="zh" ${language === "zh" ? "selected" : ""}>Tiếng Trung (ZH)</option>
-          <option value="en" ${language === "en" ? "selected" : ""}>Tiếng Anh (EN)</option>
-          
+          <option value="">Tất cả (${result.stats.totalAll.toLocaleString("vi-VN")})</option>
+          <option value="zh" ${language === "zh" ? "selected" : ""}>Tiếng Trung — 500 ngành (${result.stats.zhCount})</option>
+          <option value="en" ${language === "en" ? "selected" : ""}>Tiếng Anh — 500 ngành (${result.stats.enCount})</option>
         </select>
       </div>
-      <div class="wb-field" style="margin:0;min-width:150px;">
-        <label>Phân loại</label>
-        <select class="wb-select" name="category">
-          <option value="">Tất cả</option>
-          <option value="general" ${category === "general" ? "selected" : ""}>Tổng quát</option>
-          <option value="specialized" ${category === "specialized" ? "selected" : ""}>Chuyên ngành</option>
-          <option value="dialogue" ${category === "dialogue" ? "selected" : ""}>Hội thoại</option>
-          <option value="grammar" ${category === "grammar" ? "selected" : ""}>Ngữ pháp</option>
-          <option value="guide" ${category === "guide" ? "selected" : ""}>Hướng dẫn</option>
+      <div class="wb-field" style="margin:0;min-width:190px;">
+        <label>Nhóm chuyên ngành</label>
+        <select class="wb-select" name="domainGroup">
+          <option value="">Tất cả 9 khối ngành</option>
+          ${READER_DOMAIN_GROUPS.map(([code, label]) => `<option value="${code}" ${domainGroup === code ? "selected" : ""}>${escapeHtml(label)}</option>`).join("")}
         </select>
       </div>
       <button type="submit" class="wb-btn wb-btn-primary">Lọc tài liệu</button>
+      ${(q || language || category || domainGroup) ? '<a href="/reader" class="wb-btn wb-btn-outline">Xóa lọc</a>' : ""}
     </form>
 
-    <div class="wb-grid-2" style="margin-top:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;flex-wrap:wrap;gap:8px;">
+      <span class="wb-muted">Tìm thấy <strong>${result.total.toLocaleString("vi-VN")}</strong> tài liệu · Trang <strong>${result.page}</strong> / ${result.totalPages}</span>
+      <div style="display:flex;gap:8px;align-items:center;">
+        ${result.page > 1 ? `<a href="${escapeHtml(buildPageHref(result.page - 1))}" class="wb-btn wb-btn-outline wb-btn-sm">← Trang trước</a>` : ""}
+        ${result.page < result.totalPages ? `<a href="${escapeHtml(buildPageHref(result.page + 1))}" class="wb-btn wb-btn-primary wb-btn-sm">Trang sau →</a>` : ""}
+      </div>
+    </div>
+
+    <div class="wb-grid-2" style="margin-top:14px;">
       ${docs.map((d) => `
         <article class="wb-card" style="display:flex;flex-direction:column;justify-content:space-between;">
           <div>
             <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;">
               <span class="wb-badge">${escapeHtml(LANG_LABELS[d.language_code] || d.language_code)}</span>
-              <span class="wb-badge wb-badge-aqua">${escapeHtml(CAT_LABELS[d.category] || d.category)}</span>
+              <span class="wb-badge wb-badge-aqua">${escapeHtml(d.domain_group_vi || CAT_LABELS[d.category] || d.category)}</span>
               <span class="wb-badge">${escapeHtml(d.level_ref)}</span>
             </div>
             <h3 style="margin:6px 0;color:var(--wb-teal);">${escapeHtml(d.title_vi)}</h3>
             <p class="wb-muted" style="font-size:0.9rem;">${escapeHtml(d.summary_vi)}</p>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px;flex-wrap:wrap;">
-            <span class="wb-muted" style="font-size:0.82rem;">${Number(d.estimated_minutes || 10)} phút đọc · ${escapeHtml(d.author_name || "WORD BRIDGE")}</span>
-            <a href="/reader/${escapeHtml(d.slug)}" class="wb-btn wb-btn-primary wb-btn-sm">Đọc tài liệu</a>
+            <span class="wb-muted" style="font-size:0.82rem;">${Number(d.estimated_minutes || 10)} phút đọc trực tiếp · ${escapeHtml(d.author_name || "WORD BRIDGE")}</span>
+            <a href="/reader/${escapeHtml(d.slug)}" class="wb-btn wb-btn-primary wb-btn-sm">Đọc trực tiếp →</a>
           </div>
         </article>`).join("") || '<div class="wb-card"><p class="wb-muted">Không tìm thấy tài liệu phù hợp với bộ lọc hiện tại.</p></div>'}
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:10px;align-items:center;margin-top:18px;flex-wrap:wrap;">
+      ${result.page > 1 ? `<a href="${escapeHtml(buildPageHref(1))}" class="wb-btn wb-btn-outline wb-btn-sm">« Đầu</a><a href="${escapeHtml(buildPageHref(result.page - 1))}" class="wb-btn wb-btn-outline wb-btn-sm">← Trang trước</a>` : ""}
+      <span class="wb-badge">Trang ${result.page} / ${result.totalPages}</span>
+      ${result.page < result.totalPages ? `<a href="${escapeHtml(buildPageHref(result.page + 1))}" class="wb-btn wb-btn-primary wb-btn-sm">Trang sau →</a><a href="${escapeHtml(buildPageHref(result.totalPages))}" class="wb-btn wb-btn-outline wb-btn-sm">Cuối »</a>` : ""}
     </div>
   `;
   return htmlResponse(renderPublicPage({
@@ -5093,22 +5270,30 @@ async function renderReaderDocumentPage({ services, user, slug, runtime = null }
       <div class="wb-alert wb-alert-info">
         <a href="${escapeHtml(signInUrl(`/reader/${doc.slug}`, "reader.save"))}">Đăng nhập</a> để lưu tiến độ đọc, đánh dấu tài liệu và ghi chú cá nhân vào tài khoản WORD BRIDGE.
       </div>`;
-  const fileAttachmentHtml = doc.r2_object_key ? `<div class="wb-alert wb-alert-info" style="margin-bottom:14px;">Tài liệu có tệp đính kèm: <a href="/api/v1/reader/documents/${escapeHtml(doc.id)}/file" class="wb-btn wb-btn-outline wb-btn-sm" target="_blank" rel="noopener">Mở / Tải tệp đính kèm</a></div>` : "";
+  const refsHtml = Array.isArray(doc.references) && doc.references.length > 0 ? `
+      <section class="wb-card">
+        <h3 style="margin-top:0;color:var(--wb-teal);">Nguồn tham chiếu khoa học, khảo thí & tiêu chuẩn quốc tế</h3>
+        <ul style="margin:0;padding-left:20px;line-height:1.7;">
+          ${doc.references.map((r) => `<li><a href="${escapeHtml(r.url)}" target="_blank" rel="noopener noreferrer" style="color:var(--wb-teal);font-weight:600;">${escapeHtml(r.name)} ↗</a></li>`).join("")}
+        </ul>
+      </section>` : "";
+  const ttsSample = paragraphs.slice(0, 2).join(" ").slice(0, 600);
   const contentHtml = `
     <article class="wb-card">
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
         <span class="wb-badge">${escapeHtml(LANG_LABELS[doc.language_code] || doc.language_code)}</span>
-        <span class="wb-badge wb-badge-aqua">${escapeHtml(CAT_LABELS[doc.category] || doc.category)}</span>
+        <span class="wb-badge wb-badge-aqua">${escapeHtml(doc.domain_group_vi || CAT_LABELS[doc.category] || doc.category)}</span>
         <span class="wb-badge">${escapeHtml(doc.level_ref)}</span>
-        <span class="wb-badge">${Number(doc.estimated_minutes || 10)} phút đọc</span>
+        <span class="wb-badge">${Number(doc.estimated_minutes || 10)} phút đọc trực tiếp tại web</span>
+        <button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-wb-tts="${escapeHtml(ttsSample)}" data-wb-lang="${doc.language_code === "zh" ? "zh" : "en"}">🔊 Nghe đọc mẫu (${doc.language_code.toUpperCase()})</button>
       </div>
       <h1 style="margin:6px 0;color:var(--wb-teal);">${escapeHtml(doc.title_vi)}</h1>
       ${doc.subtitle_vi ? `<p class="wb-muted" style="margin-top:0;">${escapeHtml(doc.subtitle_vi)}</p>` : ""}
-      ${fileAttachmentHtml}
-      <div class="wb-reader-body" style="line-height:1.8;font-size:1.03rem;margin-top:16px;">
+      <div class="wb-reader-body" style="line-height:1.85;font-size:1.04rem;margin-top:16px;">
         ${paragraphs.map((p) => `<p style="white-space:pre-line;margin:0 0 14px;">${escapeHtml(p)}</p>`).join("")}
       </div>
     </article>
+    ${refsHtml}
 
     ${vocabNotes.length > 0 ? `
       <section class="wb-card">
@@ -6545,7 +6730,7 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
       <div class="wb-specialized-hero-copy">
         <span class="wb-eyebrow">Ngoại ngữ chuyên ngành · WORD BRIDGE</span>
         <h1>${escapeHtml(heading)}</h1>
-        <p>Học ngôn ngữ trong đúng bối cảnh nghề nghiệp: 12 bộ dữ liệu thuật ngữ (12.104 mục từ) cùng các chuyên ngành Tiếng Trung & Tiếng Anh.</p>
+        <p>Học ngôn ngữ trong đúng bối cảnh nghề nghiệp: <strong>12 bộ dữ liệu chuyên ngành song ngữ Anh – Trung (36.104 thuật ngữ)</strong> gồm 8 bộ Excel gốc (24.104 từ) và <strong>+1.000 thuật ngữ biên soạn mở rộng cho mỗi chuyên ngành (+12.000 từ)</strong>.</p>
         <div class="wb-specialized-language-switch" aria-label="Chọn ngôn ngữ chuyên ngành">
           <a href="/specialized/chinese" class="wb-specialized-language ${subSlug === "chinese" ? "active" : ""}"><strong>中文</strong><span>Tiếng Trung chuyên ngành</span></a>
           <a href="/specialized/english" class="wb-specialized-language ${subSlug === "english" ? "active" : ""}"><strong>EN</strong><span>Tiếng Anh chuyên ngành</span></a>
@@ -6575,6 +6760,41 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
           </a>`).join("")}
       </div>
     </section>
+
+    ${activeDomain && KNOWN_VOCAB_SLUGS.has(activeDomain.slug) ? `
+    <section id="wb-vocab-explorer" class="wb-card" data-domain-slug="${escapeHtml(activeDomain.slug)}" data-is-authenticated="${user ? "true" : "false"}" style="margin-top:18px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <div>
+          <span class="wb-badge wb-badge-aqua">KHO THUẬT NGỮ TRỰC TIẾP · SONG NGỮ ANH – TRUNG</span>
+          <h2 style="margin:6px 0 0;color:var(--wb-teal);">${escapeHtml(activeDomain.nameVi)} (${activeDomain.count.toLocaleString("vi-VN")} thuật ngữ)</h2>
+        </div>
+        <div id="wb-vocab-stats" class="wb-muted" style="font-size:0.9rem;">Đang tải kho thuật ngữ...</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+        <input id="wb-vocab-search" class="wb-input" style="flex:1;min-width:200px;" placeholder="Tìm kiếm thuật ngữ tiếng Anh, tiếng Trung hoặc nghĩa tiếng Việt..." />
+        <select id="wb-vocab-lang" class="wb-select" style="min-width:155px;">
+          <option value="">Tất cả ngôn ngữ (EN + ZH)</option>
+          <option value="en">Tiếng Anh (EN · ${(activeDomain.enCount || 1500).toLocaleString("vi-VN")} từ)</option>
+          <option value="zh">Tiếng Trung (ZH · ${(activeDomain.zhCount || 1500).toLocaleString("vi-VN")} từ)</option>
+        </select>
+        <select id="wb-vocab-src" class="wb-select" style="min-width:170px;">
+          <option value="">Tất cả nguồn dữ liệu</option>
+          <option value="excel">Dữ liệu Excel gốc</option>
+          <option value="wb_v43">Biên soạn mở rộng (+1.000 từ)</option>
+        </select>
+        <select id="wb-vocab-topic" class="wb-select" style="min-width:190px;">
+          <option value="">Tất cả chủ đề</option>
+        </select>
+      </div>
+      <div class="wb-table-wrap">
+        <table class="wb-table">
+          <thead><tr><th>#</th><th>Thuật ngữ</th><th>IPA / Pinyin</th><th>Nghĩa tiếng Việt & Ví dụ</th><th>Chủ đề</th><th>Thao tác</th></tr></thead>
+          <tbody id="wb-vocab-list"><tr><td colspan="6" style="text-align:center;padding:20px;">Đang nạp thuật ngữ...</td></tr></tbody>
+        </table>
+      </div>
+      <div id="wb-vocab-pager" style="display:flex;justify-content:center;gap:10px;align-items:center;margin-top:14px;"></div>
+    </section>
+    <script src="/scripts/vocab-explorer.js" defer></script>` : ""}
 
     <section class="wb-section-block">
       <div class="wb-section-heading">
@@ -7113,7 +7333,7 @@ var REMOVED_LEGACY_PATHS = /* @__PURE__ */ new Set([
   "/examinations/english",
   "/examinations/russian"
 ]);
-function createServices(env, dbOverride = null) {
+function createServices(env, dbOverride = null, readerLibraryLoader = null) {
   const db = dbOverride || env.DB;
   const email = new EmailService(db, env);
   const auth = new AuthService(db, email, env);
@@ -7123,7 +7343,7 @@ function createServices(env, dbOverride = null) {
   const dictionary = new DictionaryService(db);
   const audio = new AudioService(db, r2, env);
   const practice = new PracticeService(db, email, env);
-  const reader = new ReaderService(db, r2);
+  const reader = new ReaderService(db, r2, readerLibraryLoader);
   const learnerMeet = new LearnerMeetService(db, email, env);
   const intelligence = new IntelligenceService(db, env);
   const admin = new AdminService(db, auth, jobs, r2, email);
@@ -7353,6 +7573,19 @@ async function loadStaticAsset(normalizedPath, request, url, rawEnv) {
 }
 __name(loadStaticAsset, "loadStaticAsset");
 var KNOWN_VOCAB_SLUGS = new Set(SPECIALIZED_VOCAB_DATASETS.map((d) => d.slug));
+var cachedReaderLibrary = null;
+async function loadReaderLibrary(request, url, rawEnv) {
+  if (cachedReaderLibrary) return cachedReaderLibrary;
+  try {
+    const assetRes = await loadStaticAsset("/data/reader-library.json", request, url, rawEnv);
+    if (!assetRes || assetRes.status !== 200) return null;
+    cachedReaderLibrary = await assetRes.json();
+    return cachedReaderLibrary;
+  } catch {
+    return null;
+  }
+}
+__name(loadReaderLibrary, "loadReaderLibrary");
 async function loadVocabJson(domainSlug, request, url, rawEnv) {
   const safeSlug = String(domainSlug || "").replace(/[^a-z0-9-]/gi, "").toLowerCase();
   if (!safeSlug || !KNOWN_VOCAB_SLUGS.has(safeSlug)) return null;
@@ -7394,7 +7627,7 @@ var index_default = {
         const entries = SITEMAP_PATHS.map((route) => `<url><loc>${origin}${route}</loc></url>`).join("");
         return new Response(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${entries}</urlset>`, { headers: { "Content-Type": "application/xml; charset=utf-8" } });
       }
-      if (path.startsWith("/styles/") || path.startsWith("/scripts/") || path.startsWith("/branding/") || path.startsWith("/data/vocab/") || path.startsWith("/public/")) {
+      if (path.startsWith("/styles/") || path.startsWith("/scripts/") || path.startsWith("/branding/") || path.startsWith("/data/") || path.startsWith("/public/")) {
         const normalizedPath = path.startsWith("/public/") ? path.slice("/public".length) : path;
         const assetRes = await loadStaticAsset(normalizedPath, request, url, env);
         if (assetRes) return assetRes;
@@ -7411,7 +7644,7 @@ var index_default = {
       }
       await ensurePublicCatalogSchema(env.DB);
       const safeDb = createSafeD1Adapter(env.DB);
-      const services = createServices(env, safeDb);
+      const services = createServices(env, safeDb, () => loadReaderLibrary(request, url, env));
       const cookies = parseCookies(request);
       const user = await services.auth.authenticateSession(cookies.wb_session);
       const runtime = await loadRuntimeFromD1(safeDb);

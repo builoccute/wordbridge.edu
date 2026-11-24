@@ -4254,7 +4254,7 @@ test11("V4: all 12 specialized data sources and all SQL migrations survive clean
     assert11.equal(parsed.words.length, domain.count);
     records += parsed.words.length;
   }
-  assert11.equal(records, 12104);
+  assert11.equal(records, 36104);
   const migrations = fs3.readdirSync("database/migrations").filter((name) => name.endsWith(".sql"));
   assert11.ok(migrations.includes("0014_public_catalog.sql"));
 });

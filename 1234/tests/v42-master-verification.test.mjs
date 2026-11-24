@@ -24,6 +24,12 @@ async function createTestEnv(extraEnv = {}) {
     WEBAUTHN_RP_ID: "wordbridge.io.vn",
     TOKEN_PEPPER: "test-pepper-v42",
     EMAIL_PROVIDER: "unconfigured",
+    STATIC_ASSETS_LOADER: async (assetPath) => {
+      const clean = assetPath.replace(/^\/+/, "");
+      const full = path.join(process.cwd(), clean);
+      if (!fs.existsSync(full) || !fs.statSync(full).isFile()) return null;
+      return { body: fs.readFileSync(full), contentType: clean.endsWith(".json") ? "application/json; charset=utf-8" : "application/octet-stream" };
+    },
     ...extraEnv
   };
   return { env, db, cleanup: () => { try { db.close(); } catch {} try { fs.unlinkSync(dbPath); } catch {} } };
@@ -422,6 +428,130 @@ test("6. P1/P2/P3 Fixes: Profile 1-of-2, Contact 12-Cat Anti-Spam, Editor Separa
       ASSETS: { fetch() { throw new Error("TEST_ASSET_BACKEND_FAILED"); } }
     }, {});
     assert.equal(infraRes.status, 500);
+  } finally {
+    cleanup();
+  }
+});
+
+test("V4.3-Suite-7: 8 Excel Vocab Datasets + 12,000 Authored Terms (36,104 total), 1,000-Article Native Web Reader (500 ZH + 500 EN), PBKDF2 100,000 Guard & <= 80 Files", async () => {
+  const { env, db, cleanup } = await createTestEnv();
+  try {
+    // 1. Verify PBKDF2 100,000 iterations in src/index.js & safe rejection of >100k hash (0 HTTP 500)
+    const srcText = fs.readFileSync(path.join(process.cwd(), "src/index.js"), "utf8");
+    assert.match(srcText, /PBKDF2_ITERATIONS\s*=\s*1e5/);
+    const regRes = await req(env, "/api/v1/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        fullName: "V43 Tester",
+        dateOfBirth: "2000-05-15",
+        phoneNumber: "0909888777",
+        email: "v43tester@wordbridge.io.vn",
+        password: "StrongPassword@2026!",
+        confirmPassword: "StrongPassword@2026!",
+        schoolName: "ĐH Bách Khoa TP.HCM",
+        workplaceName: "Word Bridge Lab",
+        termsAccepted: true
+      })
+    });
+    assert.equal(regRes.status, 201);
+    const regData = await regRes.json();
+    const cookie = extractCookie(regRes, "wb_session");
+    const csrf = regData.csrfToken;
+    const accRow = await db.prepare("SELECT password_hash FROM wb_accounts WHERE email = ?").bind("v43tester@wordbridge.io.vn").first();
+    assert.ok(accRow.password_hash.startsWith("pbkdf2_sha256$100000$"), "Password hash MUST use exact 100,000 PBKDF2 iterations");
+
+    // Simulate malformed/over-limit PBKDF2 hash (>100,000 iterations) -> must return 401, NEVER 500
+    await db.prepare("UPDATE wb_accounts SET password_hash = ? WHERE email = ?")
+      .bind("pbkdf2_sha256$999999$00112233445566778899aabbccddeeff$00112233", "v43tester@wordbridge.io.vn").run();
+    const badLogin = await req(env, "/api/v1/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "v43tester@wordbridge.io.vn", password: "StrongPassword@2026!" })
+    });
+    assert.equal(badLogin.status, 401, "Over-limit PBKDF2 hash must fail closed with 401, not 500");
+
+    // 2. Verify 36,104 bilingual specialized terms (12,104 EN Excel + 12,000 ZH Excel + 12,000 Authored +1,000/domain)
+    const idxJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/data/vocab/index.json"), "utf8"));
+    assert.equal(idxJson.domainCount, 12);
+    assert.equal(idxJson.uploadedEnWords, 12104);
+    assert.equal(idxJson.uploadedZhWords, 12000);
+    assert.equal(idxJson.authoredNewWords, 12000);
+    assert.equal(idxJson.totalWords, 36104);
+    for (const d of idxJson.domains) {
+      assert.equal(d.authoredTotalCount, 1000, `${d.slug} must have +1,000 newly authored terms`);
+      assert.ok(d.enCount >= 1500 && d.zhCount === 1500, `${d.slug} must have >=1,500 EN & 1,500 ZH terms`);
+    }
+
+    // API tests on /api/v1/specialized/terms (EN, ZH, authored +1,000, pagination)
+    const specZhRes = await req(env, "/api/v1/specialized/terms?domain=dien-cong-nghiep&lang=zh&src=wb_v43&page=2&limit=25", {
+      headers: { Cookie: cookie }
+    });
+    assert.equal(specZhRes.status, 200);
+    const specZh = await specZhRes.json();
+    assert.equal(specZh.total, 500);
+    assert.equal(specZh.page, 2);
+    assert.equal(specZh.words.length, 25);
+    assert.equal(specZh.words[0].l, "zh");
+    assert.equal(specZh.words[0].src, "wb_v43");
+
+    // Interactive explorer mounted on /specialized/<slug>
+    const specPageRes = await req(env, "/specialized/ke-toan-doanh-nghiep");
+    assert.equal(specPageRes.status, 200);
+    const specPageHtml = await specPageRes.text();
+    assert.match(specPageHtml, /id="wb-vocab-explorer"/);
+    assert.match(specPageHtml, /vocab-explorer\.js/);
+
+    // 3. Verify 1,000-article Native Web Reading Library (500 ZH / 500 sub-fields + 500 EN / 500 sub-fields, ZERO PDFs)
+    const readerLib = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/data/reader-library.json"), "utf8"));
+    assert.equal(readerLib.totalCount, 1000);
+    assert.equal(readerLib.zhCount, 500);
+    assert.equal(readerLib.enCount, 500);
+    assert.equal(readerLib.articles.length, 1000);
+    const zhSubFields = new Set(readerLib.articles.filter((a) => a.language_code === "zh").map((a) => a.sub_field_vi));
+    const enSubFields = new Set(readerLib.articles.filter((a) => a.language_code === "en").map((a) => a.sub_field_vi));
+    assert.equal(zhSubFields.size, 500, "Must cover 500 distinct Chinese specialized sub-fields");
+    assert.equal(enSubFields.size, 500, "Must cover 500 distinct English specialized sub-fields");
+    assert.ok(readerLib.articles.every((a) => a.references && a.references.length >= 2 && a.content_text.length > 400));
+
+    // Reader API & HTML routes (list, filter, detail, progress save)
+    const rListRes = await req(env, "/api/v1/reader/documents?language=zh&page=1&limit=20");
+    assert.equal(rListRes.status, 200);
+    const rList = await rListRes.json();
+    assert.ok(rList.stats.zhCount >= 500 && rList.stats.enCount >= 500);
+    assert.equal(rList.documents.length, 20);
+
+    const sampleZh = readerLib.articles.find((a) => a.language_code === "zh");
+    const sampleEn = readerLib.articles.find((a) => a.language_code === "en");
+    const rZhHtml = await (await req(env, `/reader/${sampleZh.slug}`)).text();
+    assert.match(rZhHtml, /Nguồn tham chiếu khoa học, khảo thí & tiêu chuẩn quốc tế/);
+    assert.match(rZhHtml, /data-wb-tts=/);
+    const rEnHtml = await (await req(env, `/reader/${sampleEn.slug}`)).text();
+    assert.match(rEnHtml, /Nguồn tham chiếu khoa học, khảo thí & tiêu chuẩn quốc tế/);
+
+    // Save reading progress on built-in web article (no FK error, 200 OK)
+    const saveProg = await req(env, "/api/v1/reader/progress", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Cookie: cookie, "X-CSRF-Token": csrf },
+      body: JSON.stringify({ documentId: sampleZh.id, progressPercent: 85, bookmarked: true, personalNotes: "Bài đọc rất chuẩn xác." })
+    });
+    assert.equal(saveProg.status, 200);
+    const saveProgData = await saveProg.json();
+    assert.equal(saveProgData.ok, true);
+    assert.equal(saveProgData.progressPercent, 85);
+
+    // 4. Verify total project file count <= 80
+    let fileCount = 0;
+    function walk(dir) {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        if (entry.name === "node_modules" || entry.name === ".git") continue;
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else fileCount++;
+      }
+    }
+    walk(process.cwd());
+    assert.ok(fileCount <= 80, `Total project files (${fileCount}) must be <= 80`);
   } finally {
     cleanup();
   }

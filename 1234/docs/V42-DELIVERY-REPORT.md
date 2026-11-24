@@ -129,3 +129,19 @@ Xem chi tiết SHA-256 và kích thước trong `docs/reference-images/wordbridg
 | **P2** | Hiển thị đủ 22 chủ điểm nền tảng trên `/learning/chinese`, 22 chủ điểm trên `/learning/english`, danh mục 100 lĩnh vực (103 mã độc lập) trên `/specialized`, nút OAuth động trên `/login` | `src/index.js` | ĐẠT |
 | **P2** | Cập nhật OpenAPI 3.1 (`/api/v1/openapi.json`) cho toàn bộ API công khai V4.2, loại trừ tuyệt đối `/api/v1/admin/*` | `src/index.js` | ĐẠT |
 | **P3** | Bổ sung bộ giới hạn tần suất (Rate Limiter) trả HTTP `429` + `Retry-After` cho `/auth/login`, `/auth/register`, `/admin/pin/verify`, `/support/tickets` | `src/index.js` | ĐẠT |
+
+---
+## Cập nhật V4.3.0 (Tích hợp 8 tệp Excel Chuyên ngành + 12.000 Thuật ngữ mới + Thư viện Đọc 1.000 bài trực tiếp trên Web + Chốt chặn PBKDF2 100.000 vòng)
+
+1. **Từ vựng Chuyên ngành Song ngữ Anh – Trung (36.104 thuật ngữ / 12 chuyên ngành)**:
+   - Tích hợp toàn bộ **7 tệp Excel tiếng Anh** trong `Tu_vung_chuyen_nganh_xlsx.zip` (**12.104 thuật ngữ**) và **1 tệp Excel tiếng Trung** `12000_tu_vung_tieng_Trung_12_nganh.xlsx` (**12.000 thuật ngữ**).
+   - Biên soạn mới bổ sung **+1.000 thuật ngữ chuyên ngành cho mỗi chuyên ngành** (**+500 EN + 500 ZH / chuyên ngành = +12.000 thuật ngữ mới**) kèm IPA/Pinyin, loại từ, nghĩa tiếng Việt, chủ đề và câu ví dụ chuẩn tiêu chuẩn quốc tế.
+   - Gắn trực tiếp trình khám phá `#wb-vocab-explorer` (`public/scripts/vocab-explorer.js`) lên `/specialized/<slug>` với lọc song ngữ EN/ZH, lọc nguồn (Excel gốc / +1.000 Mở rộng), lọc chủ đề, tìm kiếm, phân trang, phát âm TTS (`en-US` / `zh-CN`) và lưu sổ từ.
+
+2. **Thư viện Đọc Học thuật Trực tiếp trên Web (`public/data/reader-library.json` — 1.000 bài đọc, không PDF trung gian)**:
+   - **500 bài đọc Tiếng Trung** (500 phân ngành độc lập, HSK 3–9) và **500 bài đọc Tiếng Anh** (500 phân ngành độc lập, CEFR B1–C2 / IELTS / TOEFL).
+   - Đọc trực tiếp tại `/reader` và `/reader/<slug>` với phân trang, lọc 9 khối ngành, lọc ngôn ngữ, đọc mẫu TTS trên trình duyệt, bảng chú giải thuật ngữ, lưu tiến độ/bookmark/ghi chú vào D1 và dẫn nguồn tổ chức quốc tế (CEFR Council of Europe, Cambridge University Press & Assessment, British Council IELTS, ETS TOEFL, CLEC/ChineseTest HSK 3.0, IEEE SA, IFRS Foundation, SAE International, IETF, NIST).
+
+3. **Ổn định hệ thống & PBKDF2 100.000 vòng**:
+   - Chuẩn hóa `PBKDF2_ITERATIONS = 100_000` (`1e5`) tương thích tối đa với giới hạn WebCrypto của Cloudflare Workers và bổ sung chốt chặn từ chối an toàn (`401`, không bao giờ `500`) với mọi hash vượt giới hạn hoặc sai định dạng.
+   - Đạt **7/7 bộ kiểm thử** (`tests/v42-master-verification.test.mjs`) và `npm run lint:check`, tổng số tệp đóng gói đúng **80 tệp** (`<= 80`).

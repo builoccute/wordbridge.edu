@@ -67,12 +67,32 @@
     closeAuthGate,
   });
 
-  // Restore saved theme & font scale safely
+  // Restore saved theme (light/dark/auto), font size & line height safely
+  function applyVisualPreferences(prefs) {
+    if (!prefs) return;
+    const root = document.documentElement;
+    if (prefs.theme) {
+      let resolved = prefs.theme;
+      if (resolved === 'auto') {
+        resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      if (resolved === 'dark' || resolved === 'sepia') root.setAttribute('data-theme', resolved);
+      else root.removeAttribute('data-theme');
+    }
+    if (prefs.fontSize && ['sm', 'md', 'lg'].includes(prefs.fontSize)) {
+      root.setAttribute('data-font-size', prefs.fontSize);
+    }
+    if (prefs.lineHeight && ['compact', 'normal', 'relaxed'].includes(prefs.lineHeight)) {
+      root.setAttribute('data-line-height', prefs.lineHeight);
+    }
+  }
   try {
     const savedTheme = localStorage.getItem('wb_theme');
-    if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    const savedFontSize = localStorage.getItem('wb_font_size');
+    const savedLineHeight = localStorage.getItem('wb_line_height');
+    applyVisualPreferences({ theme: savedTheme, fontSize: savedFontSize, lineHeight: savedLineHeight });
     const savedFont = localStorage.getItem('wb_font_scale');
-    if (savedFont) document.documentElement.style.fontSize = `${savedFont}px`;
+    if (savedFont && !savedFontSize) document.documentElement.style.fontSize = `${savedFont}px`;
   } catch {}
 
   function applyLocale(locale) {
@@ -701,3 +721,192 @@ document.addEventListener('click', (ev) => {
   if (!input) return;
   input.type = input.type === 'password' ? 'text' : 'password';
 });
+
+
+// ============================================================================
+// WORD BRIDGE V5.0 — Account Suite Interactive Controllers
+// ============================================================================
+(function () {
+  function getCsrf() {
+    const meta = document.querySelector('meta[name="wb-csrf-token"]');
+    return meta ? meta.getAttribute('content') || '' : '';
+  }
+
+  function applyThemeNow(theme) {
+    const root = document.documentElement;
+    let resolved = theme;
+    if (resolved === 'auto') {
+      resolved = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    if (resolved === 'dark' || resolved === 'sepia') root.setAttribute('data-theme', resolved);
+    else root.removeAttribute('data-theme');
+    try { localStorage.setItem('wb_theme', theme); } catch {}
+  }
+
+  const newPwInput = document.getElementById('field-newPassword');
+  if (newPwInput) {
+    const updatePwRules = () => {
+      const val = newPwInput.value || '';
+      const rules = {
+        len: val.length >= 10,
+        upper: /[A-Z]/.test(val),
+        lower: /[a-z]/.test(val),
+        num: /[0-9]/.test(val),
+        special: /[^A-Za-z0-9]/.test(val)
+      };
+      Object.entries(rules).forEach(([key, ok]) => {
+        const li = document.querySelector(`[data-pw-rule="${key}"]`);
+        if (li) li.classList.toggle('met', ok);
+      });
+    };
+    newPwInput.addEventListener('input', updatePwRules);
+  }
+
+  const prefForm = document.getElementById('wb-preferences-form');
+  if (prefForm) {
+    const statusEl = document.getElementById('wb-pref-status');
+    async function savePreferences() {
+      const themeInput = prefForm.querySelector('input[name="theme"]:checked');
+      const theme = themeInput ? themeInput.value : 'light';
+      const language = prefForm.querySelector('select[name="language"]')?.value || 'vi';
+      const fontSize = prefForm.querySelector('input[name="fontSize"]')?.value || 'md';
+      const lineHeight = prefForm.querySelector('input[name="lineHeight"]')?.value || 'normal';
+      const notifyLearning = Boolean(prefForm.querySelector('input[name="notifyLearning"]')?.checked);
+      const notifyPlatform = Boolean(prefForm.querySelector('input[name="notifyPlatform"]')?.checked);
+      const notifyRecommendations = Boolean(prefForm.querySelector('input[name="notifyRecommendations"]')?.checked);
+      const syncEnabled = Boolean(prefForm.querySelector('input[name="syncEnabled"]')?.checked);
+
+      applyThemeNow(theme);
+      document.documentElement.setAttribute('data-font-size', fontSize);
+      document.documentElement.setAttribute('data-line-height', lineHeight);
+      try {
+        localStorage.setItem('wb_font_size', fontSize);
+        localStorage.setItem('wb_line_height', lineHeight);
+      } catch {}
+
+      if (statusEl) {
+        statusEl.className = 'wb-alert wb-alert-info';
+        statusEl.textContent = 'Đang lưu tùy chọn...';
+      }
+      try {
+        const res = await fetch('/api/v1/account/preferences', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrf() },
+          body: JSON.stringify({
+            theme, language, fontSize, lineHeight,
+            notifyLearning, notifyPlatform, notifyRecommendations, syncEnabled
+          })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          if (statusEl) {
+            statusEl.className = 'wb-alert wb-alert-ok';
+            statusEl.textContent = data.message || 'Đã lưu tùy chọn nền tảng.';
+          }
+        } else if (statusEl) {
+          statusEl.className = 'wb-alert wb-alert-error';
+          statusEl.textContent = data?.error?.message || 'Không thể lưu tùy chọn.';
+        }
+      } catch {
+        if (statusEl) {
+          statusEl.className = 'wb-alert wb-alert-error';
+          statusEl.textContent = 'Lỗi kết nối khi lưu tùy chọn.';
+        }
+      }
+    }
+
+    prefForm.addEventListener('click', (ev) => {
+      const segBtn = ev.target && ev.target.closest ? ev.target.closest('[data-seg-field]') : null;
+      if (!segBtn) return;
+      ev.preventDefault();
+      const field = segBtn.getAttribute('data-seg-field');
+      const val = segBtn.getAttribute('data-seg-val');
+      const hidden = prefForm.querySelector(`input[name="${field}"]`);
+      if (hidden) hidden.value = val;
+      prefForm.querySelectorAll(`[data-seg-field="${field}"]`).forEach((b) => {
+        b.classList.toggle('active', b === segBtn);
+      });
+      savePreferences();
+    });
+
+    prefForm.addEventListener('change', (ev) => {
+      const t = ev.target;
+      if (t && t.name === 'theme') {
+        prefForm.querySelectorAll('.wb-theme-opt').forEach((lbl) => {
+          const inp = lbl.querySelector('input[name="theme"]');
+          lbl.classList.toggle('active', Boolean(inp && inp.checked));
+        });
+      }
+      savePreferences();
+    });
+  }
+
+  document.addEventListener('click', async (ev) => {
+    const expBtn = ev.target && ev.target.closest ? ev.target.closest('[data-wb-export-learning]') : null;
+    if (expBtn) {
+      ev.preventDefault();
+      const fmtSel = document.getElementById('wb-export-format');
+      const fmt = (fmtSel && fmtSel.value) || 'csv';
+      window.location.href = `/api/v1/account/learning-data/export?format=${encodeURIComponent(fmt)}`;
+      return;
+    }
+
+    const clrBtn = ev.target && ev.target.closest ? ev.target.closest('[data-wb-clear-learning]') : null;
+    if (clrBtn) {
+      ev.preventDefault();
+      const ok = window.confirm('Bạn có chắc muốn xóa toàn bộ tiến độ bài học, kết quả luyện tập, lịch sử đọc và ghi chú học tập? Tài khoản và bảo mật của bạn vẫn được giữ nguyên. Hành động này không thể hoàn tác.');
+      if (!ok) return;
+      const statusBox = document.getElementById('wb-clear-learning-status');
+      if (statusBox) {
+        statusBox.className = 'wb-alert wb-alert-info';
+        statusBox.textContent = 'Đang xóa dữ liệu học tập...';
+      }
+      try {
+        const res = await fetch('/api/v1/account/learning-data/clear', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': getCsrf() },
+          body: JSON.stringify({ confirmClear: 'DELETE_LEARNING_DATA' })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.ok) {
+          if (statusBox) {
+            statusBox.className = 'wb-alert wb-alert-ok';
+            statusBox.textContent = data.message || 'Đã xóa dữ liệu học tập.';
+          }
+          setTimeout(() => window.location.reload(), 600);
+        } else if (statusBox) {
+          statusBox.className = 'wb-alert wb-alert-error';
+          statusBox.textContent = data?.error?.message || 'Không thể xóa dữ liệu học tập.';
+        }
+      } catch {
+        if (statusBox) {
+          statusBox.className = 'wb-alert wb-alert-error';
+          statusBox.textContent = 'Lỗi kết nối khi xóa dữ liệu học tập.';
+        }
+      }
+      return;
+    }
+
+    const stuBtn = ev.target && ev.target.closest ? ev.target.closest('[data-wb-open-student-verify]') : null;
+    if (stuBtn) {
+      ev.preventDefault();
+      const panel = document.getElementById('wb-student-verify-panel');
+      if (panel) {
+        panel.hidden = false;
+        panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const inp = panel.querySelector('input[type="email"]');
+        if (inp) inp.focus();
+      }
+      return;
+    }
+
+    const pkHelpBtn = ev.target && ev.target.closest ? ev.target.closest('[data-wb-passkey-help]') : null;
+    if (pkHelpBtn) {
+      ev.preventDefault();
+      const box = document.getElementById('wb-passkey-help-box');
+      if (box) box.hidden = !box.hidden;
+    }
+  });
+})();

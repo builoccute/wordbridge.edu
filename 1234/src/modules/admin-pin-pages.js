@@ -175,6 +175,27 @@ export class AdminPinService {
     }
     return { ok: true };
   }
+
+  async listActiveAdminSessions() {
+    const res = await this.db.prepare(
+      `SELECT s.id, s.account_id, a.email, a.full_name, s.ip_address, s.user_agent, s.created_at, s.expires_at
+       FROM wb_admin_sessions s
+       LEFT JOIN wb_accounts a ON a.id = s.account_id
+       WHERE s.revoked_at IS NULL AND datetime(s.expires_at) > datetime('now')
+       ORDER BY s.created_at DESC LIMIT 30`
+    ).all().catch(() => ({ results: [] }));
+    return res.results || [];
+  }
+
+  async revokeAdminSessionById(actor, adminSessionId, ipAddress = null) {
+    if (!actor || !this.authService.hasAnyAdminRole(actor)) {
+      return { ok: false, status: 403, error: "Không có quyền thu hồi phiên quản trị." };
+    }
+    if (!adminSessionId) return { ok: false, status: 400, error: "Thiếu mã phiên quản trị." };
+    await this.db.prepare("UPDATE wb_admin_sessions SET revoked_at = datetime('now') WHERE id = ?").bind(adminSessionId).run();
+    await this.authService.recordAudit(actor.accountId, "admin.session_revoked", "wb_admin_sessions", adminSessionId, ipAddress, {});
+    return { ok: true, message: "Đã thu hồi phiên quản trị." };
+  }
 }
 
 const ADMIN_NAV_ITEMS = [
@@ -190,6 +211,61 @@ const ADMIN_NAV_ITEMS = [
   ["/quan-tri/ho-tro", "10. Vận hành & Hỗ trợ"],
   ["/quan-tri/chinh-sach", "11. Chính sách & Pháp lý"]
 ];
+
+
+export function renderAdminLoginPage({ escapeHtml, notice = "" }) {
+  return `<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Đăng nhập Hệ thống Quản trị — WORD BRIDGE</title>
+  <link rel="icon" type="image/png" href="/branding/favicon.png" />
+  <link rel="stylesheet" href="/styles/design-system.css" />
+</head>
+<body class="wb-admin-auth-body">
+  <main class="wb-admin-auth-card">
+    <div class="wb-admin-auth-brand">
+      <div class="wb-admin-auth-shield" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <span class="wb-admin-auth-tag">CỔNG QUẢN TRỊ ĐỘC LẬP · WORD BRIDGE</span>
+      <h1>Đăng nhập Quản trị viên</h1>
+      <p>Khu vực dành riêng cho nhân sự được cấp quyền RBAC. Sau khi xác thực tài khoản, hệ thống yêu cầu bước xác minh mã PIN quản trị 6 chữ số độc lập.</p>
+    </div>
+
+    ${notice ? `<div class="wb-alert wb-alert-warn" style="margin-bottom:16px;">${escapeHtml(notice)}</div>` : ""}
+
+    <form class="wb-form" data-api-endpoint="/api/v1/admin/auth/login" data-redirect-to="/quan-tri">
+      <div class="wb-field">
+        <label for="admin-email">Email quản trị *</label>
+        <div class="wb-input-wrap">
+          <span class="wb-input-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg></span>
+          <input id="admin-email" class="wb-input wb-input-has-icon" type="email" name="email" placeholder="Nhập email tài khoản quản trị" required autocomplete="username" />
+        </div>
+      </div>
+      <div class="wb-field">
+        <label for="admin-password">Mật khẩu *</label>
+        <div class="wb-input-wrap">
+          <span class="wb-input-icon" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+          <input id="admin-password" class="wb-input wb-input-has-icon wb-input-has-toggle" type="password" name="password" placeholder="Nhập mật khẩu quản trị" required autocomplete="current-password" />
+          <button type="button" class="wb-pw-toggle" data-wb-toggle-pw="admin-password" aria-label="Hiện hoặc ẩn mật khẩu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+      </div>
+      <div data-form-status></div>
+      <button type="submit" class="wb-btn wb-btn-primary wb-btn-block wb-btn-lg">Xác thực &amp; Chuyển bước PIN quản trị</button>
+    </form>
+
+    <div class="wb-admin-auth-foot">
+      <span>Tài khoản học viên thông thường không được phép truy cập cổng này.</span>
+      <a href="/login">Chuyển tới trang đăng nhập người học →</a>
+    </div>
+  </main>
+  <script src="/scripts/app.js" defer></script>
+</body>
+</html>`;
+}
 
 export function renderAdminPinLockPage({ user, pinStatus, escapeHtml }) {
   const needsSetup = !pinStatus.configured || pinStatus.mustReset;
@@ -234,8 +310,11 @@ export function renderAdminPinLockPage({ user, pinStatus, escapeHtml }) {
       Vai trò RBAC: <code>${escapeHtml((user.roles || []).join(", "))}</code>
     </p>
     ${formHtml}
-    <div style="margin-top:16px;text-align:center;font-size:0.88rem;">
-      <a href="/">Quay về trang công khai</a>
+    <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:0.86rem;">
+      <a href="/">Về trang công khai</a>
+      <form class="wb-form" data-api-endpoint="/api/v1/admin/auth/logout" data-redirect-to="/quan-tri/dang-nhap" style="margin:0;">
+        <button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Đăng xuất quản trị</button>
+      </form>
     </div>
   </main>
   <script src="/scripts/app.js" defer></script>
@@ -347,10 +426,19 @@ export async function renderAdminCenterHtml({ section = "", user, adminSession, 
   } else if (section === "bao-mat") {
     pageTitle = "Bảo mật và kiểm toán";
     const sec = await services.admin.getSecurityOverview(user);
-    bodyHtml = `<div class="wb-card"><h2 style="margin-top:0;color:var(--wb-teal);">Nhật ký kiểm toán &amp; Bảo mật PIN</h2>
-      <p>Phiên đang hoạt động: <strong>${sec.activeSessions?.length || 0}</strong> · Passkeys hoạt động: <strong>${sec.passkeysCount || 0}</strong></p>
+    const adminSessions = await services.adminPin.listActiveAdminSessions();
+    bodyHtml = `
+      <div class="wb-card" style="margin-bottom:16px;">
+        <h2 style="margin-top:0;color:var(--wb-teal);">Phiên quản trị đang hoạt động (${adminSessions.length})</h2>
+        <p class="wb-muted">Các phiên quản trị (<code>wb_admin_session</code>) được tách biệt hoàn toàn với phiên học viên và có thời hạn riêng.</p>
+        <div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Mã phiên</th><th>Quản trị viên</th><th>IP</th><th>Hết hạn</th><th>Thao tác</th></tr></thead><tbody>
+          ${adminSessions.map((s) => `<tr><td><code>${escapeHtml(s.id)}</code></td><td>${escapeHtml(s.email || s.account_id)}</td><td>${escapeHtml(s.ip_address || "—")}</td><td>${escapeHtml(s.expires_at)}</td><td>${s.id === adminSession?.id ? '<span class="wb-badge">Phiên hiện tại</span>' : `<form class="wb-form" data-api-endpoint="/api/v1/admin/security/revoke-admin-session" data-reload-on-success="true" style="margin:0;"><input type="hidden" name="adminSessionId" value="${escapeHtml(s.id)}" /><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Thu hồi</button></form>`}</td></tr>`).join("") || '<tr><td colspan="5">Không có phiên quản trị khác đang hoạt động.</td></tr>'}
+        </tbody></table></div>
+      </div>
+      <div class="wb-card"><h2 style="margin-top:0;color:var(--wb-teal);">Nhật ký kiểm toán &amp; Bảo mật PIN</h2>
+      <p>Phiên người dùng hoạt động: <strong>${sec.activeSessions?.length || 0}</strong> · Phiên quản trị: <strong>${adminSessions.length}</strong> · Passkeys hoạt động: <strong>${sec.passkeysCount || 0}</strong></p>
       <div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Thời điểm</th><th>Hành động</th><th>Tài nguyên</th><th>IP</th></tr></thead><tbody>
-        ${(sec.auditLogs || []).slice(0, 20).map((a) => `<tr><td>${escapeHtml(a.created_at)}</td><td><code>${escapeHtml(a.action)}</code></td><td>${escapeHtml(a.resource_type)}</td><td>${escapeHtml(a.ip_address || "")}</td></tr>`).join("")}
+        ${(sec.auditLogs || []).slice(0, 25).map((a) => `<tr><td>${escapeHtml(a.created_at)}</td><td><code>${escapeHtml(a.action)}</code></td><td>${escapeHtml(a.resource_type)}</td><td>${escapeHtml(a.ip_address || "—")}</td></tr>`).join("")}
       </tbody></table></div></div>`;
   } else if (section === "ho-tro") {
     pageTitle = "Vận hành và hỗ trợ";
@@ -388,11 +476,14 @@ export async function renderAdminCenterHtml({ section = "", user, adminSession, 
 <body style="background:#f8fafc;margin:0;">
   <header style="background:var(--wb-teal);color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
     <div><strong>WORD BRIDGE — Trung tâm Quản trị</strong> <span style="opacity:0.85;font-size:0.86rem;">(${escapeHtml(user.email)} · ${escapeHtml((user.roles || []).join(", "))})</span></div>
-    <div style="display:flex;gap:8px;">
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
       <form class="wb-form" data-api-endpoint="/api/v1/admin/pin/lock" data-redirect-to="/quan-tri" style="margin:0;">
-        <button type="submit" class="wb-btn wb-btn-sm" style="background:#C92F1C;color:#fff;border:none;">Khóa màn hình PIN</button>
+        <button type="submit" class="wb-btn wb-btn-sm" style="background:rgba(255,255,255,0.18);color:#fff;border:1px solid rgba(255,255,255,0.4);">Khóa màn hình PIN</button>
       </form>
-      <a href="/" class="wb-btn wb-btn-sm" style="background:rgba(255,255,255,0.16);color:#fff;border:1px solid rgba(255,255,255,0.3);">Về trang công khai</a>
+      <form class="wb-form" data-api-endpoint="/api/v1/admin/auth/logout" data-redirect-to="/quan-tri/dang-nhap" style="margin:0;">
+        <button type="submit" class="wb-btn wb-btn-sm" style="background:#C92F1C;color:#fff;border:none;">Đăng xuất quản trị</button>
+      </form>
+      <a href="/" class="wb-btn wb-btn-sm" style="background:rgba(255,255,255,0.12);color:#fff;border:1px solid rgba(255,255,255,0.28);">Trang công khai</a>
     </div>
   </header>
   <div class="wb-admin-shell">

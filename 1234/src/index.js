@@ -1,6 +1,6 @@
 import { LegalPolicyService, renderFullPolicyHtml } from "./modules/legal-policies.js";
 import { OAuthService } from "./modules/oauth-service.js";
-import { AdminPinService, buildAdminSessionCookie, clearAdminSessionCookie, renderAdminPinLockPage, renderAdminCenterHtml } from "./modules/admin-pin-pages.js";
+import { AdminPinService, buildAdminSessionCookie, clearAdminSessionCookie, renderAdminLoginPage, renderAdminPinLockPage, renderAdminCenterHtml } from "./modules/admin-pin-pages.js";
 import { LanguageServicesAdapter } from "./modules/language-api-adapters.js";
 import { CHINESE_FOUNDATION_22, ENGLISH_FOUNDATION_22, SPECIALIZED_100_DOMAINS, CONTACT_CATEGORIES_12, renderContactPageV42, renderSessionInvalidContent, renderErrorSystemHubHtml, renderErrorWaveSvg } from "./modules/academic-catalog.js";
 var __defProp = Object.defineProperty;
@@ -1412,6 +1412,7 @@ var AuthService = class {
         SELECT s.id AS session_id, s.csrf_token, s.account_id,
                a.email, a.full_name, a.status, a.email_verified,
                a.school_name, a.workplace_name, a.phone_number, a.date_of_birth,
+               a.created_at AS account_created_at, a.updated_at AS account_updated_at,
                e.plan_code, e.storage_quota_bytes, e.expires_at AS plan_expires_at
         FROM wb_sessions s
         JOIN wb_accounts a ON a.id = s.account_id
@@ -1448,6 +1449,8 @@ var AuthService = class {
       workplaceName: row.workplace_name,
       phoneNumber: row.phone_number,
       dateOfBirth: row.date_of_birth,
+      createdAt: row.account_created_at || null,
+      updatedAt: row.account_updated_at || null,
       planCode: row.plan_code || "PERSONAL_FREE",
       storageQuotaBytes: row.storage_quota_bytes || PLANS.PERSONAL_FREE.storageQuotaBytes,
       planExpiresAt: row.plan_expires_at,
@@ -1479,6 +1482,134 @@ var AuthService = class {
   async revokeSession(sessionId, actorAccountId, ipAddress = null) {
     await this.db.prepare("UPDATE wb_sessions SET revoked_at = datetime('now') WHERE id = ? AND account_id = ?").bind(sessionId, actorAccountId).run();
     await this.recordAudit(actorAccountId, "auth.session_revoked", "wb_sessions", sessionId, ipAddress, {});
+  }
+  async logoutSession(sessionId, actorAccountId, ipAddress = null) {
+    await this.db.prepare("UPDATE wb_sessions SET revoked_at = datetime('now') WHERE id = ? AND account_id = ?").bind(sessionId, actorAccountId).run();
+    await this.recordAudit(actorAccountId, "auth.logout", "wb_sessions", sessionId, ipAddress, {});
+  }
+  async revokeOtherSessions(currentSessionId, actorAccountId, ipAddress = null) {
+    const res = await this.db.prepare(
+      "UPDATE wb_sessions SET revoked_at = datetime('now') WHERE account_id = ? AND id != ? AND revoked_at IS NULL"
+    ).bind(actorAccountId, currentSessionId).run();
+    const revokedCount = Number(res?.meta?.changes || 0);
+    await this.recordAudit(actorAccountId, "auth.sessions_revoked_others", "wb_sessions", currentSessionId, ipAddress, { revokedCount });
+    return { ok: true, revokedCount, message: revokedCount > 0 ? `Đã đăng xuất ${revokedCount} phiên khác.` : "Không có phiên đăng nhập nào khác đang hoạt động." };
+  }
+  async loginAdmin({ email, password }, requestMeta = {}) {
+    const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!validateEmail(normalizedEmail) || !password) {
+      return { ok: false, status: 400, error: "Vui lòng nhập đầy đủ email và mật khẩu quản trị." };
+    }
+    const account = await this.db.prepare(
+      "SELECT id, email, password_hash, full_name, email_verified, status, failed_login_attempts, locked_until FROM wb_accounts WHERE email = ?"
+    ).bind(normalizedEmail).first();
+    if (!account) {
+      return { ok: false, status: 401, error: "Thông tin đăng nhập quản trị không chính xác." };
+    }
+    if (account.locked_until) {
+      const lockCheck = await this.db.prepare("SELECT CASE WHEN datetime(?) > datetime('now') THEN 1 ELSE 0 END AS locked").bind(account.locked_until).first();
+      if (lockCheck?.locked === 1) {
+        return { ok: false, status: 429, error: "Tài khoản tạm khóa do đăng nhập sai nhiều lần. Vui lòng thử lại sau." };
+      }
+    }
+    const validPwd = await verifyPassword(password, account.password_hash);
+    if (!validPwd) {
+      const { maxAttempts, lockoutMinutes } = await this.getSecurityPolicy();
+      const attempts = (account.failed_login_attempts || 0) + 1;
+      const shouldLock = attempts >= maxAttempts;
+      await this.db.prepare(`UPDATE wb_accounts SET failed_login_attempts = ?, locked_until = CASE WHEN ? = 1 THEN datetime('now', '+${lockoutMinutes} minutes') ELSE NULL END, updated_at = datetime('now') WHERE id = ?`).bind(attempts, shouldLock ? 1 : 0, account.id).run();
+      await this.recordAudit(account.id, "admin.login_failed", "wb_accounts", account.id, requestMeta.ipAddress, { attempts, locked: shouldLock });
+      return { ok: false, status: 401, error: "Thông tin đăng nhập quản trị không chính xác." };
+    }
+    if (account.email_verified !== 1 || account.status !== "active") {
+      return { ok: false, status: 403, error: "Tài khoản hiện không đủ điều kiện đăng nhập quản trị." };
+    }
+    const rolesResult = await this.db.prepare(
+      "SELECT r.code FROM wb_account_roles ar JOIN wb_roles r ON r.id = ar.role_id WHERE ar.account_id = ?"
+    ).bind(account.id).all().catch(() => ({ results: [] }));
+    const roles = (rolesResult.results || []).map((r) => r.code);
+    if (!this.hasAnyAdminRole({ roles })) {
+      await this.recordAudit(account.id, "admin.login_denied_non_admin", "wb_accounts", account.id, requestMeta.ipAddress, {});
+      return { ok: false, status: 403, error: "Tài khoản này không có quyền truy cập hệ thống quản trị. Vui lòng đăng nhập tại cổng người học." };
+    }
+    await this.db.prepare("UPDATE wb_accounts SET failed_login_attempts = 0, locked_until = NULL, updated_at = datetime('now') WHERE id = ?").bind(account.id).run();
+    const session = await this.createSession(account.id, requestMeta);
+    await this.recordAudit(account.id, "admin.login_password_verified", "wb_sessions", session.sessionId, requestMeta.ipAddress, {
+      userAgent: (requestMeta.userAgent || "").slice(0, 120)
+    });
+    return { ok: true, account: { id: account.id, email: account.email, fullName: account.full_name }, session };
+  }
+  async getUserPreferences(accountId) {
+    const defaults = {
+      theme: "light",
+      language: "vi",
+      fontSize: "md",
+      lineHeight: "normal",
+      notifyLearning: true,
+      notifyPlatform: true,
+      notifyRecommendations: false,
+      syncEnabled: true
+    };
+    const row = await this.db.prepare(
+      "SELECT preferred_ui_language, notification_preferences_json, privacy_settings_json FROM wb_profiles WHERE account_id = ?"
+    ).bind(accountId).first().catch(() => null);
+    if (!row) return defaults;
+    const notif = safeJsonParse(row.notification_preferences_json, {});
+    const priv = safeJsonParse(row.privacy_settings_json, {});
+    return {
+      theme: ["light", "dark", "auto"].includes(priv.ui_theme) ? priv.ui_theme : defaults.theme,
+      language: row.preferred_ui_language === "en" ? "en" : "vi",
+      fontSize: ["sm", "md", "lg"].includes(priv.font_size) ? priv.font_size : defaults.fontSize,
+      lineHeight: ["compact", "normal", "relaxed"].includes(priv.line_height) ? priv.line_height : defaults.lineHeight,
+      notifyLearning: typeof notif.lesson_completed === "boolean" ? notif.lesson_completed : defaults.notifyLearning,
+      notifyPlatform: typeof notif.security_alerts === "boolean" ? notif.security_alerts : defaults.notifyPlatform,
+      notifyRecommendations: typeof notif.marketing === "boolean" ? notif.marketing : defaults.notifyRecommendations,
+      syncEnabled: typeof priv.sync_enabled === "boolean" ? priv.sync_enabled : defaults.syncEnabled
+    };
+  }
+  async updateUserPreferences(accountId, payload, ipAddress = null) {
+    const theme = ["light", "dark", "auto"].includes(payload?.theme) ? payload.theme : "light";
+    const language = payload?.language === "en" ? "en" : "vi";
+    const fontSize = ["sm", "md", "lg"].includes(payload?.fontSize) ? payload.fontSize : "md";
+    const lineHeight = ["compact", "normal", "relaxed"].includes(payload?.lineHeight) ? payload.lineHeight : "normal";
+    const notifyLearning = Boolean(payload?.notifyLearning);
+    const notifyPlatform = Boolean(payload?.notifyPlatform);
+    const notifyRecommendations = Boolean(payload?.notifyRecommendations);
+    const syncEnabled = Boolean(payload?.syncEnabled);
+
+    await this.db.prepare("INSERT OR IGNORE INTO wb_profiles (account_id) VALUES (?)").bind(accountId).run().catch(async () => {
+      await this.ensureAuthCoreTables();
+      await this.db.prepare("INSERT OR IGNORE INTO wb_profiles (account_id) VALUES (?)").bind(accountId).run().catch(() => {});
+    });
+    const cur = await this.db.prepare("SELECT notification_preferences_json, privacy_settings_json FROM wb_profiles WHERE account_id = ?").bind(accountId).first().catch(() => null);
+    const notif = { ...safeJsonParse(cur?.notification_preferences_json, {}), lesson_completed: notifyLearning, review_due: notifyLearning, security_alerts: notifyPlatform, marketing: notifyRecommendations };
+    const priv = { ...safeJsonParse(cur?.privacy_settings_json, {}), ui_theme: theme, font_size: fontSize, line_height: lineHeight, sync_enabled: syncEnabled };
+    await this.db.prepare(
+      "UPDATE wb_profiles SET preferred_ui_language = ?, notification_preferences_json = ?, privacy_settings_json = ?, updated_at = datetime('now') WHERE account_id = ?"
+    ).bind(language, JSON.stringify(notif), JSON.stringify(priv), accountId).run();
+    await this.recordAudit(accountId, "account.preferences_updated", "wb_profiles", accountId, ipAddress, { theme, fontSize, lineHeight });
+    return {
+      ok: true,
+      message: "Đã lưu tùy chọn nền tảng thành công.",
+      preferences: { theme, language, fontSize, lineHeight, notifyLearning, notifyPlatform, notifyRecommendations, syncEnabled }
+    };
+  }
+  async clearLearningData(accountId, ipAddress = null) {
+    const tables = [
+      "wb_learner_progress",
+      "wb_lesson_submissions",
+      "wb_practice_results",
+      "wb_reader_progress",
+      "wb_skill_reviews",
+      "wb_lesson_notes",
+      "wb_reading_attempts",
+      "wb_listening_attempts"
+    ];
+    for (const tbl of tables) {
+      await this.db.prepare(`DELETE FROM ${tbl} WHERE account_id = ?`).bind(accountId).run().catch(() => {});
+    }
+    await this.recordAudit(accountId, "account.learning_data_cleared", "wb_accounts", accountId, ipAddress, {});
+    return { ok: true, message: "Đã xóa toàn bộ dữ liệu học tập của bạn. Thông tin tài khoản và bảo mật được giữ nguyên." };
   }
   async requestPasswordReset(email, ipAddress = null) {
     const normalized = String(email || "").trim().toLowerCase();
@@ -3799,7 +3930,7 @@ async function handleApiRequest(request, url, ctx) {
   const ipAddress = request.headers.get("CF-Connecting-IP") || "127.0.0.1";
   const userAgent = request.headers.get("User-Agent") || "Unknown";
   const isSecure = url.protocol === "https:";
-  if (method === "POST" && env.ENVIRONMENT !== "test" && (path === "/api/v1/auth/login" || path === "/api/v1/auth/register" || path === "/api/v1/admin/pin/verify" || path === "/api/v1/support/tickets")) {
+  if (method === "POST" && env.ENVIRONMENT !== "test" && (path === "/api/v1/auth/login" || path === "/api/v1/admin/auth/login" || path === "/api/v1/auth/register" || path === "/api/v1/admin/pin/verify" || path === "/api/v1/support/tickets")) {
     const rl = checkRateLimit(`${ipAddress}:${path}`, path === "/api/v1/support/tickets" ? 15 : 40, 60000);
     if (!rl.allowed) {
       return jsonResponse({ ok: false, error: { code: "RATE_LIMITED", message: "Bạn gửi quá nhiều yêu cầu. Vui lòng thử lại sau." } }, 429, { "Retry-After": String(rl.retryAfterSec) });
@@ -4161,6 +4292,16 @@ async function handleApiRequest(request, url, ctx) {
       { "Set-Cookie": buildSessionCookie(res.session.rawSessionToken, 60 * 60 * 24 * 7, isSecure) }
     );
   }
+  if (path === "/api/v1/admin/auth/login" && method === "POST") {
+    const body2 = await readJsonBody(request);
+    const res = await services.auth.loginAdmin(body2, { ipAddress, userAgent });
+    if (!res.ok) return errorResponse("ADMIN_LOGIN_FAILED", res.error, res.status);
+    return jsonResponse(
+      { ok: true, account: res.account, csrfToken: res.session.csrfToken, redirectTo: "/quan-tri", message: "Xác thực tài khoản quản trị thành công. Chuyển sang bước mã PIN..." },
+      200,
+      { "Set-Cookie": buildSessionCookie(res.session.rawSessionToken, 60 * 60 * 24 * 7, isSecure) }
+    );
+  }
   if (path === "/api/v1/auth/forgot-password" && method === "POST") {
     const body2 = await readJsonBody(request);
     return jsonResponse(await services.auth.requestPasswordReset(body2.email, ipAddress));
@@ -4287,11 +4428,99 @@ async function handleApiRequest(request, url, ctx) {
   if (path === "/api/v1/account/sessions/revoke" && method === "POST") {
     if (!body.sessionId) return errorResponse("VALIDATION_ERROR", "Thiếu sessionId.", 400);
     await services.auth.revokeSession(body.sessionId, user.accountId, ipAddress);
-    return jsonResponse({ ok: true, sessionId: body.sessionId });
+    return jsonResponse({ ok: true, sessionId: body.sessionId, message: "Đã đăng xuất phiên đăng nhập." });
+  }
+  if (path === "/api/v1/account/sessions/revoke-others" && method === "POST") {
+    const res = await services.auth.revokeOtherSessions(user.sessionId, user.accountId, ipAddress);
+    return jsonResponse(res);
+  }
+  if (path === "/api/v1/account/preferences" && method === "GET") {
+    const preferences = await services.auth.getUserPreferences(user.accountId);
+    return jsonResponse({ ok: true, preferences });
+  }
+  if (path === "/api/v1/account/preferences" && (method === "POST" || method === "PATCH")) {
+    const res = await services.auth.updateUserPreferences(user.accountId, body, ipAddress);
+    return jsonResponse(res);
+  }
+  if (path === "/api/v1/account/learning-data/export" && method === "GET") {
+    const format = String(url.searchParams.get("format") || "csv").toLowerCase();
+    const lessons = (await apiDb.prepare(
+      `SELECT lp.status, lp.score_percent, lp.time_spent_seconds, lp.updated_at, l.title_vi, l.language_code
+       FROM wb_learner_progress lp LEFT JOIN wb_lessons l ON l.id = lp.lesson_id
+       WHERE lp.account_id = ? ORDER BY lp.updated_at DESC LIMIT 500`
+    ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    const practices = (await apiDb.prepare(
+      `SELECT pr.skill, pr.language_code, pr.score, pr.max_score, pr.submitted_at, pe.title_vi
+       FROM wb_practice_results pr LEFT JOIN wb_practice_exercises pe ON pe.id = pr.exercise_id
+       WHERE pr.account_id = ? ORDER BY pr.submitted_at DESC LIMIT 500`
+    ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    const readings = (await apiDb.prepare(
+      `SELECT rp.progress_percent, rp.bookmarked, rp.last_read_at, rd.title_vi, rd.language_code
+       FROM wb_reader_progress rp LEFT JOIN wb_reader_documents rd ON rd.id = rp.document_id
+       WHERE rp.account_id = ? ORDER BY rp.last_read_at DESC LIMIT 500`
+    ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    if (format === "json") {
+      return new Response(JSON.stringify({
+        exportedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        accountEmail: user.email,
+        fullName: user.fullName,
+        lessons,
+        practices,
+        readings
+      }, null, 2), {
+        status: 200,
+        headers: {
+          "Content-Type": "application/json; charset=utf-8",
+          "Content-Disposition": 'attachment; filename="wordbridge-learning-data.json"',
+          ...SECURITY_HEADERS
+        }
+      });
+    }
+    if (format === "html" || format === "pdf") {
+      const htmlReport = `<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"/><title>Báo cáo dữ liệu học tập — WORD BRIDGE</title><style>body{font-family:Segoe UI,Arial,sans-serif;max-width:860px;margin:24px auto;padding:0 16px;color:#0d1f22}h1,h2{color:#146466}table{width:100%;border-collapse:collapse;margin:12px 0 24px;font-size:14px}th,td{border:1px solid #d5e4e5;padding:8px;text-align:left}th{background:#f0f6f6}</style></head><body><h1>Báo cáo dữ liệu học tập WORD BRIDGE</h1><p>Học viên: <strong>${escapeHtml(user.fullName || user.email)}</strong> (${escapeHtml(user.email)}) · Xuất lúc: ${escapeHtml((/* @__PURE__ */ new Date()).toISOString())}</p><h2>Bài học (${lessons.length})</h2><table><thead><tr><th>Bài học</th><th>Ngôn ngữ</th><th>Trạng thái</th><th>Điểm (%)</th><th>Thời gian (giây)</th><th>Cập nhật</th></tr></thead><tbody>${lessons.map((r) => `<tr><td>${escapeHtml(r.title_vi || "Bài học")}</td><td>${escapeHtml(r.language_code || "—")}</td><td>${escapeHtml(r.status || "—")}</td><td>${r.score_percent ?? "—"}</td><td>${r.time_spent_seconds || 0}</td><td>${escapeHtml(r.updated_at || "—")}</td></tr>`).join("") || '<tr><td colspan="6">Chưa có dữ liệu bài học.</td></tr>'}</tbody></table><h2>Bài luyện tập (${practices.length})</h2><table><thead><tr><th>Bài luyện tập</th><th>Kỹ năng</th><th>Ngôn ngữ</th><th>Điểm</th><th>Thời điểm</th></tr></thead><tbody>${practices.map((r) => `<tr><td>${escapeHtml(r.title_vi || "Bài luyện tập")}</td><td>${escapeHtml(r.skill || "—")}</td><td>${escapeHtml(r.language_code || "—")}</td><td>${r.score ?? 0}/${r.max_score ?? 0}</td><td>${escapeHtml(r.submitted_at || "—")}</td></tr>`).join("") || '<tr><td colspan="5">Chưa có dữ liệu luyện tập.</td></tr>'}</tbody></table><h2>Tài liệu đã đọc (${readings.length})</h2><table><thead><tr><th>Tài liệu</th><th>Ngôn ngữ</th><th>Tiến độ</th><th>Đọc gần nhất</th></tr></thead><tbody>${readings.map((r) => `<tr><td>${escapeHtml(r.title_vi || "Tài liệu")}</td><td>${escapeHtml(r.language_code || "—")}</td><td>${r.progress_percent ?? 0}%</td><td>${escapeHtml(r.last_read_at || "—")}</td></tr>`).join("") || '<tr><td colspan="4">Chưa có dữ liệu đọc.</td></tr>'}</tbody></table></body></html>`;
+      return new Response(htmlReport, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Content-Disposition": 'attachment; filename="wordbridge-learning-report.html"',
+          ...SECURITY_HEADERS
+        }
+      });
+    }
+    const escCsv = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const rows = [
+      "loai,tieu_de,ngon_ngu,trang_thai_hoac_ky_nang,ket_qua,thoi_diem",
+      ...lessons.map((r) => [escCsv("Bai hoc"), escCsv(r.title_vi || "Bài học"), escCsv(r.language_code || ""), escCsv(r.status || ""), escCsv(r.score_percent ?? ""), escCsv(r.updated_at || "")].join(",")),
+      ...practices.map((r) => [escCsv("Luyen tap"), escCsv(r.title_vi || "Bài luyện tập"), escCsv(r.language_code || ""), escCsv(r.skill || ""), escCsv(`${r.score ?? 0}/${r.max_score ?? 0}`), escCsv(r.submitted_at || "")].join(",")),
+      ...readings.map((r) => [escCsv("Thu vien doc"), escCsv(r.title_vi || "Tài liệu"), escCsv(r.language_code || ""), escCsv("reading"), escCsv(`${r.progress_percent ?? 0}%`), escCsv(r.last_read_at || "")].join(","))
+    ];
+    return new Response("﻿" + rows.join("
+"), {
+      status: 200,
+      headers: {
+        "Content-Type": "text/csv; charset=utf-8",
+        "Content-Disposition": 'attachment; filename="wordbridge-learning-data.csv"',
+        ...SECURITY_HEADERS
+      }
+    });
+  }
+  if (path === "/api/v1/account/learning-data/clear" && method === "POST") {
+    if (body.confirmClear !== "DELETE_LEARNING_DATA") {
+      return errorResponse("CONFIRMATION_REQUIRED", "Vui lòng xác nhận trước khi xóa dữ liệu học tập.", 400);
+    }
+    const res = await services.auth.clearLearningData(user.accountId, ipAddress);
+    return jsonResponse(res);
   }
   if (path === "/api/v1/auth/logout" && method === "POST") {
-    await services.auth.revokeSession(user.sessionId, user.accountId, ipAddress);
-    return jsonResponse({ ok: true }, 200, { "Set-Cookie": clearSessionCookie(isSecure) });
+    const cookiesLogout = parseCookies(request);
+    if (cookiesLogout.wb_admin_session) {
+      await services.adminPin.revokeAdminSession(cookiesLogout.wb_admin_session, user.accountId, ipAddress).catch(() => {});
+    }
+    await services.auth.logoutSession(user.sessionId, user.accountId, ipAddress);
+    const outHeaders = new Headers({ "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS });
+    outHeaders.append("Set-Cookie", clearSessionCookie(isSecure));
+    outHeaders.append("Set-Cookie", clearAdminSessionCookie(isSecure));
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: outHeaders });
   }
   if (path === "/api/v1/auth/me" && method === "GET") {
     return jsonResponse({
@@ -4657,6 +4886,16 @@ async function handleApiRequest(request, url, ctx) {
       await services.adminPin.revokeAdminSession(cookies2.wb_admin_session, user.accountId, ipAddress);
       return jsonResponse({ ok: true, message: "Đã khóa phiên Trung tâm Quản trị." }, 200, { "Set-Cookie": clearAdminSessionCookie(isSecure) });
     }
+    if (path === "/api/v1/admin/auth/logout" && method === "POST") {
+      const cookies2 = parseCookies(request);
+      await services.adminPin.revokeAdminSession(cookies2.wb_admin_session, user.accountId, ipAddress).catch(() => {});
+      await services.auth.logoutSession(user.sessionId, user.accountId, ipAddress).catch(() => {});
+      await services.auth.recordAudit(user.accountId, "admin.logout", "wb_admin_sessions", user.accountId, ipAddress, {});
+      const outHeaders = new Headers({ "Content-Type": "application/json; charset=utf-8", ...SECURITY_HEADERS });
+      outHeaders.append("Set-Cookie", clearAdminSessionCookie(isSecure));
+      outHeaders.append("Set-Cookie", clearSessionCookie(isSecure));
+      return new Response(JSON.stringify({ ok: true, message: "Đã đăng xuất khỏi hệ thống quản trị.", redirectTo: "/quan-tri/dang-nhap" }), { status: 200, headers: outHeaders });
+    }
     const cookies2 = parseCookies(request);
     const adminSession = await services.adminPin.authenticateAdminSession(user, cookies2.wb_admin_session);
     if (!adminSession) {
@@ -4747,6 +4986,11 @@ async function handleApiRequest(request, url, ctx) {
     }
     if (path === "/api/v1/admin/security/revoke-session" && method === "POST") {
       const res = await services.admin.revokeSessionByAdmin(user, body.sessionId, ipAddress);
+      if (!res.ok) return errorResponse("SECURITY_ERROR", res.error, res.status);
+      return jsonResponse(res);
+    }
+    if (path === "/api/v1/admin/security/revoke-admin-session" && method === "POST") {
+      const res = await services.adminPin.revokeAdminSessionById(user, body.adminSessionId, ipAddress);
       if (!res.ok) return errorResponse("SECURITY_ERROR", res.error, res.status);
       return jsonResponse(res);
     }
@@ -7335,7 +7579,8 @@ __name(renderIntelligenceSystemPage, "renderIntelligenceSystemPage");
 // src/pages/account-pages.js
 function renderLoginPage({ user, url = null, services = null }) {
   const nextRaw = url?.searchParams?.get("next") || "/my-learning";
-  const safeNext = safeReturnUrl(nextRaw);
+  const candidateNext = safeReturnUrl(nextRaw);
+  const safeNext = /^\/(?:quan-tri|admin)(?:\/|$)/i.test(candidateNext) ? "/my-learning" : candidateNext;
   if (user) return redirectResponse(safeNext);
   const contentHtml = `
     <h1 class="wb-page-title">Đăng nhập WORD BRIDGE</h1>
@@ -7519,49 +7764,628 @@ function renderPasswordPage({ mode = "forgot", user, url = null }) {
   }));
 }
 __name(renderPasswordPage, "renderPasswordPage");
-async function renderAccountPage({ db, user, subPath = "" }) {
+function formatDateVi(raw) {
+  if (!raw) return "Chưa cập nhật";
+  const s = String(raw).trim();
+  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+  if (!m) return s;
+  return m[4] ? `${m[3]}/${m[2]}/${m[1]} ${m[4]}:${m[5]}` : `${m[3]}/${m[2]}/${m[1]}`;
+}
+function formatShortDateVi(raw) {
+  if (!raw) return "—";
+  const m = String(raw).trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : String(raw);
+}
+function parseDeviceLabel(ua = "") {
+  const s = String(ua || "");
+  if (!s) return { label: "Trình duyệt web", isMobile: false };
+  let os = "Thiết bị web";
+  let isMobile = false;
+  if (/Android/i.test(s)) { os = "Android"; isMobile = true; }
+  else if (/iPhone|iPad|iOS/i.test(s)) { os = "iOS"; isMobile = true; }
+  else if (/Windows/i.test(s)) os = "Windows";
+  else if (/Mac OS X|Macintosh/i.test(s)) os = "macOS";
+  else if (/Linux/i.test(s)) os = "Linux";
+  let browser = "Trình duyệt";
+  if (/Edg\//i.test(s)) browser = "Edge";
+  else if (/Chrome\//i.test(s) && !/Edg\//i.test(s)) browser = "Chrome";
+  else if (/Firefox\//i.test(s)) browser = "Firefox";
+  else if (/Safari\//i.test(s) && !/Chrome\//i.test(s)) browser = "Safari";
+  return { label: `${os} · ${browser}`, isMobile };
+}
+function maskIpForDisplay(ip) {
+  if (!ip) return "Chưa ghi nhận";
+  const str = String(ip).trim();
+  const v4 = str.split(".");
+  if (v4.length === 4) return `${v4[0]}.${v4[1]}.***.${v4[3]}`;
+  return str.length > 16 ? `${str.slice(0, 8)}***${str.slice(-4)}` : str;
+}
+function renderAccountDecorBanner() {
+  return `<div class="wb-acct-side-art" aria-hidden="true">
+    <svg viewBox="0 0 320 130" preserveAspectRatio="xMidYMid slice" fill="none">
+      <defs>
+        <linearGradient id="wbMtnBg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#c9e9e6"/>
+          <stop offset="55%" stop-color="#76bab7"/>
+          <stop offset="100%" stop-color="#2c8484"/>
+        </linearGradient>
+      </defs>
+      <rect width="320" height="130" fill="url(#wbMtnBg)"/>
+      <path d="M0 95 Q55 48 115 86 T235 74 T320 92 L320 130 L0 130 Z" fill="#1b7475" fill-opacity="0.45"/>
+      <path d="M0 108 Q80 68 165 102 T320 88 L320 130 L0 130 Z" fill="#146466" fill-opacity="0.7"/>
+      <path d="M210 18 C242 26 276 34 316 14" stroke="#4a3728" stroke-width="3" stroke-linecap="round"/>
+      <circle cx="238" cy="24" r="6" fill="#fff7f5"/><circle cx="238" cy="24" r="2" fill="#e6997a"/>
+      <circle cx="268" cy="28" r="7" fill="#fff7f5"/><circle cx="268" cy="28" r="2.2" fill="#e6997a"/>
+      <circle cx="294" cy="18" r="5.5" fill="#fff7f5"/><circle cx="294" cy="18" r="1.8" fill="#e6997a"/>
+      <circle cx="252" cy="42" r="5" fill="#fff7f5"/><circle cx="252" cy="42" r="1.6" fill="#e6997a"/>
+    </svg>
+  </div>`;
+}
+var ACCT_ICONS = {
+  user: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="8" r="4"/><path d="M4 20a8 8 0 0 1 16 0"/></svg>',
+  shield: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>',
+  lock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>',
+  passkey: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M17.29 21.02c.12-.6.43-2.3.5-3.02"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M2 16h.01"/><path d="M21.8 16c.2-2 .131-5.354 0-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M8.65 22c.21-.66.45-1.32.57-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg>',
+  sliders: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><line x1="4" y1="8" x2="20" y2="8"/><circle cx="9" cy="8" r="2.2" fill="currentColor"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="15" cy="16" r="2.2" fill="currentColor"/></svg>',
+  database: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>',
+  grad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>',
+  check: '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>',
+  device: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></svg>',
+  mobile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="6" y="2" width="12" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>',
+  clock: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 14"/></svg>',
+  eye: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>'
+};
+
+async function renderAccountPage({ db, services = null, user, subPath = "" }) {
   const currentPath = subPath === "profile-root" ? "/profile" : subPath ? `/account/${subPath}` : "/account";
   if (!user) return redirectResponse(signInUrl(currentPath, "account.view"));
-  const nav = `
-    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
-      <a href="/profile" class="wb-btn wb-btn-outline wb-btn-sm">Hồ sơ cá nhân</a>
-      <a href="/account/security" class="wb-btn wb-btn-outline wb-btn-sm">Bảo mật & Đổi mật khẩu</a>
-      <a href="/account/sessions" class="wb-btn wb-btn-outline wb-btn-sm">Phiên đăng nhập</a>
-      <a href="/account/passkeys" class="wb-btn wb-btn-outline wb-btn-sm">Passkey</a>
-      <a href="/account/privacy" class="wb-btn wb-btn-outline wb-btn-sm">Trung tâm quyền riêng tư</a>
-      <a href="/account/student-benefit" class="wb-btn wb-btn-primary wb-btn-sm">Quyền lợi sinh viên</a>
-    </div>`;
+
+  const activeMainTab =
+    subPath === "security" || subPath === "sessions" || subPath === "login-history" ? "security" :
+    subPath === "passkeys" ? "passkeys" :
+    subPath === "preferences" ? "preferences" :
+    subPath === "learning-data" || subPath === "privacy" ? "learning-data" :
+    subPath === "student-benefit" ? "student-benefit" :
+    "profile";
+
+  const mainTabs = [
+    { key: "profile", href: "/account", label: "Hồ sơ cá nhân", icon: ACCT_ICONS.user },
+    { key: "security", href: "/account/security", label: "Bảo mật & Đổi mật khẩu", icon: ACCT_ICONS.shield },
+    { key: "passkeys", href: "/account/passkeys", label: "Passkey", icon: ACCT_ICONS.passkey },
+    { key: "preferences", href: "/account/preferences", label: "Tùy chọn nền tảng", icon: ACCT_ICONS.sliders },
+    { key: "learning-data", href: "/account/learning-data", label: "Dữ liệu học tập", icon: ACCT_ICONS.database },
+    { key: "student-benefit", href: "/account/student-benefit", label: "Quyền lợi sinh viên", icon: ACCT_ICONS.grad }
+  ];
+
+  const tabsHtml = `
+    <nav class="wb-acct-tabs" aria-label="Danh mục tài khoản cá nhân">
+      ${mainTabs.map((t) => `<a href="${t.href}" class="wb-acct-tab ${activeMainTab === t.key ? "active" : ""}">${t.icon}<span>${escapeHtml(t.label)}</span></a>`).join("")}
+    </nav>`;
+
+  const renderLeftFeatureCard = (iconSvg, heading, subtitle, bullets) => `
+    <aside class="wb-acct-side-card">
+      ${renderAccountDecorBanner()}
+      <div class="wb-acct-side-icon-wrap"><div class="wb-acct-side-icon-inner">${iconSvg}</div></div>
+      <div class="wb-acct-side-body">
+        <h2>${escapeHtml(heading)}</h2>
+        <p class="wb-acct-side-sub">${escapeHtml(subtitle)}</p>
+        <ul class="wb-acct-check-list">
+          ${bullets.map((b) => `<li><span class="wb-acct-check-dot" aria-hidden="true">${ACCT_ICONS.check}</span><span>${escapeHtml(b)}</span></li>`).join("")}
+        </ul>
+      </div>
+    </aside>`;
+
   let body = "";
   let title = "Hồ sơ & Tài khoản cá nhân";
+
   if (subPath === "student-benefit") {
-    title = "Quyền lợi sinh viên (03 tháng)";
-    const existing = await db.prepare("SELECT * FROM wb_student_benefits WHERE account_id = ?").bind(user.accountId).first();
+    title = "Quyền lợi sinh viên";
+    const existing = await db.prepare("SELECT * FROM wb_student_benefits WHERE account_id = ?").bind(user.accountId).first().catch(() => null);
+    const isVerified = existing && existing.status === "verified";
+    const isPending = existing && existing.status === "pending";
+    const statusBadge = isVerified
+      ? '<span class="wb-status-pill-ok">Đã xác minh</span>'
+      : isPending
+        ? '<span class="wb-badge">Đang chờ xác minh email</span>'
+        : '<span class="wb-status-pill-warn">✕ Chưa xác minh</span>';
+
     body = `
-      <div class="wb-card">
-        <h3>Chính sách sinh viên chính thức</h3>
-        <p>Quyền lợi hỗ trợ học tập dành cho sinh viên có thời hạn <strong>03 tháng</strong>, chỉ áp dụng <strong>một lần duy nhất</strong>. Điều kiện xác minh duy nhất: <strong>Email sinh viên do trường cấp</strong>.</p>
-        ${existing ? `<div class="wb-alert wb-alert-info">Trạng thái hiện tại: <strong>${escapeHtml(existing.status)}</strong> · Email trường: ${escapeHtml(existing.school_email)} · Hết hạn: ${escapeHtml(existing.expires_at || "Chờ xác minh")}</div>` : `<form class="wb-form" data-api-endpoint="/api/v1/student-benefit/request">
-              <input type="hidden" name="verificationMethod" value="school_email_only" />
-              <div class="wb-field"><label for="field-schoolEmail">Email sinh viên do trường cấp (*.edu.vn, *.edu, *.ac.*)</label><input id="field-schoolEmail" class="wb-input" type="email" name="schoolEmail" required /></div>
-              <div data-form-status></div>
-              <button type="submit" class="wb-btn wb-btn-primary">Gửi liên kết xác minh email sinh viên</button>
-            </form>`}
+      <div class="wb-acct-grid">
+        ${renderLeftFeatureCard(
+          '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>',
+          "Quyền lợi sinh viên",
+          "Các lợi ích và chương trình ưu đãi dành riêng cho học sinh, sinh viên trên WORD BRIDGE.",
+          ["Mở rộng tài nguyên học tập", "Tham gia chương trình ưu đãi", "Ưu tiên trải nghiệm tính năng mới", "Nhận thông tin học tập phù hợp"]
+        )}
+        <div>
+          <section class="wb-acct-panel">
+            <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title">${ACCT_ICONS.grad}<span>Quyền lợi nổi bật</span></h3></div>
+            <div class="wb-benefit-grid-4">
+              <div class="wb-benefit-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg><span>Tài nguyên học tập mở rộng</span></div>
+              <div class="wb-benefit-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg><span>Ưu tiên trải nghiệm tính năng mới</span></div>
+              <div class="wb-benefit-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m9 15 6-6"/><circle cx="9.5" cy="9.5" r="1"/><circle cx="14.5" cy="14.5" r="1"/></svg><span>Ưu đãi từ đối tác giáo dục</span></div>
+              <div class="wb-benefit-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M9 6v12"/></svg><span>Tham gia chương trình học tập đặc biệt</span></div>
+            </div>
+          </section>
+
+          <section class="wb-acct-panel">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div class="wb-session-ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M6 16c0-1.5 1.3-2.5 3-2.5s3 1 3 2.5"/><line x1="14" y1="9" x2="18" y2="9"/><line x1="14" y1="13" x2="18" y2="13"/></svg></div>
+                <div>
+                  <strong style="display:block;font-size:1rem;">Xác minh sinh viên</strong>
+                  <span class="wb-muted" style="font-size:0.86rem;">Xác minh bằng email sinh viên do trường cấp để kích hoạt đầy đủ quyền lợi 03 tháng (áp dụng một lần duy nhất).</span>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                ${statusBadge}
+                ${!existing ? '<button type="button" class="wb-btn wb-btn-primary wb-btn-sm" data-wb-open-student-verify>Xác minh ngay ›</button>' : ""}
+              </div>
+            </div>
+            ${existing ? `
+              <div class="wb-alert wb-alert-info" style="margin-top:14px;margin-bottom:0;">
+                Email sinh viên: <strong>${escapeHtml(existing.school_email)}</strong> · Trạng thái: <strong>${escapeHtml(existing.status)}</strong>${existing.expires_at ? ` · Hiệu lực đến: <strong>${escapeHtml(formatShortDateVi(existing.expires_at))}</strong>` : ""}
+              </div>` : `
+              <div id="wb-student-verify-panel" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--wb-border);">
+                <form class="wb-form" data-api-endpoint="/api/v1/student-benefit/request" data-reload-on-success="true">
+                  <input type="hidden" name="verificationMethod" value="school_email_only" />
+                  <div class="wb-field">
+                    <label for="field-schoolEmail">Email sinh viên do trường cấp (*.edu.vn, *.edu, *.ac.*) *</label>
+                    <input id="field-schoolEmail" class="wb-input" type="email" name="schoolEmail" placeholder="vi-du@ten-truong.edu.vn" required />
+                  </div>
+                  <div data-form-status></div>
+                  <div><button type="submit" class="wb-btn wb-btn-primary">Gửi liên kết xác minh email sinh viên</button></div>
+                </form>
+              </div>`}
+          </section>
+
+          <section class="wb-acct-panel">
+            <div class="wb-acct-panel-head">
+              <div>
+                <h3 class="wb-acct-panel-title">${ACCT_ICONS.grad}<span>Chương trình ưu đãi &amp; Hợp tác</span></h3>
+                <p class="wb-muted" style="margin:4px 0 0;font-size:0.86rem;">Các chương trình học tập và học liệu mở rộng trực tiếp trên hệ thống WORD BRIDGE.</p>
+              </div>
+              <a href="/learning" style="font-size:0.88rem;font-weight:700;color:var(--wb-teal);">Khám phá chương trình ›</a>
+            </div>
+            <div class="wb-benefit-grid-4">
+              <a href="/learning" class="wb-benefit-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="2" y1="20" x2="22" y2="20"/></svg><span>Nền tảng học tập trực tuyến</span></a>
+              <a href="/reader" class="wb-benefit-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg><span>Tài nguyên học thuật số</span></a>
+              <a href="/practice" class="wb-benefit-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></svg><span>Công cụ hỗ trợ học tập</span></a>
+              <a href="/specialized" class="wb-benefit-card"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg><span>Chuyên ngành Anh – Trung</span></a>
+            </div>
+          </section>
+        </div>
       </div>`;
-  } else if (subPath === "security") {
-    title = "Bảo mật & Đổi mật khẩu";
+  } else if (subPath === "security" || subPath === "sessions" || subPath === "login-history") {
+    const secSubTabs = `
+      <div class="wb-subtabs" role="tablist">
+        <a href="/account/security" class="wb-subtab ${subPath === "security" ? "active" : ""}">${ACCT_ICONS.lock}<span>Đổi mật khẩu</span></a>
+        <a href="/account/sessions" class="wb-subtab ${subPath === "sessions" ? "active" : ""}">${ACCT_ICONS.device}<span>Thiết bị &amp; Phiên đăng nhập</span></a>
+        <a href="/account/login-history" class="wb-subtab ${subPath === "login-history" ? "active" : ""}">${ACCT_ICONS.clock}<span>Lịch sử đăng nhập &amp; đăng xuất</span></a>
+      </div>`;
+
+    let secRightBody = "";
+    if (subPath === "security") {
+      title = "Bảo mật & Đổi mật khẩu";
+      secRightBody = `
+        <div class="wb-sec-pw-grid">
+          <form class="wb-form" data-api-endpoint="/api/v1/account/change-password">
+            <div>
+              <h3 class="wb-acct-panel-title" style="margin-bottom:4px;">${ACCT_ICONS.lock}<span>Đổi mật khẩu</span></h3>
+              <p class="wb-muted" style="margin:0;font-size:0.88rem;">Sử dụng mật khẩu mạnh để bảo vệ tài khoản của bạn.</p>
+            </div>
+            <div class="wb-field">
+              <label for="field-currentPassword">Mật khẩu hiện tại <span class="wb-req">*</span></label>
+              <div class="wb-input-wrap">
+                <span class="wb-input-icon" aria-hidden="true">${ACCT_ICONS.lock}</span>
+                <input id="field-currentPassword" class="wb-input wb-input-has-icon wb-input-has-toggle" type="password" name="currentPassword" placeholder="Nhập mật khẩu hiện tại" required autocomplete="current-password" />
+                <button type="button" class="wb-pw-toggle" data-wb-toggle-pw="field-currentPassword" aria-label="Hiện hoặc ẩn mật khẩu">${ACCT_ICONS.eye}</button>
+              </div>
+            </div>
+            <div class="wb-field">
+              <label for="field-newPassword">Mật khẩu mới <span class="wb-req">*</span></label>
+              <div class="wb-input-wrap">
+                <span class="wb-input-icon" aria-hidden="true">${ACCT_ICONS.lock}</span>
+                <input id="field-newPassword" class="wb-input wb-input-has-icon wb-input-has-toggle" type="password" name="newPassword" placeholder="Nhập mật khẩu mới" required autocomplete="new-password" />
+                <button type="button" class="wb-pw-toggle" data-wb-toggle-pw="field-newPassword" aria-label="Hiện hoặc ẩn mật khẩu">${ACCT_ICONS.eye}</button>
+              </div>
+            </div>
+            <div class="wb-field">
+              <label for="field-confirmPassword">Xác nhận mật khẩu mới <span class="wb-req">*</span></label>
+              <div class="wb-input-wrap">
+                <span class="wb-input-icon" aria-hidden="true">${ACCT_ICONS.lock}</span>
+                <input id="field-confirmPassword" class="wb-input wb-input-has-icon wb-input-has-toggle" type="password" name="confirmPassword" placeholder="Nhập lại mật khẩu mới" required autocomplete="new-password" />
+                <button type="button" class="wb-pw-toggle" data-wb-toggle-pw="field-confirmPassword" aria-label="Hiện hoặc ẩn mật khẩu">${ACCT_ICONS.eye}</button>
+              </div>
+            </div>
+            <div data-form-status></div>
+            <button type="submit" class="wb-btn wb-btn-primary wb-btn-block wb-btn-lg">Cập nhật mật khẩu</button>
+          </form>
+          <aside class="wb-pw-rules-box">
+            <h3>${ACCT_ICONS.shield}<span>Yêu cầu mật khẩu</span></h3>
+            <ul class="wb-pw-rules-list">
+              <li data-pw-rule="len">✓ Tối thiểu <strong>10 ký tự</strong></li>
+              <li data-pw-rule="upper">✓ Bao gồm chữ hoa (A – Z)</li>
+              <li data-pw-rule="lower">✓ Bao gồm chữ thường (a – z)</li>
+              <li data-pw-rule="num">✓ Bao gồm số (0 – 9)</li>
+              <li data-pw-rule="special">✓ Khuyến nghị có ký tự đặc biệt (! @ # $ %)</li>
+            </ul>
+          </aside>
+        </div>`;
+    } else if (subPath === "sessions") {
+      title = "Thiết bị & Phiên đăng nhập";
+      const activeSessions = (await db.prepare(
+        `SELECT id, ip_address, user_agent, created_at, expires_at, revoked_at
+         FROM wb_sessions
+         WHERE account_id = ? AND revoked_at IS NULL AND datetime(expires_at) > datetime('now')
+         ORDER BY created_at DESC LIMIT 25`
+      ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+      const currentSess = activeSessions.find((s) => s.id === user.sessionId) || null;
+      const otherSessions = activeSessions.filter((s) => s.id !== user.sessionId);
+      const curDev = parseDeviceLabel(currentSess?.user_agent || "");
+      secRightBody = `
+        <div class="wb-alert wb-alert-info" style="margin-top:0;margin-bottom:18px;">
+          Quản lý các thiết bị và phiên đăng nhập đang hoạt động trên tài khoản của bạn.
+        </div>
+
+        <h3 class="wb-acct-panel-title" style="margin-bottom:10px;">${ACCT_ICONS.device}<span>Thiết bị hiện tại</span></h3>
+        <div class="wb-session-row current">
+          <div class="wb-session-main">
+            <div class="wb-session-ico">${curDev.isMobile ? ACCT_ICONS.mobile : ACCT_ICONS.device}</div>
+            <div>
+              <strong>${escapeHtml(curDev.label)}</strong>
+              <div class="wb-session-meta">IP: ${escapeHtml(maskIpForDisplay(currentSess?.ip_address))} · Đăng nhập: ${escapeHtml(formatDateVi(currentSess?.created_at))}</div>
+            </div>
+          </div>
+          <span class="wb-status-pill-ok">Đang sử dụng</span>
+        </div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:20px 0 12px;">
+          <h3 class="wb-acct-panel-title">${ACCT_ICONS.database}<span>Các thiết bị / Phiên đăng nhập khác (${otherSessions.length})</span></h3>
+          ${otherSessions.length > 0 ? `
+            <form class="wb-form" data-api-endpoint="/api/v1/account/sessions/revoke-others" data-reload-on-success="true" style="margin:0;">
+              <button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Đăng xuất tất cả phiên khác</button>
+            </form>` : ""}
+        </div>
+        ${otherSessions.length === 0
+          ? '<div class="wb-card" style="background:var(--wb-surface-2);margin:0;text-align:center;"><p class="wb-muted" style="margin:0;">Không có thiết bị hoặc phiên đăng nhập nào khác đang hoạt động.</p></div>'
+          : otherSessions.map((s) => {
+              const dev = parseDeviceLabel(s.user_agent || "");
+              return `<div class="wb-session-row">
+                <div class="wb-session-main">
+                  <div class="wb-session-ico">${dev.isMobile ? ACCT_ICONS.mobile : ACCT_ICONS.device}</div>
+                  <div>
+                    <strong>${escapeHtml(dev.label)}</strong>
+                    <div class="wb-session-meta">IP: ${escapeHtml(maskIpForDisplay(s.ip_address))} · Đăng nhập: ${escapeHtml(formatDateVi(s.created_at))}</div>
+                  </div>
+                </div>
+                <form class="wb-form" data-api-endpoint="/api/v1/account/sessions/revoke" data-reload-on-success="true" style="margin:0;">
+                  <input type="hidden" name="sessionId" value="${escapeHtml(s.id)}" />
+                  <button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Đăng xuất</button>
+                </form>
+              </div>`;
+            }).join("")}`;
+    } else {
+      title = "Lịch sử đăng nhập & đăng xuất";
+      const authLogs = (await db.prepare(
+        `SELECT action, ip_address, metadata_json, created_at
+         FROM wb_audit_logs
+         WHERE actor_account_id = ?
+           AND action IN ('auth.login', 'auth.login_failed', 'auth.passkey_login', 'auth.logout', 'auth.session_revoked', 'auth.sessions_revoked_others', 'auth.password_changed', 'account.registered')
+         ORDER BY created_at DESC LIMIT 40`
+      ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+      const ACTION_LABELS = {
+        "auth.login": ["Đăng nhập thành công", "wb-status-pill-ok"],
+        "auth.passkey_login": ["Đăng nhập bằng Passkey", "wb-status-pill-ok"],
+        "auth.logout": ["Đăng xuất", "wb-badge"],
+        "auth.session_revoked": ["Đăng xuất một phiên thiết bị", "wb-badge"],
+        "auth.sessions_revoked_others": ["Đăng xuất tất cả phiên khác", "wb-badge"],
+        "auth.login_failed": ["Đăng nhập thất bại", "wb-status-pill-warn"],
+        "auth.password_changed": ["Đổi mật khẩu thành công", "wb-badge"],
+        "account.registered": ["Khởi tạo tài khoản", "wb-badge"]
+      };
+      secRightBody = `
+        <div class="wb-alert wb-alert-info" style="margin-top:0;margin-bottom:16px;">
+          Nhật ký thực tế các lần đăng nhập, đăng xuất và thay đổi bảo mật trên tài khoản của bạn.
+        </div>
+        <div class="wb-table-wrap">
+          <table class="wb-table">
+            <thead><tr><th>Sự kiện</th><th>Thiết bị / Ghi chú</th><th>Địa chỉ IP</th><th>Thời gian</th></tr></thead>
+            <tbody>
+              ${authLogs.map((l) => {
+                const [lbl, cls] = ACTION_LABELS[l.action] || [l.action, "wb-badge"];
+                const meta = safeJsonParse(l.metadata_json, {});
+                const devInfo = meta.userAgent ? parseDeviceLabel(meta.userAgent).label : (meta.revokedCount !== undefined ? `${meta.revokedCount} phiên` : "—");
+                return `<tr>
+                  <td><span class="${cls}">${escapeHtml(lbl)}</span></td>
+                  <td>${escapeHtml(devInfo)}</td>
+                  <td><code>${escapeHtml(maskIpForDisplay(l.ip_address))}</code></td>
+                  <td>${escapeHtml(formatDateVi(l.created_at))}</td>
+                </tr>`;
+              }).join("") || '<tr><td colspan="4" style="text-align:center;padding:20px;">Chưa có lịch sử đăng nhập hoặc đăng xuất được ghi nhận.</td></tr>'}
+            </tbody>
+          </table>
+        </div>`;
+    }
+
     body = `
-      <form class="wb-form wb-card" data-api-endpoint="/api/v1/account/change-password">
-        <h3 style="margin-top:0;color:var(--wb-teal);">Đổi mật khẩu tài khoản</h3>
-        <div class="wb-field"><label for="field-currentPassword">Mật khẩu hiện tại *</label><input id="field-currentPassword" class="wb-input" type="password" name="currentPassword" required /></div>
-        <div class="wb-field"><label for="field-newPassword">Mật khẩu mới (tối thiểu 10 ký tự gồm hoa, thường, số) *</label><input id="field-newPassword" class="wb-input" type="password" name="newPassword" required /></div>
-        <div class="wb-field"><label for="field-confirmPassword">Xác nhận mật khẩu mới *</label><input id="field-confirmPassword" class="wb-input" type="password" name="confirmPassword" required /></div>
-        <div data-form-status></div>
-        <button type="submit" class="wb-btn wb-btn-primary">Cập nhật mật khẩu</button>
-      </form>`;
-  } else if (subPath === "sessions") {
-    title = "Quản lý phiên đăng nhập";
-    const sessions = (await db.prepare("SELECT id, ip_address, user_agent, created_at, expires_at, revoked_at FROM wb_sessions WHERE account_id = ? ORDER BY created_at DESC LIMIT 15").bind(user.accountId).all()).results || [];
-    body = `<div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Mã phiên</th><th>Thiết bị</th><th>IP</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>${sessions.map((s) => `<tr><td><code>${escapeHtml(s.id)}</code></td><td>${escapeHtml(s.user_agent || "")}</td><td>${escapeHtml(s.ip_address || "")}</td><td>${s.revoked_at ? "Đã thu hồi" : s.id === user.sessionId ? "Phiên hiện tại" : "Đang hoạt động"}</td><td>${!s.revoked_at ? `<form class="wb-form" data-api-endpoint="/api/v1/account/sessions/revoke" data-reload-on-success="true"><input type="hidden" name="sessionId" value="${escapeHtml(s.id)}" /><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Thu hồi</button></form>` : "—"}</td></tr>`).join("")}</tbody></table></div>`;
+      <div class="wb-acct-grid">
+        ${renderLeftFeatureCard(
+          '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><rect x="9" y="10" width="6" height="5" rx="1"/><path d="M10.5 10V8.5a1.5 1.5 0 0 1 3 0V10"/></svg>',
+          "Bảo mật tài khoản",
+          "Tăng cường bảo vệ tài khoản và thông tin cá nhân của bạn trên WORD BRIDGE.",
+          ["Mật khẩu được mã hóa an toàn", "Hỗ trợ xác thực Passkeys/WebAuthn", "Kiểm soát phiên đăng nhập", "Quản lý thiết bị đã đăng nhập"]
+        )}
+        <section class="wb-acct-panel">
+          ${secSubTabs}
+          ${secRightBody}
+        </section>
+      </div>`;
+  } else if (subPath === "passkeys") {
+    title = "Passkey (WebAuthn / FIDO2)";
+    const keys = (await db.prepare(
+      "SELECT id, display_name, created_at, last_used_at, revoked_at FROM wb_passkeys WHERE account_id = ? AND revoked_at IS NULL ORDER BY created_at DESC"
+    ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    body = `
+      <div class="wb-acct-grid">
+        ${renderLeftFeatureCard(
+          '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 10a2 2 0 0 0-2 2c0 1.02-.1 2.51-.26 4"/><path d="M14 13.12c0 2.38 0 6.38-1 8.88"/><path d="M2 12a10 10 0 0 1 18-6"/><path d="M5 19.5C5.5 18 6 15 6 12a6 6 0 0 1 .34-2"/><path d="M9 6.8a6 6 0 0 1 9 5.2v2"/></svg>',
+          "Passkey",
+          "Đăng nhập an toàn, nhanh chóng và hiện đại hơn với Passkey (WebAuthn).",
+          ["Đăng nhập không cần mật khẩu", "Bảo mật bằng thiết bị cá nhân", "Chống đánh cắp tài khoản", "Đơn giản và tiện lợi khi sử dụng"]
+        )}
+        <section class="wb-acct-panel">
+          <div class="wb-acct-panel-head">
+            <div>
+              <h3 class="wb-acct-panel-title">${ACCT_ICONS.passkey}<span>Quản lý Passkey</span></h3>
+              <p class="wb-muted" style="margin:4px 0 0;font-size:0.88rem;">Sử dụng Passkey để đăng nhập vào WORD BRIDGE bằng phương thức xác thực an toàn trên thiết bị của bạn (vân tay, khuôn mặt hoặc mã khóa thiết bị).</p>
+            </div>
+            <button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-wb-passkey-help>Tìm hiểu về Passkey</button>
+          </div>
+          <div id="wb-passkey-help-box" class="wb-alert wb-alert-info" hidden>
+            WORD BRIDGE không thu thập hay lưu vân tay, khuôn mặt, PIN thiết bị hay khóa bí mật (private key). Hệ thống chỉ lưu định danh WebAuthn và khóa công khai COSE chuẩn FIDO2.
+          </div>
+
+          ${keys.length === 0 ? `
+            <div class="wb-passkey-empty">
+              <svg viewBox="0 0 140 84" width="132" height="80" fill="none" aria-hidden="true">
+                <rect x="14" y="8" width="84" height="58" rx="8" stroke="#146466" stroke-width="3" fill="#f0fafa"/>
+                <line x1="6" y1="68" x2="106" y2="68" stroke="#146466" stroke-width="3" stroke-linecap="round"/>
+                <circle cx="56" cy="37" r="16" fill="#d9f1ef"/>
+                <path d="M50 37a6 6 0 0 1 12 0c0 3-.5 6-1 8M56 35a2 2 0 0 0-2 2v5" stroke="#146466" stroke-width="2.2" stroke-linecap="round"/>
+                <rect x="88" y="24" width="34" height="52" rx="6" stroke="#146466" stroke-width="2.6" fill="#ffffff"/>
+                <rect x="97" y="40" width="16" height="16" rx="3" stroke="#5AABA9" stroke-width="2"/>
+              </svg>
+              <h3>Bạn chưa thiết lập Passkey</h3>
+              <p>Hãy thêm Passkey để đăng nhập nhanh hơn và an toàn hơn.</p>
+              <button type="button" class="wb-btn wb-btn-primary" data-passkey="register">+ Thêm Passkey</button>
+              <p data-passkey-status role="status" class="wb-muted" style="margin-top:10px;"></p>
+            </div>` : `
+            <div style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+              <strong>Passkey đang hoạt động (${keys.length})</strong>
+              <button type="button" class="wb-btn wb-btn-primary wb-btn-sm" data-passkey="register">+ Thêm Passkey mới</button>
+            </div>
+            <p data-passkey-status role="status" class="wb-muted" style="margin:0 0 12px;"></p>
+            ${keys.map((k) => `
+              <div class="wb-session-row">
+                <div class="wb-session-main">
+                  <div class="wb-session-ico">${ACCT_ICONS.passkey}</div>
+                  <div>
+                    <strong>${escapeHtml(k.display_name || "Passkey thiết bị")}</strong>
+                    <div class="wb-session-meta">Thêm lúc: ${escapeHtml(formatDateVi(k.created_at))}${k.last_used_at ? ` · Dùng gần nhất: ${escapeHtml(formatDateVi(k.last_used_at))}` : ""}</div>
+                  </div>
+                </div>
+                <form class="wb-form" data-api-endpoint="/api/v1/account/passkeys/${encodeURIComponent(k.id)}" data-api-method="DELETE" data-reload-on-success="true" style="margin:0;">
+                  <button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Thu hồi</button>
+                </form>
+              </div>`).join("")}`}
+
+          <div class="wb-note-banner">
+            <strong style="display:flex;align-items:center;gap:6px;color:var(--wb-teal);">ⓘ Lưu ý</strong>
+            <ul>
+              <li>Passkey được lưu an toàn trên thiết bị cá nhân của bạn.</li>
+              <li>Bạn có thể thêm nhiều Passkey (máy tính, điện thoại, khóa bảo mật).</li>
+              <li>Nếu mất thiết bị, bạn vẫn có thể đăng nhập bằng mật khẩu để quản lý và thu hồi Passkey.</li>
+            </ul>
+          </div>
+        </section>
+      </div>`;
+  } else if (subPath === "preferences") {
+    title = "Tùy chọn nền tảng";
+    const prefs = services?.auth ? await services.auth.getUserPreferences(user.accountId) : {
+      theme: "light", language: "vi", fontSize: "md", lineHeight: "normal",
+      notifyLearning: true, notifyPlatform: true, notifyRecommendations: false, syncEnabled: true
+    };
+    body = `
+      <div class="wb-acct-grid">
+        ${renderLeftFeatureCard(
+          '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.9"><line x1="4" y1="8" x2="20" y2="8"/><circle cx="9" cy="8" r="2.2"/><line x1="4" y1="16" x2="20" y2="16"/><circle cx="15" cy="16" r="2.2"/></svg>',
+          "Tùy chọn nền tảng",
+          "Điều chỉnh giao diện, ngôn ngữ và các thiết lập hiển thị theo nhu cầu của bạn.",
+          ["Cá nhân hóa trải nghiệm", "Đồng bộ trên mọi thiết bị", "Dễ dàng thay đổi khi cần"]
+        )}
+        <form id="wb-preferences-form" style="display:grid;gap:16px;">
+          <div id="wb-pref-status" role="status"></div>
+          <div class="wb-pref-grid">
+            <section class="wb-acct-panel">
+              <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title"><span>Giao diện</span></h3></div>
+              <div class="wb-theme-cards">
+                <label class="wb-theme-opt ${prefs.theme === "light" ? "active" : ""}">
+                  <input type="radio" name="theme" value="light" ${prefs.theme === "light" ? "checked" : ""} />
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                  <span>Sáng</span>
+                </label>
+                <label class="wb-theme-opt ${prefs.theme === "dark" ? "active" : ""}">
+                  <input type="radio" name="theme" value="dark" ${prefs.theme === "dark" ? "checked" : ""} />
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                  <span>Tối</span>
+                </label>
+                <label class="wb-theme-opt ${prefs.theme === "auto" ? "active" : ""}">
+                  <input type="radio" name="theme" value="auto" ${prefs.theme === "auto" ? "checked" : ""} />
+                  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="12" rx="2"/><line x1="8" y1="20" x2="16" y2="20"/><line x1="12" y1="16" x2="12" y2="20"/></svg>
+                  <span>Tự động</span>
+                </label>
+              </div>
+            </section>
+
+            <section class="wb-acct-panel">
+              <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title"><span>Ngôn ngữ hiển thị</span></h3></div>
+              <div class="wb-field">
+                <select class="wb-select" name="language" aria-label="Ngôn ngữ hiển thị">
+                  <option value="vi" ${prefs.language === "vi" ? "selected" : ""}>Tiếng Việt</option>
+                </select>
+                <span class="wb-muted" style="font-size:0.8rem;">Giao diện nền tảng WORD BRIDGE hiển thị thống nhất bằng Tiếng Việt.</span>
+              </div>
+            </section>
+          </div>
+
+          <div class="wb-pref-grid">
+            <section class="wb-acct-panel">
+              <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title"><span>Hiển thị</span></h3></div>
+              <input type="hidden" name="fontSize" value="${escapeHtml(prefs.fontSize)}" />
+              <input type="hidden" name="lineHeight" value="${escapeHtml(prefs.lineHeight)}" />
+              <div class="wb-seg-row">
+                <strong>Aa Cỡ chữ</strong>
+                <div class="wb-seg-group">
+                  <button type="button" class="wb-seg-btn ${prefs.fontSize === "sm" ? "active" : ""}" data-seg-field="fontSize" data-seg-val="sm">Nhỏ</button>
+                  <button type="button" class="wb-seg-btn ${prefs.fontSize === "md" ? "active" : ""}" data-seg-field="fontSize" data-seg-val="md">Vừa</button>
+                  <button type="button" class="wb-seg-btn ${prefs.fontSize === "lg" ? "active" : ""}" data-seg-field="fontSize" data-seg-val="lg">Lớn</button>
+                </div>
+              </div>
+              <div class="wb-seg-row" style="margin-bottom:0;">
+                <strong>Khoảng cách dòng</strong>
+                <div class="wb-seg-group">
+                  <button type="button" class="wb-seg-btn ${prefs.lineHeight === "compact" ? "active" : ""}" data-seg-field="lineHeight" data-seg-val="compact">Thấp</button>
+                  <button type="button" class="wb-seg-btn ${prefs.lineHeight === "normal" ? "active" : ""}" data-seg-field="lineHeight" data-seg-val="normal">Vừa</button>
+                  <button type="button" class="wb-seg-btn ${prefs.lineHeight === "relaxed" ? "active" : ""}" data-seg-field="lineHeight" data-seg-val="relaxed">Cao</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="wb-acct-panel">
+              <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title"><span>Thông báo</span></h3></div>
+              <label class="wb-switch-row">
+                <span>Nhận thông báo về hoạt động học tập</span>
+                <span class="wb-switch"><input type="checkbox" name="notifyLearning" ${prefs.notifyLearning ? "checked" : ""} /><span class="wb-switch-slider"></span></span>
+              </label>
+              <label class="wb-switch-row">
+                <span>Nhận thông báo về thông tin nền tảng</span>
+                <span class="wb-switch"><input type="checkbox" name="notifyPlatform" ${prefs.notifyPlatform ? "checked" : ""} /><span class="wb-switch-slider"></span></span>
+              </label>
+              <label class="wb-switch-row">
+                <span>Nhận đề xuất nội dung phù hợp</span>
+                <span class="wb-switch"><input type="checkbox" name="notifyRecommendations" ${prefs.notifyRecommendations ? "checked" : ""} /><span class="wb-switch-slider"></span></span>
+              </label>
+            </section>
+          </div>
+
+          <section class="wb-acct-panel">
+            <label class="wb-switch-row" style="padding:0;">
+              <div>
+                <strong style="display:block;font-size:0.98rem;">Đồng bộ &amp; Lưu trữ</strong>
+                <span class="wb-muted" style="font-size:0.86rem;">Tự động đồng bộ cài đặt và tiến độ học tập trên tất cả thiết bị khi đăng nhập.</span>
+              </div>
+              <span class="wb-switch"><input type="checkbox" name="syncEnabled" ${prefs.syncEnabled ? "checked" : ""} /><span class="wb-switch-slider"></span></span>
+            </label>
+          </section>
+        </form>
+      </div>`;
+  } else if (subPath === "learning-data") {
+    title = "Dữ liệu học tập";
+    const lpStats = await db.prepare(
+      "SELECT COUNT(DISTINCT lesson_id) AS lessons_cnt, COALESCE(SUM(time_spent_seconds), 0) AS total_sec FROM wb_learner_progress WHERE account_id = ?"
+    ).bind(user.accountId).first().catch(() => ({ lessons_cnt: 0, total_sec: 0 }));
+    const prCountRow = await db.prepare("SELECT COUNT(*) AS cnt FROM wb_practice_results WHERE account_id = ?").bind(user.accountId).first().catch(() => ({ cnt: 0 }));
+    const srCountRow = await db.prepare("SELECT COUNT(*) AS cnt FROM wb_skill_reviews WHERE account_id = ?").bind(user.accountId).first().catch(() => ({ cnt: 0 }));
+    const rpCountRow = await db.prepare("SELECT COUNT(*) AS cnt FROM wb_reader_progress WHERE account_id = ?").bind(user.accountId).first().catch(() => ({ cnt: 0 }));
+
+    const recentLessons = (await db.prepare(
+      `SELECT l.title_vi AS label, lp.updated_at AS ts, 'lesson' AS kind
+       FROM wb_learner_progress lp LEFT JOIN wb_lessons l ON l.id = lp.lesson_id
+       WHERE lp.account_id = ? ORDER BY lp.updated_at DESC LIMIT 6`
+    ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    const recentPractices = (await db.prepare(
+      `SELECT COALESCE(pe.title_vi, pr.skill) AS label, pr.submitted_at AS ts, 'practice' AS kind
+       FROM wb_practice_results pr LEFT JOIN wb_practice_exercises pe ON pe.id = pr.exercise_id
+       WHERE pr.account_id = ? ORDER BY pr.submitted_at DESC LIMIT 6`
+    ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+    const recentReadings = (await db.prepare(
+      `SELECT COALESCE(rd.title_vi, 'Tài liệu đọc') AS label, rp.last_read_at AS ts, 'reading' AS kind
+       FROM wb_reader_progress rp LEFT JOIN wb_reader_documents rd ON rd.id = rp.document_id
+       WHERE rp.account_id = ? ORDER BY rp.last_read_at DESC LIMIT 6`
+    ).bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
+
+    const combinedActivities = [...recentLessons, ...recentPractices, ...recentReadings]
+      .sort((a, b) => String(b.ts || "").localeCompare(String(a.ts || "")))
+      .slice(0, 8);
+    const activeDaySet = new Set(combinedActivities.map((a) => String(a.ts || "").slice(0, 10)).filter(Boolean));
+    const topicsLearned = Number(lpStats?.lessons_cnt || 0) + Number(rpCountRow?.cnt || 0);
+    const totalPractices = Number(prCountRow?.cnt || 0) + Number(srCountRow?.cnt || 0);
+    const totalSeconds = Number(lpStats?.total_sec || 0);
+    const studyDurationLabel = totalSeconds >= 3600
+      ? `${(totalSeconds / 3600).toFixed(1).replace(/\.0$/, "")} giờ`
+      : `${Math.round(totalSeconds / 60)} phút`;
+
+    body = `
+      <div class="wb-acct-grid">
+        ${renderLeftFeatureCard(
+          '<svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.9"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>',
+          "Dữ liệu học tập",
+          "Quản lý, theo dõi và xuất dữ liệu học tập của bạn trên WORD BRIDGE.",
+          ["Theo dõi tiến độ học tập", "Quản lý lịch sử hoạt động", "Xuất dữ liệu cá nhân", "Tùy chọn lưu trữ và xóa dữ liệu"]
+        )}
+        <div>
+          <section class="wb-acct-panel">
+            <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title">${ACCT_ICONS.database}<span>Tổng quan học tập</span></h3></div>
+            <div class="wb-stat-tiles-4">
+              <div class="wb-stat-tile"><div class="wb-stat-tile-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><div><strong>${topicsLearned}</strong><span>Chủ đề &amp; bài đọc</span></div></div>
+              <div class="wb-stat-tile"><div class="wb-stat-tile-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><polyline points="9 12 11 14 15 10"/></svg></div><div><strong>${totalPractices}</strong><span>Bài luyện tập</span></div></div>
+              <div class="wb-stat-tile"><div class="wb-stat-tile-ico">${ACCT_ICONS.clock}</div><div><strong>${escapeHtml(studyDurationLabel)}</strong><span>Thời gian học</span></div></div>
+              <div class="wb-stat-tile"><div class="wb-stat-tile-ico"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><div><strong>${activeDaySet.size}</strong><span>Ngày hoạt động</span></div></div>
+            </div>
+          </section>
+
+          <div class="wb-pref-grid" style="margin-top:16px;">
+            <section class="wb-acct-panel">
+              <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title">${ACCT_ICONS.clock}<span>Lịch sử hoạt động gần đây</span></h3></div>
+              <div class="wb-activity-list">
+                ${combinedActivities.map((a) => {
+                  const prefix = a.kind === "lesson" ? "Bài học:" : a.kind === "practice" ? "Luyện tập:" : "Đọc tài liệu:";
+                  return `<div class="wb-activity-item"><div class="wb-activity-left"><strong>${escapeHtml(prefix)}</strong><span>${escapeHtml(a.label || "Hoạt động học tập")}</span></div><span class="wb-activity-time">${escapeHtml(formatDateVi(a.ts))}</span></div>`;
+                }).join("") || '<p class="wb-muted" style="margin:8px 0;">Chưa có hoạt động học tập nào được ghi nhận. Hãy bắt đầu một bài học hoặc bài luyện tập để theo dõi tiến độ thực tế tại đây.</p>'}
+              </div>
+              <div style="margin-top:16px;text-align:center;">
+                <a href="/my-learning/history" class="wb-btn wb-btn-outline wb-btn-sm">Xem chi tiết ›</a>
+              </div>
+            </section>
+
+            <div style="display:grid;gap:16px;align-content:start;">
+              <section class="wb-acct-panel">
+                <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title"><span>Xuất dữ liệu học tập</span></h3></div>
+                <p class="wb-muted" style="margin:0 0 12px;font-size:0.86rem;">Tải về dữ liệu học tập thực tế của bạn (định dạng .CSV, .JSON hoặc báo cáo in .HTML/PDF).</p>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <select id="wb-export-format" class="wb-select" style="flex:1;min-width:140px;" aria-label="Chọn định dạng xuất dữ liệu">
+                    <option value="csv">Bảng tính (.CSV)</option>
+                    <option value="json">Dữ liệu cấu trúc (.JSON)</option>
+                    <option value="html">Báo cáo in / PDF (.HTML)</option>
+                  </select>
+                  <button type="button" class="wb-btn wb-btn-primary" data-wb-export-learning>Xuất dữ liệu</button>
+                </div>
+              </section>
+
+              <section class="wb-acct-panel">
+                <div class="wb-acct-panel-head"><h3 class="wb-acct-panel-title" style="color:var(--wb-red);"><span>Quản lý dữ liệu</span></h3></div>
+                <p class="wb-muted" style="margin:0 0 12px;font-size:0.86rem;">Xóa dữ liệu học tập trên tài khoản của bạn. Hành động này không thể hoàn tác.</p>
+                <div id="wb-clear-learning-status" role="status"></div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <button type="button" class="wb-btn wb-btn-outline wb-btn-sm" style="border-color:#dc2626;color:#b91c1c!important;" data-wb-clear-learning>Xóa dữ liệu học tập ›</button>
+                  <a href="/account/privacy" class="wb-btn wb-btn-ghost wb-btn-sm">Trung tâm quyền riêng tư</a>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+      </div>`;
   } else if (subPath === "privacy") {
     title = "Trung tâm quyền riêng tư & Dữ liệu cá nhân";
     const consents = (await db.prepare("SELECT policy_type, policy_version, acceptance_status, consent_purpose, created_at FROM wb_user_policy_consents WHERE account_id = ? ORDER BY created_at DESC LIMIT 20").bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
@@ -7570,7 +8394,7 @@ async function renderAccountPage({ db, user, subPath = "" }) {
     const drafts = (await db.prepare("SELECT id, language_code, prompt_title, status, updated_at FROM wb_writing_submissions WHERE account_id = ? ORDER BY updated_at DESC LIMIT 15").bind(user.accountId).all().catch(() => ({ results: [] }))).results || [];
     body = `
       <div class="wb-grid-2">
-        <div class="wb-card">
+        <div class="wb-acct-panel">
           <h3 style="margin-top:0;color:var(--wb-teal);">Gửi yêu cầu quyền dữ liệu cá nhân</h3>
           <p class="wb-muted">Thực hiện quyền theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 và <a href="/policies/privacy">Chính sách quyền riêng tư</a>.</p>
           <form class="wb-form" data-api-endpoint="/api/v1/privacy/requests" data-reload-on-success="true">
@@ -7588,51 +8412,126 @@ async function renderAccountPage({ db, user, subPath = "" }) {
             <button type="submit" class="wb-btn wb-btn-primary">Gửi yêu cầu quyền riêng tư</button>
           </form>
         </div>
-        <div class="wb-card">
+        <div class="wb-acct-panel">
           <h3 style="margin-top:0;color:var(--wb-teal);">Chính sách &amp; Lịch sử xác nhận (${consents.length})</h3>
           <p><a href="/policies/terms">Điều khoản sử dụng</a> · <a href="/policies/privacy">Chính sách quyền riêng tư</a></p>
-          <ul>${consents.map((c) => `<li><code>${escapeHtml(c.policy_type)}</code> v${escapeHtml(c.policy_version)} — <strong>${escapeHtml(c.acceptance_status)}</strong> (${escapeHtml(c.consent_purpose)}, ${escapeHtml(c.created_at)})</li>`).join("") || "<li>Chưa có bản ghi đồng ý bổ sung.</li>"}</ul>
+          <ul>${consents.map((c) => `<li><code>${escapeHtml(c.policy_type)}</code> — <strong>${escapeHtml(c.acceptance_status)}</strong> (${escapeHtml(c.consent_purpose)}, ${escapeHtml(formatDateVi(c.created_at))})</li>`).join("") || "<li>Chưa có bản ghi đồng ý bổ sung.</li>"}</ul>
           <h4 style="color:var(--wb-teal);">Trạng thái yêu cầu quyền dữ liệu (${reqs.length})</h4>
           <ul>${reqs.map((r) => `<li><code>${escapeHtml(r.id)}</code> · ${escapeHtml(r.request_type)} · <strong>${escapeHtml(r.status)}</strong></li>`).join("") || "<li>Chưa có yêu cầu nào.</li>"}</ul>
         </div>
       </div>
       <div class="wb-grid-2" style="margin-top:16px;">
-        <div class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Bản ghi âm đã lưu (${recs.length})</h3><ul>${recs.map((r) => `<li>${escapeHtml(r.target_text.slice(0, 60))} (${escapeHtml(r.language_code)}) <form class="wb-form" data-api-endpoint="/api/v1/privacy/recordings/${encodeURIComponent(r.id)}" data-api-method="DELETE" data-reload-on-success="true" style="display:inline;"><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Xóa</button></form></li>`).join("") || "<li>Không có bản ghi âm nào đang lưu.</li>"}</ul></div>
-        <div class="wb-card"><h3 style="margin-top:0;color:var(--wb-teal);">Bài viết &amp; Bản nháp cá nhân (${drafts.length})</h3><ul>${drafts.map((d) => `<li>${escapeHtml(d.prompt_title || d.id)} (${escapeHtml(d.status)}) <form class="wb-form" data-api-endpoint="/api/v1/privacy/writings/${encodeURIComponent(d.id)}" data-api-method="DELETE" data-reload-on-success="true" style="display:inline;"><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Xóa</button></form></li>`).join("") || "<li>Không có bản nháp nào đang lưu.</li>"}</ul></div>
+        <div class="wb-acct-panel"><h3 style="margin-top:0;color:var(--wb-teal);">Bản ghi âm đã lưu (${recs.length})</h3><ul>${recs.map((r) => `<li>${escapeHtml(r.target_text.slice(0, 60))} (${escapeHtml(r.language_code)}) <form class="wb-form" data-api-endpoint="/api/v1/privacy/recordings/${encodeURIComponent(r.id)}" data-api-method="DELETE" data-reload-on-success="true" style="display:inline;"><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Xóa</button></form></li>`).join("") || "<li>Không có bản ghi âm nào đang lưu.</li>"}</ul></div>
+        <div class="wb-acct-panel"><h3 style="margin-top:0;color:var(--wb-teal);">Bài viết &amp; Bản nháp cá nhân (${drafts.length})</h3><ul>${drafts.map((d) => `<li>${escapeHtml(d.prompt_title || d.id)} (${escapeHtml(d.status)}) <form class="wb-form" data-api-endpoint="/api/v1/privacy/writings/${encodeURIComponent(d.id)}" data-api-method="DELETE" data-reload-on-success="true" style="display:inline;"><button type="submit" class="wb-btn wb-btn-outline wb-btn-sm">Xóa</button></form></li>`).join("") || "<li>Không có bản nháp nào đang lưu.</li>"}</ul></div>
       </div>`;
-  } else if (subPath === "passkeys") {
-    title = "Passkey (WebAuthn / FIDO2)";
-    const keys = (await db.prepare("SELECT id, display_name, created_at, revoked_at FROM wb_passkeys WHERE account_id = ? ORDER BY created_at DESC").bind(user.accountId).all()).results || [];
-    body = `<div class="wb-card"><p>WORD BRIDGE không thu thập hay lưu vân tay, khuôn mặt, PIN thiết bị hay khóa bí mật (private key). Chỉ lưu định danh WebAuthn và khóa công khai COSE.</p><p>Số Passkey hiện có: <strong>${keys.filter((k) => !k.revoked_at).length}</strong></p><button type="button" class="wb-btn wb-btn-primary" data-passkey="register">Thêm Passkey</button><p data-passkey-status role="status"></p><ul>${keys.filter((k) => !k.revoked_at).map((k) => `<li>${escapeHtml(k.display_name)} <form class="wb-form" data-api-endpoint="/api/v1/account/passkeys/${encodeURIComponent(k.id)}" data-api-method="DELETE" data-reload-on-success="true"><button type="submit" class="wb-btn wb-btn-outline">Thu hồi</button></form></li>`).join("")}</ul></div>`;
   } else {
+    const prefs = services?.auth ? await services.auth.getUserPreferences(user.accountId) : { theme: "light", language: "vi", notifyLearning: true };
+    const filledBasic = Boolean((user.fullName || "").trim() && (user.dateOfBirth || "").trim());
+    const filledStudy = Boolean((user.schoolName || "").trim() || (user.workplaceName || "").trim());
+    const filledContact = Boolean((user.email || "").trim() && (user.phoneNumber || "").trim());
+    const fieldsList = [user.fullName, user.dateOfBirth, user.phoneNumber, user.schoolName, user.workplaceName];
+    const completedCount = fieldsList.filter((v) => String(v || "").trim().length >= 2).length;
+    const pct = Math.round((completedCount / fieldsList.length) * 100);
+    const circ = 2 * Math.PI * 36;
+    const dashOffset = (circ * (1 - pct / 100)).toFixed(1);
+    const themeLabel = prefs.theme === "dark" ? "Tối" : prefs.theme === "auto" ? "Tự động" : "Sáng";
+
     body = `
-      <div class="wb-grid-2">
-        <div class="wb-card">
-          <h3 style="margin-top:0;color:var(--wb-teal);">Thông tin tài khoản</h3>
-          <ul>
-            <li><strong>Email:</strong> ${escapeHtml(user.email)}</li>
-            <li><strong>Vai trò:</strong> <code>${escapeHtml(user.roles.length ? user.roles.join(", ") : "member")}</code></li>
-            <li><strong>Trạng thái tài khoản:</strong> Đang hoạt động</li>
-          </ul>
-        </div>
-        <form class="wb-form wb-card" data-api-endpoint="/api/v1/account/profile" data-reload-on-success="true">
-          <h3 style="margin-top:0;color:var(--wb-teal);">Cập nhật hồ sơ cá nhân</h3>
-          <div class="wb-field"><label for="field-fullName">Họ và tên *</label><input id="field-fullName" class="wb-input" name="fullName" value="${escapeHtml(user.fullName || "")}" required /></div>
-          <div class="wb-field"><label for="field-dateOfBirth">Ngày sinh</label><input id="field-dateOfBirth" class="wb-input" type="date" name="dateOfBirth" value="${escapeHtml(user.dateOfBirth || "")}" /></div>
-          <div class="wb-field"><label for="field-phoneNumber">Số điện thoại *</label><input id="field-phoneNumber" class="wb-input" name="phoneNumber" value="${escapeHtml(user.phoneNumber || "")}" required /></div>
-          <div class="wb-field"><label for="field-schoolName">Trường học *</label><input id="field-schoolName" class="wb-input" name="schoolName" value="${escapeHtml(user.schoolName || "")}" required /></div>
-          <div class="wb-field"><label for="field-workplaceName">Nơi làm việc *</label><input id="field-workplaceName" class="wb-input" name="workplaceName" value="${escapeHtml(user.workplaceName || "")}" required /></div>
+      <div class="wb-acct-grid-profile">
+        <aside class="wb-acct-side-card">
+          ${renderAccountDecorBanner()}
+          <div class="wb-acct-side-icon-wrap"><div class="wb-acct-side-icon-inner">${ACCT_ICONS.user}</div></div>
+          <div class="wb-acct-side-body">
+            <h2>${escapeHtml(user.fullName || user.email)}</h2>
+            <div class="wb-acct-meta-list">
+              <div class="wb-acct-meta-row"><span class="wb-acct-meta-label">Email</span><span class="wb-acct-meta-val">${escapeHtml(user.email)}</span></div>
+              <div class="wb-acct-meta-row"><span class="wb-acct-meta-label">Trạng thái tài khoản</span><span class="wb-status-pill-ok">Đang hoạt động</span></div>
+              <div class="wb-acct-meta-row"><span class="wb-acct-meta-label">Ngày tham gia</span><span class="wb-acct-meta-val">${escapeHtml(formatShortDateVi(user.createdAt))}</span></div>
+              <div class="wb-acct-meta-row"><span class="wb-acct-meta-label">Cập nhật gần nhất</span><span class="wb-acct-meta-val">${escapeHtml(formatShortDateVi(user.updatedAt || user.createdAt))}</span></div>
+            </div>
+          </div>
+        </aside>
+
+        <form class="wb-form wb-acct-panel" data-api-endpoint="/api/v1/account/profile" data-reload-on-success="true">
+          <div class="wb-acct-panel-head" style="margin-bottom:6px;">
+            <h3 class="wb-acct-panel-title">${ACCT_ICONS.user}<span>Cập nhật hồ sơ cá nhân</span></h3>
+          </div>
+          <div class="wb-field">
+            <label for="field-fullName">Họ và tên <span class="wb-req">*</span></label>
+            <input id="field-fullName" class="wb-input" name="fullName" value="${escapeHtml(user.fullName || "")}" required />
+          </div>
+          <div class="wb-grid-2">
+            <div class="wb-field">
+              <label for="field-dateOfBirth">Ngày sinh <span class="wb-req">*</span></label>
+              <input id="field-dateOfBirth" class="wb-input" type="date" name="dateOfBirth" value="${escapeHtml(user.dateOfBirth || "")}" />
+            </div>
+            <div class="wb-field">
+              <label for="field-phoneNumber">Số điện thoại <span class="wb-req">*</span></label>
+              <input id="field-phoneNumber" class="wb-input" name="phoneNumber" value="${escapeHtml(user.phoneNumber || "")}" required />
+            </div>
+          </div>
+          <div class="wb-field">
+            <label for="field-schoolName">Trường học <span class="wb-req">*</span></label>
+            <input id="field-schoolName" class="wb-input" name="schoolName" value="${escapeHtml(user.schoolName || "")}" />
+          </div>
+          <div class="wb-field">
+            <label for="field-workplaceName">Nơi làm việc</label>
+            <input id="field-workplaceName" class="wb-input" name="workplaceName" value="${escapeHtml(user.workplaceName || "")}" />
+          </div>
           <div data-form-status></div>
-          <button type="submit" class="wb-btn wb-btn-primary">Lưu hồ sơ</button>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <button type="reset" class="wb-btn wb-btn-outline">Hủy thay đổi</button>
+            <button type="submit" class="wb-btn wb-btn-primary">Lưu hồ sơ</button>
+          </div>
         </form>
+
+        <div class="wb-acct-profile-right">
+          <section class="wb-acct-panel">
+            <div class="wb-acct-panel-head" style="margin-bottom:12px;"><h3 class="wb-acct-panel-title"><span>Tiến độ hoàn thiện hồ sơ</span></h3></div>
+            <div class="wb-donut-wrap">
+              <svg class="wb-donut-svg" viewBox="0 0 88 88" aria-label="Tiến độ hồ sơ ${pct}%">
+                <circle cx="44" cy="44" r="36" fill="none" stroke="#e2efef" stroke-width="9"/>
+                <circle cx="44" cy="44" r="36" fill="none" stroke="#146466" stroke-width="9" stroke-linecap="round"
+                  stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${dashOffset}" transform="rotate(-90 44 44)"/>
+                <text x="44" y="49" text-anchor="middle" font-size="17" font-weight="800" fill="#146466">${pct}%</text>
+              </svg>
+              <ul class="wb-acct-check-list" style="border:none;padding:0;gap:8px;font-size:0.84rem;">
+                <li><span class="wb-acct-check-dot" style="background:${filledBasic ? "#146466" : "#cbd5e1"};">${ACCT_ICONS.check}</span><span>Thông tin cơ bản</span></li>
+                <li><span class="wb-acct-check-dot" style="background:${filledStudy ? "#146466" : "#cbd5e1"};">${ACCT_ICONS.check}</span><span>Thông tin học tập</span></li>
+                <li><span class="wb-acct-check-dot" style="background:${filledContact ? "#146466" : "#cbd5e1"};">${ACCT_ICONS.check}</span><span>Thông tin liên hệ</span></li>
+              </ul>
+            </div>
+          </section>
+
+          <section class="wb-acct-panel" style="margin-top:16px;">
+            <div class="wb-acct-panel-head" style="margin-bottom:8px;"><h3 class="wb-acct-panel-title">${ACCT_ICONS.sliders}<span>Thiết lập nhanh</span></h3></div>
+            <div class="wb-quick-links">
+              <a href="/account/preferences" class="wb-quick-link-row"><span class="wb-quick-link-left"><span>Ngôn ngữ hiển thị</span></span><span class="wb-quick-link-val">Tiếng Việt ›</span></a>
+              <a href="/account/preferences" class="wb-quick-link-row"><span class="wb-quick-link-left"><span>Giao diện</span></span><span class="wb-quick-link-val">${escapeHtml(themeLabel)} ›</span></a>
+              <a href="/account/preferences" class="wb-quick-link-row"><span class="wb-quick-link-left"><span>Thông báo</span></span><span class="wb-quick-link-val">${prefs.notifyLearning ? "Đang bật" : "Đang tắt"} ›</span></a>
+              <a href="/account/privacy" class="wb-quick-link-row"><span class="wb-quick-link-left"><span>Quyền riêng tư</span></span><span class="wb-quick-link-val">Quản lý ›</span></a>
+            </div>
+          </section>
+        </div>
       </div>`;
   }
+
+  const pageShell = `
+    <div class="wb-acct-shell">
+      <div class="wb-acct-header">
+        <h1>Hồ sơ &amp; Tài khoản cá nhân</h1>
+        <p>Quản lý thông tin, bảo mật và các thiết lập cho trải nghiệm học tập trên WORD BRIDGE.</p>
+      </div>
+      ${tabsHtml}
+      ${body}
+    </div>`;
+
   return htmlResponse(renderPublicPage({
     title,
     currentPath,
-    breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: "Hồ sơ cá nhân", href: "/profile" }, ...subPath && subPath !== "profile-root" ? [{ label: title }] : []],
+    breadcrumbs: [{ label: "Trang chủ", href: "/" }, { label: "Hồ sơ & Tài khoản", href: "/account" }, ...subPath && subPath !== "profile-root" ? [{ label: title }] : []],
     user,
-    contentHtml: `<h1>${escapeHtml(title)}</h1>${nav}${body}`
+    contentHtml: pageShell
   }));
 }
 __name(renderAccountPage, "renderAccountPage");
@@ -7992,8 +8891,20 @@ var index_default = {
           contentHtml: renderSessionInvalidContent({ escapeHtml })
         }), 401);
       }
+      if (path === "/quan-tri/dang-nhap" || path === "/quan-tri/login") {
+        if (user && services.auth.hasAnyAdminRole(user)) {
+          return redirectResponse("/quan-tri");
+        }
+        const notice = user && !services.auth.hasAnyAdminRole(user)
+          ? "Phiên hiện tại là tài khoản người học thông thường và không có quyền quản trị. Vui lòng đăng nhập bằng tài khoản quản trị được cấp quyền."
+          : "";
+        return new Response(renderAdminLoginPage({ escapeHtml, notice }), {
+          status: 200,
+          headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "private, no-store", ...SECURITY_HEADERS }
+        });
+      }
       if (path === "/quan-tri" || path.startsWith("/quan-tri/")) {
-        if (!user) return redirectResponse(signInUrl("/quan-tri", "admin.access"));
+        if (!user) return redirectResponse("/quan-tri/dang-nhap");
         if (!services.auth.hasAnyAdminRole(user)) return failure(403, request);
         const adminSession = await services.adminPin.authenticateAdminSession(user, cookies.wb_admin_session);
         if (!adminSession) {
@@ -8132,9 +9043,9 @@ var index_default = {
       if (path === "/verify-email") return await renderVerifyEmailPage({ services, url, request });
       if (path === "/forgot-password") return await renderPasswordPage({ mode: "forgot", user, url });
       if (path === "/reset-password") return await renderPasswordPage({ mode: "reset", user, url });
-      if (path === "/profile") return await renderAccountPage({ db: safeDb, user, subPath: "profile-root" });
-      if (path === "/account") return await renderAccountPage({ db: safeDb, user, subPath: "" });
-      if (path.startsWith("/account/")) return await renderAccountPage({ db: safeDb, user, subPath: path.slice("/account/".length) });
+      if (path === "/profile") return await renderAccountPage({ db: safeDb, services, user, subPath: "profile-root" });
+      if (path === "/account") return await renderAccountPage({ db: safeDb, services, user, subPath: "" });
+      if (path.startsWith("/account/")) return await renderAccountPage({ db: safeDb, services, user, subPath: path.slice("/account/".length) });
       return failure(404, request);
     } catch (err) {
       const id = (globalThis.crypto || nodeWebCrypto).randomUUID();

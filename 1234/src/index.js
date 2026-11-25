@@ -139,18 +139,21 @@ var SPECIALIZED_VOCAB_DATASETS = Object.freeze([
   { slug: "nguoi-sua-chua-may-cong-cu", nameVi: "Nguội Sửa chữa Máy công cụ", languages: ["en", "zh"], count: 3013, enCount: 1513, zhCount: 1500, authoredCount: 1000, sample: "bench work, ISO 230, 激光干涉仪螺距误差补偿, backlash" },
   { slug: "bao-tri-thiet-bi-co-dien", nameVi: "Bảo trì Thiết bị Cơ điện", languages: ["en", "zh"], count: 3007, enCount: 1507, zhCount: 1500, authoredCount: 1000, sample: "preventive maintenance, RCM, 快速傅里叶振动频谱, ISO 55000" }
 ]);
+var SPECIALIZED_EXTRA_DATASETS = Object.freeze([
+  { slug: "logistics", nameVi: "Logistics", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "bill of lading, demurrage, 提单, 滞期费" },
+  { slug: "business", nameVi: "Thương mại", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "commercial contract, 不可抗力条款, NDA" },
+  { slug: "import-export", nameVi: "Xuất nhập khẩu", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "letter of credit, 信用证, commercial invoice" },
+  { slug: "it-cloud", nameVi: "Công nghệ thông tin và Cloud", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "cloud-native, 云原生架构, API gateway" },
+  { slug: "mechanical-engineering", nameVi: "Cơ khí", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "mechanical tolerance, 机械加工公差, FEA" },
+  { slug: "electrical-electronics", nameVi: "Điện – điện tử", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "three-phase transformer, 三相电力变压器, PCB" },
+  { slug: "automotive", nameVi: "Ô tô", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "powertrain, 动力总成架构, ABS, ECU" },
+  { slug: "economics-tourism", nameVi: "Kinh tế – du lịch", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "GDP, 宏观经济指标, occupancy rate, MICE" },
+  { slug: "graphic-design", nameVi: "Thiết kế Đồ họa (Mở rộng)", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "visual hierarchy, 视觉层级, WCAG, CMYK" },
+  { slug: "healthcare", nameVi: "Điều dưỡng – y dược", languages: ["zh", "en"], count: 1000, enCount: 500, zhCount: 500, sample: "vital signs, 生命体征监测, SpO2, GMP" }
+]);
 var SPECIALIZED_DOMAINS = Object.freeze([
   ...SPECIALIZED_VOCAB_DATASETS,
-  { slug: "logistics", nameVi: "Logistics", languages: ["zh", "en"], count: 0, sample: "bill of lading, demurrage, 海运提单" },
-  { slug: "business", nameVi: "Thương mại", languages: ["zh"], count: 0, sample: "不可抗力, 合同条款" },
-  { slug: "import-export", nameVi: "Xuất nhập khẩu", languages: ["zh", "en"], count: 0, sample: "信用证, commercial invoice, packing list" },
-  { slug: "it-cloud", nameVi: "Công nghệ thông tin và Cloud", languages: ["en"], count: 0, sample: "cloud infrastructure, API gateway" },
-  { slug: "mechanical-engineering", nameVi: "Cơ khí", languages: ["zh", "en"], count: 0, sample: "公差, tolerance" },
-  { slug: "electrical-electronics", nameVi: "Điện – điện tử", languages: ["zh", "en"], count: 0, sample: "circuit, voltage" },
-  { slug: "automotive", nameVi: "Ô tô", languages: ["en"], count: 0, sample: "powertrain, chassis" },
-  { slug: "economics-tourism", nameVi: "Kinh tế – du lịch", languages: ["en"], count: 0, sample: "hospitality, itinerary" },
-  { slug: "graphic-design", nameVi: "Thiết kế Đồ họa", languages: ["en"], count: 0, sample: "layout, composition" },
-  { slug: "healthcare", nameVi: "Điều dưỡng – y dược", languages: ["en"], count: 0, sample: "vital signs, clinical care" }
+  ...SPECIALIZED_EXTRA_DATASETS
 ]);
 var RBAC_ROLES = Object.freeze([
   { code: "super_admin", nameVi: "Super Admin", descriptionVi: "Toàn quyền quản trị tối cao toàn nền tảng, phân quyền và cấu hình lõi." },
@@ -433,10 +436,9 @@ function renderPublicPage({
   }).join("");
   const crumbHtml = breadcrumbs.length ? `<nav aria-label="Breadcrumb" style="font-size:0.84rem;margin-bottom:14px;color:var(--wb-text-muted);">${breadcrumbs.map((c, i) => c.href && i < breadcrumbs.length - 1 ? `<a href="${escapeHtml(c.href)}">${escapeHtml(c.label)}</a> › ` : `<span>${escapeHtml(c.label)}</span>`).join("")}</nav>` : "";
   const loginHref = signInUrl(currentPath.startsWith("http") ? "/" : currentPath, "header.login");
-  const localeControl = `<select class="wb-select wb-btn-sm" data-wb-locale aria-label="Ngôn ngữ giao diện" style="width:auto;min-width:64px;padding:4px 8px;"><option value="vi">VI</option><option value="en">EN</option></select>`;
-  const authActions = user ? `${localeControl}
+  const authActions = user ? `
        <a href="/profile" class="wb-btn wb-btn-outline wb-btn-sm wb-hide-mobile">${escapeHtml(user.fullName || user.email)}</a>
-       <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-wb-logout>Đăng xuất</button>` : `${localeControl}
+       <button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-wb-logout>Đăng xuất</button>` : `
        <a href="${escapeHtml(loginHref)}" class="wb-btn wb-btn-outline wb-btn-sm">Đăng nhập</a>
        <a href="/register" class="wb-btn wb-btn-accent wb-btn-sm wb-hide-mobile">Đăng ký</a>`;
   const footerSlogan = s.footer_slogan || "WORD BRIDGE – Kết nối tri thức, mở rộng thế giới ngôn ngữ";
@@ -3762,7 +3764,8 @@ async function handleApiRequest(request, url, ctx) {
         "/auth/login": { post: { summary: "Đăng nhập tài khoản" } },
         "/auth/reset-password": { post: { summary: "Đặt lại mật khẩu bằng token một lần" } },
         "/dictionary/search": { get: { summary: "Tra cứu từ điển (yêu cầu đăng nhập)" } },
-        "/specialized/terms": { get: { summary: "Tra cứu 12 bộ thuật ngữ chuyên ngành" } },
+        "/specialized/terms": { get: { summary: "Tra cứu 22 bộ thuật ngữ chuyên ngành (46.104 từ)" } },
+        "/practice/bank": { get: { summary: "Ngân hàng luyện tập >10.000 ngôn từ (Nghe, Nói, Đọc, Viết, Từ vựng, Ngữ pháp)" } },
         "/reader/documents": { get: { summary: "Danh sách tài liệu Thư viện đọc (/reader)" } },
         "/reader/progress": { post: { summary: "Lưu tiến độ đọc & ghi chú cá nhân" } },
         "/auth/providers": { get: { summary: "Trạng thái 6 phương thức đăng nhập (Email, Passkey, OAuth)" } },
@@ -3889,6 +3892,91 @@ async function handleApiRequest(request, url, ctx) {
     if (result.error) return errorResponse("INVALID_LANGUAGE_SCOPE", result.error, 400);
     return jsonResponse({ ok: true, ...result });
   }
+  if (path === "/api/v1/practice/bank" && method === "GET") {
+    const skill = String(url.searchParams.get("skill") || "all").trim().toLowerCase();
+    const lang = String(url.searchParams.get("lang") || "").trim().toLowerCase();
+    const q = String(url.searchParams.get("q") || "").trim().toLowerCase();
+    const page = Math.max(1, Number(url.searchParams.get("page") || 1));
+    const limit = Math.min(50, Math.max(1, Number(url.searchParams.get("limit") || 20)));
+    const shardNames = ["digital-business", "industrial", "mechanical"];
+    const pool = [];
+    for (const sname of shardNames) {
+      const res = await loadStaticAsset(`/data/vocab/${sname}.json`, request, url, env);
+      if (res && res.ok) {
+        const obj = await res.json();
+        for (const [domSlug, domData] of Object.entries(obj)) {
+          const words = Array.isArray(domData?.words) ? domData.words : [];
+          for (let i = 0; i < words.length; i++) {
+            const w = words[i];
+            if (lang && (w.l || "en") !== lang) continue;
+            if (q && !`${w.w || ""} ${w.m || ""} ${w.t || ""} ${domData.nameVi || ""}`.toLowerCase().includes(q)) continue;
+            pool.push({ domSlug, domName: domData.nameVi || domSlug, ...w });
+          }
+        }
+      }
+    }
+    const grammarPatterns = [
+      { l: "en", w: "Passive voice in technical specs", i: "/ˈpæsɪv vɔɪs/", m: "Câu bị động mô tả quy trình kỹ thuật (is + V-ed/V3)", ex: "The circuit breaker is inspected before energization.", t: "Ngữ pháp Kỹ thuật EN" },
+      { l: "en", w: "Conditional Type 1 (Safety)", i: "/kənˈdɪʃənl/", m: "Câu điều kiện loại 1 diễn đạt cảnh báo vận hành (If + S + V, S + must/will + V)", ex: "If pressure exceeds 6 bar, the relief valve will open.", t: "Ngữ pháp Điều kiện EN" },
+      { l: "en", w: "Relative clauses with 'which/that'", i: "/ˈrelətɪv klɔːz/", m: "Mệnh đề quan hệ xác định thông số thiết bị", ex: "The sensor that measures vibration connects to the PLC.", t: "Mệnh đề Quan hệ EN" },
+      { l: "zh", w: "把字句 (Câu chữ 把)", i: "bǎ zì jù", m: "Cấu trúc xử lý đối tượng: Chủ ngữ + 把 + Tân ngữ + Động từ + Kết quả", ex: "请把电源总开关关闭后再检修。", t: "Ngữ pháp HSK 3-6" },
+      { l: "zh", w: "被字句 (Câu bị động chữ 被)", i: "bèi zì jù", m: "Câu bị động: Đối tượng + 被 + Chủ thể + Động từ + Thành phần khác", ex: "故障模块已经被工程师更换了。", t: "Ngữ pháp HSK 3-6" },
+      { l: "zh", w: "依据…进行… (Theo chuẩn... tiến hành...)", i: "yījù... jìnxíng...", m: "Cấu trúc văn bản quy chuẩn chuyên ngành", ex: "请依据国际标准进行质量检验。", t: "Ngữ pháp Văn bản ZH" }
+    ];
+    let items = [];
+    if (skill === "reading") {
+      const lib = await loadReaderLibrary(request, url, env);
+      const arts = Array.isArray(lib?.articles) ? lib.articles : [];
+      const filteredArts = arts.filter((a) => (!lang || a.language_code === lang) && (!q || `${a.title_vi} ${a.summary_vi}`.toLowerCase().includes(q)));
+      const total = filteredArts.length;
+      const totalPages = Math.max(1, Math.ceil(total / limit));
+      const safePage = Math.min(page, totalPages);
+      const slice = filteredArts.slice((safePage - 1) * limit, safePage * limit).map((a, idx) => ({
+        id: a.id,
+        skill: "reading",
+        lang: a.language_code,
+        level: a.level_ref,
+        domain: a.domain_group_vi,
+        prompt: a.title_vi,
+        phonetic: a.sub_field_vi,
+        answer: a.summary_vi,
+        slug: a.slug,
+        sample: (a.content_text || "").slice(0, 320) + "...",
+        idx: (safePage - 1) * limit + idx + 1
+      }));
+      return jsonResponse({ ok: true, skill, total, bankWordsTotal: pool.length + arts.length, page: safePage, totalPages, items: slice });
+    }
+    const total = pool.length;
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * limit;
+    const slice = pool.slice(start, start + limit).map((item, idx) => {
+      const n = start + idx;
+      const distractors = [
+        pool[(n + 7) % pool.length]?.m || "quy trình kiểm định",
+        pool[(n + 23) % pool.length]?.m || "thiết bị đo lường",
+        pool[(n + 59) % pool.length]?.m || "báo cáo vận hành"
+      ];
+      const options = [item.m, ...distractors].sort((a, b) => a.localeCompare(b));
+      const g = grammarPatterns[n % grammarPatterns.length];
+      return {
+        id: `pb-${item.domSlug}-${item.n}`,
+        skill,
+        lang: item.l || "en",
+        domain: item.domName,
+        topic: item.t || "",
+        word: item.w,
+        phonetic: item.i || "",
+        meaning: item.m,
+        example: item.ex || (item.l === "zh" ? `请在${item.domName}中正确使用“${item.w}”。` : `Verify ${item.w} in ${item.domName}.`),
+        grammarHint: `${g.w}: ${g.m}`,
+        options,
+        answer: item.m
+      };
+    });
+    return jsonResponse({ ok: true, skill, total, bankWordsTotal: pool.length, page: safePage, totalPages, items: slice });
+  }
+
   if (path === "/api/v1/specialized/domains" && method === "GET") {
     const langParam = url.searchParams.get("language");
     if (langParam) {
@@ -3902,7 +3990,6 @@ async function handleApiRequest(request, url, ctx) {
     return jsonResponse({ ok: true, domains: SPECIALIZED_DOMAINS });
   }
   if (path === "/api/v1/specialized/terms" && method === "GET") {
-    if (!user) return errorResponse("UNAUTHORIZED", "Cần đăng nhập để tra cứu thuật ngữ chuyên ngành.", 401);
     const domain = String(url.searchParams.get("domain") || "").trim().toLowerCase();
     const lang = String(url.searchParams.get("lang") || "").trim().toLowerCase();
     const srcFilter = String(url.searchParams.get("src") || "").trim().toLowerCase();
@@ -6581,6 +6668,103 @@ async function renderPracticePage({ services, db, user, skill = "" }) {
     ${speakingStudioHtml}
     ${readingStudioHtml}
 
+    <section id="wb-practice-bank" class="wb-card" data-skill="${escapeHtml(skill || "all")}" style="margin-bottom:20px;border-top:4px solid var(--wb-teal);">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+        <div>
+          <span class="wb-badge wb-badge-aqua">NGÂN HÀNG LUYỆN TẬP TƯƠNG TÁC · &gt; 46.104 NGÔN TỪ</span>
+          <h2 style="margin:6px 0 0;color:var(--wb-teal);">Kho Luyện Tập Thực Chiến (${escapeHtml(SKILL_LABELS[skill] || "Tất cả kỹ năng")})</h2>
+        </div>
+        <div id="wb-pb-stats" class="wb-muted" style="font-size:0.9rem;">Đang tải hơn 10.000 ngôn từ luyện tập...</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+        <input id="wb-pb-search" class="wb-input" style="flex:1;min-width:200px;" placeholder="Tìm từ vựng, chủ đề hoặc chuyên ngành để luyện tập..." />
+        <select id="wb-pb-lang" class="wb-select" style="min-width:160px;">
+          <option value="">Tất cả (Tiếng Anh + Tiếng Trung)</option>
+          <option value="en">Tiếng Anh (EN)</option>
+          <option value="zh">Tiếng Trung (ZH)</option>
+        </select>
+      </div>
+      <div id="wb-pb-list" class="wb-grid-2"></div>
+      <div id="wb-pb-pager" style="display:flex;justify-content:center;gap:10px;align-items:center;margin-top:14px;"></div>
+      <script>
+      (function(){
+        var box = document.getElementById('wb-practice-bank');
+        if (!box) return;
+        var skill = box.getAttribute('data-skill') || 'all';
+        var qEl = document.getElementById('wb-pb-search');
+        var langEl = document.getElementById('wb-pb-lang');
+        var listEl = document.getElementById('wb-pb-list');
+        var statsEl = document.getElementById('wb-pb-stats');
+        var pagerEl = document.getElementById('wb-pb-pager');
+        var page = 1;
+        function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+        function saveMistake(item){
+          try {
+            var arr = JSON.parse(localStorage.getItem('wb_local_mistakes') || '[]');
+            if (!arr.some(function(x){ return x.id === item.id; })) {
+              arr.unshift({ id: item.id, word: item.word || item.prompt, meaning: item.answer, lang: item.lang, skill: skill, domain: item.domain, at: new Date().toISOString() });
+              localStorage.setItem('wb_local_mistakes', JSON.stringify(arr.slice(0, 200)));
+            }
+          } catch {}
+        }
+        function bumpInsight(correct){
+          try {
+            var st = JSON.parse(localStorage.getItem('wb_local_insights') || '{"total":0,"correct":0}');
+            st.total += 1; if (correct) st.correct += 1;
+            localStorage.setItem('wb_local_insights', JSON.stringify(st));
+          } catch {}
+        }
+        async function load(p){
+          page = p || 1;
+          var params = new URLSearchParams({ skill: skill, q: (qEl.value||'').trim(), lang: langEl.value||'', page: String(page), limit: '12' });
+          var r = await fetch('/api/v1/practice/bank?' + params);
+          var d = await r.json();
+          if (!d.ok) return;
+          statsEl.textContent = 'Tổng kho khả dụng: ' + Number(d.total).toLocaleString('vi-VN') + ' mục luyện tập (trong ' + Number(d.bankWordsTotal).toLocaleString('vi-VN') + ' ngôn từ) · Trang ' + d.page + '/' + d.totalPages;
+          if (!d.items.length) { listEl.innerHTML = '<div class="wb-alert wb-alert-info">Không tìm thấy mục phù hợp.</div>'; return; }
+          listEl.innerHTML = d.items.map(function(it){
+            if (skill === 'reading') {
+              return '<article class="wb-card" style="background:#f8fbfb;"><span class="wb-badge">' + esc(String(it.lang).toUpperCase()) + ' · ' + esc(it.level) + '</span><h4 style="margin:8px 0;color:var(--wb-teal);">' + esc(it.prompt) + '</h4><p class="wb-muted" style="font-size:0.86rem;">' + esc(it.sample) + '</p><div style="display:flex;gap:8px;flex-wrap:wrap;"><a class="wb-btn wb-btn-primary wb-btn-sm" href="/reader/' + esc(it.slug) + '">Đọc & Làm bài trực tiếp →</a><button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-wb-tts="' + esc(it.prompt) + '" data-wb-lang="' + esc(it.lang) + '">🔊 Nghe mẫu</button></div></article>';
+            }
+            if (skill === 'writing') {
+              return '<article class="wb-card" style="background:#f8fbfb;"><div style="display:flex;justify-content:space-between;gap:6px;"><span class="wb-badge">' + esc(String(it.lang).toUpperCase()) + ' · ' + esc(it.domain) + '</span><button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-wb-tts="' + esc(it.word) + '" data-wb-lang="' + esc(it.lang) + '">🔊 Nghe</button></div><h4 style="margin:8px 0 4px;color:var(--wb-teal);">' + esc(it.word) + ' <small class="wb-muted">' + esc(it.phonetic) + '</small></h4><p style="font-size:0.86rem;margin:0 0 8px;">Nghĩa: <strong>' + esc(it.meaning) + '</strong></p><textarea class="wb-textarea" rows="2" placeholder="Đặt câu hoặc dịch thuật ngữ sang ' + (it.lang === 'zh' ? 'Tiếng Trung' : 'Tiếng Anh') + '..."></textarea><div style="display:flex;gap:8px;margin-top:8px;align-items:center;"><button type="button" class="wb-btn wb-btn-primary wb-btn-sm" data-pb-reveal="' + esc(it.id) + '">Xem câu mẫu chuẩn</button><span id="rev-' + esc(it.id) + '" class="wb-muted" style="display:none;font-size:0.84rem;"><em>' + esc(it.example) + '</em></span></div></article>';
+            }
+            var optsHtml = (it.options || []).map(function(op){
+              return '<button type="button" class="wb-btn wb-btn-outline wb-btn-sm" style="text-align:left;justify-content:flex-start;" data-pb-opt="' + esc(op) + '" data-pb-ans="' + esc(it.answer) + '" data-pb-id="' + esc(it.id) + '" data-pb-word="' + esc(it.word) + '" data-pb-lang="' + esc(it.lang) + '" data-pb-dom="' + esc(it.domain) + '">' + esc(op) + '</button>';
+            }).join('');
+            return '<article class="wb-card" style="background:#f8fbfb;"><div style="display:flex;justify-content:space-between;gap:6px;"><span class="wb-badge">' + esc(String(it.lang).toUpperCase()) + ' · ' + esc(it.domain) + '</span><button type="button" class="wb-btn wb-btn-ghost wb-btn-sm" data-wb-tts="' + esc(it.word) + '" data-wb-lang="' + esc(it.lang) + '">🔊 Nghe phát âm</button></div><h4 style="margin:8px 0 4px;color:var(--wb-teal);">' + (skill === 'listening' ? 'Nghe và chọn nghĩa đúng:' : esc(it.word)) + '</h4><p class="wb-muted" style="font-size:0.82rem;margin:0 0 8px;">' + esc(it.phonetic) + (skill === 'grammar' ? ' · ' + esc(it.grammarHint) : '') + '</p><div style="display:grid;gap:6px;">' + optsHtml + '</div><div id="fb-' + esc(it.id) + '" style="margin-top:8px;font-size:0.85rem;"></div></article>';
+          }).join('');
+          pagerEl.innerHTML = '<button type="button" class="wb-btn wb-btn-outline wb-btn-sm" data-pb-page="' + Math.max(1, d.page - 1) + '" ' + (d.page <= 1 ? 'disabled' : '') + '>← Trang trước</button><span class="wb-badge">Trang ' + d.page + ' / ' + d.totalPages + '</span><button type="button" class="wb-btn wb-btn-primary wb-btn-sm" data-pb-page="' + Math.min(d.totalPages, d.page + 1) + '" ' + (d.page >= d.totalPages ? 'disabled' : '') + '>Trang sau →</button>';
+        }
+        box.addEventListener('click', function(ev){
+          var pgBtn = ev.target.closest('[data-pb-page]');
+          if (pgBtn && !pgBtn.disabled) { load(Number(pgBtn.getAttribute('data-pb-page'))); return; }
+          var revBtn = ev.target.closest('[data-pb-reveal]');
+          if (revBtn) {
+            var sp = document.getElementById('rev-' + revBtn.getAttribute('data-pb-reveal'));
+            if (sp) sp.style.display = 'inline';
+            bumpInsight(true);
+            return;
+          }
+          var optBtn = ev.target.closest('[data-pb-opt]');
+          if (optBtn) {
+            var chosen = optBtn.getAttribute('data-pb-opt');
+            var ans = optBtn.getAttribute('data-pb-ans');
+            var id = optBtn.getAttribute('data-pb-id');
+            var fb = document.getElementById('fb-' + id);
+            var ok = chosen === ans;
+            bumpInsight(ok);
+            if (!ok) saveMistake({ id: id, word: optBtn.getAttribute('data-pb-word'), answer: ans, lang: optBtn.getAttribute('data-pb-lang'), domain: optBtn.getAttribute('data-pb-dom') });
+            if (fb) fb.innerHTML = ok ? '<strong style="color:var(--wb-teal);">✓ Chính xác!</strong>' : '<strong style="color:var(--wb-red);">✕ Chưa đúng. Đáp án: ' + esc(ans) + ' (Đã lưu vào My Mistakes)</strong>';
+          }
+        });
+        qEl.addEventListener('input', function(){ load(1); });
+        langEl.addEventListener('change', function(){ load(1); });
+        load(1);
+      })();
+      </script>
+    </section>
+
     <div class="wb-grid-2">
       ${exercisesWithQuestions.map((ex) => `
         <article class="wb-card">
@@ -6730,10 +6914,10 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
       <div class="wb-specialized-hero-copy">
         <span class="wb-eyebrow">Ngoại ngữ chuyên ngành · WORD BRIDGE</span>
         <h1>${escapeHtml(heading)}</h1>
-        <p>Học ngôn ngữ trong đúng bối cảnh nghề nghiệp: <strong>12 bộ dữ liệu chuyên ngành song ngữ Anh – Trung (36.104 thuật ngữ)</strong> gồm 8 bộ Excel gốc (24.104 từ) và <strong>+1.000 thuật ngữ biên soạn mở rộng cho mỗi chuyên ngành (+12.000 từ)</strong>.</p>
+        <p>Học ngôn ngữ trong đúng bối cảnh nghề nghiệp: <strong>22 chuyên ngành song ngữ Anh – Trung (46.104 thuật ngữ thực tế)</strong>, mở trực tiếp để học từ vựng, ví dụ, phát âm và luyện tập ngay không cần chuyển hướng.</p>
         <div class="wb-specialized-language-switch" aria-label="Chọn ngôn ngữ chuyên ngành">
-          <a href="/specialized/chinese" class="wb-specialized-language ${subSlug === "chinese" ? "active" : ""}"><strong>中文</strong><span>Tiếng Trung chuyên ngành</span></a>
-          <a href="/specialized/english" class="wb-specialized-language ${subSlug === "english" ? "active" : ""}"><strong>EN</strong><span>Tiếng Anh chuyên ngành</span></a>
+          <a href="/specialized/chinese" class="wb-specialized-language ${subSlug === "chinese" ? "active" : ""}"><strong>中文</strong><span>Tiếng Trung chuyên ngành (22 ngành)</span></a>
+          <a href="/specialized/english" class="wb-specialized-language ${subSlug === "english" ? "active" : ""}"><strong>EN</strong><span>Tiếng Anh chuyên ngành (22 ngành)</span></a>
         </div>
       </div>
       <aside class="wb-specialized-scope">
@@ -7532,14 +7716,24 @@ var vocabFiles = Object.freeze({
   "sua-chua-lap-rap-may-tinh": "digital-business",
   "thiet-ke-do-hoa": "digital-business",
   "ke-toan-doanh-nghiep": "digital-business",
+  "logistics": "digital-business",
+  "business": "digital-business",
+  "import-export": "digital-business",
+  "it-cloud": "digital-business",
+  "economics-tourism": "digital-business",
+  "graphic-design": "digital-business",
   "cat-got-kim-loai": "mechanical",
   "nguoi-sua-chua-may-cong-cu": "mechanical",
   "cong-nghe-o-to": "mechanical",
   "ky-thuat-may-lanh-dhkk": "mechanical",
+  "mechanical-engineering": "mechanical",
+  "automotive": "mechanical",
   "co-dien-tu": "industrial",
   "dien-cong-nghiep": "industrial",
   "dien-tu-cong-nghiep": "industrial",
-  "bao-tri-thiet-bi-co-dien": "industrial"
+  "bao-tri-thiet-bi-co-dien": "industrial",
+  "electrical-electronics": "industrial",
+  "healthcare": "industrial"
 });
 async function loadStaticAsset(normalizedPath, request, url, rawEnv) {
   const termFile = /^\/data\/vocab\/([a-z0-9-]+)\.json$/.exec(normalizedPath);
@@ -7572,7 +7766,7 @@ async function loadStaticAsset(normalizedPath, request, url, rawEnv) {
   return null;
 }
 __name(loadStaticAsset, "loadStaticAsset");
-var KNOWN_VOCAB_SLUGS = new Set(SPECIALIZED_VOCAB_DATASETS.map((d) => d.slug));
+var KNOWN_VOCAB_SLUGS = new Set(SPECIALIZED_DOMAINS.map((d) => d.slug));
 var cachedReaderLibrary = null;
 async function loadReaderLibrary(request, url, rawEnv) {
   if (cachedReaderLibrary) return cachedReaderLibrary;

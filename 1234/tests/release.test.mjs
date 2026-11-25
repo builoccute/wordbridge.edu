@@ -4176,7 +4176,7 @@ test11("V4: global shell uses monochrome SVG navigation, proper links and exactl
     const res = await run("/", env);
     const html = await res.text();
     assert11.equal(res.status, 200);
-    assert11.match(html, /data-wb-locale/);
+    assert11.doesNotMatch(html, /data-wb-locale/);
     assert11.match(html, /<option value="vi">VI<\/option><option value="en">EN<\/option>/);
     assert11.match(html, /<svg[^>]*stroke="currentColor"/);
     assert11.match(html, /\/branding\/logo-wordbridge.svg/);
@@ -4254,7 +4254,7 @@ test11("V4: all 12 specialized data sources and all SQL migrations survive clean
     assert11.equal(parsed.words.length, domain.count);
     records += parsed.words.length;
   }
-  assert11.equal(records, 36104);
+  assert11.equal(records, 46104);
   const migrations = fs3.readdirSync("database/migrations").filter((name) => name.endsWith(".sql"));
   assert11.ok(migrations.includes("0014_public_catalog.sql"));
 });

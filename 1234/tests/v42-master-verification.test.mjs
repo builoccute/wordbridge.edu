@@ -473,14 +473,14 @@ test("V4.3-Suite-7: 8 Excel Vocab Datasets + 12,000 Authored Terms (36,104 total
 
     // 2. Verify 36,104 bilingual specialized terms (12,104 EN Excel + 12,000 ZH Excel + 12,000 Authored +1,000/domain)
     const idxJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), "public/data/vocab/index.json"), "utf8"));
-    assert.equal(idxJson.domainCount, 12);
+    assert.equal(idxJson.domainCount, 22);
     assert.equal(idxJson.uploadedEnWords, 12104);
     assert.equal(idxJson.uploadedZhWords, 12000);
     assert.equal(idxJson.authoredNewWords, 12000);
-    assert.equal(idxJson.totalWords, 36104);
+    assert.equal(idxJson.totalWords, 46104);
     for (const d of idxJson.domains) {
       assert.equal(d.authoredTotalCount, 1000, `${d.slug} must have +1,000 newly authored terms`);
-      assert.ok(d.enCount >= 1500 && d.zhCount === 1500, `${d.slug} must have >=1,500 EN & 1,500 ZH terms`);
+      assert.ok(d.enCount >= 500 && d.zhCount >= 500, `${d.slug} must have >=500 EN & >=500 ZH terms`);
     }
 
     // API tests on /api/v1/specialized/terms (EN, ZH, authored +1,000, pagination)
@@ -552,6 +552,57 @@ test("V4.3-Suite-7: 8 Excel Vocab Datasets + 12,000 Authored Terms (36,104 total
     }
     walk(process.cwd());
     assert.ok(fileCount <= 80, `Total project files (${fileCount}) must be <= 80`);
+  } finally {
+    cleanup();
+  }
+});
+
+test("V4.4-Suite-8: Pure Vietnamese UI (no EN switcher), All 22/22 Specialized Domains Direct Study (46,104 terms), and >10,000-Term Practice Bank", async () => {
+  const { env, cleanup } = await createTestEnv();
+  try {
+    // 1. No EN UI switcher on Home or public pages
+    for (const p of ["/", "/specialized", "/practice", "/reader", "/dictionary", "/help"]) {
+      const res = await req(env, p);
+      assert.equal(res.status, 200, `${p} must return 200`);
+      const html = await res.text();
+      assert.doesNotMatch(html, /data-wb-locale/, `${p} must NOT contain EN UI switcher`);
+    }
+
+    // 2. All 22 specialized domains return 200 with #wb-vocab-explorer (never redirect to /) & real API terms
+    const domRes = await req(env, "/api/v1/specialized/domains");
+    const domData = await domRes.json();
+    assert.equal(domData.domains.length, 22);
+    for (const d of domData.domains) {
+      assert.ok(d.count >= 1000, `${d.slug} must have >= 1,000 terms`);
+      const pageRes = await req(env, `/specialized/${d.slug}`);
+      assert.equal(pageRes.status, 200, `/specialized/${d.slug} must return 200`);
+      const pageHtml = await pageRes.text();
+      assert.match(pageHtml, /id="wb-vocab-explorer"/, `/specialized/${d.slug} must mount vocab explorer`);
+      const apiRes = await req(env, `/api/v1/specialized/terms?domain=${d.slug}&limit=10`);
+      assert.equal(apiRes.status, 200);
+      const apiData = await apiRes.json();
+      assert.ok(apiData.total >= 1000 && apiData.words.length === 10);
+    }
+
+    // 3. >10,000-term Practice Bank across All, Listening, Speaking, Reading, Writing, Vocabulary, Grammar
+    for (const sk of ["", "listening", "speaking", "reading", "writing", "vocabulary", "grammar"]) {
+      const pUrl = sk ? `/practice/${sk}` : "/practice";
+      const pRes = await req(env, pUrl);
+      assert.equal(pRes.status, 200, `${pUrl} must return 200`);
+      const pHtml = await pRes.text();
+      assert.match(pHtml, /id="wb-practice-bank"/, `${pUrl} must mount interactive practice bank`);
+    }
+    const pbRes = await req(env, "/api/v1/practice/bank?skill=all&page=1&limit=20");
+    assert.equal(pbRes.status, 200);
+    const pb = await pbRes.json();
+    assert.ok(pb.total > 10000, `Practice bank total (${pb.total}) must exceed 10,000 terms`);
+    assert.equal(pb.total, 46104);
+    assert.equal(pb.items.length, 20);
+
+    const pbReadRes = await req(env, "/api/v1/practice/bank?skill=reading&page=1&limit=20");
+    const pbRead = await pbReadRes.json();
+    assert.equal(pbRead.total, 1000);
+    assert.ok(pbRead.bankWordsTotal > 10000);
   } finally {
     cleanup();
   }

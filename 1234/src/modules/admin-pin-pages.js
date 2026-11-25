@@ -367,7 +367,7 @@ export async function renderAdminCenterHtml({ section = "", user, adminSession, 
       <div class="wb-card">
         <h2 style="margin-top:0;color:var(--wb-teal);">Quản lý phiên bản Điều khoản &amp; Chính sách quyền riêng tư</h2>
         <div class="wb-table-wrap"><table class="wb-table"><thead><tr><th>Mã chính sách</th><th>Tiêu đề</th><th>Phiên bản</th><th>Ngày hiệu lực</th><th>Đơn vị vận hành</th></tr></thead><tbody>
-          ${docs.map((d) => `<tr><td><code>${escapeHtml(d.slug)}</code></td><td>${escapeHtml(d.title_vi)}</td><td>${escapeHtml(d.current_version)}</td><td>${escapeHtml(d.effective_date || "Chưa thiết lập")}</td><td>${escapeHtml(d.operator_name || "Chờ xác minh")}</td></tr>`).join("")}
+          ${docs.map((d) => `<tr><td><code>${escapeHtml(d.slug)}</code></td><td>${escapeHtml(d.title_vi)}</td><td>${escapeHtml(d.current_version)}</td><td>${escapeHtml(d.effective_date || "—")}</td><td>${escapeHtml(d.operator_name || "WORD BRIDGE")}</td></tr>`).join("")}
         </tbody></table></div>
         <h3 style="margin-top:18px;color:var(--wb-teal);">Thống kê tài khoản đã xác nhận từng phiên bản</h3>
         <ul>${consentStats.map((c) => `<li><code>${escapeHtml(c.policy_type)}</code> v${escapeHtml(c.policy_version)}: <strong>${c.users}</strong> tài khoản</li>`).join("") || "<li>Chưa có lượt xác nhận mới.</li>"}</ul>

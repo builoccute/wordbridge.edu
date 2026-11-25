@@ -1017,3 +1017,94 @@ details summary {cursor:pointer;font-weight:650;color:var(--wb-teal)}
   .wb-fc-stack { padding: 18px 16px; box-shadow: 0 6px 18px rgba(20,100,102,0.08); }
   .wb-fc-word { font-size: 2.1rem; }
 }
+
+
+/* V4.4.1 Site-wide Contrast & Visibility Fixes */
+.wb-hero .wb-badge,
+.wb-hero .wb-badge-aqua,
+.wb-specialized-hero .wb-badge,
+.wb-specialized-hero .wb-badge-aqua,
+.wb-hero-teal-banner .wb-badge,
+.wb-hero-teal-banner .wb-badge-aqua {
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+}
+
+.wb-hero h1,
+.wb-hero h2,
+.wb-hero h3,
+.wb-hero .wb-section-bar h2,
+.wb-specialized-hero h1,
+.wb-specialized-hero h2,
+.wb-specialized-hero h3,
+.wb-hero-teal-banner h1,
+.wb-hero-teal-banner h2,
+.wb-hero-teal-banner h3 {
+  color: #ffffff !important;
+}
+
+.wb-hero .wb-muted,
+.wb-specialized-hero .wb-muted,
+.wb-hero-teal-banner .wb-muted {
+  color: #e2f5f5 !important;
+}
+
+.wb-hero .wb-btn-outline,
+.wb-specialized-hero .wb-btn-outline,
+.wb-hero-teal-banner .wb-btn-outline {
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.78) !important;
+  color: #ffffff !important;
+}
+
+.wb-hero .wb-btn-outline:hover,
+.wb-specialized-hero .wb-btn-outline:hover,
+.wb-hero-teal-banner .wb-btn-outline:hover {
+  background: #ffffff !important;
+  color: var(--wb-teal-dark) !important;
+}
+
+.wb-hero .wb-btn-ghost,
+.wb-specialized-hero .wb-btn-ghost,
+.wb-hero-teal-banner .wb-btn-ghost {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: transparent !important;
+  color: var(--wb-teal-dark) !important;
+}
+
+.wb-hero .wb-btn-ghost:hover,
+.wb-specialized-hero .wb-btn-ghost:hover,
+.wb-hero-teal-banner .wb-btn-ghost:hover {
+  background: #ffffff !important;
+}
+
+.wb-hero .wb-btn-primary,
+.wb-specialized-hero .wb-btn-primary,
+.wb-hero-teal-banner .wb-btn-primary {
+  background: #ffffff !important;
+  color: var(--wb-teal-dark) !important;
+  border-color: #ffffff !important;
+}
+
+.wb-hero .wb-btn-primary:hover,
+.wb-specialized-hero .wb-btn-primary:hover,
+.wb-hero-teal-banner .wb-btn-primary:hover {
+  background: #e6f9fa !important;
+}
+
+.wb-hero-teal-banner .wb-home-cta-glass {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1.5px solid rgba(255, 255, 255, 0.72);
+  color: #ffffff !important;
+}
+
+.wb-hero-teal-banner .wb-home-cta-white {
+  background: #ffffff;
+  color: var(--wb-teal-dark) !important;
+}
+
+.wb-badge-aqua {
+  background: rgba(20, 100, 102, 0.12);
+  color: var(--wb-teal-dark);
+}

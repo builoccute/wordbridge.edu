@@ -511,12 +511,7 @@ export function renderFullPolicyHtml({ policySlug, docMeta = null, latestPublish
       ? "Minh bạch toàn bộ hoạt động thu thập, xử lý, lưu trữ tối thiểu, Zero User Data Storage cho dịch thuật và quyền chủ thể dữ liệu theo pháp luật Việt Nam."
       : supp.summary;
   const sections = isTerms ? TERMS_SECTIONS : isPrivacy ? PRIVACY_SECTIONS : supp.sections;
-  const version = latestPublished?.version || docMeta?.current_version || "1.0";
-  const effectiveDate = latestPublished?.effective_date || docMeta?.effective_date || "Chờ chủ thể vận hành xác nhận ngày hiệu lực chính thức (Staging)";
-  const operatorName = docMeta?.operator_name || "Chờ xác minh thông tin chủ thể vận hành trước khi công bố production";
-  const contactEmail = isPrivacy
-    ? (docMeta?.privacy_email || "Chờ xác minh email quyền riêng tư chính thức")
-    : (docMeta?.legal_email || docMeta?.support_email || "Chờ xác minh email hỗ trợ chính thức");
+
 
   const toc = sections.map((s) => `<li><a href="#${escapeHtml(s.id)}">${escapeHtml(s.title)}</a></li>`).join("");
   const bodyHtml = sections.map((s) => `
@@ -542,18 +537,8 @@ export function renderFullPolicyHtml({ policySlug, docMeta = null, latestPublish
     html: `
       <div class="wb-policy-nav" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;">${policyNav}</div>
       <article class="wb-card wb-policy-doc">
-        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:10px;">
-          <span class="wb-badge">Phiên bản ${escapeHtml(version)}</span>
-          <span class="wb-muted" style="font-size:0.9rem;">Ngày hiệu lực: <strong>${escapeHtml(effectiveDate)}</strong></span>
-        </div>
         <h1 style="margin:0 0 10px;color:var(--wb-teal);">${escapeHtml(title)}</h1>
         <p style="font-size:1.02rem;color:#334155;margin:0 0 16px;">${escapeHtml(summary)}</p>
-        <div class="wb-alert wb-alert-info" style="margin-bottom:18px;">
-          <strong>Thông tin pháp lý &amp; liên hệ:</strong><br/>
-          Đơn vị vận hành: ${escapeHtml(operatorName)}<br/>
-          Email tiếp nhận: ${escapeHtml(contactEmail)} · Website: <code>https://wordbridge.io.vn</code><br/>
-          Cổng tiếp nhận trực tuyến: <a href="/contact">Trang Liên hệ WORD BRIDGE</a> · <a href="/account/privacy">Trung tâm quyền riêng tư</a>
-        </div>
         <nav aria-label="Mục lục chính sách" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:14px 18px;margin-bottom:16px;">
           <strong style="display:block;margin-bottom:8px;color:var(--wb-teal);">Mục lục điều hướng</strong>
           <ol class="wb-policy-toc">${toc}</ol>

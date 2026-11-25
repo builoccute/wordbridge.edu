@@ -1195,47 +1195,112 @@ var AuthService = class {
     }
     return { maxAttempts, lockoutMinutes };
   }
+  async ensureAuthCoreTables() {
+    const ddls = [
+      "CREATE TABLE IF NOT EXISTS wb_accounts (id TEXT PRIMARY KEY, email TEXT NOT NULL UNIQUE COLLATE NOCASE, password_hash TEXT, full_name TEXT NOT NULL, date_of_birth TEXT NOT NULL DEFAULT '', phone_number TEXT NOT NULL DEFAULT '', school_name TEXT NOT NULL DEFAULT '', workplace_name TEXT NOT NULL DEFAULT '', account_type TEXT NOT NULL DEFAULT 'personal', email_verified INTEGER NOT NULL DEFAULT 0, email_verified_at TEXT, status TEXT NOT NULL DEFAULT 'pending_verification', failed_login_attempts INTEGER NOT NULL DEFAULT 0, locked_until TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+      "CREATE TABLE IF NOT EXISTS wb_profiles (account_id TEXT PRIMARY KEY, avatar_r2_key TEXT, bio TEXT DEFAULT '', preferred_ui_language TEXT NOT NULL DEFAULT 'vi', target_languages_json TEXT NOT NULL DEFAULT '[\"en\"]', daily_study_goal_minutes INTEGER NOT NULL DEFAULT 20, notification_preferences_json TEXT NOT NULL DEFAULT '{}', privacy_settings_json TEXT NOT NULL DEFAULT '{}', updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+      "CREATE TABLE IF NOT EXISTS wb_entitlements (id TEXT PRIMARY KEY, account_id TEXT NOT NULL UNIQUE, plan_code TEXT NOT NULL DEFAULT 'PERSONAL_FREE', source TEXT NOT NULL DEFAULT 'default', storage_quota_bytes INTEGER NOT NULL DEFAULT 1073741824, starts_at TEXT NOT NULL DEFAULT (datetime('now')), expires_at TEXT, auto_renew INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+      "CREATE TABLE IF NOT EXISTS wb_verification_tokens (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, token_hash TEXT NOT NULL UNIQUE, token_type TEXT NOT NULL, target_value TEXT, expires_at TEXT NOT NULL, consumed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))",
+      "CREATE TABLE IF NOT EXISTS wb_sessions (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, session_token_hash TEXT NOT NULL UNIQUE, csrf_token TEXT NOT NULL, ip_address TEXT, user_agent TEXT, expires_at TEXT NOT NULL, revoked_at TEXT, last_active_at TEXT NOT NULL DEFAULT (datetime('now')), created_at TEXT NOT NULL DEFAULT (datetime('now')))",
+      "CREATE TABLE IF NOT EXISTS wb_email_events (id TEXT PRIMARY KEY, idempotency_key TEXT NOT NULL UNIQUE, event_type TEXT NOT NULL, template_key TEXT NOT NULL, template_version TEXT NOT NULL DEFAULT '1.0.0', sender_address TEXT NOT NULL, reply_to_address TEXT NOT NULL, recipient_email TEXT NOT NULL, account_id TEXT, subject TEXT NOT NULL, variables_json TEXT NOT NULL DEFAULT '{}', delivery_status TEXT NOT NULL DEFAULT 'QUEUED', provider_name TEXT NOT NULL DEFAULT 'unconfigured', provider_message_id TEXT, retry_count INTEGER NOT NULL DEFAULT 0, max_retries INTEGER NOT NULL DEFAULT 3, next_retry_at TEXT, last_error TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+      "CREATE TABLE IF NOT EXISTS wb_email_delivery_logs (id TEXT PRIMARY KEY, email_event_id TEXT NOT NULL, status TEXT NOT NULL, provider_payload_json TEXT DEFAULT '{}', recorded_at TEXT NOT NULL DEFAULT (datetime('now')))",
+      "CREATE TABLE IF NOT EXISTS wb_audit_logs (id TEXT PRIMARY KEY, actor_account_id TEXT, action TEXT NOT NULL, resource_type TEXT NOT NULL, resource_id TEXT, ip_address TEXT, metadata_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT (datetime('now')))"
+    ];
+    for (const ddl of ddls) {
+      await this.db.prepare(ddl).run().catch(() => {});
+    }
+    const extraAccountCols = [
+      "ALTER TABLE wb_accounts ADD COLUMN date_of_birth TEXT NOT NULL DEFAULT ''",
+      "ALTER TABLE wb_accounts ADD COLUMN phone_number TEXT NOT NULL DEFAULT ''",
+      "ALTER TABLE wb_accounts ADD COLUMN school_name TEXT NOT NULL DEFAULT ''",
+      "ALTER TABLE wb_accounts ADD COLUMN workplace_name TEXT NOT NULL DEFAULT ''",
+      "ALTER TABLE wb_accounts ADD COLUMN account_type TEXT NOT NULL DEFAULT 'personal'",
+      "ALTER TABLE wb_accounts ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0",
+      "ALTER TABLE wb_accounts ADD COLUMN email_verified_at TEXT",
+      "ALTER TABLE wb_accounts ADD COLUMN failed_login_attempts INTEGER NOT NULL DEFAULT 0",
+      "ALTER TABLE wb_accounts ADD COLUMN locked_until TEXT"
+    ];
+    for (const alter of extraAccountCols) {
+      await this.db.prepare(alter).run().catch(() => {});
+    }
+  }
   async register(payload, requestMeta = {}) {
     const check = validateRegistrationPayload(payload);
     if (!check.valid) return { ok: false, status: 400, errors: check.errors };
     const { fullName, dateOfBirth, phoneNumber, email, password, schoolName, workplaceName } = check.data;
-    const existing = await this.db.prepare("SELECT id FROM wb_accounts WHERE email = ?").bind(email).first();
+    let existing = null;
+    try {
+      existing = await this.db.prepare("SELECT id FROM wb_accounts WHERE email = ?").bind(email).first();
+    } catch {
+      await this.ensureAuthCoreTables();
+      existing = await this.db.prepare("SELECT id FROM wb_accounts WHERE email = ?").bind(email).first();
+    }
     if (existing) {
       return { ok: false, status: 409, errors: ["Địa chỉ email này đã được đăng ký tài khoản WORD BRIDGE."] };
     }
     const accountId = generateId("acc");
     const passwordHash = await hashPassword(password);
-    await this.db.prepare(`
+    const insertAccountSql = `
         INSERT INTO wb_accounts (
           id, email, password_hash, full_name, date_of_birth,
           phone_number, school_name, workplace_name, account_type,
           email_verified, status
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'personal', 0, 'pending_verification')
-      `).bind(accountId, email, passwordHash, fullName, dateOfBirth, phoneNumber, schoolName, workplaceName).run();
-    await this.db.prepare("INSERT INTO wb_profiles (account_id) VALUES (?)").bind(accountId).run();
-    await this.db.prepare("INSERT INTO wb_entitlements (id, account_id, plan_code, source, storage_quota_bytes) VALUES (?, ?, 'PERSONAL_FREE', 'default', ?)").bind(generateId("ent"), accountId, PLANS.PERSONAL_FREE.storageQuotaBytes).run();
+      `;
+    try {
+      await this.db.prepare(insertAccountSql).bind(accountId, email, passwordHash, fullName, dateOfBirth, phoneNumber, schoolName, workplaceName).run();
+    } catch (err) {
+      if (/UNIQUE constraint failed/i.test(String(err?.message || ""))) {
+        return { ok: false, status: 409, errors: ["Địa chỉ email này đã được đăng ký tài khoản WORD BRIDGE."] };
+      }
+      await this.ensureAuthCoreTables();
+      await this.db.prepare(insertAccountSql).bind(accountId, email, passwordHash, fullName, dateOfBirth, phoneNumber, schoolName, workplaceName).run();
+    }
+    await this.db.prepare("INSERT OR IGNORE INTO wb_profiles (account_id) VALUES (?)").bind(accountId).run().catch(async () => {
+      await this.ensureAuthCoreTables();
+      await this.db.prepare("INSERT OR IGNORE INTO wb_profiles (account_id) VALUES (?)").bind(accountId).run().catch(() => {});
+    });
+    await this.db.prepare("INSERT OR IGNORE INTO wb_entitlements (id, account_id, plan_code, source, storage_quota_bytes) VALUES (?, ?, 'PERSONAL_FREE', 'default', ?)").bind(generateId("ent"), accountId, PLANS.PERSONAL_FREE.storageQuotaBytes).run().catch(() => {});
     const rawToken = randomTokenHex(32);
     const tokenHash = await sha256Hex(rawToken, this.tokenPepper);
     await this.db.prepare(`
         INSERT INTO wb_verification_tokens (id, account_id, token_hash, token_type, target_value, expires_at)
         VALUES (?, ?, ?, 'email_verification', ?, datetime('now', '+30 minutes'))
-      `).bind(generateId("tok"), accountId, tokenHash, email).run();
-    const verifyUrl = `${this.baseUrl}/verify-email?token=${rawToken}`;
-    const emailResult = await this.emailService.sendEventEmail({
-      eventType: "UserRegistered",
-      templateKey: "verify_email",
-      recipientEmail: email,
-      accountId,
-      idempotencyKey: `verify_email:${accountId}`,
-      variables: { fullName, ctaUrl: verifyUrl, expiresMinutes: 30 }
+      `).bind(generateId("tok"), accountId, tokenHash, email).run().catch(async () => {
+      await this.ensureAuthCoreTables();
+      await this.db.prepare(`
+          INSERT INTO wb_verification_tokens (id, account_id, token_hash, token_type, target_value, expires_at)
+          VALUES (?, ?, ?, 'email_verification', ?, datetime('now', '+30 minutes'))
+        `).bind(generateId("tok"), accountId, tokenHash, email).run().catch(() => {});
     });
+    const verifyUrl = `${this.baseUrl}/verify-email?token=${rawToken}`;
+    let emailResult = { status: "BLOCKED_UNCONFIGURED" };
+    try {
+      emailResult = await this.emailService.sendEventEmail({
+        eventType: "UserRegistered",
+        templateKey: "verify_email",
+        recipientEmail: email,
+        accountId,
+        idempotencyKey: `verify_email:${accountId}`,
+        variables: { fullName, ctaUrl: verifyUrl, expiresMinutes: 30 }
+      });
+    } catch (mailErr) {
+      console.warn("[WB-REGISTER] sendEventEmail fallback:", String(mailErr?.message || mailErr).slice(0, 160));
+    }
     await this.recordAudit(accountId, "account.registered", "wb_accounts", accountId, requestMeta.ipAddress, {
       emailVerificationStatus: emailResult.status
-    });
+    }).catch(() => {});
     let autoSession = null;
     if (emailResult.status !== "ACCEPTED" && this.env.ENVIRONMENT !== "test") {
-      await this.db.prepare("UPDATE wb_accounts SET email_verified = 1, email_verified_at = datetime('now'), status = 'active', updated_at = datetime('now') WHERE id = ?").bind(accountId).run();
-      autoSession = await this.createSession(accountId, requestMeta);
+      await this.db.prepare("UPDATE wb_accounts SET email_verified = 1, email_verified_at = datetime('now'), status = 'active', updated_at = datetime('now') WHERE id = ?").bind(accountId).run().catch(async () => {
+        await this.db.prepare("UPDATE wb_accounts SET email_verified = 1, status = 'active', updated_at = datetime('now') WHERE id = ?").bind(accountId).run().catch(() => {});
+      });
+      try {
+        autoSession = await this.createSession(accountId, requestMeta);
+      } catch {
+        await this.ensureAuthCoreTables();
+        autoSession = await this.createSession(accountId, requestMeta);
+      }
     }
     return {
       ok: true,
@@ -1671,7 +1736,11 @@ var AuthService = class {
     return { ok: true };
   }
   async recordAudit(actorAccountId, action, resourceType, resourceId, ipAddress = null, metadata = {}) {
-    await this.db.prepare("INSERT INTO wb_audit_logs (id, actor_account_id, action, resource_type, resource_id, ip_address, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(generateId("aud"), actorAccountId, action, resourceType, resourceId, ipAddress, JSON.stringify(metadata)).run();
+    try {
+      await this.db.prepare("INSERT INTO wb_audit_logs (id, actor_account_id, action, resource_type, resource_id, ip_address, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?)").bind(generateId("aud"), actorAccountId, action, resourceType, resourceId, ipAddress, JSON.stringify(metadata)).run();
+    } catch (err) {
+      if (!isMissingTableError(err)) console.warn("[WB-AUDIT]", String(err?.message || err).slice(0, 120));
+    }
   }
 };
 
@@ -5169,34 +5238,26 @@ async function renderHelpCenterPage({ services, user, runtime = null }) {
             </article>`).join("")}
       </section>` : "";
   const contentHtml = `
-    <section class="wb-hero">
-      <span class="wb-badge wb-badge-aqua">TRUNG TÂM TRỢ GIÚP NỘI BỘ</span>
-      <section class="wb-hero-teal-banner">
+    <section class="wb-hero-teal-banner">
       <div>
         <span class="wb-hero-pill">HƯỚNG DẪN &amp; HỖ TRỢ</span>
         <h1>Trung Tâm Trợ Giúp WORD BRIDGE</h1>
         <svg class="wb-swoosh-red-left" viewBox="0 0 160 12" fill="none"><path d="M4 9C52 2 108 2 156 7" stroke="#C92F1C" stroke-width="4" stroke-linecap="round"/></svg>
         <p>Hướng dẫn sử dụng, giải đáp thắc mắc và hỗ trợ kỹ thuật. Giúp bạn học tập, luyện tập và kết nối cộng đồng ngôn ngữ Trung – Anh trên WORD BRIDGE một cách hiệu quả, an toàn và thuận tiện.</p>
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
-          <a href="#help-guides" class="wb-btn wb-home-cta-white">Xem hướng dẫn ›</a>
-          <a href="/contact" class="wb-btn wb-home-cta-glass">Gửi yêu cầu CSKH</a>
+          <a href="#guides" class="wb-btn wb-home-cta-white">Xem hướng dẫn ›</a>
+          <a href="#support-form" class="wb-btn wb-home-cta-glass">Gửi yêu cầu hỗ trợ</a>
+          ${user ? '<a href="#my-tickets" class="wb-btn wb-home-cta-glass">Yêu cầu của tôi</a>' : '<a href="/contact" class="wb-btn wb-home-cta-glass">Liên hệ CSKH</a>'}
         </div>
       </div>
       <div style="text-align:center;" aria-hidden="true">
         <svg viewBox="0 0 200 150" width="180" fill="none"><rect x="36" y="72" width="110" height="28" rx="6" fill="#5AABA9"/><rect x="28" y="100" width="124" height="30" rx="6" fill="#C92F1C"/><rect x="44" y="22" width="54" height="44" rx="10" fill="#fff"/><text x="64" y="53" fill="#146466" font-size="28" font-weight="900">?</text><rect x="112" y="34" width="56" height="36" rx="10" fill="#e6f5f5"/><circle cx="128" cy="52" r="3" fill="#146466"/><circle cx="140" cy="52" r="3" fill="#146466"/><circle cx="152" cy="52" r="3" fill="#146466"/></svg>
       </div>
     </section>
-    <div id="help-guides" class="wb-section-bar"><h2>Hướng dẫn sử dụng theo phân hệ</h2></div>
-      <p>Hướng dẫn sử dụng đầy đủ các phân hệ học tập, tài khoản, luyện tập, thư viện đọc và hệ thống tiếp nhận — theo dõi yêu cầu hỗ trợ trực tiếp tại wordbridge.io.vn/help.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;">
-        <a href="#guides" class="wb-btn wb-btn-primary">Xem hướng dẫn</a>
-        <a href="#support-form" class="wb-btn wb-btn-outline">Gửi yêu cầu hỗ trợ</a>
-        ${user ? '<a href="#my-tickets" class="wb-btn wb-btn-ghost">Yêu cầu của tôi</a>' : ""}
-      </div>
-    </section>
 
     <section id="guides" style="margin-top:20px;">
-      <h2 style="color:var(--wb-teal);">Hướng dẫn sử dụng theo phân hệ</h2>
+      <div id="help-guides" class="wb-section-bar"><h2>Hướng dẫn sử dụng theo phân hệ</h2></div>
+      <p class="wb-muted" style="margin:0 0 16px;">Hướng dẫn sử dụng đầy đủ các phân hệ học tập, tài khoản, luyện tập, thư viện đọc và hệ thống tiếp nhận — theo dõi yêu cầu hỗ trợ trực tiếp tại wordbridge.io.vn/help.</p>
       <div class="wb-grid-2">
         ${HELP_GUIDES.map((g) => `
           <article class="wb-card" id="${escapeHtml(g.id)}">
@@ -7392,7 +7453,7 @@ function renderRegisterPage({ user }) {
       <div class="wb-field" style="grid-column:1/-1;">
         <label style="display:flex;gap:8px;align-items:flex-start;font-weight:400;">
           <input type="checkbox" name="termsAccepted" value="1" required />
-          <span>Tôi đã đọc và đồng ý với <a href="/policies/terms" target="_blank">Điều khoản sử dụng</a> (phiên bản 1.0) và đã được thông báo về việc xử lý dữ liệu theo <a href="/policies/privacy" target="_blank">Chính sách quyền riêng tư</a>.</span>
+          <span>Tôi đã đọc và đồng ý với <a href="/policies/terms" target="_blank">Điều khoản sử dụng</a> và đã được thông báo về việc xử lý dữ liệu theo <a href="/policies/privacy" target="_blank">Chính sách quyền riêng tư</a>.</span>
         </label>
       </div>
       <div data-form-status></div>

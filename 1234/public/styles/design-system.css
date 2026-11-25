@@ -490,7 +490,7 @@ a:hover { text-decoration: underline; }
 .wb-error-state strong {display:block;color:var(--wb-teal);font-size:clamp(4rem,10vw,8rem);line-height:1}
 .wb-footer-v4 {background:#edf7f5;color:#214c4d}
 .wb-footer-v4 .wb-footer-col h4,.wb-footer-v4 .wb-footer-col a,.wb-footer-v4-grid p,.wb-footer-lang-pill strong {color:#164e50!important}
-.wb-footer-lang-pill {background:white;border-color:#c6dedb}
+.wb-footer-lang-pill {background:white;border-color:#c6dedb;color:#164e50!important}
 .wb-footer-bottom-bar {background:#146466;color:white}
 .wb-footer-glow-art {max-width:250px}
 .wb-footer-glow-art img {border-radius:80% 80% 0 0}

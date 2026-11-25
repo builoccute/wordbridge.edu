@@ -668,20 +668,26 @@ document.addEventListener('click', async event => {
     const res = await fetch('/api/v1/account/passkeys/' + action + '/' + step, {
       method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':document.querySelector('meta[name="wb-csrf-token"]')?.content || ''},
       body:JSON.stringify(body)});
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error?.message || 'Vui lòng thử lại.');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error?.message || 'Không thể kết nối dịch vụ Passkey. Bạn có thể đăng nhập bằng Email và Mật khẩu.');
     return data;
   }
   try {
+    if (status) status.textContent = '';
     const parser = register ? window.PublicKeyCredential?.parseCreationOptionsFromJSON : window.PublicKeyCredential?.parseRequestOptionsFromJSON;
-    if (!parser) throw new Error('Vui lòng cập nhật trình duyệt để sử dụng Passkey.');
+    if (!parser) throw new Error('Trình duyệt hiện tại chưa hỗ trợ Passkey. Vui lòng cập nhật trình duyệt hoặc đăng nhập bằng mật khẩu.');
     const options = await post('options', {});
     const publicKey = parser.call(PublicKeyCredential, options.publicKey);
     const key = register ? await navigator.credentials.create({publicKey}) : await navigator.credentials.get({publicKey});
+    if (!key) throw new Error('Không tìm thấy Passkey phù hợp trên thiết bị này.');
     await post('verify', {challengeId:options.challengeId, credential:key.toJSON()});
     location.assign(register ? '/account/passkeys' : '/my-learning');
   } catch (error) {
-    status.textContent = error.name === 'NotAllowedError' ? 'Thao tác đã hủy hoặc hết thời gian.' : error.message;
+    if (status) {
+      status.textContent = error.name === 'NotAllowedError'
+        ? 'Thao tác Passkey đã bị hủy, hết thời gian hoặc thiết bị chưa có Passkey đã đăng ký.'
+        : (error.message || 'Không thể xác thực Passkey. Vui lòng đăng nhập bằng mật khẩu.');
+    }
   } finally { button.disabled = false; }
 });
 

@@ -1520,10 +1520,20 @@ var AuthService = class {
     return { ok: true, message: "Đổi mật khẩu thành công." };
   }
   // ---- WebAuthn / FIDO2 Passkeys ----
+  async ensurePasskeyTables() {
+    await this.db.prepare("CREATE TABLE IF NOT EXISTS wb_passkeys (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, credential_id TEXT NOT NULL UNIQUE, public_key_cose TEXT NOT NULL, sign_count INTEGER NOT NULL DEFAULT 0, display_name TEXT NOT NULL, transports_json TEXT DEFAULT '[]', revoked_at TEXT, last_used_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))").run();
+    await this.db.prepare("CREATE TABLE IF NOT EXISTS wb_webauthn_challenges (id TEXT PRIMARY KEY, account_id TEXT, challenge TEXT NOT NULL UNIQUE, challenge_type TEXT NOT NULL CHECK (challenge_type IN ('registration', 'authentication')), expires_at TEXT NOT NULL, consumed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))").run();
+  }
   async createPasskeyRegistrationOptions(account) {
     const challenge = randomTokenHex(32);
     const id = generateId("wac");
-    await this.db.prepare("INSERT INTO wb_webauthn_challenges (id, account_id, challenge, challenge_type, expires_at) VALUES (?, ?, ?, 'registration', datetime('now', '+5 minutes'))").bind(id, account.accountId, challenge).run();
+    try {
+      await this.db.prepare("INSERT INTO wb_webauthn_challenges (id, account_id, challenge, challenge_type, expires_at) VALUES (?, ?, ?, 'registration', datetime('now', '+5 minutes'))").bind(id, account.accountId, challenge).run();
+    } catch (err) {
+      if (!isMissingTableError(err)) throw err;
+      await this.ensurePasskeyTables();
+      await this.db.prepare("INSERT INTO wb_webauthn_challenges (id, account_id, challenge, challenge_type, expires_at) VALUES (?, ?, ?, 'registration', datetime('now', '+5 minutes'))").bind(id, account.accountId, challenge).run();
+    }
     const existing = (await this.db.prepare("SELECT credential_id FROM wb_passkeys WHERE account_id = ? AND revoked_at IS NULL").bind(account.accountId).all()).results || [];
     return {
       ok: true,
@@ -1594,7 +1604,13 @@ var AuthService = class {
   async createPasskeyAuthOptions(accountId = null) {
     const challenge = randomTokenHex(32);
     const id = generateId("wac");
-    await this.db.prepare("INSERT INTO wb_webauthn_challenges (id, account_id, challenge, challenge_type, expires_at) VALUES (?, ?, ?, 'authentication', datetime('now', '+5 minutes'))").bind(id, accountId, challenge).run();
+    try {
+      await this.db.prepare("INSERT INTO wb_webauthn_challenges (id, account_id, challenge, challenge_type, expires_at) VALUES (?, ?, ?, 'authentication', datetime('now', '+5 minutes'))").bind(id, accountId, challenge).run();
+    } catch (err) {
+      if (!isMissingTableError(err)) throw err;
+      await this.ensurePasskeyTables();
+      await this.db.prepare("INSERT INTO wb_webauthn_challenges (id, account_id, challenge, challenge_type, expires_at) VALUES (?, ?, ?, 'authentication', datetime('now', '+5 minutes'))").bind(id, accountId, challenge).run();
+    }
     return {
       ok: true,
       challengeId: id,
@@ -4963,11 +4979,34 @@ function renderAboutPage({ user, runtime = null }) {
     user,
     runtime,
     contentHtml: `
-      <div class="wb-card">
-        <h1 style="margin-top:0;color:var(--wb-teal);">Giới thiệu Nền tảng WORD BRIDGE</h1>
-        <p><strong>WORD BRIDGE</strong> (<em>Where Languages Bring People Together.</em>) là nền tảng học tập, tra cứu từ điển, đọc tài liệu và thực hành ngoại ngữ chuyên ngành cho hai ngôn ngữ: <strong>Tiếng Trung</strong>, <strong>Tiếng Anh</strong>.</p>
-        <p>Toàn bộ nền tảng vận hành thống nhất trên một tên miền duy nhất <code>https://wordbridge.io.vn</code> với một hệ thống tài khoản, một lộ trình học tập và dữ liệu đồng bộ.</p>
-      </div>`
+      <section class="wb-specialized-hero" style="margin-bottom:24px;">
+        <div class="wb-specialized-hero-copy">
+          <span class="wb-eyebrow">Giới thiệu nền tảng</span>
+          <h1 style="margin-bottom:8px;">WORD BRIDGE</h1>
+          <p style="font-size:1.08rem;font-style:italic;color:#c7ecec;margin-bottom:10px;">Where Languages Bring People Together.</p>
+          <p style="font-size:1.15rem;font-weight:700;color:#ffffff;margin:0;">Học ngôn ngữ. Mở rộng tri thức. Ứng dụng vào thực tế.</p>
+        </div>
+        <aside class="wb-specialized-scope">
+          <span class="wb-badge wb-badge-aqua">Địa chỉ chính thức</span>
+          <strong>wordbridge.io.vn</strong>
+          <p>Tiếng Trung &amp; Tiếng Anh trong cùng một hệ thống học tập thống nhất.</p>
+        </aside>
+      </section>
+
+      <article class="wb-card" style="padding:28px 30px;line-height:1.78;">
+        <p style="margin-top:0;font-size:1.02rem;"><strong>WORD BRIDGE</strong> là nền tảng học tập và thực hành ngoại ngữ, tập trung vào tiếng Trung và tiếng Anh. Nền tảng được xây dựng để người học không chỉ tiếp cận kiến thức ngôn ngữ mà còn có thể tra cứu thuật ngữ, đọc tài liệu, tìm hiểu kiến thức chuyên ngành và rèn luyện khả năng sử dụng ngoại ngữ trong những bối cảnh cụ thể.</p>
+        <p style="font-size:1.02rem;">Tại WORD BRIDGE, các hoạt động học tập được kết nối trong cùng một hệ thống: từ chương trình học theo cấp độ, từ điển và dữ liệu thuật ngữ song ngữ, đến thư viện đọc học thuật và những công cụ hỗ trợ đánh giá, củng cố năng lực ngôn ngữ. Qua đó, người học có thêm cơ sở để chủ động lựa chọn nội dung, xác định kiến thức cần cải thiện và từng bước đưa ngoại ngữ vào học tập cũng như công việc.</p>
+
+        <hr style="border:none;border-top:1px solid var(--wb-border);margin:24px 0;" />
+
+        <h2 style="margin:0 0 12px;color:var(--wb-teal);font-size:1.35rem;">Tất cả trong một không gian học tập</h2>
+        <p style="font-size:1.02rem;">WORD BRIDGE vận hành tại địa chỉ chính thức <a href="https://wordbridge.io.vn" style="font-weight:700;color:var(--wb-teal);">wordbridge.io.vn</a>. Với một tài khoản thành viên, người dùng có thể truy cập các chức năng được cung cấp trên nền tảng và quản lý thông tin học tập trong cùng một hệ thống.</p>
+        <p style="font-size:1.02rem;">Dù bắt đầu từ việc học một chủ điểm, tra cứu một thuật ngữ hay đọc một tài liệu chuyên ngành, người dùng đều có thể tiếp tục hành trình học tập ngay trên WORD BRIDGE mà không cần chuyển đổi giữa nhiều website riêng lẻ.</p>
+
+        <blockquote style="margin:24px 0 4px;padding:16px 20px;border-left:4px solid var(--wb-teal);background:var(--wb-teal-soft);border-radius:0 12px 12px 0;color:var(--wb-teal-dark);font-weight:700;font-size:1.05rem;">
+          WORD BRIDGE – Không chỉ học một ngôn ngữ, mà còn học cách sử dụng ngôn ngữ để tiếp cận thế giới tri thức.
+        </blockquote>
+      </article>`
   }));
 }
 __name(renderAboutPage, "renderAboutPage");
@@ -6894,11 +6933,6 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
       return htmlResponse(renderPublicPage({ title: "Không tìm thấy chuyên ngành", currentPath: `/specialized/${subSlug}`, user, contentHtml: '<div class="wb-alert wb-alert-error">Nhóm chuyên ngành không tồn tại.</div>' }), 404);
     }
     heading = `Ngoại ngữ chuyên ngành: ${dom.nameVi}`;
-    try {
-      terms = await safeQueryAll(db, "SELECT * FROM wb_public_dictionary_entries WHERE specialized_domain = ? LIMIT 30", [subSlug]);
-    } catch {
-      terms = [];
-    }
   } else {
     try {
       terms = await safeQueryAll(db, "SELECT * FROM wb_public_dictionary_entries WHERE specialized_domain IS NOT NULL LIMIT 18");
@@ -6907,6 +6941,81 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
     }
   }
   const activeDomain = subSlug ? SPECIALIZED_DOMAINS.find((d) => d.slug === subSlug) : null;
+
+  if (activeDomain) {
+    const enTotal = activeDomain.enCount || Math.floor(activeDomain.count / 2);
+    const zhTotal = activeDomain.zhCount || Math.ceil(activeDomain.count / 2);
+    const domainContentHtml = `
+      <section class="wb-specialized-hero" style="margin-bottom:20px;">
+        <div class="wb-specialized-hero-copy">
+          <span class="wb-eyebrow">Ngoại ngữ chuyên ngành · Song ngữ Anh – Trung</span>
+          <h1>${escapeHtml(activeDomain.nameVi)}</h1>
+          <p>Học và tra cứu trực tiếp <strong>${activeDomain.count.toLocaleString("vi-VN")} thuật ngữ</strong> chuyên ngành ${escapeHtml(activeDomain.nameVi)} (Anh – Trung), đầy đủ phiên âm IPA/Pinyin, nghĩa tiếng Việt, chủ đề và phát âm chuẩn.</p>
+          <div class="wb-specialized-language-switch" style="margin-top:18px;">
+            <a href="/specialized" class="wb-specialized-language"><strong>←</strong><span>Quay lại danh mục chuyên ngành</span></a>
+            <a href="/dictionary" class="wb-specialized-language"><strong>A-Z</strong><span>Mở từ điển ngôn ngữ</span></a>
+          </div>
+        </div>
+        <aside class="wb-specialized-scope">
+          <span class="wb-badge wb-badge-aqua">Kho thuật ngữ chuyên ngành</span>
+          <strong>${activeDomain.count.toLocaleString("vi-VN")} thuật ngữ</strong>
+          <p>Tiếng Anh: ${enTotal.toLocaleString("vi-VN")} từ · Tiếng Trung: ${zhTotal.toLocaleString("vi-VN")} từ</p>
+        </aside>
+      </section>
+
+      ${KNOWN_VOCAB_SLUGS.has(activeDomain.slug) ? `
+      <section id="wb-vocab-explorer" class="wb-card" data-domain-slug="${escapeHtml(activeDomain.slug)}" data-is-authenticated="${user ? "true" : "false"}" style="margin-top:0;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
+          <div>
+            <span class="wb-badge wb-badge-aqua">KHO THUẬT NGỮ TRỰC TIẾP · SONG NGỮ ANH – TRUNG</span>
+            <h2 style="margin:6px 0 0;color:var(--wb-teal);">${escapeHtml(activeDomain.nameVi)} (${activeDomain.count.toLocaleString("vi-VN")} thuật ngữ)</h2>
+          </div>
+          <div id="wb-vocab-stats" class="wb-muted" style="font-size:0.9rem;">Đang tải kho thuật ngữ...</div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+          <input id="wb-vocab-search" class="wb-input" style="flex:1;min-width:200px;" placeholder="Tìm kiếm thuật ngữ tiếng Anh, tiếng Trung hoặc nghĩa tiếng Việt..." />
+          <select id="wb-vocab-lang" class="wb-select" style="min-width:155px;">
+            <option value="">Tất cả ngôn ngữ (EN + ZH)</option>
+            <option value="en">Tiếng Anh (EN · ${enTotal.toLocaleString("vi-VN")} từ)</option>
+            <option value="zh">Tiếng Trung (ZH · ${zhTotal.toLocaleString("vi-VN")} từ)</option>
+          </select>
+          <select id="wb-vocab-src" class="wb-select" style="min-width:170px;">
+            <option value="">Tất cả nguồn dữ liệu</option>
+            <option value="excel">Dữ liệu Excel gốc</option>
+            <option value="wb_v43">Biên soạn mở rộng (+1.000 từ)</option>
+          </select>
+          <select id="wb-vocab-topic" class="wb-select" style="min-width:190px;">
+            <option value="">Tất cả chủ đề</option>
+          </select>
+        </div>
+        <div class="wb-table-wrap">
+          <table class="wb-table">
+            <thead><tr><th>#</th><th>Thuật ngữ</th><th>IPA / Pinyin</th><th>Nghĩa tiếng Việt &amp; Ví dụ</th><th>Chủ đề</th><th>Thao tác</th></tr></thead>
+            <tbody id="wb-vocab-list"><tr><td colspan="6" style="text-align:center;padding:20px;">Đang nạp thuật ngữ...</td></tr></tbody>
+          </table>
+        </div>
+        <div id="wb-vocab-pager" style="display:flex;justify-content:center;gap:10px;align-items:center;margin-top:14px;"></div>
+      </section>
+      <script src="/scripts/vocab-explorer.js" defer></script>` : `<div class="wb-card"><p>Dữ liệu thuật ngữ cho chuyên ngành này đang được cập nhật.</p></div>`}
+
+      <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+        <a href="/specialized" class="wb-btn wb-btn-outline">← Chọn chuyên ngành khác</a>
+        <a href="/practice/vocabulary" class="wb-btn wb-btn-primary">Luyện tập từ vựng →</a>
+      </div>
+    `;
+    return htmlResponse(renderPublicPage({
+      title: heading,
+      currentPath: `/specialized/${activeDomain.slug}`,
+      breadcrumbs: [
+        { label: "Trang chủ", href: "/" },
+        { label: "Ngoại ngữ chuyên ngành", href: "/specialized" },
+        { label: activeDomain.nameVi }
+      ],
+      user,
+      contentHtml: domainContentHtml
+    }));
+  }
+
   const languageFilter = subSlug === "chinese" ? "zh" : subSlug === "english" ? "en" : "";
   const visibleDomains = languageFilter ? SPECIALIZED_DOMAINS.filter((d) => d.languages.includes(languageFilter)) : SPECIALIZED_DOMAINS;
   const contentHtml = `
@@ -6934,7 +7043,7 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
       </div>
       <div class="wb-specialized-domain-grid">
         ${visibleDomains.map((d, index) => `
-          <a href="/specialized/${escapeHtml(d.slug)}" class="wb-specialized-domain-card ${activeDomain?.slug === d.slug ? "active" : ""}">
+          <a href="/specialized/${escapeHtml(d.slug)}" class="wb-specialized-domain-card">
             <span class="wb-domain-index">${String(index + 1).padStart(2, "0")}</span>
             <div>
               <h3>${escapeHtml(d.nameVi)}</h3>
@@ -6945,44 +7054,9 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
       </div>
     </section>
 
-    ${activeDomain && KNOWN_VOCAB_SLUGS.has(activeDomain.slug) ? `
-    <section id="wb-vocab-explorer" class="wb-card" data-domain-slug="${escapeHtml(activeDomain.slug)}" data-is-authenticated="${user ? "true" : "false"}" style="margin-top:18px;">
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px;">
-        <div>
-          <span class="wb-badge wb-badge-aqua">KHO THUẬT NGỮ TRỰC TIẾP · SONG NGỮ ANH – TRUNG</span>
-          <h2 style="margin:6px 0 0;color:var(--wb-teal);">${escapeHtml(activeDomain.nameVi)} (${activeDomain.count.toLocaleString("vi-VN")} thuật ngữ)</h2>
-        </div>
-        <div id="wb-vocab-stats" class="wb-muted" style="font-size:0.9rem;">Đang tải kho thuật ngữ...</div>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
-        <input id="wb-vocab-search" class="wb-input" style="flex:1;min-width:200px;" placeholder="Tìm kiếm thuật ngữ tiếng Anh, tiếng Trung hoặc nghĩa tiếng Việt..." />
-        <select id="wb-vocab-lang" class="wb-select" style="min-width:155px;">
-          <option value="">Tất cả ngôn ngữ (EN + ZH)</option>
-          <option value="en">Tiếng Anh (EN · ${(activeDomain.enCount || 1500).toLocaleString("vi-VN")} từ)</option>
-          <option value="zh">Tiếng Trung (ZH · ${(activeDomain.zhCount || 1500).toLocaleString("vi-VN")} từ)</option>
-        </select>
-        <select id="wb-vocab-src" class="wb-select" style="min-width:170px;">
-          <option value="">Tất cả nguồn dữ liệu</option>
-          <option value="excel">Dữ liệu Excel gốc</option>
-          <option value="wb_v43">Biên soạn mở rộng (+1.000 từ)</option>
-        </select>
-        <select id="wb-vocab-topic" class="wb-select" style="min-width:190px;">
-          <option value="">Tất cả chủ đề</option>
-        </select>
-      </div>
-      <div class="wb-table-wrap">
-        <table class="wb-table">
-          <thead><tr><th>#</th><th>Thuật ngữ</th><th>IPA / Pinyin</th><th>Nghĩa tiếng Việt & Ví dụ</th><th>Chủ đề</th><th>Thao tác</th></tr></thead>
-          <tbody id="wb-vocab-list"><tr><td colspan="6" style="text-align:center;padding:20px;">Đang nạp thuật ngữ...</td></tr></tbody>
-        </table>
-      </div>
-      <div id="wb-vocab-pager" style="display:flex;justify-content:center;gap:10px;align-items:center;margin-top:14px;"></div>
-    </section>
-    <script src="/scripts/vocab-explorer.js" defer></script>` : ""}
-
     <section class="wb-section-block">
       <div class="wb-section-heading">
-        <div><span class="wb-eyebrow">Kho thuật ngữ</span><h2>${activeDomain ? escapeHtml(activeDomain.nameVi) : "Thuật ngữ chuyên môn trong ngữ cảnh"}</h2></div>
+        <div><span class="wb-eyebrow">Kho thuật ngữ</span><h2>Thuật ngữ chuyên môn trong ngữ cảnh</h2></div>
         <a href="/dictionary" class="wb-btn wb-btn-outline wb-btn-sm">Mở từ điển</a>
       </div>
       <div class="wb-specialized-term-grid">
@@ -6996,7 +7070,7 @@ async function renderSpecializedPage({ db, user, subSlug = "" }) {
             ${t.phonetic ? `<div class="wb-phonetic">${escapeHtml(t.phonetic)}</div>` : ""}
             <p class="wb-term-meaning" data-learning-content>${escapeHtml(t.meaning_vi)}</p>
             <a class="wb-term-link" href="/dictionary/${escapeHtml(OFFICIAL_LANGUAGES[t.language_code].slug)}/${escapeHtml(t.slug)}">Xem mục từ <span>→</span></a>
-          </article>`).join("") || `<div class="wb-specialized-empty"><strong>${activeDomain?.count ? `${activeDomain.count.toLocaleString("vi-VN")} thuật ngữ khả dụng qua API chuyên ngành.` : "Nội dung đang được hoàn thiện."}</strong><p>${user ? "Sử dụng bộ lọc hoặc lưu thuật ngữ vào Sổ từ cá nhân để học Flashcard." : `Đăng nhập tại <a href="${escapeHtml(signInUrl(subSlug ? `/specialized/${subSlug}` : "/specialized", "specialized.search"))}">Portal</a> để tra cứu và lưu thuật ngữ chuyên ngành.`}</p></div>`}
+          </article>`).join("") || `<div class="wb-specialized-empty"><strong>Chọn một chuyên ngành ở trên để mở trực tiếp kho thuật ngữ song ngữ.</strong><p>${user ? "Sử dụng bộ lọc hoặc lưu thuật ngữ vào Sổ từ cá nhân để học Flashcard." : `Đăng nhập tại <a href="${escapeHtml(signInUrl(subSlug ? `/specialized/${subSlug}` : "/specialized", "specialized.search"))}">Portal</a> để tra cứu và lưu thuật ngữ chuyên ngành.`}</p></div>`}
       </div>
     </section>
   `;
@@ -7606,7 +7680,9 @@ var V42_RUNTIME_TABLES_DDL = Object.freeze([
   "CREATE TABLE IF NOT EXISTS wb_speaking_sessions (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, language_code TEXT NOT NULL, target_text TEXT NOT NULL, target_phonetic TEXT NOT NULL DEFAULT '', r2_audio_key TEXT, audio_content_type TEXT, audio_size_bytes INTEGER NOT NULL DEFAULT 0, retain_long_term INTEGER NOT NULL DEFAULT 0, audio_expires_at TEXT, transcript_text TEXT, evaluation_status TEXT NOT NULL DEFAULT 'created', evaluation_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
   "CREATE TABLE IF NOT EXISTS wb_pronunciation_assessments (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, speaking_session_id TEXT, language_code TEXT NOT NULL, target_text TEXT NOT NULL, provider_code TEXT NOT NULL DEFAULT 'unconfigured', status TEXT NOT NULL DEFAULT 'not_configured', overall_score REAL, pronunciation_score REAL, fluency_score REAL, accuracy_score REAL, completeness_score REAL, word_results_json TEXT NOT NULL DEFAULT '[]', phoneme_results_json TEXT NOT NULL DEFAULT '[]', improvement_guide_json TEXT NOT NULL DEFAULT '{}', created_at TEXT NOT NULL DEFAULT (datetime('now')))",
   "CREATE TABLE IF NOT EXISTS wb_writing_submissions (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, language_code TEXT NOT NULL, prompt_title TEXT NOT NULL DEFAULT '', original_content TEXT NOT NULL, version_number INTEGER NOT NULL DEFAULT 1, status TEXT NOT NULL DEFAULT 'draft', evaluation_json TEXT NOT NULL DEFAULT '{}', rubric_score REAL, created_at TEXT NOT NULL DEFAULT (datetime('now')), updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
-  "CREATE TABLE IF NOT EXISTS wb_specialized_domains_catalog (slug TEXT PRIMARY KEY, category_code TEXT NOT NULL, category_name_vi TEXT NOT NULL, item_number INTEGER NOT NULL, name_vi TEXT NOT NULL, name_en TEXT NOT NULL, target_terms_en INTEGER NOT NULL DEFAULT 500, target_terms_zh INTEGER NOT NULL DEFAULT 500, published_terms_en INTEGER NOT NULL DEFAULT 0, published_terms_zh INTEGER NOT NULL DEFAULT 0, dataset_slug TEXT, status TEXT NOT NULL DEFAULT 'cataloged', updated_at TEXT NOT NULL DEFAULT (datetime('now')))"
+  "CREATE TABLE IF NOT EXISTS wb_specialized_domains_catalog (slug TEXT PRIMARY KEY, category_code TEXT NOT NULL, category_name_vi TEXT NOT NULL, item_number INTEGER NOT NULL, name_vi TEXT NOT NULL, name_en TEXT NOT NULL, target_terms_en INTEGER NOT NULL DEFAULT 500, target_terms_zh INTEGER NOT NULL DEFAULT 500, published_terms_en INTEGER NOT NULL DEFAULT 0, published_terms_zh INTEGER NOT NULL DEFAULT 0, dataset_slug TEXT, status TEXT NOT NULL DEFAULT 'cataloged', updated_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_passkeys (id TEXT PRIMARY KEY, account_id TEXT NOT NULL, credential_id TEXT NOT NULL UNIQUE, public_key_cose TEXT NOT NULL, sign_count INTEGER NOT NULL DEFAULT 0, display_name TEXT NOT NULL, transports_json TEXT DEFAULT '[]', revoked_at TEXT, last_used_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))",
+  "CREATE TABLE IF NOT EXISTS wb_webauthn_challenges (id TEXT PRIMARY KEY, account_id TEXT, challenge TEXT NOT NULL UNIQUE, challenge_type TEXT NOT NULL CHECK (challenge_type IN ('registration', 'authentication')), expires_at TEXT NOT NULL, consumed_at TEXT, created_at TEXT NOT NULL DEFAULT (datetime('now')))"
 ]);
 
 
@@ -7651,7 +7727,7 @@ async function ensurePublicCatalogSchema(db) {
   try {
     const existingRows = (await db.prepare("SELECT name FROM sqlite_master WHERE type IN ('view','table')").all()).results || [];
     const existingSet = new Set(existingRows.map((r) => r.name));
-    const requiredChecks = ["wb_public_courses", "wb_public_languages", "wb_public_reader_documents", "wb_skill_reviews", "wb_lesson_notes", "wb_admin_pins", "wb_policy_documents", "wb_api_providers"];
+    const requiredChecks = ["wb_public_courses", "wb_public_languages", "wb_public_reader_documents", "wb_skill_reviews", "wb_lesson_notes", "wb_admin_pins", "wb_policy_documents", "wb_api_providers", "wb_passkeys", "wb_webauthn_challenges"];
     if (requiredChecks.every((n) => existingSet.has(n))) {
       publicSchemaEnsured = true;
       return;

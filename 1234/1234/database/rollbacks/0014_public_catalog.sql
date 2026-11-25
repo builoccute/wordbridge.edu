@@ -1,0 +1,21 @@
+DROP VIEW IF EXISTS wb_public_learner_progress;
+DROP VIEW IF EXISTS wb_public_lesson_submissions;
+DROP VIEW IF EXISTS wb_public_vocabulary_notebook;
+-- Revert the Worker first. Only views are removed.
+DROP VIEW IF EXISTS wb_public_weeks;
+DROP VIEW IF EXISTS wb_public_modules;
+DROP VIEW IF EXISTS wb_public_languages;
+DROP VIEW IF EXISTS wb_public_reader_documents;
+DROP VIEW IF EXISTS wb_public_intelligence_runs;
+DROP VIEW IF EXISTS wb_public_learner_meet_sessions;
+DROP VIEW IF EXISTS wb_public_practice_results;
+DROP VIEW IF EXISTS wb_public_practice_exercises;
+DROP VIEW IF EXISTS wb_public_question_bank;
+DROP VIEW IF EXISTS wb_public_grammar_topics;
+DROP VIEW IF EXISTS wb_public_vocabulary_sets;
+DROP VIEW IF EXISTS wb_public_audio_assets;
+DROP VIEW IF EXISTS wb_public_dictionary_entries;
+DROP VIEW IF EXISTS wb_public_learning_resources;
+DROP VIEW IF EXISTS wb_public_lessons;
+DROP VIEW IF EXISTS wb_public_courses;
+DROP VIEW IF EXISTS wb_public_programs;

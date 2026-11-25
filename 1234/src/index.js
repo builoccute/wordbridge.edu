@@ -4494,8 +4494,7 @@ async function handleApiRequest(request, url, ctx) {
       ...practices.map((r) => [escCsv("Luyen tap"), escCsv(r.title_vi || "Bài luyện tập"), escCsv(r.language_code || ""), escCsv(r.skill || ""), escCsv(`${r.score ?? 0}/${r.max_score ?? 0}`), escCsv(r.submitted_at || "")].join(",")),
       ...readings.map((r) => [escCsv("Thu vien doc"), escCsv(r.title_vi || "Tài liệu"), escCsv(r.language_code || ""), escCsv("reading"), escCsv(`${r.progress_percent ?? 0}%`), escCsv(r.last_read_at || "")].join(","))
     ];
-    return new Response("﻿" + rows.join("
-"), {
+    return new Response("\uFEFF" + rows.join("\n"), {
       status: 200,
       headers: {
         "Content-Type": "text/csv; charset=utf-8",

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 96" role="img" aria-label="WORD BRIDGE — Where Languages Bring People Together.">
+  <!-- Red Arch Bridge -->
+  <path d="M16 54 C34 14, 96 14, 114 54" fill="none" stroke="#CB0203" stroke-width="6.5" stroke-linecap="round"/>
+  <line x1="46" y1="29" x2="46" y2="54" stroke="#CB0203" stroke-width="5.5" stroke-linecap="round"/>
+  <line x1="65" y1="24" x2="65" y2="56" stroke="#CB0203" stroke-width="5.5" stroke-linecap="round"/>
+  <line x1="84" y1="29" x2="84" y2="54" stroke="#CB0203" stroke-width="5.5" stroke-linecap="round"/>
+  <!-- Aqua Upper Open Book -->
+  <path d="M14 60 Q40 50 65 63 Q90 50 116 60 L113 71 Q89 61 65 74 Q41 61 17 71 Z" fill="#3DA2A0"/>
+  <!-- Deep Teal Lower Book Spine -->
+  <path d="M12 75 Q39 65 65 77 Q91 65 118 75 L115 84 Q90 74 65 86 Q40 74 15 84 Z" fill="#035257"/>
+  <!-- Wordmark -->
+  <text x="134" y="54" font-family="'Segoe UI', Inter, Roboto, Arial, sans-serif" font-weight="900" font-size="38" letter-spacing="0.5">
+    <tspan fill="#035257">WORD </tspan><tspan fill="#CB0203">BRIDGE</tspan>
+  </text>
+  <text x="135" y="77" font-family="'Segoe UI', Inter, Roboto, Arial, sans-serif" font-weight="500" font-size="14.5" fill="#035257" letter-spacing="0.2">
+    Where Languages Bring People Together.
+  </text>
+</svg>

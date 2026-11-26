@@ -3,10 +3,10 @@
   "targetTotal": 50000,
   "batchSize": 500,
   "totalBatches": 100,
-  "completedBatches": 6,
-  "nextBatch": 7,
-  "publishedValidEntries": 3000,
-  "remainingEntries": 47000,
+  "completedBatches": 20,
+  "nextBatch": 21,
+  "publishedValidEntries": 10000,
+  "remainingEntries": 40000,
   "history": [
     {
       "batch": 1,
@@ -103,6 +103,285 @@
       "duplicateRate": 0,
       "missingFieldRate": 0,
       "completedAt": "2026-11-26T02:38:57.348Z"
+    },
+    {
+      "batch": 7,
+      "idRange": "WB5-03001..WB5-03500",
+      "count": 500,
+      "domains": {
+        "pharmacology-drugs": 143,
+        "food-science-nutrition": 148,
+        "music-performing-arts": 146,
+        "architecture-interior": 63
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T03:55:48.411Z"
+    },
+    {
+      "batch": 8,
+      "idRange": "WB5-03501..WB5-04000",
+      "count": 500,
+      "domains": {
+        "architecture-interior": 29,
+        "cybersecurity-privacy": 97,
+        "renewable-energy-grid": 93,
+        "biotech-genetics": 107,
+        "semiconductor-optics": 91,
+        "film-photography": 83
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T03:55:48.770Z"
+    },
+    {
+      "batch": 9,
+      "idRange": "WB5-04001..WB5-04500",
+      "count": 500,
+      "domains": {
+        "film-photography": 5,
+        "rail-public-transit": 67,
+        "mining-metallurgy": 52,
+        "insurance-actuarial": 63,
+        "journalism-publishing": 60,
+        "forestry-fisheries": 48,
+        "international-trade-customs": 31,
+        "robotics-automation": 42,
+        "veterinary-animal-care": 49,
+        "history-archaeology": 44,
+        "philosophy-ethics": 39
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T03:55:49.037Z"
+    },
+    {
+      "batch": 10,
+      "idRange": "WB5-04501..WB5-05000",
+      "count": 500,
+      "domains": {
+        "philosophy-ethics": 3,
+        "everyday-idioms-verbs": 44,
+        "culinary-spices-tea": 45,
+        "botany-horticulture": 39,
+        "geography-maps-travel": 38,
+        "mathematics-statistics": 38,
+        "arts-crafts-ceramics": 36,
+        "civic-public-admin": 26,
+        "physics-thermodynamics": 34,
+        "linguistics-languages": 28,
+        "outdoor-fitness-wellness": 28,
+        "parenting-early-edu": 35,
+        "personal-finance-investing": 30,
+        "household-diy-tools": 32,
+        "daily-life": 32,
+        "business": 4,
+        "technology": 8
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T03:55:49.378Z"
+    },
+    {
+      "batch": 11,
+      "idRange": "WB5-05001..WB5-05500",
+      "count": 500,
+      "domains": {
+        "watchmaking-horology": 40,
+        "optometry-eye-care": 54,
+        "audiology-hearing-care": 54,
+        "beekeeping-apiculture": 30,
+        "coffee-barista-specialty": 30,
+        "sailing-seamanship": 30,
+        "printmaking-typography": 27,
+        "leathercraft-shoemaking": 56,
+        "woodworking-carpentry": 50,
+        "chess-boardgames": 55,
+        "mountaineering-climbing": 53,
+        "physiotherapy-rehab": 21
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T05:03:29.103Z"
+    },
+    {
+      "batch": 12,
+      "idRange": "WB5-05501..WB5-06000",
+      "count": 500,
+      "domains": {
+        "physiotherapy-rehab": 31,
+        "beverages-fermentation-craft": 59,
+        "emergency-first-aid": 48,
+        "maternal-newborn-care": 54,
+        "wastewater-sanitation": 50,
+        "bridge-tunnel-civil": 49,
+        "bakery-pastry-arts": 51,
+        "librarianship-archiving": 58,
+        "cold-chain-packaging": 57,
+        "geology-mineralogy": 43
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T05:03:40.278Z"
+    },
+    {
+      "batch": 13,
+      "idRange": "WB5-06001..WB5-06500",
+      "count": 500,
+      "domains": {
+        "immunology-vaccines": 84,
+        "dermatology-skincare": 68,
+        "cardiology-vascular": 68,
+        "neurology-sleep-science": 68,
+        "orthopedics-trauma": 58,
+        "gastroenterology-digestive": 77,
+        "endocrinology-metabolism": 65,
+        "nephrology-urology": 12
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T06:40:42.889Z"
+    },
+    {
+      "batch": 14,
+      "idRange": "WB5-06501..WB5-07000",
+      "count": 500,
+      "domains": {
+        "nephrology-urology": 59,
+        "oncology-palliative": 71,
+        "radiology-medical-imaging": 77,
+        "anesthesiology-perioperative": 71,
+        "hematology-blood-bank": 69,
+        "epidemiology-public-health": 65,
+        "medical-devices-diagnostics": 72,
+        "clinical-trials-biostats": 16
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T06:40:43.178Z"
+    },
+    {
+      "batch": 15,
+      "idRange": "WB5-07001..WB5-07500",
+      "count": 500,
+      "domains": {
+        "clinical-trials-biostats": 53,
+        "mental-health-counseling": 80,
+        "intellectual-property-patents": 66,
+        "labor-employment-hr": 63,
+        "corporate-governance-esg": 66,
+        "mergers-acquisitions-pe": 68,
+        "taxation-transfer-pricing": 63,
+        "arbitration-dispute-resolution": 41
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T06:40:43.526Z"
+    },
+    {
+      "batch": 16,
+      "idRange": "WB5-07501..WB5-08000",
+      "count": 500,
+      "domains": {
+        "arbitration-dispute-resolution": 26,
+        "supply-chain-procurement": 54,
+        "lean-six-sigma-quality": 64,
+        "project-management-agile": 67,
+        "product-management-ux": 57,
+        "venture-capital-startups": 66,
+        "public-relations-crisis": 69,
+        "nonprofit-philanthropy": 68,
+        "franchising-retail-ops": 29
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T06:40:43.887Z"
+    },
+    {
+      "batch": 17,
+      "idRange": "WB5-08001..WB5-08500",
+      "count": 500,
+      "domains": {
+        "franchising-retail-ops": 38,
+        "commodities-futures-trading": 77,
+        "auditing-internal-controls": 85,
+        "cloud-computing-devops": 85,
+        "database-distributed-systems": 69,
+        "mobile-app-engineering": 71,
+        "embedded-iot-firmware": 68,
+        "blockchain-cryptography": 7
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T06:40:44.219Z"
+    },
+    {
+      "batch": 18,
+      "idRange": "WB5-08501..WB5-09000",
+      "count": 500,
+      "domains": {
+        "blockchain-cryptography": 60,
+        "game-development-3d": 79,
+        "telecommunications-5g": 75,
+        "aerospace-spacecraft": 70,
+        "nuclear-thermal-engineering": 71,
+        "materials-science-polymers": 75,
+        "chemical-process-engineering": 67,
+        "acoustics-audio-engineering": 3
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T06:40:44.615Z"
+    },
+    {
+      "batch": 19,
+      "idRange": "WB5-09001..WB5-09500",
+      "count": 500,
+      "domains": {
+        "acoustics-audio-engineering": 78,
+        "industrial-packaging-plastics": 74,
+        "welding-fabrication-ndt": 75,
+        "oceanography-marine-biology": 67,
+        "meteorology-climate-science": 67,
+        "entomology-wildlife-ecology": 67,
+        "ornithology-birdwatching": 72
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T06:40:45.123Z"
+    },
+    {
+      "batch": 20,
+      "idRange": "WB5-09501..WB5-10000",
+      "count": 500,
+      "domains": {
+        "ornithology-birdwatching": 1,
+        "aquaculture-hydroponics": 66,
+        "urban-forestry-landscaping": 67,
+        "museum-curatorial-studies": 66,
+        "theater-stagecraft-opera": 65,
+        "fashion-tailoring-menswear": 70,
+        "jewelry-gemology-metalsmith": 69,
+        "calligraphy-book-arts": 66,
+        "martial-arts-combat-sports": 30
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T06:40:45.565Z"
     }
   ]
 }

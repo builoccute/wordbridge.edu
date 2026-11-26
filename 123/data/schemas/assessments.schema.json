@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "assessments",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "answer",
+      "assessment_purpose_vi",
+      "criteria",
+      "domain",
+      "explanation",
+      "id",
+      "language",
+      "level",
+      "max_score",
+      "minutes",
+      "module",
+      "scoring_vi",
+      "status",
+      "stimulus",
+      "task",
+      "title"
+    ],
+    "properties": {
+      "answer": {
+        "type": [
+          "array",
+          "string"
+        ]
+      },
+      "assessment_purpose_vi": {
+        "type": "string"
+      },
+      "audio_asset_status": {
+        "type": "string"
+      },
+      "criteria": {
+        "type": "array"
+      },
+      "delivery_vi": {
+        "type": "string"
+      },
+      "domain": {
+        "type": "integer"
+      },
+      "explanation": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "max_score": {
+        "type": "integer"
+      },
+      "minutes": {
+        "type": "integer"
+      },
+      "module": {
+        "type": "string"
+      },
+      "scoring_vi": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "stimulus": {
+        "type": "string"
+      },
+      "task": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "translation_vi": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  }
+}

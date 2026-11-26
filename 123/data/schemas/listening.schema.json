@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "listening",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "activity",
+      "answer",
+      "audio_asset_status",
+      "dialogue",
+      "domain",
+      "estimated_audio_seconds",
+      "example",
+      "explanation",
+      "grammar",
+      "id",
+      "language",
+      "level",
+      "minutes",
+      "module",
+      "objective",
+      "outcome",
+      "practice_instructions",
+      "questions",
+      "roles",
+      "script",
+      "status",
+      "task",
+      "teaching",
+      "title",
+      "topic",
+      "translation_vi",
+      "vocabulary"
+    ],
+    "properties": {
+      "activity": {
+        "type": "string"
+      },
+      "answer": {
+        "type": "array"
+      },
+      "audio_asset_status": {
+        "type": "string"
+      },
+      "dialogue": {
+        "type": "array"
+      },
+      "domain": {
+        "type": "integer"
+      },
+      "estimated_audio_seconds": {
+        "type": "integer"
+      },
+      "example": {
+        "type": "string"
+      },
+      "explanation": {
+        "type": "array"
+      },
+      "grammar": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "minutes": {
+        "type": "integer"
+      },
+      "module": {
+        "type": "string"
+      },
+      "objective": {
+        "type": "string"
+      },
+      "outcome": {
+        "type": "string"
+      },
+      "pinyin": {
+        "type": "string"
+      },
+      "practice_instructions": {
+        "type": "string"
+      },
+      "questions": {
+        "type": "array"
+      },
+      "roles": {
+        "type": "array"
+      },
+      "script": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "task": {
+        "type": "array"
+      },
+      "teaching": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "topic": {
+        "type": "string"
+      },
+      "translation_vi": {
+        "type": "string"
+      },
+      "vocabulary": {
+        "type": "array"
+      }
+    },
+    "additionalProperties": false
+  }
+}

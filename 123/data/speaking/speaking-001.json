@@ -1,0 +1,869 @@
+[
+  {
+    "id": "SP-00001",
+    "title": "Đổi điểm hẹn khi lỡ chuyến",
+    "language": "en",
+    "module": "speaking",
+    "level": "A2",
+    "topic": "Đổi điểm hẹn khi lỡ chuyến",
+    "domain": 17,
+    "objective": "Thỏa thuận lại giờ và địa điểm gặp.",
+    "teaching": "Dùng I missed cho việc đã xảy ra, rồi dùng can để đề xuất một phương án.",
+    "example": "I missed the bus. Could we meet at the west gate at quarter past ten?\nThe west gate is closed today. How about the café across the road?\nThat works. I’ll see you at the café at ten fifteen.",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đổi vai. Bạn đến lúc 10 giờ 25 và quán cà phê đóng cửa. Hai bạn phải chốt được điểm hẹn mới.",
+    "answer": "Nêu đúng lý do|Đưa ra phương án khả thi|Nhắc lại giờ và địa điểm",
+    "explanation": "Câu cuối lặp cả hai chi tiết để người kia có cơ hội sửa nhầm lẫn.",
+    "outcome": "Thỏa thuận lại giờ và địa điểm gặp.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Bạn lỡ chuyến xe buýt tới bảo tàng; bạn mình đang chờ ở cổng phía đông.",
+    "roles": [
+      "Người đến muộn",
+      "Người đang đợi"
+    ],
+    "guiding_questions": [
+      "What happened?",
+      "Where exactly will you meet?"
+    ],
+    "model_dialogue": [
+      "I missed the bus. Could we meet at the west gate at quarter past ten?",
+      "The west gate is closed today. How about the café across the road?",
+      "That works. I’ll see you at the café at ten fifteen."
+    ],
+    "focus_phrases": [
+      "I missed the bus",
+      "How about…?",
+      "That works"
+    ],
+    "language_structure": "Dùng I missed cho việc đã xảy ra, rồi dùng can để đề xuất một phương án.",
+    "translation_vi": [
+      "Mình lỡ xe buýt rồi. Mười giờ mười lăm mình gặp ở cổng tây được không?",
+      "Hôm nay cổng tây đóng cửa. Quán cà phê bên kia đường thì sao?",
+      "Được đấy. Mười giờ mười lăm gặp ở quán nhé."
+    ],
+    "pinyin": [],
+    "self_assessment": [
+      "Nêu đúng lý do",
+      "Đưa ra phương án khả thi",
+      "Nhắc lại giờ và địa điểm"
+    ]
+  },
+  {
+    "id": "SP-00002",
+    "title": "Thu hẹp đề tài nghiên cứu",
+    "language": "en",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Thu hẹp đề tài nghiên cứu",
+    "domain": 2,
+    "objective": "Đề xuất phạm vi nghiên cứu có thể thực hiện và xác nhận bước đầu.",
+    "teaching": "Dùng What if we limited…? để thăm dò; sau limit dùng tân ngữ và to.",
+    "example": "I want to study how people choose books.\nWhich people could you actually reach in two weeks?\nWhat if I limited the survey to first-year students in our reading club?\nThat sounds manageable. Draft three questions before you recruit anyone.",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Thay thời hạn bằng một tuần, đổi nhóm người tham gia và giải thích vì sao tiếp cận được nhóm đó.",
+    "answer": "Xác định rõ đối tượng|Gắn phạm vi với thời gian|Chốt hành động đầu tiên",
+    "explanation": "Which people hướng người nói từ một nhóm chung sang một nhóm xác định.",
+    "outcome": "Đề xuất phạm vi nghiên cứu có thể thực hiện và xác nhận bước đầu.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Bạn có hai tuần để khảo sát thói quen đọc. Giảng viên lo đề tài hiện tại quá rộng.",
+    "roles": [
+      "Sinh viên",
+      "Giảng viên"
+    ],
+    "guiding_questions": [
+      "Who can take part?",
+      "What will you do first?"
+    ],
+    "model_dialogue": [
+      "I want to study how people choose books.",
+      "Which people could you actually reach in two weeks?",
+      "What if I limited the survey to first-year students in our reading club?",
+      "That sounds manageable. Draft three questions before you recruit anyone."
+    ],
+    "focus_phrases": [
+      "limit the survey to",
+      "first-year students",
+      "draft three questions"
+    ],
+    "language_structure": "Dùng What if we limited…? để thăm dò; sau limit dùng tân ngữ và to.",
+    "translation_vi": [
+      "Em muốn nghiên cứu cách mọi người chọn sách.",
+      "Trong hai tuần em thực sự có thể tiếp cận nhóm người nào?",
+      "Nếu em chỉ khảo sát sinh viên năm nhất trong câu lạc bộ đọc sách của mình thì sao ạ?",
+      "Như thế có vẻ vừa sức. Hãy soạn ba câu hỏi trước khi mời người tham gia."
+    ],
+    "pinyin": [],
+    "self_assessment": [
+      "Xác định rõ đối tượng",
+      "Gắn phạm vi với thời gian",
+      "Chốt hành động đầu tiên"
+    ]
+  },
+  {
+    "id": "SP-00003",
+    "title": "Phản hồi về áp phích",
+    "language": "en",
+    "module": "speaking",
+    "level": "B2",
+    "topic": "Phản hồi về áp phích",
+    "domain": 37,
+    "objective": "Nêu quan sát cụ thể và thương lượng một lần thử thiết kế.",
+    "teaching": "Dùng I can…, but… để gắn phản hồi với trải nghiệm người xem rồi đề nghị bằng Could we try…?",
+    "example": "From the doorway I can read the date, but the venue gets lost against the photo.\nWould you prefer a different photo?\nCould we try a plain strip behind the venue first? That would keep the image you chose.\nI’ll make a second version and we can compare them from here.",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đổi vấn đề thành giá vé quá nhỏ. Thống nhất một thay đổi và cách kiểm tra ở cửa ra vào.",
+    "answer": "Mô tả được khó khăn khi xem|Chỉ thay một yếu tố để so sánh|Hai bên đồng ý cách thử",
+    "explanation": "So sánh hai phiên bản từ cùng vị trí giúp phản hồi dẫn đến một hành động cụ thể.",
+    "outcome": "Nêu quan sát cụ thể và thương lượng một lần thử thiết kế.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Buổi duyệt thiết kế có hai mục tiêu cạnh tranh: gây chú ý từ xa và cho người xem đọc được địa điểm.",
+    "roles": [
+      "Người thiết kế",
+      "Người duyệt"
+    ],
+    "guiding_questions": [
+      "Which element is hard to read?",
+      "How can you test the change?"
+    ],
+    "model_dialogue": [
+      "From the doorway I can read the date, but the venue gets lost against the photo.",
+      "Would you prefer a different photo?",
+      "Could we try a plain strip behind the venue first? That would keep the image you chose.",
+      "I’ll make a second version and we can compare them from here."
+    ],
+    "focus_phrases": [
+      "from the doorway",
+      "gets lost against",
+      "a plain strip"
+    ],
+    "language_structure": "Dùng I can…, but… để gắn phản hồi với trải nghiệm người xem rồi đề nghị bằng Could we try…?",
+    "translation_vi": [
+      "Từ cửa tôi đọc được ngày, nhưng tên địa điểm bị chìm vào ảnh.",
+      "Bạn muốn đổi ảnh khác không?",
+      "Ta thử đặt một dải nền trơn sau tên địa điểm trước được không? Như vậy vẫn giữ được ảnh bạn chọn.",
+      "Tôi sẽ làm phiên bản thứ hai để chúng ta đứng đây so sánh."
+    ],
+    "pinyin": [],
+    "self_assessment": [
+      "Mô tả được khó khăn khi xem",
+      "Chỉ thay một yếu tố để so sánh",
+      "Hai bên đồng ý cách thử"
+    ]
+  },
+  {
+    "id": "SP-00004",
+    "title": "Xác nhận dịch vụ gửi hành lý",
+    "language": "en",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Xác nhận dịch vụ gửi hành lý",
+    "domain": 30,
+    "objective": "Xác nhận thời hạn lấy hành lý và nêu một yêu cầu xử lý.",
+    "teaching": "Dùng until cho thời điểm kết thúc và by cho hạn cuối.",
+    "example": "Could you hold my bags until six?\nCertainly. Please collect them by half past six, before the desk closes.\nOne bag has a glass bowl in it. Could you keep it upright?\nOf course. I’ll mark that on the tag.",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Bạn về muộn hơn giờ đóng quầy. Hỏi về một cách nhận lại hành lý khả thi và xác nhận phương án.",
+    "answer": "Dùng đúng until hoặc by|Nêu được yêu cầu về túi|Xác nhận giờ nhận khả thi",
+    "explanation": "By half past six cho phép lấy sớm hơn; until six mô tả khoảng thời gian giữ túi.",
+    "outcome": "Xác nhận thời hạn lấy hành lý và nêu một yêu cầu xử lý.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Khách phải trả phòng lúc 11 giờ nhưng đi tàu tối. Một túi chứa đồ dễ vỡ.",
+    "roles": [
+      "Khách lưu trú",
+      "Nhân viên lễ tân"
+    ],
+    "guiding_questions": [
+      "How late is the desk open?",
+      "Which bag needs special care?"
+    ],
+    "model_dialogue": [
+      "Could you hold my bags until six?",
+      "Certainly. Please collect them by half past six, before the desk closes.",
+      "One bag has a glass bowl in it. Could you keep it upright?",
+      "Of course. I’ll mark that on the tag."
+    ],
+    "focus_phrases": [
+      "hold my bags",
+      "collect them by",
+      "keep it upright"
+    ],
+    "language_structure": "Dùng until cho thời điểm kết thúc và by cho hạn cuối.",
+    "translation_vi": [
+      "Anh chị giữ giúp hành lý đến sáu giờ được không?",
+      "Được ạ. Xin quý khách lấy chậm nhất lúc sáu giờ rưỡi, trước khi quầy đóng cửa.",
+      "Một túi có bát thủy tinh. Anh chị để thẳng túi giúp tôi nhé?",
+      "Vâng. Tôi sẽ ghi điều đó lên thẻ."
+    ],
+    "pinyin": [],
+    "self_assessment": [
+      "Dùng đúng until hoặc by",
+      "Nêu được yêu cầu về túi",
+      "Xác nhận giờ nhận khả thi"
+    ]
+  },
+  {
+    "id": "SP-00005",
+    "title": "Làm rõ giao hàng từng phần",
+    "language": "en",
+    "module": "speaking",
+    "level": "B2",
+    "topic": "Làm rõ giao hàng từng phần",
+    "domain": 32,
+    "objective": "Đàm phán lịch giao từng phần và xác định người chịu chi phí bổ sung.",
+    "teaching": "Dùng as long as để nêu điều kiện chấp thuận; dùng the remaining + số lượng để đối chiếu.",
+    "example": "We can send five boxes tomorrow and the remaining seven on Monday.\nThat works as long as the first five arrive by Thursday. Is there a second delivery charge?\nNo. We’ll cover the extra trip and email both tracking numbers.\nThanks. I’ll arrange space for five boxes on Thursday.",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Bên giao chỉ có ba hộp sẵn sàng. Đề xuất giải pháp để bên nhận đủ bốn hộp và làm rõ chi phí.",
+    "answer": "Phân biệt ngày gửi và ngày nhận|Đủ số hộp cần thiết|Chốt trách nhiệm phí",
+    "explanation": "Send mô tả lúc gửi đi; arrive mô tả lúc hàng đến nơi.",
+    "outcome": "Đàm phán lịch giao từng phần và xác định người chịu chi phí bổ sung.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Một đơn hàng có 12 hộp. Bên nhận cần ít nhất bốn hộp trước thứ Năm; phần còn lại có thể tới vào tuần sau.",
+    "roles": [
+      "Điều phối giao hàng",
+      "Người nhận"
+    ],
+    "guiding_questions": [
+      "When do the boxes leave?",
+      "What arrival deadline matters?"
+    ],
+    "model_dialogue": [
+      "We can send five boxes tomorrow and the remaining seven on Monday.",
+      "That works as long as the first five arrive by Thursday. Is there a second delivery charge?",
+      "No. We’ll cover the extra trip and email both tracking numbers.",
+      "Thanks. I’ll arrange space for five boxes on Thursday."
+    ],
+    "focus_phrases": [
+      "as long as",
+      "the remaining seven",
+      "cover the extra trip"
+    ],
+    "language_structure": "Dùng as long as để nêu điều kiện chấp thuận; dùng the remaining + số lượng để đối chiếu.",
+    "translation_vi": [
+      "Ngày mai chúng tôi có thể gửi năm hộp, bảy hộp còn lại gửi thứ Hai.",
+      "Được, miễn là năm hộp đầu tới chậm nhất thứ Năm. Có tính phí giao lần hai không?",
+      "Không. Chúng tôi chịu chi phí chuyến bổ sung và sẽ gửi cả hai mã vận đơn qua email.",
+      "Cảm ơn. Tôi sẽ sắp chỗ cho năm hộp vào thứ Năm."
+    ],
+    "pinyin": [],
+    "self_assessment": [
+      "Phân biệt ngày gửi và ngày nhận",
+      "Đủ số hộp cần thiết",
+      "Chốt trách nhiệm phí"
+    ]
+  },
+  {
+    "id": "SP-00006",
+    "title": "Thu lại cảnh phỏng vấn",
+    "language": "en",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Thu lại cảnh phỏng vấn",
+    "domain": 38,
+    "objective": "Xin phép thu lại đúng đoạn và trấn an người nói.",
+    "teaching": "Dùng Would you mind + V-ing để xin phép; giải thích nguyên nhân bằng because.",
+    "example": "Would you mind repeating just the last sentence?\nWas my answer unclear?\nYour answer was clear. A chair scraped across the floor while you were speaking.\nSure. I’ll start from the part about my first camera.",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Thử lại với tiếng chuông điện thoại ở đầu câu chuyện. Xin phép, xác định đúng đoạn và lời bắt đầu.",
+    "answer": "Yêu cầu cụ thể|Giải thích được nguyên nhân|Thống nhất điểm bắt đầu",
+    "explanation": "Just the last sentence giới hạn công sức mà người nói phải bỏ ra.",
+    "outcome": "Xin phép thu lại đúng đoạn và trấn an người nói.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Câu trả lời đầu tiên bị tiếng ghế kéo che mất; khách có ít thời gian.",
+    "roles": [
+      "Người thu âm",
+      "Khách mời"
+    ],
+    "guiding_questions": [
+      "Which part needs recording again?",
+      "Why does it need another take?"
+    ],
+    "model_dialogue": [
+      "Would you mind repeating just the last sentence?",
+      "Was my answer unclear?",
+      "Your answer was clear. A chair scraped across the floor while you were speaking.",
+      "Sure. I’ll start from the part about my first camera."
+    ],
+    "focus_phrases": [
+      "Would you mind repeating…?",
+      "just the last sentence",
+      "while you were speaking"
+    ],
+    "language_structure": "Dùng Would you mind + V-ing để xin phép; giải thích nguyên nhân bằng because.",
+    "translation_vi": [
+      "Anh có phiền nhắc lại riêng câu cuối không?",
+      "Câu trả lời của tôi chưa rõ à?",
+      "Anh trả lời rõ lắm. Có tiếng kéo ghế đúng lúc anh đang nói.",
+      "Được. Tôi sẽ bắt đầu từ đoạn nói về chiếc máy ảnh đầu tiên."
+    ],
+    "pinyin": [],
+    "self_assessment": [
+      "Yêu cầu cụ thể",
+      "Giải thích được nguyên nhân",
+      "Thống nhất điểm bắt đầu"
+    ]
+  },
+  {
+    "id": "SP-00007",
+    "title": "Hỏi mượn ô ở cửa",
+    "language": "zh",
+    "module": "speaking",
+    "level": "A1",
+    "topic": "Hỏi mượn ô ở cửa",
+    "domain": 1,
+    "objective": "Xin mượn một vật và hẹn thời gian trả.",
+    "teaching": "Dùng 可以……吗 để xin phép. Với 借给, chủ thể là người cho mượn.",
+    "example": "外面下雨了。你有伞吗？\n我有两把。可以借给你一把。\n谢谢！我明天早上还给你。",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Bạn cần mượn một cây bút và sẽ trả vào chiều nay. Đổi vai rồi thử lại.",
+    "answer": "Dùng đúng lượng từ cho vật mới|Phân biệt mượn và trả|Chốt thời gian trả",
+    "explanation": "还 trong 还给 mang nghĩa trả lại và đọc là huán.",
+    "outcome": "Xin mượn một vật và hẹn thời gian trả.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Mưa to trước giờ tan học. Bạn có thể trả ô vào sáng mai.",
+    "roles": [
+      "Người mượn",
+      "Bạn cùng lớp"
+    ],
+    "guiding_questions": [
+      "你想借什么？",
+      "你什么时候还？"
+    ],
+    "model_dialogue": [
+      "外面下雨了。你有伞吗？",
+      "我有两把。可以借给你一把。",
+      "谢谢！我明天早上还给你。"
+    ],
+    "focus_phrases": [
+      "一把伞",
+      "借给你",
+      "还给你"
+    ],
+    "language_structure": "Dùng 可以……吗 để xin phép. Với 借给, chủ thể là người cho mượn.",
+    "translation_vi": [
+      "Ngoài trời mưa rồi. Bạn có ô không?",
+      "Mình có hai chiếc. Mình có thể cho bạn mượn một chiếc.",
+      "Cảm ơn! Sáng mai mình trả bạn."
+    ],
+    "pinyin": [
+      "Wàimiàn xià yǔ le. Nǐ yǒu sǎn ma?",
+      "Wǒ yǒu liǎng bǎ. Kěyǐ jiè gěi nǐ yì bǎ.",
+      "Xièxie! Wǒ míngtiān zǎoshang huán gěi nǐ."
+    ],
+    "self_assessment": [
+      "Dùng đúng lượng từ cho vật mới",
+      "Phân biệt mượn và trả",
+      "Chốt thời gian trả"
+    ]
+  },
+  {
+    "id": "SP-00008",
+    "title": "Gọi món cho người không ăn cay",
+    "language": "zh",
+    "module": "speaking",
+    "level": "A2",
+    "topic": "Gọi món cho người không ăn cay",
+    "domain": 31,
+    "objective": "Làm rõ mức độ cay và chốt món phù hợp.",
+    "teaching": "Dùng 一点儿……也不…… để diễn đạt phủ định hoàn toàn; 少放 chỉ yêu cầu bớt.",
+    "example": "这道菜能少放辣椒吗？\n能，不过还是有点儿辣。\n我一点儿辣也不能吃。有没有不辣的菜？\n有。您可以点清炒白菜。",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đổi sang tình huống người đi cùng ăn được hơi cay. Hỏi và chốt hai món cho hai người.",
+    "answer": "Nêu rõ sở thích từng người|Phân biệt 少放 và 不放|Xác nhận món đã chọn",
+    "explanation": "Cụm 有点儿辣 giải thích vì sao yêu cầu đầu chưa đáp ứng nhu cầu.",
+    "outcome": "Làm rõ mức độ cay và chốt món phù hợp.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Một món trong thực đơn có thể bớt cay, một món có thể làm hoàn toàn không cay.",
+    "roles": [
+      "Khách gọi món",
+      "Nhân viên phục vụ"
+    ],
+    "guiding_questions": [
+      "你能吃一点儿辣吗？",
+      "服务员推荐什么？"
+    ],
+    "model_dialogue": [
+      "这道菜能少放辣椒吗？",
+      "能，不过还是有点儿辣。",
+      "我一点儿辣也不能吃。有没有不辣的菜？",
+      "有。您可以点清炒白菜。"
+    ],
+    "focus_phrases": [
+      "少放辣椒",
+      "有点儿辣",
+      "不辣的菜"
+    ],
+    "language_structure": "Dùng 一点儿……也不…… để diễn đạt phủ định hoàn toàn; 少放 chỉ yêu cầu bớt.",
+    "translation_vi": [
+      "Món này có thể cho ít ớt không?",
+      "Được, nhưng vẫn hơi cay.",
+      "Tôi không ăn cay được dù chỉ một chút. Có món nào không cay không?",
+      "Có ạ. Quý khách có thể gọi cải thảo xào thanh đạm."
+    ],
+    "pinyin": [
+      "Zhè dào cài néng shǎo fàng làjiāo ma?",
+      "Néng, búguò háishi yǒudiǎnr là.",
+      "Wǒ yìdiǎnr là yě bù néng chī. Yǒu méiyǒu bú là de cài?",
+      "Yǒu. Nín kěyǐ diǎn qīngchǎo báicài."
+    ],
+    "self_assessment": [
+      "Nêu rõ sở thích từng người",
+      "Phân biệt 少放 và 不放",
+      "Xác nhận món đã chọn"
+    ]
+  },
+  {
+    "id": "SP-00009",
+    "title": "Xin đổi chỗ trong lớp",
+    "language": "zh",
+    "module": "speaking",
+    "level": "A2",
+    "topic": "Xin đổi chỗ trong lớp",
+    "domain": 2,
+    "objective": "Hỏi về ghế trống và đề xuất một vị trí thay thế.",
+    "teaching": "Dùng 看不清 khi nhìn thấy nhưng không rõ; dùng 有人坐 để hỏi ghế đã có ai ngồi.",
+    "example": "我坐在后面看不清黑板。这里有人坐吗？\n有，我同桌就来。旁边那个位子还空着。\n那我坐在窗边，可以吗？\n可以，那里也看得清。",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đổi lý do thành không nghe rõ từ cuối lớp. Xác nhận ghế trống gần giáo viên.",
+    "answer": "Nêu đúng trở ngại|Dùng bổ ngữ khả năng|Chọn ghế còn trống",
+    "explanation": "看不清 và 看得清 tạo thành một cặp phủ định và khẳng định.",
+    "outcome": "Hỏi về ghế trống và đề xuất một vị trí thay thế.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Bạn ngồi cuối lớp và khó đọc chữ trên bảng. Một ghế hàng đầu đã có người.",
+    "roles": [
+      "Học viên",
+      "Bạn cùng lớp"
+    ],
+    "guiding_questions": [
+      "你为什么想换位子？",
+      "哪个位子可以坐？"
+    ],
+    "model_dialogue": [
+      "我坐在后面看不清黑板。这里有人坐吗？",
+      "有，我同桌就来。旁边那个位子还空着。",
+      "那我坐在窗边，可以吗？",
+      "可以，那里也看得清。"
+    ],
+    "focus_phrases": [
+      "看不清",
+      "有人坐吗",
+      "还空着"
+    ],
+    "language_structure": "Dùng 看不清 khi nhìn thấy nhưng không rõ; dùng 有人坐 để hỏi ghế đã có ai ngồi.",
+    "translation_vi": [
+      "Mình ngồi phía sau nhìn bảng không rõ. Chỗ này có ai ngồi chưa?",
+      "Có rồi, bạn cùng bàn của mình sắp đến. Chỗ bên cạnh vẫn trống.",
+      "Vậy mình ngồi cạnh cửa sổ được không?",
+      "Được, chỗ đó nhìn cũng rõ."
+    ],
+    "pinyin": [
+      "Wǒ zuò zài hòumiàn kàn bu qīng hēibǎn. Zhèlǐ yǒu rén zuò ma?",
+      "Yǒu, wǒ tóngzhuō jiù lái. Pángbiān nàge wèizi hái kòngzhe.",
+      "Nà wǒ zuò zài chuāngbiān, kěyǐ ma?",
+      "Kěyǐ, nàli yě kàn de qīng."
+    ],
+    "self_assessment": [
+      "Nêu đúng trở ngại",
+      "Dùng bổ ngữ khả năng",
+      "Chọn ghế còn trống"
+    ]
+  },
+  {
+    "id": "SP-00010",
+    "title": "Hỏi về thời điểm hái lê",
+    "language": "zh",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Hỏi về thời điểm hái lê",
+    "domain": 19,
+    "objective": "Đặt câu hỏi so sánh và giải thích lựa chọn theo nhu cầu.",
+    "teaching": "Dùng 比 để so sánh và 打算 để đưa kế hoạch vào quyết định.",
+    "example": "这两筐梨有什么不同？\n左边的是昨天摘的，比右边的硬一点儿。\n我打算周末再吃，那就买左边的吧。\n好，我帮你挑三个。",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đổi kế hoạch thành ăn ngay hôm nay. Hỏi lại đặc điểm lô đã chọn và nói lý do.",
+    "answer": "So sánh đúng đối tượng|Nêu được thời điểm sử dụng|Giải thích lựa chọn",
+    "explanation": "的 đứng sau 昨天摘 thay cho danh từ chỉ quả lê đã được nhắc tới.",
+    "outcome": "Đặt câu hỏi so sánh và giải thích lựa chọn theo nhu cầu.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Bạn mua lê để ăn cuối tuần. Hai lô lê khác ngày hái và độ mềm.",
+    "roles": [
+      "Khách mua",
+      "Người bán"
+    ],
+    "guiding_questions": [
+      "哪筐梨比较硬？",
+      "你打算什么时候吃？"
+    ],
+    "model_dialogue": [
+      "这两筐梨有什么不同？",
+      "左边的是昨天摘的，比右边的硬一点儿。",
+      "我打算周末再吃，那就买左边的吧。",
+      "好，我帮你挑三个。"
+    ],
+    "focus_phrases": [
+      "昨天摘的",
+      "硬一点儿",
+      "周末再吃"
+    ],
+    "language_structure": "Dùng 比 để so sánh và 打算 để đưa kế hoạch vào quyết định.",
+    "translation_vi": [
+      "Hai sọt lê này khác nhau thế nào?",
+      "Bên trái hái hôm qua, cứng hơn bên phải một chút.",
+      "Tôi định cuối tuần mới ăn, vậy lấy bên trái nhé.",
+      "Được, tôi chọn giúp bạn ba quả."
+    ],
+    "pinyin": [
+      "Zhè liǎng kuāng lí yǒu shénme bùtóng?",
+      "Zuǒbian de shì zuótiān zhāi de, bǐ yòubian de yìng yìdiǎnr.",
+      "Wǒ dǎsuàn zhōumò zài chī, nà jiù mǎi zuǒbian de ba.",
+      "Hǎo, wǒ bāng nǐ tiāo sān ge."
+    ],
+    "self_assessment": [
+      "So sánh đúng đối tượng",
+      "Nêu được thời điểm sử dụng",
+      "Giải thích lựa chọn"
+    ]
+  },
+  {
+    "id": "SP-00011",
+    "title": "Bàn giao ca trực ngắn",
+    "language": "zh",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Bàn giao ca trực ngắn",
+    "domain": 7,
+    "objective": "Phân biệt công việc đã hoàn tất với việc cần tiếp tục.",
+    "teaching": "Dùng 已经……了 với việc xong và 还没 với việc còn chờ.",
+    "example": "两个电话我已经回了，邮件还没发。\n是在等对方确认时间吗？\n对。如果三点前还没有消息，请再打一次电话。\n明白了，我会先查邮箱。",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đổi việc chờ thành xác nhận địa điểm. Hạn xử lý là 4 giờ; yêu cầu người nhận nhắc lại việc cần làm.",
+    "answer": "Nêu được cả hai trạng thái|Nêu đúng mốc thời gian|Người nhận xác nhận được bước tiếp",
+    "explanation": "先 xác định thứ tự công việc ngay sau khi nhận ca.",
+    "outcome": "Phân biệt công việc đã hoàn tất với việc cần tiếp tục.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Đồng nghiệp sang ca sau; hai cuộc gọi đã xử lý, một thư điện tử còn chờ xác nhận.",
+    "roles": [
+      "Người hết ca",
+      "Người vào ca"
+    ],
+    "guiding_questions": [
+      "什么事已经办好了？",
+      "下一班什么时候要跟进？"
+    ],
+    "model_dialogue": [
+      "两个电话我已经回了，邮件还没发。",
+      "是在等对方确认时间吗？",
+      "对。如果三点前还没有消息，请再打一次电话。",
+      "明白了，我会先查邮箱。"
+    ],
+    "focus_phrases": [
+      "已经回了",
+      "还没发",
+      "确认时间"
+    ],
+    "language_structure": "Dùng 已经……了 với việc xong và 还没 với việc còn chờ.",
+    "translation_vi": [
+      "Tôi đã gọi lại cả hai cuộc rồi, email vẫn chưa gửi.",
+      "Có phải đang chờ phía bên kia xác nhận giờ không?",
+      "Đúng. Nếu trước ba giờ vẫn chưa có tin, hãy gọi lại một lần nữa.",
+      "Tôi hiểu rồi, tôi sẽ kiểm tra hộp thư trước."
+    ],
+    "pinyin": [
+      "Liǎng ge diànhuà wǒ yǐjīng huí le, yóujiàn hái méi fā.",
+      "Shì zài děng duìfāng quèrèn shíjiān ma?",
+      "Duì. Rúguǒ sān diǎn qián hái méiyǒu xiāoxi, qǐng zài dǎ yí cì diànhuà.",
+      "Míngbai le, wǒ huì xiān chá yóuxiāng."
+    ],
+    "self_assessment": [
+      "Nêu được cả hai trạng thái",
+      "Nêu đúng mốc thời gian",
+      "Người nhận xác nhận được bước tiếp"
+    ]
+  },
+  {
+    "id": "SP-00012",
+    "title": "Hỏi về căn hộ trước khi xem",
+    "language": "zh",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Hỏi về căn hộ trước khi xem",
+    "domain": 34,
+    "objective": "Hỏi cụ thể về tiếng ồn và hẹn thời gian xem phù hợp.",
+    "teaching": "Dùng 离……近 không suy ra yên tĩnh; đặt câu hỏi bằng 会不会.",
+    "example": "这套房子离车站很近。卧室会不会很吵？\n卧室朝街，早上车比较多。\n那我想先去看看。明天晚上七点方便吗？\n可以。我们在楼下见。",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Bạn muốn tự nghe tiếng xe lúc cao điểm. Thương lượng một giờ xem nhà phù hợp mục đích ấy.",
+    "answer": "Nêu được điều quan tâm|Nối lý do với giờ xem|Nhắc rõ điểm hẹn",
+    "explanation": "朝街 mô tả hướng phòng. Người trả lời thêm khung giờ để thông tin có ích hơn.",
+    "outcome": "Hỏi cụ thể về tiếng ồn và hẹn thời gian xem phù hợp.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Bạn thích căn hộ gần ga nhưng phòng ngủ nhìn ra phía đường. Bạn chỉ rảnh buổi tối.",
+    "roles": [
+      "Người đi xem nhà",
+      "Người giới thiệu nhà"
+    ],
+    "guiding_questions": [
+      "你担心什么？",
+      "在哪里见面？"
+    ],
+    "model_dialogue": [
+      "这套房子离车站很近。卧室会不会很吵？",
+      "卧室朝街，早上车比较多。",
+      "那我想先去看看。明天晚上七点方便吗？",
+      "可以。我们在楼下见。"
+    ],
+    "focus_phrases": [
+      "卧室朝街",
+      "比较多",
+      "在楼下见"
+    ],
+    "language_structure": "Dùng 离……近 không suy ra yên tĩnh; đặt câu hỏi bằng 会不会.",
+    "translation_vi": [
+      "Căn hộ này rất gần ga. Phòng ngủ có ồn lắm không?",
+      "Phòng ngủ nhìn ra đường, buổi sáng xe khá đông.",
+      "Vậy tôi muốn tới xem trước. Bảy giờ tối mai có tiện không?",
+      "Được. Chúng ta gặp dưới nhà nhé."
+    ],
+    "pinyin": [
+      "Zhè tào fángzi lí chēzhàn hěn jìn. Wòshì huì bu huì hěn chǎo?",
+      "Wòshì cháo jiē, zǎoshang chē bǐjiào duō.",
+      "Nà wǒ xiǎng xiān qù kànkan. Míngtiān wǎnshang qī diǎn fāngbiàn ma?",
+      "Kěyǐ. Wǒmen zài lóuxià jiàn."
+    ],
+    "self_assessment": [
+      "Nêu được điều quan tâm",
+      "Nối lý do với giờ xem",
+      "Nhắc rõ điểm hẹn"
+    ]
+  },
+  {
+    "id": "SP-00013",
+    "title": "Đối chiếu một khoản chi bị ghi hai lần",
+    "language": "en",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Đối chiếu một khoản chi bị ghi hai lần",
+    "domain": 4,
+    "objective": "Đặt câu hỏi trung lập khi chứng từ chưa đủ để kết luận.",
+    "teaching": "Dùng could be để nêu khả năng và before we… để đề nghị kiểm tra trước khi sửa.",
+    "example": "These two entries are both for eighteen pounds. Could they be the same purchase?\nPossibly, but one says cash and the other says card.\nBefore we change the sheet, could you look for both receipts?\nYes. I’ll match the receipt times to the entries.",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đổi vai. Hai khoản cùng số tiền nhưng khác cửa hàng. Trình bày một khả năng và hỏi xin bằng chứng.",
+    "answer": "Nêu điểm giống và khác|Tránh khẳng định khi chưa có bằng chứng|Chốt tài liệu cần xem",
+    "explanation": "Could they be…? mở ra khả năng có hai giao dịch riêng; người nghe có thể cung cấp bằng chứng.",
+    "outcome": "Đặt câu hỏi trung lập khi chứng từ chưa đủ để kết luận.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Hai mục trong bảng chi có cùng ngày và số tiền. Một mục ghi tiền mặt, mục kia ghi thẻ.",
+    "roles": [
+      "Người rà soát",
+      "Người ghi sổ"
+    ],
+    "guiding_questions": [
+      "What matches?",
+      "What evidence would distinguish the entries?"
+    ],
+    "model_dialogue": [
+      "These two entries are both for eighteen pounds. Could they be the same purchase?",
+      "Possibly, but one says cash and the other says card.",
+      "Before we change the sheet, could you look for both receipts?",
+      "Yes. I’ll match the receipt times to the entries."
+    ],
+    "focus_phrases": [
+      "both entries",
+      "the same purchase",
+      "match the receipt times"
+    ],
+    "language_structure": "Dùng could be để nêu khả năng và before we… để đề nghị kiểm tra trước khi sửa.",
+    "translation_vi": [
+      "Cả hai mục đều là mười tám bảng. Có thể chúng là cùng một khoản mua không?",
+      "Có thể, nhưng một mục ghi tiền mặt và mục kia ghi thẻ.",
+      "Trước khi sửa bảng, bạn tìm giúp cả hai biên lai được không?",
+      "Được. Tôi sẽ đối chiếu giờ trên biên lai với các mục ghi."
+    ],
+    "pinyin": [],
+    "self_assessment": [
+      "Nêu điểm giống và khác",
+      "Tránh khẳng định khi chưa có bằng chứng",
+      "Chốt tài liệu cần xem"
+    ]
+  },
+  {
+    "id": "SP-00014",
+    "title": "Xác định đúng hộp linh kiện",
+    "language": "en",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Xác định đúng hộp linh kiện",
+    "domain": 13,
+    "objective": "Đọc lại mã để xác nhận đúng vật trước khi chuyển giao.",
+    "teaching": "Dùng the one ending in… để phân biệt hai vật cùng loại; dùng read back để xác nhận.",
+    "example": "There are two boxes marked PX. Which one belongs in the sample tray?\nThe one ending in B. Could you read the full label back to me?\nPX-fourteen-B. The other one ends in D.\nThat’s right. Leave the D box on the shelf.",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đổi nhãn thành LM-19 và LM-90. Người nghe phải đọc đầy đủ mã và nhắc lại vị trí để hộp còn lại.",
+    "answer": "Đọc rõ toàn bộ mã|Phân biệt hai hậu tố|Xác nhận vị trí",
+    "explanation": "The other one chỉ vật còn lại trong một cặp, khi cả hai bên đã biết đang nói tới hai hộp nào.",
+    "outcome": "Đọc lại mã để xác nhận đúng vật trước khi chuyển giao.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Hai hộp linh kiện giống hình dáng nhưng nhãn có hậu tố khác nhau. Chỉ hộp nhãn kết thúc bằng B được đưa vào khay mẫu.",
+    "roles": [
+      "Người lấy mẫu",
+      "Người quản lý kho"
+    ],
+    "guiding_questions": [
+      "What part of the label distinguishes the boxes?",
+      "Where does the other box stay?"
+    ],
+    "model_dialogue": [
+      "There are two boxes marked PX. Which one belongs in the sample tray?",
+      "The one ending in B. Could you read the full label back to me?",
+      "PX-fourteen-B. The other one ends in D.",
+      "That’s right. Leave the D box on the shelf."
+    ],
+    "focus_phrases": [
+      "ending in",
+      "read the full label back",
+      "sample tray"
+    ],
+    "language_structure": "Dùng the one ending in… để phân biệt hai vật cùng loại; dùng read back để xác nhận.",
+    "translation_vi": [
+      "Có hai hộp ghi PX. Hộp nào cần cho vào khay mẫu?",
+      "Hộp có nhãn kết thúc bằng B. Bạn đọc lại toàn bộ nhãn cho tôi được không?",
+      "PX-mười bốn-B. Hộp kia kết thúc bằng D.",
+      "Đúng rồi. Hãy để hộp D trên kệ."
+    ],
+    "pinyin": [],
+    "self_assessment": [
+      "Đọc rõ toàn bộ mã",
+      "Phân biệt hai hậu tố",
+      "Xác nhận vị trí"
+    ]
+  },
+  {
+    "id": "SP-00015",
+    "title": "Xin chụp ảnh ở triển lãm",
+    "language": "zh",
+    "module": "speaking",
+    "level": "A2",
+    "topic": "Xin chụp ảnh ở triển lãm",
+    "domain": 38,
+    "objective": "Hỏi phạm vi được phép và nhắc lại quy định.",
+    "teaching": "Dùng 可以 và 不能 để phân biệt điều được phép và điều bị hạn chế.",
+    "example": "请问，这里可以拍照吗？\n这个展厅可以拍，但是不能用闪光灯。\n后面的小展厅呢？\n那里不能拍。门口有说明。",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Đóng vai khách có bạn đến sau. Hỏi nhân viên rồi kể lại cho bạn cả hai quy định.",
+    "answer": "Hỏi lịch sự|Phân biệt đúng hai phòng|Nêu được hạn chế đèn flash",
+    "explanation": "呢 gọi lại câu hỏi trước với một địa điểm khác, giúp tránh lặp câu dài.",
+    "outcome": "Hỏi phạm vi được phép và nhắc lại quy định.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Bạn muốn chụp bức tranh ở phòng trước; phòng sau có quy định riêng.",
+    "roles": [
+      "Khách xem tranh",
+      "Nhân viên triển lãm"
+    ],
+    "guiding_questions": [
+      "哪里可以拍照？",
+      "进去以前可以看什么？"
+    ],
+    "model_dialogue": [
+      "请问，这里可以拍照吗？",
+      "这个展厅可以拍，但是不能用闪光灯。",
+      "后面的小展厅呢？",
+      "那里不能拍。门口有说明。"
+    ],
+    "focus_phrases": [
+      "可以拍照",
+      "不能用闪光灯",
+      "门口有说明"
+    ],
+    "language_structure": "Dùng 可以 và 不能 để phân biệt điều được phép và điều bị hạn chế.",
+    "translation_vi": [
+      "Xin hỏi ở đây có thể chụp ảnh không?",
+      "Phòng này được chụp, nhưng không được dùng đèn flash.",
+      "Còn phòng trưng bày nhỏ phía sau thì sao?",
+      "Ở đó không được chụp. Có hướng dẫn ở cửa."
+    ],
+    "pinyin": [
+      "Qǐngwèn, zhèlǐ kěyǐ pāizhào ma?",
+      "Zhège zhǎntīng kěyǐ pāi, dànshì bù néng yòng shǎnguāngdēng.",
+      "Hòumiàn de xiǎo zhǎntīng ne?",
+      "Nàli bù néng pāi. Ménkǒu yǒu shuōmíng."
+    ],
+    "self_assessment": [
+      "Hỏi lịch sự",
+      "Phân biệt đúng hai phòng",
+      "Nêu được hạn chế đèn flash"
+    ]
+  },
+  {
+    "id": "SP-00016",
+    "title": "Làm rõ tỷ lệ trên bản vẽ",
+    "language": "zh",
+    "module": "speaking",
+    "level": "B1",
+    "topic": "Làm rõ tỷ lệ trên bản vẽ",
+    "domain": 16,
+    "objective": "Hỏi ý nghĩa con số và nhắc lại đơn vị được dùng.",
+    "teaching": "Dùng 指的是…… để giải thích ký hiệu; dùng 也就是说 để diễn đạt lại.",
+    "example": "门边写着九十。这个数指的是什么？\n看右下角的说明，尺寸的单位是厘米。九十指的是门的宽度。\n也就是说，这扇门宽九十厘米，对吗？\n对，图上标的是实际尺寸。",
+    "activity": "Đọc lời của cả hai vai một lần. Che hội thoại và tự thu âm phần đối đáp theo nhiệm vụ.",
+    "task": "Trên sơ đồ khác, nhãn cạnh bàn là 一百二十, chú thích ghi đơn vị 厘米 và ký hiệu 长. Hỏi rồi diễn đạt lại kích thước.",
+    "answer": "Hỏi rõ đại lượng và đơn vị|Dựa vào chú thích|Nhắc lại bằng câu đầy đủ",
+    "explanation": "门宽九十厘米 đặt tính từ chỉ kích thước trước cụm số lượng.",
+    "outcome": "Hỏi ý nghĩa con số và nhắc lại đơn vị được dùng.",
+    "minutes": 12,
+    "status": "REVIEW_REQUIRED",
+    "situation": "Hai người đang xem sơ đồ phòng đọc. Nhãn cạnh cửa thể hiện kích thước thật; mô tả dựa vào chú thích, người nói cần tránh đoán đơn vị.",
+    "roles": [
+      "Người xem bản vẽ",
+      "Người hướng dẫn"
+    ],
+    "guiding_questions": [
+      "单位在哪里可以查到？",
+      "九十指的是什么？"
+    ],
+    "model_dialogue": [
+      "门边写着九十。这个数指的是什么？",
+      "看右下角的说明，尺寸的单位是厘米。九十指的是门的宽度。",
+      "也就是说，这扇门宽九十厘米，对吗？",
+      "对，图上标的是实际尺寸。"
+    ],
+    "focus_phrases": [
+      "单位是厘米",
+      "门的宽度",
+      "实际尺寸"
+    ],
+    "language_structure": "Dùng 指的是…… để giải thích ký hiệu; dùng 也就是说 để diễn đạt lại.",
+    "translation_vi": [
+      "Cạnh cửa ghi chín mươi. Số này chỉ gì vậy?",
+      "Xem chú thích góc dưới bên phải, kích thước tính bằng xăng-ti-mét. Chín mươi chỉ chiều rộng cửa.",
+      "Nghĩa là cửa này rộng chín mươi xăng-ti-mét, đúng không?",
+      "Đúng, hình ghi kích thước thực."
+    ],
+    "pinyin": [
+      "Mén biān xiězhe jiǔshí. Zhège shù zhǐ de shì shénme?",
+      "Kàn yòu xià jiǎo de shuōmíng, chǐcùn de dānwèi shì límǐ. Jiǔshí zhǐ de shì mén de kuāndù.",
+      "Yě jiùshì shuō, zhè shàn mén kuān jiǔshí límǐ, duì ma?",
+      "Duì, tú shang biāo de shì shíjì chǐcùn."
+    ],
+    "self_assessment": [
+      "Hỏi rõ đại lượng và đơn vị",
+      "Dựa vào chú thích",
+      "Nhắc lại bằng câu đầy đủ"
+    ]
+  }
+]

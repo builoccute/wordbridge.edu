@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "writing",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "activity",
+      "answer",
+      "assessment_criteria",
+      "common_errors",
+      "domain",
+      "example",
+      "explanation",
+      "id",
+      "language",
+      "level",
+      "minutes",
+      "model_explanation",
+      "model_text",
+      "module",
+      "objective",
+      "outcome",
+      "pinyin",
+      "prompt",
+      "status",
+      "suggested_grammar",
+      "suggested_length",
+      "suggested_vocabulary",
+      "task",
+      "teaching",
+      "title",
+      "topic",
+      "translation_vi",
+      "writing_requirements"
+    ],
+    "properties": {
+      "activity": {
+        "type": "string"
+      },
+      "answer": {
+        "type": "string"
+      },
+      "assessment_criteria": {
+        "type": "array"
+      },
+      "common_errors": {
+        "type": "array"
+      },
+      "domain": {
+        "type": "integer"
+      },
+      "example": {
+        "type": "string"
+      },
+      "explanation": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "minutes": {
+        "type": "integer"
+      },
+      "model_explanation": {
+        "type": "string"
+      },
+      "model_text": {
+        "type": "string"
+      },
+      "module": {
+        "type": "string"
+      },
+      "objective": {
+        "type": "string"
+      },
+      "outcome": {
+        "type": "string"
+      },
+      "pinyin": {
+        "type": [
+          "array",
+          "null",
+          "string"
+        ]
+      },
+      "prompt": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "suggested_grammar": {
+        "type": "string"
+      },
+      "suggested_length": {
+        "type": "string"
+      },
+      "suggested_vocabulary": {
+        "type": "array"
+      },
+      "task": {
+        "type": "string"
+      },
+      "teaching": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "topic": {
+        "type": "string"
+      },
+      "translation_vi": {
+        "type": "string"
+      },
+      "writing_requirements": {
+        "type": "array"
+      }
+    },
+    "additionalProperties": false
+  }
+}

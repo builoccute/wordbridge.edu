@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "exercises",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "answer",
+      "criteria",
+      "domain",
+      "explanation",
+      "format_id",
+      "format_vi",
+      "id",
+      "language",
+      "level",
+      "module",
+      "status",
+      "stimulus",
+      "task"
+    ],
+    "properties": {
+      "answer": {
+        "type": "string"
+      },
+      "audio_asset_status": {
+        "type": "string"
+      },
+      "criteria": {
+        "type": "string"
+      },
+      "delivery_vi": {
+        "type": "string"
+      },
+      "domain": {
+        "type": "integer"
+      },
+      "explanation": {
+        "type": "string"
+      },
+      "format_id": {
+        "type": "integer"
+      },
+      "format_vi": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "module": {
+        "type": "string"
+      },
+      "options": {
+        "type": "array"
+      },
+      "status": {
+        "type": "string"
+      },
+      "stimulus": {
+        "type": "string"
+      },
+      "task": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  }
+}

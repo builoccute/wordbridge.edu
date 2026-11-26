@@ -1,0 +1,639 @@
+{
+  "skill_lesson_ids": [
+    {
+      "module": "reading",
+      "source_id": "RD-00001"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00002"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00003"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00004"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00005"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00006"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00007"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00008"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00009"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00010"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00011"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00012"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00013"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00014"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00015"
+    },
+    {
+      "module": "reading",
+      "source_id": "RD-00016"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00001"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00002"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00003"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00004"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00005"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00006"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00007"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00008"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00009"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00010"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00011"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00012"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00013"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00014"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00015"
+    },
+    {
+      "module": "listening",
+      "source_id": "LS-00016"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00001"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00002"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00003"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00004"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00005"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00006"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00007"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00008"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00009"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00010"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00011"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00012"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00013"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00014"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00015"
+    },
+    {
+      "module": "speaking",
+      "source_id": "SP-00016"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00001"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00002"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00003"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00004"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00005"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00006"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00007"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00008"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00009"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00010"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00011"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00012"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00013"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00014"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00015"
+    },
+    {
+      "module": "writing",
+      "source_id": "WR-00016"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00001"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00002"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00003"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00004"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00005"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00006"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00007"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00008"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00009"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00010"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00011"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00012"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00013"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00014"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00015"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00016"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00017"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00018"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00019"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00020"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00021"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00022"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00023"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00024"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00025"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00026"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00027"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00028"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00029"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00030"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00031"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00032"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00033"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00034"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00035"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00036"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00037"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00038"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00039"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00040"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00041"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00042"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00043"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00044"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00045"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00046"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00047"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00048"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00049"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00050"
+    },
+    {
+      "module": "grammar",
+      "source_id": "GR-00051"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00001"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00002"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00003"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00004"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00005"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00006"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00007"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00008"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00009"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00010"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00011"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00012"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00013"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00014"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00015"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00016"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00017"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00018"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00019"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00020"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00021"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00022"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00023"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00024"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00025"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00026"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00027"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00028"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00029"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00030"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00031"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00032"
+    },
+    {
+      "module": "pronunciation",
+      "source_id": "PR-00033"
+    }
+  ],
+  "integrated_lesson_ids": [
+    "LESSON-000001",
+    "LESSON-000002",
+    "LESSON-000003",
+    "LESSON-000004",
+    "LESSON-000005",
+    "LESSON-000006",
+    "LESSON-000007",
+    "LESSON-000008",
+    "LESSON-000009",
+    "LESSON-000010",
+    "LESSON-000011",
+    "LESSON-000012",
+    "LESSON-000013",
+    "LESSON-000014",
+    "LESSON-000015",
+    "LESSON-000016",
+    "LESSON-000017",
+    "LESSON-000018",
+    "LESSON-000019",
+    "LESSON-000020",
+    "LESSON-000021",
+    "LESSON-000022",
+    "LESSON-000023",
+    "LESSON-000024",
+    "LESSON-000025",
+    "LESSON-000026",
+    "LESSON-000027",
+    "LESSON-000028",
+    "LESSON-000029",
+    "LESSON-000030",
+    "LESSON-000031",
+    "LESSON-000032",
+    "LESSON-000033",
+    "LESSON-000034",
+    "LESSON-000035",
+    "LESSON-000036",
+    "LESSON-000037",
+    "LESSON-000038",
+    "LESSON-000039",
+    "LESSON-000040"
+  ],
+  "overlap_count": 0
+}

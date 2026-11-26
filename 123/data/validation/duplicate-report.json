@@ -1,0 +1,258 @@
+{
+  "vocabulary_same_english_chinese": [
+    {
+      "term_en": "outlier",
+      "term_zh": "离群值",
+      "first": "WB5-10029",
+      "duplicate_source": "lex2.json"
+    },
+    {
+      "term_en": "floor plan",
+      "term_zh": "平面图",
+      "first": "WB5-10046",
+      "duplicate_source": "lex2.json"
+    },
+    {
+      "term_en": "doorbell",
+      "term_zh": "门铃",
+      "first": "WB5-10001",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "receipt",
+      "term_zh": "收据",
+      "first": "WB5-10002",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "deadline",
+      "term_zh": "截止日期",
+      "first": "WB5-10004",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "outline",
+      "term_zh": "提纲",
+      "first": "WB5-10006",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "turnover",
+      "term_zh": "营业额",
+      "first": "WB5-10007",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "supplier",
+      "term_zh": "供应商",
+      "first": "WB5-10008",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "ledger",
+      "term_zh": "分类账",
+      "first": "WB5-10010",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "invoice",
+      "term_zh": "发票",
+      "first": "WB5-10011",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "balance",
+      "term_zh": "余额",
+      "first": "WB5-10014",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "branch",
+      "term_zh": "分行",
+      "first": "WB5-10015",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "clause",
+      "term_zh": "条款",
+      "first": "WB5-10016",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "witness",
+      "term_zh": "证人",
+      "first": "WB5-10017",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "handover",
+      "term_zh": "交接",
+      "first": "WB5-10020",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "mentor",
+      "term_zh": "导师",
+      "first": "WB5-10021",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "slogan",
+      "term_zh": "标语",
+      "first": "WB5-10022",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "audience",
+      "term_zh": "受众",
+      "first": "WB5-10023",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "folder",
+      "term_zh": "文件夹",
+      "first": "WB5-10025",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "attachment",
+      "term_zh": "附件",
+      "first": "WB5-10027",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "dataset",
+      "term_zh": "数据集",
+      "first": "WB5-10028",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "outlier",
+      "term_zh": "离群值",
+      "first": "WB5-10029",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "backup",
+      "term_zh": "备份",
+      "first": "WB5-10032",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "permission",
+      "term_zh": "权限",
+      "first": "WB5-10033",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "release",
+      "term_zh": "发布版本",
+      "first": "WB5-10034",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "bug report",
+      "term_zh": "缺陷报告",
+      "first": "WB5-10036",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "resistor",
+      "term_zh": "电阻器",
+      "first": "WB5-10037",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "wafer",
+      "term_zh": "晶圆",
+      "first": "WB5-10039",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "washer",
+      "term_zh": "垫圈",
+      "first": "WB5-10041",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "shaft",
+      "term_zh": "轴",
+      "first": "WB5-10042",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "sensor",
+      "term_zh": "传感器",
+      "first": "WB5-10043",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "setpoint",
+      "term_zh": "设定值",
+      "first": "WB5-10044",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "floor plan",
+      "term_zh": "平面图",
+      "first": "WB5-10046",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "skylight",
+      "term_zh": "天窗",
+      "first": "WB5-10048",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "fare",
+      "term_zh": "车费",
+      "first": "WB5-10049",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "timetable",
+      "term_zh": "时刻表",
+      "first": "WB5-10051",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "runway",
+      "term_zh": "跑道",
+      "first": "WB5-10052",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "boarding pass",
+      "term_zh": "登机牌",
+      "first": "WB5-10054",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "seedling",
+      "term_zh": "幼苗",
+      "first": "WB5-10055",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "orchard",
+      "term_zh": "果园",
+      "first": "WB5-10057",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "canopy",
+      "term_zh": "林冠层",
+      "first": "WB5-10058",
+      "duplicate_source": "lexextras.json"
+    },
+    {
+      "term_en": "fish pond",
+      "term_zh": "鱼塘",
+      "first": "WB5-10059",
+      "duplicate_source": "lexextras.json"
+    }
+  ],
+  "example_original_duplicates_removed": [],
+  "ids_unique_across_modules": true
+}

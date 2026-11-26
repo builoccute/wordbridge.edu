@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "reading",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "activity",
+      "answer",
+      "assessed_skills",
+      "domain",
+      "example",
+      "explanation",
+      "grammar",
+      "id",
+      "language",
+      "level",
+      "minutes",
+      "module",
+      "objective",
+      "outcome",
+      "passage",
+      "questions",
+      "status",
+      "task",
+      "teaching",
+      "title",
+      "topic",
+      "translation_vi",
+      "vocabulary"
+    ],
+    "properties": {
+      "activity": {
+        "type": "string"
+      },
+      "answer": {
+        "type": "array"
+      },
+      "assessed_skills": {
+        "type": "array"
+      },
+      "domain": {
+        "type": "integer"
+      },
+      "example": {
+        "type": "string"
+      },
+      "explanation": {
+        "type": "array"
+      },
+      "grammar": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "minutes": {
+        "type": "integer"
+      },
+      "module": {
+        "type": "string"
+      },
+      "objective": {
+        "type": "string"
+      },
+      "outcome": {
+        "type": "string"
+      },
+      "passage": {
+        "type": "string"
+      },
+      "pinyin": {
+        "type": "string"
+      },
+      "questions": {
+        "type": "array"
+      },
+      "status": {
+        "type": "string"
+      },
+      "task": {
+        "type": "array"
+      },
+      "teaching": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "topic": {
+        "type": "string"
+      },
+      "translation_vi": {
+        "type": "string"
+      },
+      "vocabulary": {
+        "type": "array"
+      }
+    },
+    "additionalProperties": false
+  }
+}

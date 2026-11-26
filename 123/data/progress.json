@@ -1,0 +1,45 @@
+{
+  "version": "0.7.0",
+  "date": "2026-11-26",
+  "status": "INCOMPLETE",
+  "actual_counts": {
+    "vocabulary": 726,
+    "examples": 770,
+    "reading": 16,
+    "listening": 16,
+    "speaking": 16,
+    "writing": 16,
+    "grammar": 51,
+    "pronunciation": 33,
+    "exercises": 64,
+    "assessments": 14,
+    "lessons": 40
+  },
+  "skill_lesson_records": 148,
+  "independent_integrated_lessons": 40,
+  "total_unique_eligible_lessons": 188,
+  "next_vocabulary_id": "WB5-10727",
+  "vocabulary_existing_ids_preserved": true,
+  "legacy_10000_overlap": "NOT_PROVIDED",
+  "language_review": "REVIEW_REQUIRED",
+  "audio_assets": "NOT_PROVIDED",
+  "next_action": "Batch 500/500 complete. Continue the next curated batch at WB5-10727 after review.",
+  "stages": {
+    "1": "INCOMPLETE",
+    "2": "INCOMPLETE",
+    "3": "INCOMPLETE",
+    "4": "INCOMPLETE",
+    "5": "INCOMPLETE",
+    "6": "INCOMPLETE",
+    "7": "INCOMPLETE",
+    "8": "INCOMPLETE"
+  },
+  "last_batch": {
+    "id": "2026-11-26-vocabulary-001",
+    "actual": 500,
+    "target": 500,
+    "status": "COMPLETE",
+    "first_id": "WB5-10227",
+    "last_id": "WB5-10726"
+  }
+}

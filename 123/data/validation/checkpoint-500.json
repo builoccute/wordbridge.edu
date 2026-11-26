@@ -1,0 +1,20 @@
+{
+  "checkpoint": "500/500",
+  "new_this_turn": 100,
+  "batch_actual": 500,
+  "vocabulary_total": 726,
+  "examples_total": 770,
+  "first_id": "WB5-10627",
+  "last_id": "WB5-10726",
+  "rejected_existing_terms": [
+    "expense claim",
+    "account holder",
+    "image caption",
+    "indicator lamp",
+    "fish pond"
+  ],
+  "schema_id_link_checks": "PASS",
+  "linguistic_review": "REVIEW_REQUIRED",
+  "legacy_overlap": "NOT_PROVIDED",
+  "status": "INCOMPLETE"
+}

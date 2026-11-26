@@ -1,0 +1,1002 @@
+[
+  {
+    "id": "RD-00001",
+    "title": "The last book on the cart",
+    "language": "en",
+    "module": "reading",
+    "level": "A2",
+    "domain": 2,
+    "topic": "Mượn giáo trình",
+    "objective": "Phân biệt quyền sử dụng tại chỗ và mượn về.",
+    "teaching": "Đọc nguyên câu chứa until để xác định hạn chế và thời điểm hạn chế kết thúc.",
+    "example": "A note on the library cart says, “Books on this cart stay in the reading room until Friday.” Mina finds the last copy of the atlas there on Wednesday. She needs one map for her class that afternoon. The librarian shows her the scanner. Mina saves the map to her phone and puts the atlas back. On Friday she can ask to borrow the whole book.",
+    "activity": "Gạch dưới ba mốc thời gian rồi tóm tắt điều Mina có thể làm vào từng mốc.",
+    "task": [
+      "What does Mina need on Wednesday?",
+      "Why does she put the book back?"
+    ],
+    "answer": [
+      "One map for an afternoon class",
+      "The cart books must stay in the room."
+    ],
+    "explanation": [
+      "Câu về lớp học nói rõ cô chỉ cần một bản đồ vào chiều hôm đó.",
+      "Thông báo yêu cầu sách trên xe phải ở lại phòng đọc đến thứ Sáu."
+    ],
+    "outcome": "Giải thích được tại sao việc quét bản đồ giải quyết nhu cầu của Mina.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "What does Mina need on Wednesday?",
+        "options": [
+          "A whole atlas to take home",
+          "One map for an afternoon class",
+          "A phone from the librarian"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Câu về lớp học nói rõ cô chỉ cần một bản đồ vào chiều hôm đó."
+      },
+      {
+        "prompt": "Why does she put the book back?",
+        "options": [
+          "The map is missing.",
+          "She has bought another atlas.",
+          "The cart books must stay in the room."
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Thông báo yêu cầu sách trên xe phải ở lại phòng đọc đến thứ Sáu."
+      }
+    ],
+    "translation_vi": "Trên xe đẩy sách của thư viện có tờ giấy ghi “Sách trên xe đẩy này phải ở lại phòng đọc cho đến thứ Sáu.” Hôm thứ Tư, Mina tìm thấy cuốn át-lát cuối cùng ở đó. Cô cần một bản đồ cho buổi học chiều hôm ấy. Nhân viên thư viện chỉ cho cô máy quét. Mina lưu bản đồ vào điện thoại rồi đặt cuốn sách lại chỗ cũ. Đến thứ Sáu cô có thể hỏi mượn cả cuốn.",
+    "vocabulary": [
+      "cart",
+      "copy",
+      "borrow"
+    ],
+    "grammar": "until + mốc thời gian",
+    "passage": "A note on the library cart says, “Books on this cart stay in the reading room until Friday.” Mina finds the last copy of the atlas there on Wednesday. She needs one map for her class that afternoon. The librarian shows her the scanner. Mina saves the map to her phone and puts the atlas back. On Friday she can ask to borrow the whole book.",
+    "assessed_skills": [
+      "Phân biệt quyền sử dụng tại chỗ và mượn về.",
+      "Giải thích được tại sao việc quét bản đồ giải quyết nhu cầu của Mina."
+    ]
+  },
+  {
+    "id": "RD-00002",
+    "title": "A bus stop moves for one morning",
+    "language": "en",
+    "module": "reading",
+    "level": "B1",
+    "domain": 17,
+    "topic": "Thông báo vận tải",
+    "objective": "Xác định thay đổi theo chiều xe và giờ.",
+    "teaching": "Đọc cụm toward the station trước khi áp dụng thay đổi cho một hành trình.",
+    "example": "On Tuesday, workers will paint the shelter at River Street. Until noon, buses toward the station will pick up passengers outside the bakery, a short walk east of the usual stop. Buses going the other way will still use River Street. The bakery is closed on Tuesdays, but the stop outside it will be in use. After noon both services return to their normal stops.",
+    "activity": "Vẽ hai mũi tên chỉ chiều xe và ghi điểm đón lúc 10 giờ cho từng chiều.",
+    "task": [
+      "Where should a station-bound passenger wait at ten on Tuesday?",
+      "What changes for someone travelling away from the station that morning?"
+    ],
+    "answer": [
+      "Outside the bakery",
+      "The usual stop stays in use."
+    ],
+    "explanation": [
+      "10 giờ vẫn trước trưa nên xe về hướng nhà ga đón trước tiệm bánh.",
+      "Buses going the other way chỉ xe chạy chiều ngược lại và vẫn dùng trạm cũ."
+    ],
+    "outcome": "Chọn đúng trạm khi biết chiều đi và thời điểm.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "Where should a station-bound passenger wait at ten on Tuesday?",
+        "options": [
+          "Outside the bakery",
+          "Inside the station",
+          "At the painted shelter"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "10 giờ vẫn trước trưa nên xe về hướng nhà ga đón trước tiệm bánh."
+      },
+      {
+        "prompt": "What changes for someone travelling away from the station that morning?",
+        "options": [
+          "The bus leaves at noon only.",
+          "The usual stop stays in use.",
+          "They must walk to the bakery."
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Buses going the other way chỉ xe chạy chiều ngược lại và vẫn dùng trạm cũ."
+      }
+    ],
+    "translation_vi": "Thứ Ba, công nhân sẽ sơn nhà chờ ở phố River. Cho tới trưa, xe buýt đi về phía nhà ga sẽ đón khách trước cửa tiệm bánh, cách trạm thường lệ một đoạn đi bộ ngắn về phía đông. Xe chạy chiều ngược lại vẫn đón ở phố River. Tiệm bánh đóng cửa vào các ngày thứ Ba nhưng trạm trước cửa tiệm vẫn hoạt động. Sau buổi trưa, cả hai chiều trở về trạm thường lệ.",
+    "vocabulary": [
+      "toward",
+      "shelter",
+      "usual"
+    ],
+    "grammar": "will + động từ trong thông báo",
+    "passage": "On Tuesday, workers will paint the shelter at River Street. Until noon, buses toward the station will pick up passengers outside the bakery, a short walk east of the usual stop. Buses going the other way will still use River Street. The bakery is closed on Tuesdays, but the stop outside it will be in use. After noon both services return to their normal stops.",
+    "assessed_skills": [
+      "Xác định thay đổi theo chiều xe và giờ.",
+      "Chọn đúng trạm khi biết chiều đi và thời điểm."
+    ]
+  },
+  {
+    "id": "RD-00003",
+    "title": "A shorter queue on paper",
+    "language": "en",
+    "module": "reading",
+    "level": "B2",
+    "domain": 25,
+    "topic": "Đọc báo cáo thống kê",
+    "objective": "Phân biệt kết quả đo và kết luận có thể rút ra.",
+    "teaching": "Xác định đối tượng đứng sau mỗi số trung bình trước khi so sánh.",
+    "example": "A museum reported that its average waiting time fell from twelve minutes to eight after online booking began. A volunteer noticed a change in the count: the first survey included everyone at the entrance, while the second included only visitors who had booked online. Walk-in visitors still queued at a separate desk. The figures describe each surveyed group, but the museum needs data from both desks before it can say whether visitors as a whole waited less.",
+    "activity": "Lập bảng hai dòng ghi nhóm được đếm và số phút cho từng khảo sát.",
+    "task": [
+      "Who was left out of the second survey?",
+      "Which conclusion does the passage support?"
+    ],
+    "answer": [
+      "Visitors who made no online booking",
+      "The second surveyed group averaged eight minutes."
+    ],
+    "explanation": [
+      "Lần sau chỉ người đã đặt qua mạng được khảo sát.",
+      "Tám phút là số trung bình của nhóm được đo lần hai, chưa đại diện mọi khách."
+    ],
+    "outcome": "Nêu được nhóm khách còn thiếu trong phép so sánh.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "Who was left out of the second survey?",
+        "options": [
+          "Museum volunteers who booked online",
+          "Visitors who made no online booking",
+          "Everyone at the entrance"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Lần sau chỉ người đã đặt qua mạng được khảo sát."
+      },
+      {
+        "prompt": "Which conclusion does the passage support?",
+        "options": [
+          "All visitors saved four minutes.",
+          "Walk-in visitors waited exactly twelve minutes.",
+          "The second surveyed group averaged eight minutes."
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Tám phút là số trung bình của nhóm được đo lần hai, chưa đại diện mọi khách."
+      }
+    ],
+    "translation_vi": "Một bảo tàng báo cáo thời gian chờ trung bình giảm từ mười hai phút xuống tám phút sau khi bắt đầu nhận đặt chỗ trực tuyến. Một tình nguyện viên nhận ra cách đếm đã thay đổi. Khảo sát đầu gồm tất cả khách ở lối vào, còn khảo sát sau chỉ gồm khách đã đặt chỗ trực tuyến. Khách đến trực tiếp vẫn xếp hàng ở một quầy riêng. Các con số mô tả từng nhóm được khảo sát, nhưng bảo tàng cần số liệu ở cả hai quầy mới có thể kết luận khách nói chung có chờ ít hơn hay không.",
+    "vocabulary": [
+      "average",
+      "walk-in",
+      "surveyed group"
+    ],
+    "grammar": "while nối hai đối tượng so sánh",
+    "passage": "A museum reported that its average waiting time fell from twelve minutes to eight after online booking began. A volunteer noticed a change in the count: the first survey included everyone at the entrance, while the second included only visitors who had booked online. Walk-in visitors still queued at a separate desk. The figures describe each surveyed group, but the museum needs data from both desks before it can say whether visitors as a whole waited less.",
+    "assessed_skills": [
+      "Phân biệt kết quả đo và kết luận có thể rút ra.",
+      "Nêu được nhóm khách còn thiếu trong phép so sánh."
+    ]
+  },
+  {
+    "id": "RD-00004",
+    "title": "Two labels beside one chair",
+    "language": "en",
+    "module": "reading",
+    "level": "B1",
+    "domain": 37,
+    "topic": "Thiết kế trưng bày",
+    "objective": "Liên hệ chi tiết quan sát được với mục đích trưng bày.",
+    "teaching": "Đối chiếu việc làm của người thợ với quyết định sau đó của người phụ trách.",
+    "example": "At a design exhibition, a wooden chair carries two labels. The first names the maker and gives the year, 1984. The second describes a repair made in 2020, when a carpenter replaced one leg with a darker piece of wood. The curator chose to leave the colour difference visible. Visitors can therefore see both the original design and a later decision that kept the chair in use.",
+    "activity": "Xếp các hành động chế tạo, sửa chữa, trưng bày theo thứ tự rồi ghép từng hành động với người thực hiện.",
+    "task": [
+      "What happened in 2020?",
+      "Why keep the colour difference visible?"
+    ],
+    "answer": [
+      "A leg was replaced.",
+      "To show the history of the repair"
+    ],
+    "explanation": [
+      "Nhãn thứ hai nói người thợ thay một chân ghế trong lần sửa năm 2020.",
+      "Người xem nhận ra cả thiết kế cũ và phần sửa giúp ghế dùng được lâu hơn."
+    ],
+    "outcome": "Giải thích được tác dụng của chân ghế sẫm màu đối với người xem.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "What happened in 2020?",
+        "options": [
+          "The chair was first designed.",
+          "A leg was replaced.",
+          "Both labels were removed."
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Nhãn thứ hai nói người thợ thay một chân ghế trong lần sửa năm 2020."
+      },
+      {
+        "prompt": "Why keep the colour difference visible?",
+        "options": [
+          "To show the history of the repair",
+          "To hide the original design",
+          "To suggest that every leg is new"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Người xem nhận ra cả thiết kế cũ và phần sửa giúp ghế dùng được lâu hơn."
+      }
+    ],
+    "translation_vi": "Ở một triển lãm thiết kế, một chiếc ghế gỗ có hai nhãn. Nhãn đầu ghi tên người làm và năm 1984. Nhãn sau mô tả lần sửa chữa năm 2020, khi một người thợ mộc thay một chân ghế bằng đoạn gỗ sẫm màu hơn. Người phụ trách triển lãm quyết định giữ nguyên sự khác biệt màu sắc. Nhờ vậy khách xem có thể thấy cả thiết kế ban đầu lẫn quyết định sửa chữa sau này giúp chiếc ghế tiếp tục được sử dụng.",
+    "vocabulary": [
+      "maker",
+      "replace",
+      "visible"
+    ],
+    "grammar": "when mở mệnh đề bổ sung thông tin thời gian",
+    "passage": "At a design exhibition, a wooden chair carries two labels. The first names the maker and gives the year, 1984. The second describes a repair made in 2020, when a carpenter replaced one leg with a darker piece of wood. The curator chose to leave the colour difference visible. Visitors can therefore see both the original design and a later decision that kept the chair in use.",
+    "assessed_skills": [
+      "Liên hệ chi tiết quan sát được với mục đích trưng bày.",
+      "Giải thích được tác dụng của chân ghế sẫm màu đối với người xem."
+    ]
+  },
+  {
+    "id": "RD-00005",
+    "title": "雨伞放在哪儿",
+    "language": "zh",
+    "module": "reading",
+    "level": "A2",
+    "domain": 1,
+    "topic": "Đọc lời nhắn",
+    "objective": "Đọc lời nhắn để cập nhật vị trí đồ vật.",
+    "teaching": "Phân biệt vị trí được nêu ban đầu với vị trí của đồ vật còn lại sau tin nhắn.",
+    "example": "小林出门以前，把蓝雨伞放在门边。中午，妹妹发来消息：“我带走了蓝伞。桌子下面还有一把黑伞。”下午下雨了。小林回家拿伞时，先看了手机，然后直接走到桌子旁边。",
+    "activity": "Ghi màu, vị trí và người đang giữ của mỗi chiếc ô khi trời bắt đầu mưa.",
+    "task": [
+      "妹妹带走了哪把伞？",
+      "小林为什么走到桌子旁边？"
+    ],
+    "answer": [
+      "蓝伞",
+      "黑伞在桌子下面。"
+    ],
+    "explanation": [
+      "Em gái nói rõ đã mang chiếc ô xanh đi.",
+      "Tin nhắn cho biết chiếc ô đen còn ở dưới bàn."
+    ],
+    "outcome": "Giải thích được vì sao Tiểu Lâm đi tới bàn.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "妹妹带走了哪把伞？",
+        "options": [
+          "蓝伞",
+          "黑伞",
+          "两把伞"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Em gái nói rõ đã mang chiếc ô xanh đi."
+      },
+      {
+        "prompt": "小林为什么走到桌子旁边？",
+        "options": [
+          "手机在桌上。",
+          "妹妹在桌旁。",
+          "黑伞在桌子下面。"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Tin nhắn cho biết chiếc ô đen còn ở dưới bàn."
+      }
+    ],
+    "translation_vi": "Trước khi ra ngoài, Tiểu Lâm đặt chiếc ô xanh ở cạnh cửa. Buổi trưa, em gái gửi tin nhắn “Em đã mang ô xanh đi. Dưới bàn vẫn còn một chiếc ô đen.” Chiều trời mưa. Khi về nhà lấy ô, Tiểu Lâm xem điện thoại trước, rồi đi thẳng đến cạnh bàn.",
+    "vocabulary": [
+      "门边",
+      "带走",
+      "下面"
+    ],
+    "grammar": "先……然后…… diễn tả trình tự",
+    "pinyin": "Xiǎo Lín chūmén yǐqián, bǎ lán yǔsǎn fàng zài ménbiān. Zhōngwǔ, mèimei fā lái xiāoxi: “Wǒ dài zǒu le lán sǎn. Zhuōzi xiàmian hái yǒu yì bǎ hēi sǎn.” Xiàwǔ xiàyǔ le. Xiǎo Lín huí jiā ná sǎn shí, xiān kàn le shǒujī, ránhòu zhíjiē zǒu dào zhuōzi pángbiān.",
+    "passage": "小林出门以前，把蓝雨伞放在门边。中午，妹妹发来消息：“我带走了蓝伞。桌子下面还有一把黑伞。”下午下雨了。小林回家拿伞时，先看了手机，然后直接走到桌子旁边。",
+    "assessed_skills": [
+      "Đọc lời nhắn để cập nhật vị trí đồ vật.",
+      "Giải thích được vì sao Tiểu Lâm đi tới bàn."
+    ]
+  },
+  {
+    "id": "RD-00006",
+    "title": "多住一晚",
+    "language": "zh",
+    "module": "reading",
+    "level": "B1",
+    "domain": 30,
+    "topic": "Đọc thư khách sạn",
+    "objective": "Xác định điều kiện để kéo dài kỳ lưu trú.",
+    "teaching": "Khi gặp 不过, tìm lựa chọn mà người viết đưa ra sau trở ngại vừa nêu.",
+    "example": "陈女士原来订了一间朝南的房间，星期六退房。她想多住一晚。前台回信说，原来的房间星期六已经有人预订，不过二楼还有一间朝北的房间。陈女士可以在星期六上午把行李交给前台，下午再领取新房卡。",
+    "activity": "Tách thư thành yêu cầu của khách, hạn chế và hai việc cần thực hiện thứ Bảy.",
+    "task": [
+      "陈女士为什么不能一直住原来的房间？",
+      "她什么时候可以领新房卡？"
+    ],
+    "answer": [
+      "星期六已经有人订了。",
+      "星期六下午"
+    ],
+    "explanation": [
+      "Lễ tân nói phòng cũ đã có người đặt vào thứ Bảy.",
+      "Cụm 下午再领取新房卡 đặt việc nhận thẻ vào buổi chiều."
+    ],
+    "outcome": "Tóm tắt được việc đổi phòng theo đúng thứ tự.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "陈女士为什么不能一直住原来的房间？",
+        "options": [
+          "房间需要装修。",
+          "星期六已经有人订了。",
+          "她不喜欢朝南。"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Lễ tân nói phòng cũ đã có người đặt vào thứ Bảy."
+      },
+      {
+        "prompt": "她什么时候可以领新房卡？",
+        "options": [
+          "星期五晚上",
+          "星期六上午",
+          "星期六下午"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Cụm 下午再领取新房卡 đặt việc nhận thẻ vào buổi chiều."
+      }
+    ],
+    "translation_vi": "Ban đầu bà Trần đặt một phòng hướng nam và sẽ trả phòng thứ Bảy. Bà muốn ở thêm một đêm. Lễ tân viết lại rằng phòng cũ đã có người đặt cho thứ Bảy, nhưng trên tầng hai còn một phòng hướng bắc. Bà có thể gửi hành lý tại lễ tân vào sáng thứ Bảy rồi đến chiều nhận thẻ phòng mới.",
+    "vocabulary": [
+      "退房",
+      "朝北",
+      "领取"
+    ],
+    "grammar": "不过 dẫn vào phương án khác",
+    "pinyin": "Chén nǚshì yuánlái dìng le yì jiān cháo nán de fángjiān, xīngqīliù tuìfáng. Tā xiǎng duō zhù yì wǎn. Qiántái huíxìn shuō, yuánlái de fángjiān xīngqīliù yǐjīng yǒu rén yùdìng, búguò èr lóu hái yǒu yì jiān cháo běi de fángjiān. Chén nǚshì kěyǐ zài xīngqīliù shàngwǔ bǎ xíngli jiāo gěi qiántái, xiàwǔ zài lǐngqǔ xīn fángkǎ.",
+    "passage": "陈女士原来订了一间朝南的房间，星期六退房。她想多住一晚。前台回信说，原来的房间星期六已经有人预订，不过二楼还有一间朝北的房间。陈女士可以在星期六上午把行李交给前台，下午再领取新房卡。",
+    "assessed_skills": [
+      "Xác định điều kiện để kéo dài kỳ lưu trú.",
+      "Tóm tắt được việc đổi phòng theo đúng thứ tự."
+    ]
+  },
+  {
+    "id": "RD-00007",
+    "title": "菜单上的一条线",
+    "language": "zh",
+    "module": "reading",
+    "level": "B1",
+    "domain": 31,
+    "topic": "Đọc thực đơn theo mùa",
+    "objective": "Phân biệt suy đoán của khách và thông tin từ nhân viên.",
+    "teaching": "Tìm chủ thể của 以为 và người giải thích ở câu kế tiếp.",
+    "example": "饭店门口的小黑板上，“南瓜汤”三个字被一条线划掉了。下面写着：“今天改做玉米汤，价格不变。”一位客人以为南瓜汤已经卖完了。店员解释，送南瓜的车还没到，所以厨房从开门时就没有做南瓜汤。",
+    "activity": "Viết lại hai nguyên nhân bằng tiếng Việt rồi đánh dấu nguyên nhân được xác nhận.",
+    "task": [
+      "今天实际供应什么汤？",
+      "为什么没有南瓜汤？"
+    ],
+    "answer": [
+      "玉米汤",
+      "南瓜还没送到。"
+    ],
+    "explanation": [
+      "Thông báo ghi 改做玉米汤, tức chuyển sang nấu canh ngô.",
+      "Xe giao bí chưa đến và bếp chưa hề nấu món này trong ngày."
+    ],
+    "outcome": "Chỉ ra chi tiết bác bỏ nhận định rằng món đã bán hết.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "今天实际供应什么汤？",
+        "options": [
+          "南瓜汤",
+          "玉米汤",
+          "两种汤都有"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Thông báo ghi 改做玉米汤, tức chuyển sang nấu canh ngô."
+      },
+      {
+        "prompt": "为什么没有南瓜汤？",
+        "options": [
+          "南瓜还没送到。",
+          "价格变了。",
+          "客人已经买完了。"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Xe giao bí chưa đến và bếp chưa hề nấu món này trong ngày."
+      }
+    ],
+    "translation_vi": "Trên bảng đen nhỏ trước cửa nhà hàng, ba chữ “canh bí đỏ” đã bị gạch đi. Bên dưới ghi “Hôm nay chuyển sang nấu canh ngô, giá giữ nguyên.” Một vị khách tưởng canh bí đỏ đã bán hết. Nhân viên giải thích xe chở bí vẫn chưa đến nên ngay từ lúc mở cửa bếp đã không nấu món này.",
+    "vocabulary": [
+      "划掉",
+      "以为",
+      "改做"
+    ],
+    "grammar": "以为 biểu thị nhận định sau đó được đính chính",
+    "pinyin": "Fàndiàn ménkǒu de xiǎo hēibǎn shang, “nánguā tāng” sān ge zì bèi yì tiáo xiàn huá diào le. Xiàmian xiězhe: “Jīntiān gǎi zuò yùmǐ tāng, jiàgé bú biàn.” Yí wèi kèrén yǐwéi nánguā tāng yǐjīng mài wán le. Diànyuán jiěshì, sòng nánguā de chē hái méi dào, suǒyǐ chúfáng cóng kāimén shí jiù méiyǒu zuò nánguā tāng.",
+    "passage": "饭店门口的小黑板上，“南瓜汤”三个字被一条线划掉了。下面写着：“今天改做玉米汤，价格不变。”一位客人以为南瓜汤已经卖完了。店员解释，送南瓜的车还没到，所以厨房从开门时就没有做南瓜汤。",
+    "assessed_skills": [
+      "Phân biệt suy đoán của khách và thông tin từ nhân viên.",
+      "Chỉ ra chi tiết bác bỏ nhận định rằng món đã bán hết."
+    ]
+  },
+  {
+    "id": "RD-00008",
+    "title": "谁还带着杯子",
+    "language": "zh",
+    "module": "reading",
+    "level": "B2",
+    "domain": 21,
+    "topic": "Đọc ghi chép quan sát",
+    "objective": "Nhận diện hai nguyên nhân khiến số đếm sai lệch.",
+    "teaching": "Khi bài nêu hai nhóm sau lời nhắc, thử xem mỗi nhóm có bị đếm thiếu hay đếm nhầm không.",
+    "example": "社区活动结束后，志愿者在出口数了数手里拿着杯子的人。有人想把这个数字当作自带杯子的人数。负责登记的小周提醒大家，有些人把杯子放回了包里，还有些人拿的是现场借来的杯子。她建议下次在入口分别记录自带和借用的情况。",
+    "activity": "Vẽ hai nhóm người, ghi cách quan sát ở lối ra có thể gây sai lệch với từng nhóm.",
+    "task": [
+      "哪一类人可能被漏算？",
+      "小周建议怎样改进？"
+    ],
+    "answer": [
+      "自带杯子但放进包里的人",
+      "在入口分开记录两种情况。"
+    ],
+    "explanation": [
+      "Người tự mang nhưng đã cất cốc sẽ không xuất hiện trong số người cầm cốc.",
+      "Câu cuối nêu địa điểm là lối vào và hai loại cần ghi riêng."
+    ],
+    "outcome": "Nêu được một thay đổi trong cách thu thập số liệu.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "哪一类人可能被漏算？",
+        "options": [
+          "借杯子并拿在手里的人",
+          "自带杯子但放进包里的人",
+          "站在入口登记的人"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Người tự mang nhưng đã cất cốc sẽ không xuất hiện trong số người cầm cốc."
+      },
+      {
+        "prompt": "小周建议怎样改进？",
+        "options": [
+          "在入口分开记录两种情况。",
+          "只数出口处的包。",
+          "把借来的杯子都收走。"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Câu cuối nêu địa điểm là lối vào và hai loại cần ghi riêng."
+      }
+    ],
+    "translation_vi": "Sau hoạt động cộng đồng, các tình nguyện viên đếm số người cầm cốc trên tay ở lối ra. Có người muốn coi con số này là số người tự mang cốc. Tiểu Chu, người phụ trách ghi nhận, nhắc rằng có người đã cất cốc vào túi, còn có người cầm cốc mượn tại chỗ. Cô đề xuất lần sau ghi riêng ở lối vào trường hợp tự mang và trường hợp đi mượn.",
+    "vocabulary": [
+      "当作",
+      "借用",
+      "分别记录"
+    ],
+    "grammar": "有些……还有些…… phân nhóm các trường hợp",
+    "pinyin": "Shèqū huódòng jiéshù hòu, zhìyuànzhě zài chūkǒu shǔ le shǔ shǒu lǐ názhe bēizi de rén. Yǒu rén xiǎng bǎ zhège shùzì dàngzuò zì dài bēizi de rénshù. Fùzé dēngjì de Xiǎo Zhōu tíxǐng dàjiā, yǒuxiē rén bǎ bēizi fàng huí le bāo lǐ, hái yǒuxiē rén ná de shì xiànchǎng jiè lái de bēizi. Tā jiànyì xià cì zài rùkǒu fēnbié jìlù zì dài hé jièyòng de qíngkuàng.",
+    "passage": "社区活动结束后，志愿者在出口数了数手里拿着杯子的人。有人想把这个数字当作自带杯子的人数。负责登记的小周提醒大家，有些人把杯子放回了包里，还有些人拿的是现场借来的杯子。她建议下次在入口分别记录自带和借用的情况。",
+    "assessed_skills": [
+      "Nhận diện hai nguyên nhân khiến số đếm sai lệch.",
+      "Nêu được một thay đổi trong cách thu thập số liệu."
+    ]
+  },
+  {
+    "id": "RD-00009",
+    "title": "What the poster promises",
+    "language": "en",
+    "module": "reading",
+    "level": "B2",
+    "domain": 8,
+    "topic": "Đọc thông báo và điều kiện áp dụng",
+    "objective": "Tách điều kiện mua hàng và thời hạn sử dụng dịch vụ.",
+    "teaching": "Xác định hành động gắn với từng cụm thời gian. Weekend bổ nghĩa cho việc mua, còn before the end of the month giới hạn việc xuất trình hóa đơn.",
+    "example": "A poster in a bicycle shop reads, “Free fitting with every helmet this weekend.” In smaller print it adds, “For helmets bought here on Saturday or Sunday. Bring your receipt to the service desk before the end of the month.” Jo buys a helmet on Sunday but has no time for a fitting that day. The sales assistant circles the last sentence and tells her to keep the receipt.",
+    "activity": "Ghi lại ba điều kiện đủ để Jo quay lại dùng dịch vụ rồi thử thay đổi một điều kiện.",
+    "task": [
+      "Which purchase qualifies?",
+      "Why does the assistant circle the last sentence?"
+    ],
+    "answer": [
+      "A helmet bought here on Sunday",
+      "To remind Jo that she can come back with proof of purchase"
+    ],
+    "explanation": [
+      "Mũ phải mua ở cửa hàng đang thông báo vào thứ Bảy hoặc Chủ nhật.",
+      "Câu cuối nêu quầy dịch vụ, hóa đơn và thời hạn đến cuối tháng."
+    ],
+    "outcome": "Đọc được ngoại lệ thời gian từ phần chữ nhỏ của một thông báo.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "Which purchase qualifies?",
+        "options": [
+          "A helmet bought here on Sunday",
+          "A helmet bought here last Friday",
+          "A helmet bought online from another shop"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Mũ phải mua ở cửa hàng đang thông báo vào thứ Bảy hoặc Chủ nhật."
+      },
+      {
+        "prompt": "Why does the assistant circle the last sentence?",
+        "options": [
+          "To show where the price is printed",
+          "To remind Jo that she can come back with proof of purchase",
+          "To make the fitting cost less"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Câu cuối nêu quầy dịch vụ, hóa đơn và thời hạn đến cuối tháng."
+      }
+    ],
+    "translation_vi": "Áp phích trong một cửa hàng xe đạp ghi “Cuối tuần này, mua mũ bảo hiểm được chỉnh mũ miễn phí.” Dòng chữ nhỏ hơn ghi “Áp dụng với mũ mua tại đây vào thứ Bảy hoặc Chủ nhật. Hãy mang hóa đơn tới quầy dịch vụ trước khi hết tháng.” Jo mua mũ hôm Chủ nhật nhưng hôm ấy cô không có thời gian chỉnh mũ. Nhân viên khoanh câu cuối và nhắc cô giữ hóa đơn.",
+    "vocabulary": [
+      "fitting",
+      "receipt",
+      "before the end of"
+    ],
+    "grammar": "mệnh lệnh Bring + tân ngữ trong hướng dẫn",
+    "passage": "A poster in a bicycle shop reads, “Free fitting with every helmet this weekend.” In smaller print it adds, “For helmets bought here on Saturday or Sunday. Bring your receipt to the service desk before the end of the month.” Jo buys a helmet on Sunday but has no time for a fitting that day. The sales assistant circles the last sentence and tells her to keep the receipt.",
+    "assessed_skills": [
+      "Tách điều kiện mua hàng và thời hạn sử dụng dịch vụ.",
+      "Đọc được ngoại lệ thời gian từ phần chữ nhỏ của một thông báo."
+    ]
+  },
+  {
+    "id": "RD-00010",
+    "title": "The line across the tree map",
+    "language": "en",
+    "module": "reading",
+    "level": "B1",
+    "domain": 20,
+    "topic": "Đọc chú giải bản đồ",
+    "objective": "Dùng phần chú giải để suy ra ý nghĩa ký hiệu.",
+    "teaching": "Trong văn bản về bản đồ, key có thể là phần giải nghĩa các ký hiệu. Xem người viết mô tả từng nét vẽ thế nào.",
+    "example": "The park office published a map of its oldest trees. A dotted line runs between five trees near the river. Some visitors treated the line as a walking route, though it actually marked the edge of the survey area. After several calls, the office added a key under the map and drew the public path in blue. Visitors should use the blue path when planning a walk.",
+    "activity": "Lập chú giải gồm một đường chấm và một đường xanh, rồi giải thích vì sao cần cả hai.",
+    "task": [
+      "What did the dotted line originally mark?",
+      "What did the office do in response to the calls?"
+    ],
+    "answer": [
+      "The boundary of the area studied",
+      "It explained the symbols and showed the public path."
+    ],
+    "explanation": [
+      "The edge of the survey area là ranh giới vùng khảo sát.",
+      "Ban quản lý thêm chú giải và vẽ đường xanh cho lối công cộng."
+    ],
+    "outcome": "Chỉ ra được vì sao đường chấm không chỉ lối đi.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "What did the dotted line originally mark?",
+        "options": [
+          "A public walking path",
+          "The river bank",
+          "The boundary of the area studied"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "The edge of the survey area là ranh giới vùng khảo sát."
+      },
+      {
+        "prompt": "What did the office do in response to the calls?",
+        "options": [
+          "It removed the old trees.",
+          "It explained the symbols and showed the public path.",
+          "It marked the public path with dots."
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Ban quản lý thêm chú giải và vẽ đường xanh cho lối công cộng."
+      }
+    ],
+    "translation_vi": "Ban quản lý công viên công bố bản đồ những cây lâu năm nhất. Một đường chấm nối giữa năm cây gần sông. Một số khách xem đường này là tuyến đi bộ dù thực ra nó đánh dấu ranh giới vùng khảo sát. Sau vài cuộc gọi, ban quản lý thêm chú giải dưới bản đồ và vẽ lối đi công cộng bằng màu xanh lam. Khách nên dùng đường màu xanh để lên kế hoạch đi bộ.",
+    "vocabulary": [
+      "dotted line",
+      "edge",
+      "map key"
+    ],
+    "grammar": "though đưa thông tin trái với suy đoán",
+    "passage": "The park office published a map of its oldest trees. A dotted line runs between five trees near the river. Some visitors treated the line as a walking route, though it actually marked the edge of the survey area. After several calls, the office added a key under the map and drew the public path in blue. Visitors should use the blue path when planning a walk.",
+    "assessed_skills": [
+      "Dùng phần chú giải để suy ra ý nghĩa ký hiệu.",
+      "Chỉ ra được vì sao đường chấm không chỉ lối đi."
+    ]
+  },
+  {
+    "id": "RD-00011",
+    "title": "集合地点改了",
+    "language": "zh",
+    "module": "reading",
+    "level": "A2",
+    "domain": 39,
+    "topic": "Thông báo câu lạc bộ chạy bộ",
+    "objective": "Đọc thông báo và chọn lối đi theo vị trí hiện tại.",
+    "teaching": "Từ 改 giới thiệu thay đổi, còn 还是 cho biết phần kế hoạch giữ nguyên. Câu cuối hướng dẫn riêng nhóm đã đến chỗ cũ.",
+    "example": "跑步小组原来每周日在河边集合。这周河边的小路要修，大家改在公园北门见面。时间还是早上七点。通知最后写着：“已经到河边的朋友，请沿大路走到北门，不要走小路。”",
+    "activity": "Tô một màu cho địa điểm mới, một màu cho giờ hẹn. Đóng vai người đã đến ven sông và thuật lại đường đi.",
+    "task": [
+      "这周在哪里集合？",
+      "已经到河边的人该怎么走？"
+    ],
+    "answer": [
+      "公园北门",
+      "沿大路走"
+    ],
+    "explanation": [
+      "Thông báo ghi 改在公园北门见面.",
+      "Câu cuối nêu rõ 沿大路走到北门."
+    ],
+    "outcome": "Xác định được đúng đường đến điểm tập trung tuần này.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "这周在哪里集合？",
+        "options": [
+          "河边的小路",
+          "公园北门",
+          "公园南门"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Thông báo ghi 改在公园北门见面."
+      },
+      {
+        "prompt": "已经到河边的人该怎么走？",
+        "options": [
+          "沿大路走",
+          "沿小路跑",
+          "在河边等到八点"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Câu cuối nêu rõ 沿大路走到北门."
+      }
+    ],
+    "translation_vi": "Nhóm chạy bộ vốn tập trung bên sông mỗi Chủ nhật. Tuần này lối nhỏ ven sông sẽ được sửa nên mọi người đổi sang gặp nhau ở cổng bắc công viên. Giờ vẫn là bảy giờ sáng. Cuối thông báo ghi “Các bạn đã đến ven sông vui lòng đi dọc đường lớn đến cổng bắc, đừng đi đường nhỏ.”",
+    "vocabulary": [
+      "集合",
+      "北门",
+      "沿"
+    ],
+    "grammar": "还是 chỉ một chi tiết vẫn giữ nguyên",
+    "pinyin": "Pǎobù xiǎozǔ yuánlái měi zhōurì zài hébiān jíhé. Zhè zhōu hébiān de xiǎolù yào xiū, dàjiā gǎi zài gōngyuán běimén jiànmiàn. Shíjiān háishi zǎoshang qī diǎn. Tōngzhī zuìhòu xiězhe: “Yǐjīng dào hébiān de péngyou, qǐng yán dàlù zǒu dào běimén, bú yào zǒu xiǎolù.”",
+    "passage": "跑步小组原来每周日在河边集合。这周河边的小路要修，大家改在公园北门见面。时间还是早上七点。通知最后写着：“已经到河边的朋友，请沿大路走到北门，不要走小路。”",
+    "assessed_skills": [
+      "Đọc thông báo và chọn lối đi theo vị trí hiện tại.",
+      "Xác định được đúng đường đến điểm tập trung tuần này."
+    ]
+  },
+  {
+    "id": "RD-00012",
+    "title": "院子里的长椅",
+    "language": "zh",
+    "module": "reading",
+    "level": "B2",
+    "domain": 34,
+    "topic": "Đọc biên bản họp cư dân",
+    "objective": "Tách ý kiến cá nhân khỏi quyết định chung.",
+    "teaching": "Chú ý phạm vi của 决定. Ở câu cuối, quyết định hiện tại là việc đánh dấu và so sánh; việc chuyển ghế còn để ngỏ.",
+    "example": "居民会上，有人建议把院子里的长椅搬到树下，因为下午那里有阴凉。住在一楼的张阿姨担心椅子靠窗太近，谈话声会传进屋里。大家最后决定先用粉笔在地上画出两个位置，星期天下午到现场比较，再决定是否搬动。",
+    "activity": "Lập ba cột gồm lợi ích, mối lo và hành động được thống nhất. Điền một chi tiết vào từng cột.",
+    "task": [
+      "张阿姨主要担心什么？",
+      "会议结束时哪件事已经确定？"
+    ],
+    "answer": [
+      "谈话声会影响屋里的人。",
+      "星期天下午比较两个位置。"
+    ],
+    "explanation": [
+      "Dì Trương lo tiếng nói chuyện vọng vào nhà vì ghế ở gần cửa sổ.",
+      "Mọi người thống nhất việc so sánh tại chỗ, còn việc chuyển ghế sẽ quyết định sau."
+    ],
+    "outcome": "Tóm tắt được điều đã thống nhất mà không khẳng định ghế đã được chuyển.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "张阿姨主要担心什么？",
+        "options": [
+          "树下不够凉快。",
+          "粉笔会弄脏长椅。",
+          "谈话声会影响屋里的人。"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Dì Trương lo tiếng nói chuyện vọng vào nhà vì ghế ở gần cửa sổ."
+      },
+      {
+        "prompt": "会议结束时哪件事已经确定？",
+        "options": [
+          "星期天下午比较两个位置。",
+          "长椅一定搬到树下。",
+          "以后不许在院子里聊天。"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Mọi người thống nhất việc so sánh tại chỗ, còn việc chuyển ghế sẽ quyết định sau."
+      }
+    ],
+    "translation_vi": "Trong cuộc họp cư dân, có người đề xuất chuyển ghế dài trong sân xuống dưới tán cây vì buổi chiều ở đó râm mát. Dì Trương sống ở tầng một lo nếu ghế quá gần cửa sổ thì tiếng trò chuyện sẽ vọng vào nhà. Cuối cùng mọi người quyết định trước tiên dùng phấn đánh dấu hai vị trí trên mặt đất, chiều Chủ nhật ra tận nơi so sánh rồi mới quyết định có chuyển ghế hay không.",
+    "vocabulary": [
+      "长椅",
+      "阴凉",
+      "是否"
+    ],
+    "grammar": "先……再…… mô tả trình tự đi đến quyết định",
+    "pinyin": "Jūmín huì shang, yǒu rén jiànyì bǎ yuànzi lǐ de chángyǐ bān dào shù xià, yīnwèi xiàwǔ nàli yǒu yīnliáng. Zhù zài yī lóu de Zhāng āyí dānxīn yǐzi kào chuāng tài jìn, tánhuà shēng huì chuán jìn wū lǐ. Dàjiā zuìhòu juédìng xiān yòng fěnbǐ zài dì shang huà chū liǎng ge wèizhi, xīngqītiān xiàwǔ dào xiànchǎng bǐjiào, zài juédìng shìfǒu bāndòng.",
+    "passage": "居民会上，有人建议把院子里的长椅搬到树下，因为下午那里有阴凉。住在一楼的张阿姨担心椅子靠窗太近，谈话声会传进屋里。大家最后决定先用粉笔在地上画出两个位置，星期天下午到现场比较，再决定是否搬动。",
+    "assessed_skills": [
+      "Tách ý kiến cá nhân khỏi quyết định chung.",
+      "Tóm tắt được điều đã thống nhất mà không khẳng định ghế đã được chuyển."
+    ]
+  },
+  {
+    "id": "RD-00013",
+    "title": "Two numbers on one receipt",
+    "language": "en",
+    "module": "reading",
+    "level": "B1",
+    "domain": 4,
+    "topic": "Đối chiếu chứng từ",
+    "objective": "Đọc hóa đơn để giải thích chênh lệch giữa đơn giá và tổng thanh toán.",
+    "teaching": "Đối chiếu đơn giá nhân số lượng với từng dòng điều chỉnh trước khi coi chênh lệch là thiếu tiền.",
+    "example": "During a stock check, Iris finds a receipt for thirty notebooks. The top line gives a price of two pounds per notebook, but the total paid is fifty-four pounds. At first she writes “six pounds missing” in her notes. Then she reads the next line: the shop gave a six-pound discount on the order. Iris crosses out her note and files the receipt with the correct total.",
+    "activity": "Tính số tiền trước giảm giá, sau đó chỉ ra dòng nào giải thích số đã trả.",
+    "task": [
+      "What was the total before the discount?",
+      "Why does Iris cross out her note?"
+    ],
+    "answer": [
+      "Sixty pounds",
+      "The discount explains the difference."
+    ],
+    "explanation": [
+      "Ba mươi cuốn, mỗi cuốn hai bảng, thành sáu mươi bảng trước giảm giá.",
+      "Dòng giảm sáu bảng giải thích vì sao tổng thanh toán là năm mươi tư bảng."
+    ],
+    "outcome": "Giải thích được bằng tiếng Anh vì sao Iris sửa ghi chú của mình.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "What was the total before the discount?",
+        "options": [
+          "Fifty-four pounds",
+          "Sixty pounds",
+          "Six pounds"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Ba mươi cuốn, mỗi cuốn hai bảng, thành sáu mươi bảng trước giảm giá."
+      },
+      {
+        "prompt": "Why does Iris cross out her note?",
+        "options": [
+          "The missing notebooks were found.",
+          "The receipt was for a different order.",
+          "The discount explains the difference."
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Dòng giảm sáu bảng giải thích vì sao tổng thanh toán là năm mươi tư bảng."
+      }
+    ],
+    "translation_vi": "Trong lúc kiểm kê, Iris thấy hóa đơn mua ba mươi cuốn sổ. Dòng đầu ghi giá hai bảng mỗi cuốn, nhưng tổng số tiền đã trả là năm mươi tư bảng. Ban đầu cô ghi “thiếu sáu bảng”. Rồi cô đọc dòng kế tiếp: cửa hàng đã giảm sáu bảng cho đơn hàng. Iris gạch bỏ ghi chú và lưu hóa đơn với tổng tiền đúng.",
+    "vocabulary": [
+      "receipt",
+      "discount",
+      "cross out"
+    ],
+    "grammar": "at first và then đánh dấu hai giai đoạn nhận định",
+    "passage": "During a stock check, Iris finds a receipt for thirty notebooks. The top line gives a price of two pounds per notebook, but the total paid is fifty-four pounds. At first she writes “six pounds missing” in her notes. Then she reads the next line: the shop gave a six-pound discount on the order. Iris crosses out her note and files the receipt with the correct total.",
+    "assessed_skills": [
+      "Đọc hóa đơn để giải thích chênh lệch giữa đơn giá và tổng thanh toán.",
+      "Giải thích được bằng tiếng Anh vì sao Iris sửa ghi chú của mình."
+    ]
+  },
+  {
+    "id": "RD-00014",
+    "title": "Comparing two meter readings",
+    "language": "en",
+    "module": "reading",
+    "level": "B2",
+    "domain": 36,
+    "topic": "Nhật ký sử dụng điện",
+    "objective": "Đọc phản biện lời giải thích đi kèm các số liệu.",
+    "teaching": "Tách điều đã đo được khỏi nguyên nhân mà bản tin gán cho mức chênh lệch. Ghi nhận điều kiện vận hành đã thay đổi.",
+    "example": "A school recorded 80 units of electricity use on Monday and 60 on Tuesday. Its newsletter linked the drop to new lights installed on Monday evening. Before printing, an editor checked the school diary. Tuesday's evening class had been cancelled, so the building closed two hours earlier than usual. The editor kept the figures but asked for more readings on days with similar opening hours before crediting the lights with the full drop.",
+    "activity": "Viết hai câu, một câu mô tả số đo và một câu nêu thông tin cần bổ sung để so sánh.",
+    "task": [
+      "What else changed on Tuesday?",
+      "Which readings would the editor prefer to compare?"
+    ],
+    "answer": [
+      "The building closed earlier.",
+      "Readings from days with similar opening hours"
+    ],
+    "explanation": [
+      "Lớp tối bị hủy nên trường đóng cửa sớm hai giờ.",
+      "Câu cuối yêu cầu ghi thêm số liệu vào những ngày có giờ mở cửa tương tự."
+    ],
+    "outcome": "Chỉ ra được vì sao biên tập viên giữ số liệu nhưng yêu cầu sửa cách diễn giải.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "What else changed on Tuesday?",
+        "options": [
+          "The building closed earlier.",
+          "The meter was replaced.",
+          "The school held two extra classes."
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Lớp tối bị hủy nên trường đóng cửa sớm hai giờ."
+      },
+      {
+        "prompt": "Which readings would the editor prefer to compare?",
+        "options": [
+          "Readings from unrelated buildings",
+          "Readings from days with similar opening hours",
+          "Only the largest monthly reading"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Câu cuối yêu cầu ghi thêm số liệu vào những ngày có giờ mở cửa tương tự."
+      }
+    ],
+    "translation_vi": "Một trường học ghi nhận dùng 80 đơn vị điện hôm thứ Hai và 60 đơn vị hôm thứ Ba. Bản tin trường quy mức giảm này cho hệ thống đèn mới lắp tối thứ Hai. Trước khi in, biên tập viên kiểm tra sổ hoạt động của trường. Lớp tối thứ Ba bị hủy, vì vậy tòa nhà đóng cửa sớm hơn thường lệ hai giờ. Biên tập viên giữ lại các con số nhưng đề nghị đo thêm vào những ngày có giờ mở cửa tương tự trước khi quy toàn bộ mức giảm cho đèn mới.",
+    "vocabulary": [
+      "meter reading",
+      "credit with",
+      "opening hours"
+    ],
+    "grammar": "before + V-ing diễn đạt bước kiểm tra trước kết luận",
+    "passage": "A school recorded 80 units of electricity use on Monday and 60 on Tuesday. Its newsletter linked the drop to new lights installed on Monday evening. Before printing, an editor checked the school diary. Tuesday's evening class had been cancelled, so the building closed two hours earlier than usual. The editor kept the figures but asked for more readings on days with similar opening hours before crediting the lights with the full drop.",
+    "assessed_skills": [
+      "Đọc phản biện lời giải thích đi kèm các số liệu.",
+      "Chỉ ra được vì sao biên tập viên giữ số liệu nhưng yêu cầu sửa cách diễn giải."
+    ]
+  },
+  {
+    "id": "RD-00015",
+    "title": "转账备注写什么",
+    "language": "zh",
+    "module": "reading",
+    "level": "B1",
+    "domain": 5,
+    "topic": "Đọc hướng dẫn đóng phí",
+    "objective": "Nhận diện cách bổ sung thông tin còn thiếu.",
+    "teaching": "Đọc điều đứng sau 只要 trước khi xác định việc người đóng phí phải làm. Câu cuối làm rõ có cần trả thêm hay không.",
+    "example": "合唱团本周收活动费。通知请大家转账时在备注里写上姓名和小组。小吴忘了写小组，担心要再付一次。负责人告诉他，只要把付款时间和小组名称私下发来就行，不用重新转账。",
+    "activity": "Ghi hai trường phải viết trong lần chuyển ban đầu, rồi hai trường cần gửi riêng để sửa thiếu sót.",
+    "task": [
+      "小吴漏写了什么？",
+      "负责人让他怎么做？"
+    ],
+    "answer": [
+      "小组",
+      "私下发送付款时间和小组名称"
+    ],
+    "explanation": [
+      "Văn bản nêu rõ 小吴忘了写小组.",
+      "Người phụ trách chỉ yêu cầu gửi riêng thời gian trả và tên nhóm."
+    ],
+    "outcome": "Nêu chính xác thông tin phải bổ sung và tránh lặp giao dịch.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "小吴漏写了什么？",
+        "options": [
+          "付款金额",
+          "姓名",
+          "小组"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Văn bản nêu rõ 小吴忘了写小组."
+      },
+      {
+        "prompt": "负责人让他怎么做？",
+        "options": [
+          "再付一次活动费",
+          "私下发送付款时间和小组名称",
+          "把所有人的姓名写在备注里"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Người phụ trách chỉ yêu cầu gửi riêng thời gian trả và tên nhóm."
+      }
+    ],
+    "translation_vi": "Tuần này dàn hợp xướng thu phí hoạt động. Thông báo đề nghị mọi người khi chuyển khoản ghi họ tên và nhóm vào phần ghi chú. Tiểu Ngô quên ghi nhóm và lo phải trả lần nữa. Người phụ trách nói chỉ cần gửi riêng thời gian thanh toán và tên nhóm, không cần chuyển khoản lại.",
+    "vocabulary": [
+      "转账",
+      "备注",
+      "私下"
+    ],
+    "grammar": "只要……就行 nêu điều kiện đủ",
+    "pinyin": "Héchàngtuán běn zhōu shōu huódòngfèi. Tōngzhī qǐng dàjiā zhuǎnzhàng shí zài bèizhù lǐ xiě shang xìngmíng hé xiǎozǔ. Xiǎo Wú wàng le xiě xiǎozǔ, dānxīn yào zài fù yí cì. Fùzérén gàosu tā, zhǐyào bǎ fùkuǎn shíjiān hé xiǎozǔ míngchēng sīxià fā lái jiù xíng, bú yòng chóngxīn zhuǎnzhàng.",
+    "passage": "合唱团本周收活动费。通知请大家转账时在备注里写上姓名和小组。小吴忘了写小组，担心要再付一次。负责人告诉他，只要把付款时间和小组名称私下发来就行，不用重新转账。",
+    "assessed_skills": [
+      "Nhận diện cách bổ sung thông tin còn thiếu.",
+      "Nêu chính xác thông tin phải bổ sung và tránh lặp giao dịch."
+    ]
+  },
+  {
+    "id": "RD-00016",
+    "title": "展板上的旧地名",
+    "language": "zh",
+    "module": "reading",
+    "level": "B2",
+    "domain": 40,
+    "topic": "Đọc thuyết minh lịch sử địa phương",
+    "objective": "Liên hệ quyết định biên tập với nhu cầu của hai nhóm độc giả.",
+    "teaching": "Xác định đâu là nguồn gốc của từng tên, sau đó phân tích hai tác dụng được tách bằng 既 và 也.",
+    "example": "地方历史馆准备介绍一座旧桥。早年的地图把桥旁的村子写作“石湾”，现在的路牌却写着“新湾”。编辑没有把旧地图上的字改掉，而是在旁边加了一行说明，告诉读者两个名称指的是同一片地方。这样既保留了原来的记录，也方便今天的居民辨认位置。",
+    "activity": "Viết một chú thích ngắn bằng tiếng Trung cho bản đồ cũ, giữ cả hai tên địa phương.",
+    "task": [
+      "“新湾”这个名称出现在哪里？",
+      "旁边的说明有什么作用？"
+    ],
+    "answer": [
+      "现在的路牌上",
+      "帮助居民把旧名称和今天的地点联系起来"
+    ],
+    "explanation": [
+      "Bài đối chiếu địa danh cũ trên bản đồ với 新湾 trên biển đường ngày nay.",
+      "Chú thích cho biết hai tên chỉ cùng một khu vực, giúp người đọc xác định vị trí."
+    ],
+    "outcome": "Nêu được cả giá trị tư liệu lẫn tác dụng định vị của chú thích.",
+    "minutes": 8,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "“新湾”这个名称出现在哪里？",
+        "options": [
+          "现在的路牌上",
+          "早年的地图上",
+          "旧桥的设计图上"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Bài đối chiếu địa danh cũ trên bản đồ với 新湾 trên biển đường ngày nay."
+      },
+      {
+        "prompt": "旁边的说明有什么作用？",
+        "options": [
+          "证明旧地图写错了桥的位置",
+          "说明村子搬到了别处",
+          "帮助居民把旧名称和今天的地点联系起来"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Chú thích cho biết hai tên chỉ cùng một khu vực, giúp người đọc xác định vị trí."
+      }
+    ],
+    "translation_vi": "Bảo tàng lịch sử địa phương chuẩn bị giới thiệu một cây cầu cũ. Bản đồ thời trước ghi tên làng cạnh cầu là Thạch Loan, trong khi biển đường hiện nay ghi Tân Loan. Biên tập viên giữ nguyên chữ trên bản đồ cũ và thêm một dòng chú thích bên cạnh, cho người đọc biết hai tên cùng chỉ một khu vực. Cách này vừa giữ được tư liệu ban đầu vừa giúp cư dân ngày nay nhận ra địa điểm.",
+    "vocabulary": [
+      "路牌",
+      "保留",
+      "辨认"
+    ],
+    "grammar": "既……也…… nêu hai tác dụng cùng tồn tại",
+    "pinyin": "Dìfāng lìshǐguǎn zhǔnbèi jièshào yí zuò jiù qiáo. Zǎonián de dìtú bǎ qiáo páng de cūnzi xiězuò “Shíwān”, xiànzài de lùpái què xiězhe “Xīnwān”. Biānjí méiyǒu bǎ jiù dìtú shang de zì gǎi diào, ér shì zài pángbiān jiā le yì háng shuōmíng, gàosu dúzhě liǎng ge míngchēng zhǐ de shì tóng yí piàn dìfang. Zhèyàng jì bǎoliú le yuánlái de jìlù, yě fāngbiàn jīntiān de jūmín biànrèn wèizhi.",
+    "passage": "地方历史馆准备介绍一座旧桥。早年的地图把桥旁的村子写作“石湾”，现在的路牌却写着“新湾”。编辑没有把旧地图上的字改掉，而是在旁边加了一行说明，告诉读者两个名称指的是同一片地方。这样既保留了原来的记录，也方便今天的居民辨认位置。",
+    "assessed_skills": [
+      "Liên hệ quyết định biên tập với nhu cầu của hai nhóm độc giả.",
+      "Nêu được cả giá trị tư liệu lẫn tác dụng định vị của chú thích."
+    ]
+  }
+]

@@ -1,0 +1,1342 @@
+[
+  {
+    "id": "LS-00001",
+    "title": "Listen for the second invitation",
+    "language": "en",
+    "module": "listening",
+    "level": "A2",
+    "domain": 1,
+    "topic": "Thay đổi địa điểm hẹn",
+    "objective": "Nghe để phân biệt đề nghị ban đầu với thỏa thuận cuối.",
+    "teaching": "Chú ý từ then sau khi một người nêu trở ngại. Người nói tiếp theo có thể thay đổi một phần kế hoạch.",
+    "example": "Nora：Shall we meet by the fountain at six? // Ben：Six is fine, but the fountain is off today. I usually find it by the sound. // Nora：Then let's meet at the library door. It has a bright red sign above it. // Ben：Good. Same time, different place.",
+    "activity": "Nhờ bạn đọc hai vai khi che kịch bản. Lượt một ghi giờ, lượt hai ghi nơi gặp và dấu hiệu nhận biết.",
+    "task": [
+      "What stays the same?",
+      "Where will they meet?"
+    ],
+    "answer": [
+      "The time",
+      "At the library door"
+    ],
+    "explanation": [
+      "Ben xác nhận Same time và chỉ thay đổi địa điểm.",
+      "Nora đề xuất cửa thư viện và Ben đồng ý."
+    ],
+    "outcome": "Nhắc lại được giờ và vị trí cuối cùng của cuộc hẹn.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "What stays the same?",
+        "options": [
+          "The time",
+          "The meeting point",
+          "The sound of the fountain"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Ben xác nhận Same time và chỉ thay đổi địa điểm."
+      },
+      {
+        "prompt": "Where will they meet?",
+        "options": [
+          "At a red fountain",
+          "At the library door",
+          "Inside a bookshop"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Nora đề xuất cửa thư viện và Ben đồng ý."
+      }
+    ],
+    "translation_vi": "Nora: Mình gặp nhau ở đài phun nước lúc sáu giờ nhé? Ben: Sáu giờ được, nhưng hôm nay đài phun nước tắt rồi. Mình thường tìm ra chỗ đó nhờ tiếng nước. Nora: Vậy gặp nhau ở cửa thư viện đi. Phía trên có biển màu đỏ tươi. Ben: Được. Giờ như cũ, đổi địa điểm.",
+    "vocabulary": [
+      "fountain",
+      "above",
+      "same"
+    ],
+    "grammar": "Shall we và let's dùng để đề nghị",
+    "script": "Nora：Shall we meet by the fountain at six? // Ben：Six is fine, but the fountain is off today. I usually find it by the sound. // Nora：Then let's meet at the library door. It has a bright red sign above it. // Ben：Good. Same time, different place.",
+    "dialogue": [
+      {
+        "role": "Nora",
+        "utterance": "Shall we meet by the fountain at six?"
+      },
+      {
+        "role": "Ben",
+        "utterance": "Six is fine, but the fountain is off today. I usually find it by the sound."
+      },
+      {
+        "role": "Nora",
+        "utterance": "Then let's meet at the library door. It has a bright red sign above it."
+      },
+      {
+        "role": "Ben",
+        "utterance": "Good. Same time, different place."
+      }
+    ],
+    "roles": [
+      "Nora",
+      "Ben"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 22,
+    "practice_instructions": "Nhờ bạn đọc hai vai khi che kịch bản. Lượt một ghi giờ, lượt hai ghi nơi gặp và dấu hiệu nhận biết."
+  },
+  {
+    "id": "LS-00002",
+    "title": "Which box should wait?",
+    "language": "en",
+    "module": "listening",
+    "level": "B1",
+    "domain": 32,
+    "topic": "Đối chiếu hướng dẫn giao hàng",
+    "objective": "Nghe chỉ dẫn có hai đích giao và một độ trễ.",
+    "teaching": "Đại từ it và cụm that box đều quay lại thùng mang nhãn vàng được nhắc ở đầu.",
+    "example": "Driver：I have three boxes for the front desk. One has a yellow label. // Clerk：Leave the two plain ones here, please. The yellow one goes to the workshop. // Driver：Should I take it around the back now? // Clerk：In ten minutes. The workshop door is locked while they unload another van. // Driver：All right. I'll keep that box with me for now.",
+    "activity": "Lượt đầu đánh dấu màu và nơi nhận. Lượt sau bổ sung mốc chờ cùng lý do.",
+    "task": [
+      "How many boxes stay at the front desk?",
+      "What will the driver do with the yellow box first?"
+    ],
+    "answer": [
+      "Two",
+      "Keep it until the workshop can receive it"
+    ],
+    "explanation": [
+      "Nhân viên yêu cầu để lại two plain ones ở quầy.",
+      "Câu cuối xác nhận tài xế sẽ giữ thùng trong thời gian chờ."
+    ],
+    "outcome": "Dựng lại được việc giao ba thùng theo đúng thời điểm.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "How many boxes stay at the front desk?",
+        "options": [
+          "One",
+          "Two",
+          "Three"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Nhân viên yêu cầu để lại two plain ones ở quầy."
+      },
+      {
+        "prompt": "What will the driver do with the yellow box first?",
+        "options": [
+          "Leave it outside the locked door",
+          "Give it to the other driver",
+          "Keep it until the workshop can receive it"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Câu cuối xác nhận tài xế sẽ giữ thùng trong thời gian chờ."
+      }
+    ],
+    "translation_vi": "Tài xế: Tôi có ba thùng giao cho quầy tiếp nhận. Một thùng có nhãn vàng. Nhân viên: Anh để hai thùng không có nhãn màu ở đây nhé. Thùng vàng chuyển đến xưởng. Tài xế: Bây giờ tôi mang nó ra phía sau à? Nhân viên: Mười phút nữa. Cửa xưởng đang khóa trong lúc họ dỡ hàng từ một xe khác. Tài xế: Được. Tạm thời tôi sẽ giữ thùng ấy bên mình.",
+    "vocabulary": [
+      "plain",
+      "unload",
+      "for now"
+    ],
+    "grammar": "while chỉ hai việc diễn ra đồng thời",
+    "script": "Driver：I have three boxes for the front desk. One has a yellow label. // Clerk：Leave the two plain ones here, please. The yellow one goes to the workshop. // Driver：Should I take it around the back now? // Clerk：In ten minutes. The workshop door is locked while they unload another van. // Driver：All right. I'll keep that box with me for now.",
+    "dialogue": [
+      {
+        "role": "Driver",
+        "utterance": "I have three boxes for the front desk. One has a yellow label."
+      },
+      {
+        "role": "Clerk",
+        "utterance": "Leave the two plain ones here, please. The yellow one goes to the workshop."
+      },
+      {
+        "role": "Driver",
+        "utterance": "Should I take it around the back now?"
+      },
+      {
+        "role": "Clerk",
+        "utterance": "In ten minutes. The workshop door is locked while they unload another van."
+      },
+      {
+        "role": "Driver",
+        "utterance": "All right. I'll keep that box with me for now."
+      }
+    ],
+    "roles": [
+      "Driver",
+      "Clerk"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 29,
+    "practice_instructions": "Lượt đầu đánh dấu màu và nơi nhận. Lượt sau bổ sung mốc chờ cùng lý do."
+  },
+  {
+    "id": "LS-00003",
+    "title": "The sound before the image",
+    "language": "en",
+    "module": "listening",
+    "level": "B2",
+    "domain": 38,
+    "topic": "Thảo luận dựng phim",
+    "objective": "Phân biệt phương án được cân nhắc và phương án sẽ thử.",
+    "teaching": "Chú ý câu đáp sau Could we. Lời đáp có thể giữ một thành phần và chỉ điều chỉnh thành phần khác.",
+    "example": "Editor：The cut to the station feels sudden. We see the platform before we know where we are. // Director：Could we move the whole scene earlier? // Editor：I'd leave the pictures where they are. Let the train whistle begin during the last shot of the kitchen. // Director：So we hear the next place before we see it. Let's try that and keep the original cut for comparison.",
+    "activity": "Nghe một người đọc đối thoại. Vẽ hai dòng hình và tiếng, đánh dấu lúc tiếng còi bắt đầu ở bản thử.",
+    "task": [
+      "Which element starts earlier in the trial edit?",
+      "Why retain the original cut?"
+    ],
+    "answer": [
+      "The train whistle",
+      "To compare the two versions"
+    ],
+    "explanation": [
+      "Người dựng đề xuất cho tiếng còi bắt đầu trong cảnh bếp.",
+      "Đạo diễn nói rõ for comparison."
+    ],
+    "outcome": "Mô tả được thứ tự âm thanh, hình ảnh trong đề xuất được chọn.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "Which element starts earlier in the trial edit?",
+        "options": [
+          "The picture of the station",
+          "The train whistle",
+          "The kitchen scene"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Người dựng đề xuất cho tiếng còi bắt đầu trong cảnh bếp."
+      },
+      {
+        "prompt": "Why retain the original cut?",
+        "options": [
+          "To compare the two versions",
+          "To send it to the station",
+          "To record a new whistle"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Đạo diễn nói rõ for comparison."
+      }
+    ],
+    "translation_vi": "Người dựng phim: Đoạn cắt sang nhà ga có vẻ đột ngột. Ta thấy sân ga trước khi biết mình đang ở đâu. Đạo diễn: Ta chuyển cả cảnh lên trước được không? Người dựng phim: Tôi muốn giữ nguyên chỗ các hình ảnh. Cho tiếng còi tàu bắt đầu ở cảnh quay cuối trong bếp. Đạo diễn: Vậy là ta nghe thấy địa điểm tiếp theo trước khi nhìn thấy nó. Thử cách đó và giữ bản dựng cũ để so sánh nhé.",
+    "vocabulary": [
+      "cut",
+      "shot",
+      "whistle"
+    ],
+    "grammar": "I'd + động từ để đề xuất nhẹ nhàng",
+    "script": "Editor：The cut to the station feels sudden. We see the platform before we know where we are. // Director：Could we move the whole scene earlier? // Editor：I'd leave the pictures where they are. Let the train whistle begin during the last shot of the kitchen. // Director：So we hear the next place before we see it. Let's try that and keep the original cut for comparison.",
+    "dialogue": [
+      {
+        "role": "Editor",
+        "utterance": "The cut to the station feels sudden. We see the platform before we know where we are."
+      },
+      {
+        "role": "Director",
+        "utterance": "Could we move the whole scene earlier?"
+      },
+      {
+        "role": "Editor",
+        "utterance": "I'd leave the pictures where they are. Let the train whistle begin during the last shot of the kitchen."
+      },
+      {
+        "role": "Director",
+        "utterance": "So we hear the next place before we see it. Let's try that and keep the original cut for comparison."
+      }
+    ],
+    "roles": [
+      "Editor",
+      "Director"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 31,
+    "practice_instructions": "Nghe một người đọc đối thoại. Vẽ hai dòng hình và tiếng, đánh dấu lúc tiếng còi bắt đầu ở bản thử."
+  },
+  {
+    "id": "LS-00004",
+    "title": "A shift traded in part",
+    "language": "en",
+    "module": "listening",
+    "level": "B1",
+    "domain": 7,
+    "topic": "Trao đổi lịch làm việc",
+    "objective": "Nhận ra giới hạn của một lời đồng ý.",
+    "teaching": "Từ but báo hiệu lời đồng ý kèm điều kiện. Đừng kết luận thời lượng ngay sau câu I can open the shop.",
+    "example": "Maya：Could you cover my shift on Friday? My appointment is at nine. // Leo：I can open the shop, but I have to leave at eleven. // Maya：That works if I come straight back. I'll tell Rosa I'm taking over at eleven. // Leo：Please mention I'm only covering the morning. Last time the rota showed a whole day.",
+    "activity": "Nghe lượt đầu ghi người mở cửa. Nghe lượt hai ghi người tiếp ca và thông tin cần báo Rosa.",
+    "task": [
+      "Who will take over at eleven?",
+      "Why does Leo want the rota note to be clear?"
+    ],
+    "answer": [
+      "Maya",
+      "His last cover was recorded as a full day."
+    ],
+    "explanation": [
+      "Maya nói I'm taking over at eleven.",
+      "Leo kể lần trước bảng phân ca hiển thị cả ngày."
+    ],
+    "outcome": "Chuyển lời thỏa thuận thành một ghi chú phân ca chính xác.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "Who will take over at eleven?",
+        "options": [
+          "Leo",
+          "Rosa",
+          "Maya"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Maya nói I'm taking over at eleven."
+      },
+      {
+        "prompt": "Why does Leo want the rota note to be clear?",
+        "options": [
+          "His last cover was recorded as a full day.",
+          "The shop opens at eleven.",
+          "Rosa cancelled the appointment."
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Leo kể lần trước bảng phân ca hiển thị cả ngày."
+      }
+    ],
+    "translation_vi": "Maya: Cậu làm thay ca thứ Sáu của mình được không? Mình có lịch hẹn lúc chín giờ. Leo: Mình mở cửa hàng được nhưng phải đi lúc mười một giờ. Maya: Nếu mình quay lại ngay thì được. Mình sẽ báo Rosa là mình tiếp ca lúc mười một giờ. Leo: Nhớ nói mình chỉ làm thay buổi sáng nhé. Lần trước bảng phân ca ghi cả ngày.",
+    "vocabulary": [
+      "cover a shift",
+      "take over",
+      "rota"
+    ],
+    "grammar": "can và have to diễn đạt khả năng và ràng buộc",
+    "script": "Maya：Could you cover my shift on Friday? My appointment is at nine. // Leo：I can open the shop, but I have to leave at eleven. // Maya：That works if I come straight back. I'll tell Rosa I'm taking over at eleven. // Leo：Please mention I'm only covering the morning. Last time the rota showed a whole day.",
+    "dialogue": [
+      {
+        "role": "Maya",
+        "utterance": "Could you cover my shift on Friday? My appointment is at nine."
+      },
+      {
+        "role": "Leo",
+        "utterance": "I can open the shop, but I have to leave at eleven."
+      },
+      {
+        "role": "Maya",
+        "utterance": "That works if I come straight back. I'll tell Rosa I'm taking over at eleven."
+      },
+      {
+        "role": "Leo",
+        "utterance": "Please mention I'm only covering the morning. Last time the rota showed a whole day."
+      }
+    ],
+    "roles": [
+      "Maya",
+      "Leo"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 27,
+    "practice_instructions": "Nghe lượt đầu ghi người mở cửa. Nghe lượt hai ghi người tiếp ca và thông tin cần báo Rosa."
+  },
+  {
+    "id": "LS-00005",
+    "title": "哪个出口见",
+    "language": "zh",
+    "module": "listening",
+    "level": "A2",
+    "domain": 17,
+    "topic": "Điểm hẹn tại ga",
+    "objective": "Nhận diện vị trí cụ thể sau khi người nói sửa địa điểm.",
+    "teaching": "Phân biệt 门口 với 对面. Chúng lấy cùng một cánh cửa làm mốc nhưng chỉ hai chỗ khác nhau.",
+    "example": "安安：我到车站了，在东门等你。 // 小何：今天东门关了。我刚从西门出来。 // 安安：那我去西门。你就在门口吗？ // 小何：门口人多，我在对面的花店旁边。",
+    "activity": "Nhờ bạn đọc từng vai. Che chữ, phác họa hai cửa và đặt dấu chấm tại nơi Tiểu Hà chờ.",
+    "task": [
+      "小何从哪里出来？",
+      "小何现在站在哪里？"
+    ],
+    "answer": [
+      "西门",
+      "西门对面的花店旁边"
+    ],
+    "explanation": [
+      "Tiểu Hà nói 刚从西门出来.",
+      "Câu cuối xác định tiệm hoa đối diện cửa mà hai người vừa nói tới."
+    ],
+    "outcome": "Mô tả được địa điểm bằng cửa ga và cửa hàng làm mốc.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "小何从哪里出来？",
+        "options": [
+          "东门",
+          "西门",
+          "花店"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Tiểu Hà nói 刚从西门出来."
+      },
+      {
+        "prompt": "小何现在站在哪里？",
+        "options": [
+          "西门对面的花店旁边",
+          "东门里面",
+          "西门门口的人群中"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Câu cuối xác định tiệm hoa đối diện cửa mà hai người vừa nói tới."
+      }
+    ],
+    "translation_vi": "An An: Mình đến ga rồi, đang đợi cậu ở cửa đông. Tiểu Hà: Hôm nay cửa đông đóng. Mình vừa ra từ cửa tây. An An: Vậy mình đến cửa tây. Cậu đang ở ngay cửa à? Tiểu Hà: Trước cửa đông người lắm, mình ở cạnh tiệm hoa phía đối diện.",
+    "vocabulary": [
+      "东门",
+      "西门",
+      "对面"
+    ],
+    "grammar": "从 + nơi chốn + 出来",
+    "pinyin": "Ān'an: Wǒ dào chēzhàn le, zài dōngmén děng nǐ. Xiǎo Hé: Jīntiān dōngmén guān le. Wǒ gāng cóng xīmén chūlái. Ān'an: Nà wǒ qù xīmén. Nǐ jiù zài ménkǒu ma? Xiǎo Hé: Ménkǒu rén duō, wǒ zài duìmiàn de huādiàn pángbiān.",
+    "script": "安安：我到车站了，在东门等你。 // 小何：今天东门关了。我刚从西门出来。 // 安安：那我去西门。你就在门口吗？ // 小何：门口人多，我在对面的花店旁边。",
+    "dialogue": [
+      {
+        "role": "安安",
+        "utterance": "我到车站了，在东门等你。"
+      },
+      {
+        "role": "小何",
+        "utterance": "今天东门关了。我刚从西门出来。"
+      },
+      {
+        "role": "安安",
+        "utterance": "那我去西门。你就在门口吗？"
+      },
+      {
+        "role": "小何",
+        "utterance": "门口人多，我在对面的花店旁边。"
+      }
+    ],
+    "roles": [
+      "安安",
+      "小何"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 24,
+    "practice_instructions": "Nhờ bạn đọc từng vai. Che chữ, phác họa hai cửa và đặt dấu chấm tại nơi Tiểu Hà chờ."
+  },
+  {
+    "id": "LS-00006",
+    "title": "一张缺了日期的照片",
+    "language": "zh",
+    "module": "listening",
+    "level": "B1",
+    "domain": 19,
+    "topic": "Ghi chép ở vườn rau",
+    "objective": "Sắp xếp thời điểm chụp, tưới và gửi ảnh.",
+    "teaching": "Từ 才 đặt việc tưới sau thời điểm chụp. Chú ý sự khác nhau giữa 拍 và 发.",
+    "example": "小梅：我把菜地的照片发给你了。你看，叶子比上次大了。 // 老周：这是今天拍的吗？文件上只有发送时间。 // 小梅：不是，是前天下午拍的。昨天我才给菜地浇水。 // 老周：那记录里要分开写，不能说照片里已经能看到浇水后的变化。",
+    "activity": "Che lời thoại, nhờ bạn đọc hai lần rồi vẽ trục hôm kia, hôm qua, hôm nay. Đặt hành động có mốc rõ ràng lên trục.",
+    "task": [
+      "照片是什么时候拍的？",
+      "为什么不能用照片说明这次浇水的效果？"
+    ],
+    "answer": [
+      "前天下午",
+      "照片是在浇水前拍的。"
+    ],
+    "explanation": [
+      "Tiểu Mai sửa lại là chiều hôm kia.",
+      "Ảnh chụp chiều hôm kia, còn việc tưới diễn ra hôm qua."
+    ],
+    "outcome": "Giải thích được giới hạn của bức ảnh khi viết nhật ký.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "照片是什么时候拍的？",
+        "options": [
+          "今天上午",
+          "昨天下午",
+          "前天下午"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Tiểu Mai sửa lại là chiều hôm kia."
+      },
+      {
+        "prompt": "为什么不能用照片说明这次浇水的效果？",
+        "options": [
+          "照片是在浇水前拍的。",
+          "照片没有叶子。",
+          "菜地还没浇水。"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Ảnh chụp chiều hôm kia, còn việc tưới diễn ra hôm qua."
+      }
+    ],
+    "translation_vi": "Tiểu Mai: Cháu gửi bác ảnh luống rau rồi. Bác xem, lá lớn hơn lần trước. Bác Chu: Ảnh chụp hôm nay à? Tệp chỉ có thời gian gửi. Tiểu Mai: Không, chụp chiều hôm kia. Mãi hôm qua cháu mới tưới luống rau. Bác Chu: Vậy trong sổ phải ghi hai việc riêng ra, không thể bảo rằng ảnh đã cho thấy sự thay đổi sau khi tưới.",
+    "vocabulary": [
+      "前天",
+      "发送时间",
+      "浇水"
+    ],
+    "grammar": "是……的 nhấn vào thời điểm sự việc",
+    "pinyin": "Xiǎo Méi: Wǒ bǎ càidì de zhàopiàn fā gěi nǐ le. Nǐ kàn, yèzi bǐ shàng cì dà le. Lǎo Zhōu: Zhè shì jīntiān pāi de ma? Wénjiàn shang zhǐ yǒu fāsòng shíjiān. Xiǎo Méi: Bú shì, shì qiántiān xiàwǔ pāi de. Zuótiān wǒ cái gěi càidì jiāoshuǐ. Lǎo Zhōu: Nà jìlù lǐ yào fēnkāi xiě, bù néng shuō zhàopiàn lǐ yǐjīng néng kàndào jiāoshuǐ hòu de biànhuà.",
+    "script": "小梅：我把菜地的照片发给你了。你看，叶子比上次大了。 // 老周：这是今天拍的吗？文件上只有发送时间。 // 小梅：不是，是前天下午拍的。昨天我才给菜地浇水。 // 老周：那记录里要分开写，不能说照片里已经能看到浇水后的变化。",
+    "dialogue": [
+      {
+        "role": "小梅",
+        "utterance": "我把菜地的照片发给你了。你看，叶子比上次大了。"
+      },
+      {
+        "role": "老周",
+        "utterance": "这是今天拍的吗？文件上只有发送时间。"
+      },
+      {
+        "role": "小梅",
+        "utterance": "不是，是前天下午拍的。昨天我才给菜地浇水。"
+      },
+      {
+        "role": "老周",
+        "utterance": "那记录里要分开写，不能说照片里已经能看到浇水后的变化。"
+      }
+    ],
+    "roles": [
+      "小梅",
+      "老周"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 34,
+    "practice_instructions": "Che lời thoại, nhờ bạn đọc hai lần rồi vẽ trục hôm kia, hôm qua, hôm nay. Đặt hành động có mốc rõ ràng lên trục."
+  },
+  {
+    "id": "LS-00007",
+    "title": "请把字再放大一点",
+    "language": "zh",
+    "module": "listening",
+    "level": "B1",
+    "domain": 37,
+    "topic": "Góp ý cho áp phích",
+    "objective": "Phân biệt sửa vị trí của ảnh với thay ảnh.",
+    "teaching": "So sánh hai động từ 移 và 换. Cả hai liên quan bức ảnh nhưng chỉ một việc được chấp thuận.",
+    "example": "设计师：这是新版海报。我把标题换成了深色。 // 店主：标题现在很清楚，不过地址还是太小。 // 设计师：我可以把照片往上移，给下面的地址多留一行。 // 店主：好。照片不用换，顾客一看就知道是我们店。",
+    "activity": "Nghe lời đọc hai vai, đánh dấu ba yếu tố tiêu đề, địa chỉ, ảnh và mô tả thay đổi cho mỗi yếu tố.",
+    "task": [
+      "店主觉得什么还是太小？",
+      "店主为什么想保留照片？"
+    ],
+    "answer": [
+      "地址",
+      "顾客能认出这家店。"
+    ],
+    "explanation": [
+      "Chủ cửa hàng dùng 地址还是太小.",
+      "Khách nhìn ảnh là nhận ra cửa hàng, nên ảnh vẫn có tác dụng."
+    ],
+    "outcome": "Ghi lại được yêu cầu thiết kế mà vẫn giữ ảnh nhận diện của cửa hàng.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "店主觉得什么还是太小？",
+        "options": [
+          "照片",
+          "地址",
+          "标题"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Chủ cửa hàng dùng 地址还是太小."
+      },
+      {
+        "prompt": "店主为什么想保留照片？",
+        "options": [
+          "顾客能认出这家店。",
+          "照片已经移好了。",
+          "照片上有新地址。"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Khách nhìn ảnh là nhận ra cửa hàng, nên ảnh vẫn có tác dụng."
+      }
+    ],
+    "translation_vi": "Nhà thiết kế: Đây là áp phích bản mới. Tôi đã đổi tiêu đề sang màu đậm. Chủ cửa hàng: Tiêu đề giờ rõ rồi nhưng địa chỉ vẫn nhỏ quá. Nhà thiết kế: Tôi có thể dịch ảnh lên trên để dành thêm một dòng bên dưới cho địa chỉ. Chủ cửa hàng: Được. Không cần đổi ảnh, khách nhìn là biết cửa hàng mình ngay.",
+    "vocabulary": [
+      "海报",
+      "标题",
+      "往上移"
+    ],
+    "grammar": "把 + tân ngữ + động từ chỉ sự thay đổi",
+    "pinyin": "Shèjìshī: Zhè shì xīnbǎn hǎibào. Wǒ bǎ biāotí huàn chéng le shēnsè. Diànzhǔ: Biāotí xiànzài hěn qīngchu, búguò dìzhǐ háishi tài xiǎo. Shèjìshī: Wǒ kěyǐ bǎ zhàopiàn wǎng shàng yí, gěi xiàmian de dìzhǐ duō liú yì háng. Diànzhǔ: Hǎo. Zhàopiàn bú yòng huàn, gùkè yí kàn jiù zhīdào shì wǒmen diàn.",
+    "script": "设计师：这是新版海报。我把标题换成了深色。 // 店主：标题现在很清楚，不过地址还是太小。 // 设计师：我可以把照片往上移，给下面的地址多留一行。 // 店主：好。照片不用换，顾客一看就知道是我们店。",
+    "dialogue": [
+      {
+        "role": "设计师",
+        "utterance": "这是新版海报。我把标题换成了深色。"
+      },
+      {
+        "role": "店主",
+        "utterance": "标题现在很清楚，不过地址还是太小。"
+      },
+      {
+        "role": "设计师",
+        "utterance": "我可以把照片往上移，给下面的地址多留一行。"
+      },
+      {
+        "role": "店主",
+        "utterance": "好。照片不用换，顾客一看就知道是我们店。"
+      }
+    ],
+    "roles": [
+      "设计师",
+      "店主"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 31,
+    "practice_instructions": "Nghe lời đọc hai vai, đánh dấu ba yếu tố tiêu đề, địa chỉ, ảnh và mô tả thay đổi cho mỗi yếu tố."
+  },
+  {
+    "id": "LS-00008",
+    "title": "晚一点还书",
+    "language": "zh",
+    "module": "listening",
+    "level": "A2",
+    "domain": 2,
+    "topic": "Thương lượng hạn trả sách",
+    "objective": "Nghe để phân biệt thời điểm trả và thời điểm nhận.",
+    "teaching": "Chữ 还 được đọc huán khi mang nghĩa trả, đọc hái trong 还有 mang nghĩa vẫn còn.",
+    "example": "学生：老师，这本书我明天还，可以吗？还有一页没看完。 // 老师：明天上午我要带去上课。你今晚能看完吗？ // 学生：能。我晚上八点放到办公室门口的书箱里。 // 老师：好，我明早从书箱里拿。",
+    "activity": "Nhờ bạn đọc đối thoại khi che chữ. Ghi hai thời điểm và động từ tương ứng rồi đọc lại hai cách dùng của 还.",
+    "task": [
+      "学生最后决定什么时候还书？",
+      "明早谁去书箱拿书？"
+    ],
+    "answer": [
+      "今晚八点",
+      "老师"
+    ],
+    "explanation": [
+      "Phương án cuối của học sinh là bỏ sách vào thùng lúc tám giờ tối.",
+      "Giáo viên nói 我明早从书箱里拿."
+    ],
+    "outcome": "Nêu đúng ai đặt sách vào thùng và ai lấy ra.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "学生最后决定什么时候还书？",
+        "options": [
+          "明天下午",
+          "今晚八点",
+          "明天上午"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Phương án cuối của học sinh là bỏ sách vào thùng lúc tám giờ tối."
+      },
+      {
+        "prompt": "明早谁去书箱拿书？",
+        "options": [
+          "老师",
+          "学生",
+          "办公室的客人"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Giáo viên nói 我明早从书箱里拿."
+      }
+    ],
+    "translation_vi": "Học sinh: Thưa cô, mai em trả cuốn này được không ạ? Em còn một trang chưa đọc xong. Giáo viên: Sáng mai cô cần mang đi dạy. Tối nay em đọc xong được không? Học sinh: Được ạ. Tám giờ tối em sẽ bỏ vào thùng sách ở cửa văn phòng. Giáo viên: Được, sáng mai cô lấy ở thùng.",
+    "vocabulary": [
+      "还书",
+      "看完",
+      "书箱"
+    ],
+    "grammar": "完 là bổ ngữ chỉ kết quả hoàn tất",
+    "pinyin": "Xuésheng: Lǎoshī, zhè běn shū wǒ míngtiān huán, kěyǐ ma? Hái yǒu yí yè méi kàn wán. Lǎoshī: Míngtiān shàngwǔ wǒ yào dài qù shàngkè. Nǐ jīnwǎn néng kàn wán ma? Xuésheng: Néng. Wǒ wǎnshang bā diǎn fàng dào bàngōngshì ménkǒu de shūxiāng lǐ. Lǎoshī: Hǎo, wǒ míngzǎo cóng shūxiāng lǐ ná.",
+    "script": "学生：老师，这本书我明天还，可以吗？还有一页没看完。 // 老师：明天上午我要带去上课。你今晚能看完吗？ // 学生：能。我晚上八点放到办公室门口的书箱里。 // 老师：好，我明早从书箱里拿。",
+    "dialogue": [
+      {
+        "role": "学生",
+        "utterance": "老师，这本书我明天还，可以吗？还有一页没看完。"
+      },
+      {
+        "role": "老师",
+        "utterance": "明天上午我要带去上课。你今晚能看完吗？"
+      },
+      {
+        "role": "学生",
+        "utterance": "能。我晚上八点放到办公室门口的书箱里。"
+      },
+      {
+        "role": "老师",
+        "utterance": "好，我明早从书箱里拿。"
+      }
+    ],
+    "roles": [
+      "学生",
+      "老师"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 29,
+    "practice_instructions": "Nhờ bạn đọc đối thoại khi che chữ. Ghi hai thời điểm và động từ tương ứng rồi đọc lại hai cách dùng của 还."
+  },
+  {
+    "id": "LS-00009",
+    "title": "A reminder with no date",
+    "language": "en",
+    "module": "listening",
+    "level": "B2",
+    "domain": 12,
+    "topic": "Phản hồi về giao diện lịch",
+    "objective": "Nhận ra sự khác nhau giữa vị trí lưu và thông báo hiển thị.",
+    "teaching": "Ghi nguyên hai cụm sau said và should say. Một cụm là thông báo đang có, cụm kia là thay đổi được đề xuất.",
+    "example": "Tester：I saved the reminder without choosing a date. I thought it would appear today. // Designer：The calendar only shows dated items. Your reminder is in the list below it. // Tester：Then the save message confused me. It said “Added to calendar.” // Designer：I see. For an undated reminder, the message should say “Saved to list.” That would tell you where to look.",
+    "activity": "Che lời thoại khi nghe người khác đọc, rồi nối mỗi thông báo với trạng thái hiện tại hoặc dự kiến.",
+    "task": [
+      "Where was the undated reminder saved?",
+      "What change does the designer suggest?"
+    ],
+    "answer": [
+      "In the list below the calendar",
+      "Changing the confirmation text for undated items"
+    ],
+    "explanation": [
+      "Nhà thiết kế nói mục nằm trong danh sách phía dưới.",
+      "Người thiết kế đề xuất thông báo Saved to list cho trường hợp chưa chọn ngày."
+    ],
+    "outcome": "Giải thích được nguyên nhân người thử tìm nhầm nơi.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "Where was the undated reminder saved?",
+        "options": [
+          "In today's calendar cell",
+          "In the list below the calendar",
+          "In a deleted folder"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Nhà thiết kế nói mục nằm trong danh sách phía dưới."
+      },
+      {
+        "prompt": "What change does the designer suggest?",
+        "options": [
+          "Automatically assigning today's date",
+          "Removing the list",
+          "Changing the confirmation text for undated items"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Người thiết kế đề xuất thông báo Saved to list cho trường hợp chưa chọn ngày."
+      }
+    ],
+    "translation_vi": "Người thử: Tôi lưu lời nhắc mà chưa chọn ngày. Tôi tưởng hôm nay nó sẽ hiện lên. Nhà thiết kế: Lịch chỉ hiện các mục có ngày. Lời nhắc nằm trong danh sách bên dưới. Người thử: Vậy thông báo sau khi lưu đã làm tôi hiểu nhầm. Nó ghi “Đã thêm vào lịch.” Nhà thiết kế: Tôi hiểu rồi. Với lời nhắc chưa có ngày, thông báo nên ghi “Đã lưu vào danh sách”. Như vậy anh sẽ biết tìm ở đâu.",
+    "vocabulary": [
+      "dated item",
+      "reminder",
+      "save message"
+    ],
+    "grammar": "would trong That would tell you nêu tác dụng dự kiến",
+    "script": "Tester：I saved the reminder without choosing a date. I thought it would appear today. // Designer：The calendar only shows dated items. Your reminder is in the list below it. // Tester：Then the save message confused me. It said “Added to calendar.” // Designer：I see. For an undated reminder, the message should say “Saved to list.” That would tell you where to look.",
+    "dialogue": [
+      {
+        "role": "Tester",
+        "utterance": "I saved the reminder without choosing a date. I thought it would appear today."
+      },
+      {
+        "role": "Designer",
+        "utterance": "The calendar only shows dated items. Your reminder is in the list below it."
+      },
+      {
+        "role": "Tester",
+        "utterance": "Then the save message confused me. It said “Added to calendar.”"
+      },
+      {
+        "role": "Designer",
+        "utterance": "I see. For an undated reminder, the message should say “Saved to list.” That would tell you where to look."
+      }
+    ],
+    "roles": [
+      "Tester",
+      "Designer"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 29,
+    "practice_instructions": "Che lời thoại khi nghe người khác đọc, rồi nối mỗi thông báo với trạng thái hiện tại hoặc dự kiến."
+  },
+  {
+    "id": "LS-00010",
+    "title": "The cabin number on the ticket",
+    "language": "en",
+    "module": "listening",
+    "level": "B1",
+    "domain": 18,
+    "topic": "Nghe chỉ dẫn trên phà",
+    "objective": "Nghe phân biệt số gần âm bằng phần đọc từng chữ số.",
+    "teaching": "Gặp một cặp số dễ lẫn, nghe cả cách đọc toàn số và cách nhắc lại từng chữ số để kiểm chứng.",
+    "example": "Passenger：My ticket says cabin fourteen, but my key has forty on it. Did I hear the number wrong? // Steward：Let me check. Your cabin is fourteen, one four. The key you have belongs to cabin forty, four zero. // Passenger：So do I need a new ticket? // Steward：Just a different key. Please keep the ticket while I get the right one.",
+    "activity": "Nhờ bạn đọc tự nhiên lời thoại hai lần. Ghi thành hai cột số khoang trên vé và số khoang của chìa.",
+    "task": [
+      "Which cabin is on the passenger's ticket?",
+      "What should the passenger keep?"
+    ],
+    "answer": [
+      "14",
+      "The ticket"
+    ],
+    "explanation": [
+      "Nhân viên xác nhận fourteen, one four.",
+      "Nhân viên yêu cầu giữ vé trong lúc lấy chìa khác."
+    ],
+    "outcome": "Đọc lại được hai số theo từng chữ số và yêu cầu đổi đúng vật.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "Which cabin is on the passenger's ticket?",
+        "options": [
+          "40",
+          "44",
+          "14"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Nhân viên xác nhận fourteen, one four."
+      },
+      {
+        "prompt": "What should the passenger keep?",
+        "options": [
+          "The present key",
+          "The ticket",
+          "Both keys"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Nhân viên yêu cầu giữ vé trong lúc lấy chìa khác."
+      }
+    ],
+    "translation_vi": "Hành khách: Vé của tôi ghi khoang mười bốn nhưng chìa khóa đề số bốn mươi. Có phải tôi nghe nhầm không? Nhân viên: Để tôi kiểm tra. Khoang của ông là mười bốn, một bốn. Chìa khóa ông cầm thuộc khoang bốn mươi, bốn không. Hành khách: Vậy tôi cần vé mới à? Nhân viên: Chỉ cần đổi chìa khóa thôi. Ông cứ giữ vé trong khi tôi lấy đúng chìa.",
+    "vocabulary": [
+      "fourteen",
+      "forty",
+      "belongs to"
+    ],
+    "grammar": "belong to chỉ quan hệ giữa đồ vật và nơi sử dụng",
+    "script": "Passenger：My ticket says cabin fourteen, but my key has forty on it. Did I hear the number wrong? // Steward：Let me check. Your cabin is fourteen, one four. The key you have belongs to cabin forty, four zero. // Passenger：So do I need a new ticket? // Steward：Just a different key. Please keep the ticket while I get the right one.",
+    "dialogue": [
+      {
+        "role": "Passenger",
+        "utterance": "My ticket says cabin fourteen, but my key has forty on it. Did I hear the number wrong?"
+      },
+      {
+        "role": "Steward",
+        "utterance": "Let me check. Your cabin is fourteen, one four. The key you have belongs to cabin forty, four zero."
+      },
+      {
+        "role": "Passenger",
+        "utterance": "So do I need a new ticket?"
+      },
+      {
+        "role": "Steward",
+        "utterance": "Just a different key. Please keep the ticket while I get the right one."
+      }
+    ],
+    "roles": [
+      "Passenger",
+      "Steward"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 28,
+    "practice_instructions": "Nhờ bạn đọc tự nhiên lời thoại hai lần. Ghi thành hai cột số khoang trên vé và số khoang của chìa."
+  },
+  {
+    "id": "LS-00011",
+    "title": "茶还没加糖",
+    "language": "zh",
+    "module": "listening",
+    "level": "A2",
+    "domain": 31,
+    "topic": "Gọi đồ uống",
+    "objective": "Nghe yêu cầu trì hoãn hành động và lý do.",
+    "teaching": "先别放 có nghĩa hãy khoan cho vào. Câu sau cho biết người nói muốn làm gì trước khi quyết định.",
+    "example": "店员：您的热茶好了。糖要放在里面吗？ // 客人：先别放。我想先尝一口。 // 店员：好，我把糖包放在杯子旁边。 // 客人：谢谢。这样我可以自己决定放多少。",
+    "activity": "Nghe hội thoại qua lời đọc, vẽ cốc và gói đường ở đúng chỗ rồi giải thích vì sao.",
+    "task": [
+      "糖包最后放在哪里？",
+      "客人想先做什么？"
+    ],
+    "answer": [
+      "杯子旁边",
+      "尝一口茶"
+    ],
+    "explanation": [
+      "Nhân viên nói 放在杯子旁边.",
+      "Khách nói 想先尝一口."
+    ],
+    "outcome": "Phân biệt được ý muốn thử trước với việc từ chối đường hoàn toàn.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "糖包最后放在哪里？",
+        "options": [
+          "茶里面",
+          "杯子旁边",
+          "客人的包里"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Nhân viên nói 放在杯子旁边."
+      },
+      {
+        "prompt": "客人想先做什么？",
+        "options": [
+          "尝一口茶",
+          "换杯子",
+          "再买一包糖"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Khách nói 想先尝一口."
+      }
+    ],
+    "translation_vi": "Nhân viên: Trà nóng của quý khách xong rồi. Có cho đường vào trong không ạ? Khách: Khoan cho vào. Tôi muốn nếm một ngụm trước. Nhân viên: Vâng, tôi để gói đường cạnh cốc. Khách: Cảm ơn. Như vậy tôi có thể tự quyết định cho bao nhiêu.",
+    "vocabulary": [
+      "尝一口",
+      "糖包",
+      "自己决定"
+    ],
+    "grammar": "先别 + động từ yêu cầu tạm hoãn",
+    "pinyin": "Diànyuán: Nín de rè chá hǎo le. Táng yào fàng zài lǐmian ma? Kèrén: Xiān bié fàng. Wǒ xiǎng xiān cháng yì kǒu. Diànyuán: Hǎo, wǒ bǎ tángbāo fàng zài bēizi pángbiān. Kèrén: Xièxie. Zhèyàng wǒ kěyǐ zìjǐ juédìng fàng duōshao.",
+    "script": "店员：您的热茶好了。糖要放在里面吗？ // 客人：先别放。我想先尝一口。 // 店员：好，我把糖包放在杯子旁边。 // 客人：谢谢。这样我可以自己决定放多少。",
+    "dialogue": [
+      {
+        "role": "店员",
+        "utterance": "您的热茶好了。糖要放在里面吗？"
+      },
+      {
+        "role": "客人",
+        "utterance": "先别放。我想先尝一口。"
+      },
+      {
+        "role": "店员",
+        "utterance": "好，我把糖包放在杯子旁边。"
+      },
+      {
+        "role": "客人",
+        "utterance": "谢谢。这样我可以自己决定放多少。"
+      }
+    ],
+    "roles": [
+      "店员",
+      "客人"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 24,
+    "practice_instructions": "Nghe hội thoại qua lời đọc, vẽ cốc và gói đường ở đúng chỗ rồi giải thích vì sao."
+  },
+  {
+    "id": "LS-00012",
+    "title": "留言里的两个名字",
+    "language": "zh",
+    "module": "listening",
+    "level": "B1",
+    "domain": 8,
+    "topic": "Xác nhận người nhận thông báo",
+    "objective": "Dùng tên và vai trò để xử lý trường hợp trùng họ.",
+    "teaching": "Cặp từ 上次 và 这次 giúp gắn hai người cùng họ vào hai nhiệm vụ khác nhau.",
+    "example": "同事甲：请把活动通知发给王老师，她负责报名。 // 同事乙：是上次负责海报的那位王老师吗？ // 同事甲：不是，那位叫王宁。这次要找的是王静，我把她的邮箱发给你。 // 同事乙：明白了。我等你的邮件地址，再发通知。",
+    "activity": "Nghe người đọc hai vai khi che chữ, ghi hai tên và công việc. Gạch chân người sẽ nhận thư trong lượt này.",
+    "task": [
+      "谁负责这次报名？",
+      "同事乙为什么还没发通知？"
+    ],
+    "answer": [
+      "王静",
+      "还在等邮箱地址。"
+    ],
+    "explanation": [
+      "Người cần tìm lần này là Vương Tĩnh, phụ trách đăng ký.",
+      "Câu cuối nói người gửi đang đợi địa chỉ email."
+    ],
+    "outcome": "Chọn được đúng người nhận và điều kiện để gửi thư.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "谁负责这次报名？",
+        "options": [
+          "王宁",
+          "两位老师",
+          "王静"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Người cần tìm lần này là Vương Tĩnh, phụ trách đăng ký."
+      },
+      {
+        "prompt": "同事乙为什么还没发通知？",
+        "options": [
+          "还在等邮箱地址。",
+          "还在做海报。",
+          "报名已经结束了。"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Câu cuối nói người gửi đang đợi địa chỉ email."
+      }
+    ],
+    "translation_vi": "Đồng nghiệp A: Gửi thông báo sự kiện cho cô Vương nhé, cô ấy phụ trách đăng ký. Đồng nghiệp B: Là cô Vương lần trước phụ trách áp phích à? Đồng nghiệp A: Không, người ấy tên Vương Ninh. Lần này cần tìm Vương Tĩnh, tôi sẽ gửi địa chỉ email của cô ấy. Đồng nghiệp B: Rõ rồi. Tôi đợi địa chỉ email cậu gửi rồi mới gửi thông báo.",
+    "vocabulary": [
+      "负责",
+      "报名",
+      "邮件地址"
+    ],
+    "grammar": "……的是…… xác định đúng người được nhắc đến",
+    "pinyin": "Tóngshì jiǎ: Qǐng bǎ huódòng tōngzhī fā gěi Wáng lǎoshī, tā fùzé bàomíng. Tóngshì yǐ: Shì shàng cì fùzé hǎibào de nà wèi Wáng lǎoshī ma? Tóngshì jiǎ: Bú shì, nà wèi jiào Wáng Níng. Zhè cì yào zhǎo de shì Wáng Jìng, wǒ bǎ tā de yóuxiāng fā gěi nǐ. Tóngshì yǐ: Míngbai le. Wǒ děng nǐ de yóujiàn dìzhǐ, zài fā tōngzhī.",
+    "script": "同事甲：请把活动通知发给王老师，她负责报名。 // 同事乙：是上次负责海报的那位王老师吗？ // 同事甲：不是，那位叫王宁。这次要找的是王静，我把她的邮箱发给你。 // 同事乙：明白了。我等你的邮件地址，再发通知。",
+    "dialogue": [
+      {
+        "role": "同事甲",
+        "utterance": "请把活动通知发给王老师，她负责报名。"
+      },
+      {
+        "role": "同事乙",
+        "utterance": "是上次负责海报的那位王老师吗？"
+      },
+      {
+        "role": "同事甲",
+        "utterance": "不是，那位叫王宁。这次要找的是王静，我把她的邮箱发给你。"
+      },
+      {
+        "role": "同事乙",
+        "utterance": "明白了。我等你的邮件地址，再发通知。"
+      }
+    ],
+    "roles": [
+      "同事甲",
+      "同事乙"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 32,
+    "practice_instructions": "Nghe người đọc hai vai khi che chữ, ghi hai tên và công việc. Gạch chân người sẽ nhận thư trong lượt này."
+  },
+  {
+    "id": "LS-00013",
+    "title": "Before the room is ready",
+    "language": "en",
+    "module": "listening",
+    "level": "A2",
+    "domain": 30,
+    "topic": "Nghe hướng dẫn lúc đến khách sạn",
+    "objective": "Nghe để phân biệt công dụng của hai vật được nhắc đến.",
+    "teaching": "Đại từ it trong collect it thay cho bag. Câu cuối tách thẻ hành lý với chìa khóa phòng.",
+    "example": "Guest：I know I'm early. Can I leave this bag here while I visit the market? // Receptionist：Of course. Here is a blue ticket for your bag. Bring it back when you collect it. // Guest：Is this also my room key? // Receptionist：No, it's only for the bag. Please come back after two for your room key.",
+    "activity": "Nhờ bạn đọc đoạn hội thoại. Ghi tên mỗi vật cạnh hành động mà nó cho phép thực hiện.",
+    "task": [
+      "What is the blue ticket for?",
+      "When can the guest get the room key?"
+    ],
+    "answer": [
+      "Collecting the guest's bag",
+      "After two"
+    ],
+    "explanation": [
+      "Lễ tân nói thẻ chỉ dành cho chiếc túi và phải mang lại khi lấy túi.",
+      "Lễ tân hẹn khách quay lại sau hai giờ lấy chìa khóa."
+    ],
+    "outcome": "Giải thích được khách mang thẻ xanh tới quầy để làm gì.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "What is the blue ticket for?",
+        "options": [
+          "Opening the market gate",
+          "Collecting the guest's bag",
+          "Opening the guest's room"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Lễ tân nói thẻ chỉ dành cho chiếc túi và phải mang lại khi lấy túi."
+      },
+      {
+        "prompt": "When can the guest get the room key?",
+        "options": [
+          "After two",
+          "At the market",
+          "Before leaving the bag"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Lễ tân hẹn khách quay lại sau hai giờ lấy chìa khóa."
+      }
+    ],
+    "translation_vi": "Khách: Tôi biết mình đến sớm. Tôi có thể gửi chiếc túi này ở đây trong lúc đi chợ không? Lễ tân: Tất nhiên. Đây là thẻ màu xanh cho hành lý. Khi nhận túi, xin mang thẻ lại. Khách: Đây có phải cũng là chìa khóa phòng của tôi không? Lễ tân: Không, thẻ này chỉ dùng cho hành lý. Xin quay lại sau hai giờ để nhận chìa khóa phòng.",
+    "vocabulary": [
+      "leave a bag",
+      "collect",
+      "room key"
+    ],
+    "grammar": "when + mệnh đề chỉ thời điểm",
+    "script": "Guest：I know I'm early. Can I leave this bag here while I visit the market? // Receptionist：Of course. Here is a blue ticket for your bag. Bring it back when you collect it. // Guest：Is this also my room key? // Receptionist：No, it's only for the bag. Please come back after two for your room key.",
+    "dialogue": [
+      {
+        "role": "Guest",
+        "utterance": "I know I'm early. Can I leave this bag here while I visit the market?"
+      },
+      {
+        "role": "Receptionist",
+        "utterance": "Of course. Here is a blue ticket for your bag. Bring it back when you collect it."
+      },
+      {
+        "role": "Guest",
+        "utterance": "Is this also my room key?"
+      },
+      {
+        "role": "Receptionist",
+        "utterance": "No, it's only for the bag. Please come back after two for your room key."
+      }
+    ],
+    "roles": [
+      "Guest",
+      "Receptionist"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 26,
+    "practice_instructions": "Nhờ bạn đọc đoạn hội thoại. Ghi tên mỗi vật cạnh hành động mà nó cho phép thực hiện."
+  },
+  {
+    "id": "LS-00014",
+    "title": "An order or an enquiry?",
+    "language": "en",
+    "module": "listening",
+    "level": "B2",
+    "domain": 3,
+    "topic": "Làm rõ mức độ cam kết",
+    "objective": "Phân biệt yêu cầu báo giá với yêu cầu giữ hàng.",
+    "teaching": "Cụm hold off on that trả lời đề nghị ngay trước đó. Hãy tìm đối tượng của that trước khi suy đoán ý định người mua.",
+    "example": "Buyer：Could you send me a price for forty chairs, including delivery? // Seller：Certainly. Shall I reserve forty for you until Friday? // Buyer：Please hold off on that. Our committee still has to compare two designs. I just need the written figure for tomorrow's meeting. // Seller：Understood. I'll send a quotation this afternoon and leave the stock available.",
+    "activity": "Nghe hai lượt, ghi hai hành động người bán có thể thực hiện và đánh dấu hành động được chấp thuận.",
+    "task": [
+      "Why does the buyer need a written figure?",
+      "What will the seller do this afternoon?"
+    ],
+    "answer": [
+      "To discuss it at a committee meeting",
+      "Send a quotation without reserving chairs"
+    ],
+    "explanation": [
+      "Người mua nói chỉ cần con số cho cuộc họp ngày mai.",
+      "Người bán đồng ý gửi báo giá và vẫn để hàng cho khách khác."
+    ],
+    "outcome": "Diễn đạt đúng cam kết cuối cùng của người bán bằng một câu.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "Why does the buyer need a written figure?",
+        "options": [
+          "To cancel an existing order",
+          "To prove delivery has happened",
+          "To discuss it at a committee meeting"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Người mua nói chỉ cần con số cho cuộc họp ngày mai."
+      },
+      {
+        "prompt": "What will the seller do this afternoon?",
+        "options": [
+          "Send a quotation without reserving chairs",
+          "Reserve the chairs until Friday",
+          "Deliver both designs"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Người bán đồng ý gửi báo giá và vẫn để hàng cho khách khác."
+      }
+    ],
+    "translation_vi": "Người mua: Anh có thể cho tôi giá bốn mươi chiếc ghế, gồm cả phí giao hàng không? Người bán: Được. Tôi giữ cho chị bốn mươi chiếc tới thứ Sáu nhé? Người mua: Khoan hãy giữ. Ban của chúng tôi còn phải so sánh hai thiết kế. Tôi chỉ cần con số bằng văn bản cho cuộc họp ngày mai. Người bán: Tôi hiểu. Chiều nay tôi sẽ gửi báo giá và vẫn để số ghế đó cho khách khác đặt.",
+    "vocabulary": [
+      "including delivery",
+      "hold off",
+      "quotation"
+    ],
+    "grammar": "still has to + động từ diễn đạt bước quyết định còn lại",
+    "script": "Buyer：Could you send me a price for forty chairs, including delivery? // Seller：Certainly. Shall I reserve forty for you until Friday? // Buyer：Please hold off on that. Our committee still has to compare two designs. I just need the written figure for tomorrow's meeting. // Seller：Understood. I'll send a quotation this afternoon and leave the stock available.",
+    "dialogue": [
+      {
+        "role": "Buyer",
+        "utterance": "Could you send me a price for forty chairs, including delivery?"
+      },
+      {
+        "role": "Seller",
+        "utterance": "Certainly. Shall I reserve forty for you until Friday?"
+      },
+      {
+        "role": "Buyer",
+        "utterance": "Please hold off on that. Our committee still has to compare two designs. I just need the written figure for tomorrow's meeting."
+      },
+      {
+        "role": "Seller",
+        "utterance": "Understood. I'll send a quotation this afternoon and leave the stock available."
+      }
+    ],
+    "roles": [
+      "Buyer",
+      "Seller"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 27,
+    "practice_instructions": "Nghe hai lượt, ghi hai hành động người bán có thể thực hiện và đánh dấu hành động được chấp thuận."
+  },
+  {
+    "id": "LS-00015",
+    "title": "先听完再剪",
+    "language": "zh",
+    "module": "listening",
+    "level": "B1",
+    "domain": 38,
+    "topic": "Ghi âm phỏng vấn",
+    "objective": "Nghe và giải thích một quyết định biên tập âm thanh.",
+    "teaching": "没有人说话 mô tả không có lời nói, nhưng âm nền vẫn có thể mang thông tin. Đối chiếu số giây ban đầu và số giây được giữ.",
+    "example": "记者：这段采访开头有五秒没有人说话，我想剪掉。 // 编辑：先听听背景。你听见远处的钟声了吗？ // 记者：听见了，接着受访者才说他刚走出车站。 // 编辑：留两秒钟声吧。听众能先感到现场的气氛，开头也不会太长。",
+    "activity": "Nhờ bạn đọc chậm hai vai. Viết lại đề xuất đầu và đề xuất cuối với số giây tương ứng.",
+    "task": [
+      "编辑听到了什么背景声音？",
+      "编辑最后建议怎么处理？"
+    ],
+    "answer": [
+      "远处的钟声",
+      "保留两秒钟声"
+    ],
+    "explanation": [
+      "Biên tập viên hỏi trực tiếp về tiếng chuông ở xa.",
+      "Biên tập viên đề xuất giữ hai giây để gợi không khí nhưng phần đầu vẫn ngắn."
+    ],
+    "outcome": "Giải thích được lợi ích của phương án giữ một phần âm nền.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "编辑听到了什么背景声音？",
+        "options": [
+          "汽车喇叭声",
+          "远处的钟声",
+          "受访者的脚步声"
+        ],
+        "correct_index": 1,
+        "explanation_vi": "Biên tập viên hỏi trực tiếp về tiếng chuông ở xa."
+      },
+      {
+        "prompt": "编辑最后建议怎么处理？",
+        "options": [
+          "保留两秒钟声",
+          "保留五秒说话声",
+          "删掉整段采访"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Biên tập viên đề xuất giữ hai giây để gợi không khí nhưng phần đầu vẫn ngắn."
+      }
+    ],
+    "translation_vi": "Phóng viên: Năm giây đầu đoạn phỏng vấn này không có ai nói, tôi muốn cắt đi. Biên tập viên: Trước hết nghe âm nền đã. Anh có nghe tiếng chuông ở xa không? Phóng viên: Có, sau đó người được phỏng vấn mới nói anh ấy vừa ra khỏi ga. Biên tập viên: Giữ hai giây tiếng chuông nhé. Thính giả sẽ cảm nhận được không khí hiện trường trước mà phần mở đầu cũng không quá dài.",
+    "vocabulary": [
+      "采访",
+      "背景",
+      "钟声"
+    ],
+    "grammar": "接着……才…… đánh dấu nội dung xuất hiện sau",
+    "pinyin": "Jìzhě: Zhè duàn cǎifǎng kāitóu yǒu wǔ miǎo méiyǒu rén shuōhuà, wǒ xiǎng jiǎn diào. Biānjí: Xiān tīngting bèijǐng. Nǐ tīngjiàn yuǎnchù de zhōngshēng le ma? Jìzhě: Tīngjiàn le, jiēzhe shòufǎngzhě cái shuō tā gāng zǒu chū chēzhàn. Biānjí: Liú liǎng miǎo zhōngshēng ba. Tīngzhòng néng xiān gǎndào xiànchǎng de qìfēn, kāitóu yě bú huì tài cháng.",
+    "script": "记者：这段采访开头有五秒没有人说话，我想剪掉。 // 编辑：先听听背景。你听见远处的钟声了吗？ // 记者：听见了，接着受访者才说他刚走出车站。 // 编辑：留两秒钟声吧。听众能先感到现场的气氛，开头也不会太长。",
+    "dialogue": [
+      {
+        "role": "记者",
+        "utterance": "这段采访开头有五秒没有人说话，我想剪掉。"
+      },
+      {
+        "role": "编辑",
+        "utterance": "先听听背景。你听见远处的钟声了吗？"
+      },
+      {
+        "role": "记者",
+        "utterance": "听见了，接着受访者才说他刚走出车站。"
+      },
+      {
+        "role": "编辑",
+        "utterance": "留两秒钟声吧。听众能先感到现场的气氛，开头也不会太长。"
+      }
+    ],
+    "roles": [
+      "记者",
+      "编辑"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 32,
+    "practice_instructions": "Nhờ bạn đọc chậm hai vai. Viết lại đề xuất đầu và đề xuất cuối với số giây tương ứng."
+  },
+  {
+    "id": "LS-00016",
+    "title": "带回来的杯子是谁的",
+    "language": "zh",
+    "module": "listening",
+    "level": "A2",
+    "domain": 1,
+    "topic": "Nhận diện đồ vật qua miêu tả",
+    "objective": "Nghe đặc điểm phân biệt và mức chắc chắn của kết luận.",
+    "teaching": "Thông tin màu sắc trùng nhau nên phải nghe tiếp sau 不过. 可能 đánh dấu kết luận mới chỉ là suy đoán.",
+    "example": "阿林：桌上这个白杯子是你的吗？我从活动室带回来的。 // 小兰：我的也是白的，不过杯子上有一只猫。 // 阿林：这个上面没有猫，只有一片叶子。 // 小兰：那可能是小方的。先拍张照片问问他吧。",
+    "activity": "Nghe qua lời đọc, phác họa hai chiếc cốc và khoanh hình chưa rõ chủ sở hữu.",
+    "task": [
+      "小兰的杯子上有什么？",
+      "他们打算怎样确认杯子是谁的？"
+    ],
+    "answer": [
+      "一只猫",
+      "拍照片问小方"
+    ],
+    "explanation": [
+      "Tiểu Lan nói trên cốc của mình có một con mèo.",
+      "Tiểu Lan mới đoán có thể là của Tiểu Phương nên đề nghị chụp ảnh hỏi."
+    ],
+    "outcome": "Nêu được chi tiết loại trừ Tiểu Lan và bước xác minh tiếp theo.",
+    "minutes": 7,
+    "status": "REVIEW_REQUIRED",
+    "questions": [
+      {
+        "prompt": "小兰的杯子上有什么？",
+        "options": [
+          "一只猫",
+          "一片叶子",
+          "一朵花"
+        ],
+        "correct_index": 0,
+        "explanation_vi": "Tiểu Lan nói trên cốc của mình có một con mèo."
+      },
+      {
+        "prompt": "他们打算怎样确认杯子是谁的？",
+        "options": [
+          "把杯子放回桌下",
+          "直接送给小方",
+          "拍照片问小方"
+        ],
+        "correct_index": 2,
+        "explanation_vi": "Tiểu Lan mới đoán có thể là của Tiểu Phương nên đề nghị chụp ảnh hỏi."
+      }
+    ],
+    "translation_vi": "A Lâm: Chiếc cốc trắng trên bàn là của cậu à? Mình mang từ phòng sinh hoạt về. Tiểu Lan: Cốc của mình cũng trắng, nhưng trên cốc có hình con mèo. A Lâm: Trên chiếc này không có mèo, chỉ có hình một chiếc lá. Tiểu Lan: Vậy có thể là của Tiểu Phương. Chụp ảnh hỏi cậu ấy trước nhé.",
+    "vocabulary": [
+      "白的",
+      "叶子",
+      "可能"
+    ],
+    "grammar": "的 thay thế danh từ đã biết trong 我的",
+    "pinyin": "Ā Lín: Zhuō shang zhège bái bēizi shì nǐ de ma? Wǒ cóng huódòngshì dài huílai de. Xiǎo Lán: Wǒ de yě shì bái de, búguò bēizi shang yǒu yì zhī māo. Ā Lín: Zhège shàngmian méiyǒu māo, zhǐ yǒu yí piàn yèzi. Xiǎo Lán: Nà kěnéng shì Xiǎo Fāng de. Xiān pāi zhāng zhàopiàn wènwen tā ba.",
+    "script": "阿林：桌上这个白杯子是你的吗？我从活动室带回来的。 // 小兰：我的也是白的，不过杯子上有一只猫。 // 阿林：这个上面没有猫，只有一片叶子。 // 小兰：那可能是小方的。先拍张照片问问他吧。",
+    "dialogue": [
+      {
+        "role": "阿林",
+        "utterance": "桌上这个白杯子是你的吗？我从活动室带回来的。"
+      },
+      {
+        "role": "小兰",
+        "utterance": "我的也是白的，不过杯子上有一只猫。"
+      },
+      {
+        "role": "阿林",
+        "utterance": "这个上面没有猫，只有一片叶子。"
+      },
+      {
+        "role": "小兰",
+        "utterance": "那可能是小方的。先拍张照片问问他吧。"
+      }
+    ],
+    "roles": [
+      "阿林",
+      "小兰"
+    ],
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "estimated_audio_seconds": 29,
+    "practice_instructions": "Nghe qua lời đọc, phác họa hai chiếc cốc và khoanh hình chưa rõ chủ sở hữu."
+  }
+]

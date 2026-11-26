@@ -1,0 +1,42 @@
+{
+  "vocabulary": {
+    "target": 40000,
+    "actual": 726,
+    "status": "INCOMPLETE"
+  },
+  "examples": {
+    "target": 100000,
+    "actual": 770,
+    "status": "INCOMPLETE"
+  },
+  "reading": {
+    "target": 5000,
+    "actual": 16,
+    "status": "INCOMPLETE"
+  },
+  "listening": {
+    "target": 5000,
+    "actual": 16,
+    "status": "INCOMPLETE"
+  },
+  "speaking": {
+    "target": 5000,
+    "actual": 16,
+    "status": "INCOMPLETE"
+  },
+  "writing": {
+    "target": 5000,
+    "actual": 16,
+    "status": "INCOMPLETE"
+  },
+  "lessons": {
+    "target": 1000000,
+    "actual": 40,
+    "status": "INCOMPLETE"
+  },
+  "specialties": {
+    "target": 40,
+    "actual": 40,
+    "status": "COMPLETE"
+  }
+}

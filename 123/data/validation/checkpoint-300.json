@@ -1,0 +1,29 @@
+{
+  "checkpoint": "300/500",
+  "new_this_turn": 122,
+  "batch_actual": 300,
+  "vocabulary_total": 526,
+  "examples_total": 570,
+  "new_ids_first": "WB5-10405",
+  "new_ids_last": "WB5-10526",
+  "rejected_existing_or_duplicate_terms": [
+    "hallway",
+    "spare key",
+    "footnote",
+    "signature",
+    "capacitor",
+    "stairwell",
+    "numerator",
+    "denominator",
+    "waiting room",
+    "batch number",
+    "focus group",
+    "packing list",
+    "delivery window"
+  ],
+  "schema_and_id_checks": "PASS",
+  "audio_asset_status": "TEXT_SCRIPT_ONLY",
+  "legacy_overlap": "NOT_PROVIDED",
+  "human_linguistic_review": "REVIEW_REQUIRED",
+  "status": "INCOMPLETE"
+}

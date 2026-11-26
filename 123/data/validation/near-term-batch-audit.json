@@ -1,0 +1,183 @@
+{
+  "checkpoint_target": 400,
+  "actual_new_in_current_batch": 178,
+  "previous_batch_40": 40,
+  "new_this_turn": 138,
+  "batch_target": 500,
+  "first_id": "WB5-10227",
+  "last_id": "WB5-10404",
+  "next_id": "WB5-10405",
+  "duplicates_skipped": [
+    {
+      "term": "withdrawal",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "consent",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "audience",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "dataset",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "bug report",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "test case",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "sensor",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "relay",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "fare",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "runway",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "greenhouse",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "precipitate",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "constellation",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "expiry date",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "motivation",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "peer support",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "volunteer",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "loading dock",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "landlord",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "policyholder",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "claim form",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "bibliography",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "amendment",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "hearing",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "control panel",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "timetable",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "wetland",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "habitat",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "evaporation",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "variable",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "referral",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "patient record",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "community center",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "household",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "room key",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "side dish",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "pallet",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "typeface",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "draft",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "doormat",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "resistor",
+      "reason": "headword, Chinese headword, or example already exists"
+    },
+    {
+      "term": "bus lane",
+      "reason": "headword, Chinese headword, or example already exists"
+    }
+  ],
+  "status": "INCOMPLETE",
+  "legacy_overlap": "NOT_PROVIDED",
+  "linguistic_review": "REVIEW_REQUIRED"
+}

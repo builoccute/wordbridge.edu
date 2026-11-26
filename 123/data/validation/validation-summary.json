@@ -1,0 +1,68 @@
+{
+  "vocabulary": {
+    "actual_records": 726,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "examples": {
+    "actual_records": 770,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "reading": {
+    "actual_records": 16,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "listening": {
+    "actual_records": 16,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "speaking": {
+    "actual_records": 16,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "writing": {
+    "actual_records": 16,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "grammar": {
+    "actual_records": 51,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "pronunciation": {
+    "actual_records": 33,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "exercises": {
+    "actual_records": 64,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "assessments": {
+    "actual_records": 14,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  },
+  "lessons": {
+    "actual_records": 40,
+    "schema": "PASS",
+    "id_unique": true,
+    "schema_errors": []
+  }
+}

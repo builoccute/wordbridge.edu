@@ -1,0 +1,675 @@
+[
+  {
+    "id": 1,
+    "name_vi": "Đời sống và giao tiếp",
+    "description_vi": "Lĩnh vực học liệu đời sống và giao tiếp.",
+    "subspecialties_vi": [
+      "Sinh hoạt hằng ngày",
+      "Đồ dùng cá nhân",
+      "Đồ dùng và sinh hoạt gia đình",
+      "Đời sống và giao tiếp"
+    ],
+    "actual_counts": {
+      "vocabulary": 18,
+      "examples": 20,
+      "skill_lessons": 18,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 2,
+    "name_vi": "Giáo dục và học thuật",
+    "description_vi": "Lĩnh vực học liệu giáo dục và học thuật.",
+    "subspecialties_vi": [
+      "Giáo dục và học thuật",
+      "Học liệu và hoạt động đại học",
+      "Quản lý học phần",
+      "Tổ chức học tập"
+    ],
+    "actual_counts": {
+      "vocabulary": 19,
+      "examples": 21,
+      "skill_lessons": 17,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 3,
+    "name_vi": "Kinh tế và kinh doanh",
+    "description_vi": "Lĩnh vực học liệu kinh tế và kinh doanh.",
+    "subspecialties_vi": [
+      "Hoạt động kinh doanh",
+      "Kinh tế và kinh doanh",
+      "Phân phối hàng hóa",
+      "Quan hệ mua bán"
+    ],
+    "actual_counts": {
+      "vocabulary": 21,
+      "examples": 23,
+      "skill_lessons": 4,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 4,
+    "name_vi": "Kế toán và kiểm toán",
+    "description_vi": "Lĩnh vực học liệu kế toán và kiểm toán.",
+    "subspecialties_vi": [
+      "Kế toán và kiểm toán",
+      "Phương pháp kế toán",
+      "Sổ sách và kiểm toán",
+      "Đối chiếu và lưu chứng từ"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 22,
+      "skill_lessons": 4,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 5,
+    "name_vi": "Tài chính và ngân hàng",
+    "description_vi": "Lĩnh vực học liệu tài chính và ngân hàng.",
+    "subspecialties_vi": [
+      "Dịch vụ ngân hàng",
+      "Lãi vay",
+      "Tài chính và ngân hàng",
+      "Tài khoản và thanh toán"
+    ],
+    "actual_counts": {
+      "vocabulary": 19,
+      "examples": 20,
+      "skill_lessons": 2,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 6,
+    "name_vi": "Luật và pháp lý",
+    "description_vi": "Lĩnh vực học liệu luật và pháp lý.",
+    "subspecialties_vi": [
+      "Luật và pháp lý",
+      "Tố tụng",
+      "Văn bản và thủ tục pháp lý"
+    ],
+    "actual_counts": {
+      "vocabulary": 16,
+      "examples": 17,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 7,
+    "name_vi": "Quản trị doanh nghiệp và nhân sự",
+    "description_vi": "Lĩnh vực học liệu quản trị doanh nghiệp và nhân sự.",
+    "subspecialties_vi": [
+      "Quản trị doanh nghiệp và nhân sự",
+      "Sắp xếp ca",
+      "Sắp xếp công việc",
+      "Tổ chức nhân sự"
+    ],
+    "actual_counts": {
+      "vocabulary": 21,
+      "examples": 22,
+      "skill_lessons": 8,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 8,
+    "name_vi": "Marketing và truyền thông",
+    "description_vi": "Lĩnh vực học liệu marketing và truyền thông.",
+    "subspecialties_vi": [
+      "Lập kế hoạch nội dung",
+      "Marketing và truyền thông",
+      "Truyền thông tiếp thị",
+      "Xuất bản và truyền thông"
+    ],
+    "actual_counts": {
+      "vocabulary": 19,
+      "examples": 20,
+      "skill_lessons": 6,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 9,
+    "name_vi": "Công nghệ thông tin",
+    "description_vi": "Lĩnh vực học liệu công nghệ thông tin.",
+    "subspecialties_vi": [
+      "Công nghệ thông tin",
+      "Giao diện máy tính",
+      "Phần mềm tiện ích",
+      "Sử dụng máy tính"
+    ],
+    "actual_counts": {
+      "vocabulary": 21,
+      "examples": 22,
+      "skill_lessons": 2,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 10,
+    "name_vi": "Trí tuệ nhân tạo và khoa học dữ liệu",
+    "description_vi": "Lĩnh vực học liệu trí tuệ nhân tạo và khoa học dữ liệu.",
+    "subspecialties_vi": [
+      "Học máy",
+      "Mô tả dữ liệu",
+      "Thu thập và phân loại dữ liệu",
+      "Trí tuệ nhân tạo và khoa học dữ liệu"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 21,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 11,
+    "name_vi": "An ninh mạng",
+    "description_vi": "Lĩnh vực học liệu an ninh mạng.",
+    "subspecialties_vi": [
+      "An ninh mạng",
+      "An toàn tài khoản",
+      "Bảo vệ tài khoản",
+      "Quản lý truy cập và dữ liệu"
+    ],
+    "actual_counts": {
+      "vocabulary": 21,
+      "examples": 22,
+      "skill_lessons": 0,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 12,
+    "name_vi": "Kỹ thuật phần mềm",
+    "description_vi": "Lĩnh vực học liệu kỹ thuật phần mềm.",
+    "subspecialties_vi": [
+      "Cấu trúc và bảo trì chương trình",
+      "Kỹ thuật phần mềm",
+      "Phát triển và bảo trì phần mềm",
+      "Quy trình phần mềm"
+    ],
+    "actual_counts": {
+      "vocabulary": 19,
+      "examples": 20,
+      "skill_lessons": 3,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 13,
+    "name_vi": "Điện tử và bán dẫn",
+    "description_vi": "Lĩnh vực học liệu điện tử và bán dẫn.",
+    "subspecialties_vi": [
+      "Linh kiện điện tử",
+      "Lắp ráp điện tử",
+      "Vật liệu điện tử",
+      "Điện tử và bán dẫn"
+    ],
+    "actual_counts": {
+      "vocabulary": 18,
+      "examples": 19,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 14,
+    "name_vi": "Cơ khí và chế tạo",
+    "description_vi": "Lĩnh vực học liệu cơ khí và chế tạo.",
+    "subspecialties_vi": [
+      "Chi tiết máy",
+      "Cơ khí và chế tạo",
+      "Gia công cơ khí",
+      "Kích thước và gia công"
+    ],
+    "actual_counts": {
+      "vocabulary": 21,
+      "examples": 22,
+      "skill_lessons": 0,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 15,
+    "name_vi": "Điện và tự động hóa",
+    "description_vi": "Lĩnh vực học liệu điện và tự động hóa.",
+    "subspecialties_vi": [
+      "Giám sát và điều khiển",
+      "Thiết bị điều khiển",
+      "Điện cơ bản",
+      "Điện và tự động hóa"
+    ],
+    "actual_counts": {
+      "vocabulary": 18,
+      "examples": 19,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 16,
+    "name_vi": "Xây dựng và kiến trúc",
+    "description_vi": "Lĩnh vực học liệu xây dựng và kiến trúc.",
+    "subspecialties_vi": [
+      "Bộ phận công trình",
+      "Không gian kiến trúc",
+      "Kết cấu xây dựng",
+      "Xây dựng và kiến trúc"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 21,
+      "skill_lessons": 2,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 17,
+    "name_vi": "Giao thông và vận tải",
+    "description_vi": "Lĩnh vực học liệu giao thông và vận tải.",
+    "subspecialties_vi": [
+      "Giao thông và vận tải",
+      "Mạng lưới giao thông",
+      "Vé đi lại",
+      "Vận tải hành khách"
+    ],
+    "actual_counts": {
+      "vocabulary": 18,
+      "examples": 19,
+      "skill_lessons": 7,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 18,
+    "name_vi": "Hàng không và hàng hải",
+    "description_vi": "Lĩnh vực học liệu hàng không và hàng hải.",
+    "subspecialties_vi": [
+      "Cảng và vận tải biển",
+      "Dịch vụ cảng và sân bay",
+      "Hàng không và hàng hải",
+      "Khu vực cảng và sân bay"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 21,
+      "skill_lessons": 4,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 19,
+    "name_vi": "Nông nghiệp",
+    "description_vi": "Lĩnh vực học liệu nông nghiệp.",
+    "subspecialties_vi": [
+      "Canh tác",
+      "Canh tác cây trồng",
+      "Nông nghiệp",
+      "Đất canh tác và mùa vụ"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 21,
+      "skill_lessons": 4,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 20,
+    "name_vi": "Lâm nghiệp và thủy sản",
+    "description_vi": "Lĩnh vực học liệu lâm nghiệp và thủy sản.",
+    "subspecialties_vi": [
+      "Lâm nghiệp và nghề cá",
+      "Lâm nghiệp và thủy sản",
+      "Môi trường rừng và thủy sản",
+      "Sinh thái cửa sông"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 21,
+      "skill_lessons": 3,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 21,
+    "name_vi": "Môi trường và phát triển bền vững",
+    "description_vi": "Lĩnh vực học liệu môi trường và phát triển bền vững.",
+    "subspecialties_vi": [
+      "Môi trường và phát triển bền vững",
+      "Môi trường đô thị",
+      "Quản lý môi trường",
+      "Quản lý nước"
+    ],
+    "actual_counts": {
+      "vocabulary": 21,
+      "examples": 22,
+      "skill_lessons": 3,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 22,
+    "name_vi": "Sinh học và công nghệ sinh học",
+    "description_vi": "Lĩnh vực học liệu sinh học và công nghệ sinh học.",
+    "subspecialties_vi": [
+      "Hình thái sinh vật",
+      "Sinh học tế bào",
+      "Sinh học và công nghệ sinh học",
+      "Sinh học đại cương"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 21,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 23,
+    "name_vi": "Hóa học",
+    "description_vi": "Lĩnh vực học liệu hóa học.",
+    "subspecialties_vi": [
+      "Hóa học",
+      "Quan sát trong hóa học",
+      "Tính chất vật chất",
+      "Động học hóa học"
+    ],
+    "actual_counts": {
+      "vocabulary": 19,
+      "examples": 20,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 24,
+    "name_vi": "Vật lý và thiên văn",
+    "description_vi": "Lĩnh vực học liệu vật lý và thiên văn.",
+    "subspecialties_vi": [
+      "Hiện tượng thiên văn",
+      "Quan sát thiên văn",
+      "Thiết bị thiên văn",
+      "Vật lý và thiên văn"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 21,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 25,
+    "name_vi": "Toán học và thống kê",
+    "description_vi": "Lĩnh vực học liệu toán học và thống kê.",
+    "subspecialties_vi": [
+      "Diễn giải số liệu",
+      "Thống kê mô tả",
+      "Toán học và thống kê"
+    ],
+    "actual_counts": {
+      "vocabulary": 17,
+      "examples": 18,
+      "skill_lessons": 4,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 26,
+    "name_vi": "Y học và chăm sóc sức khỏe",
+    "description_vi": "Lĩnh vực học liệu y học và chăm sóc sức khỏe.",
+    "subspecialties_vi": [
+      "Giao tiếp chăm sóc sức khỏe",
+      "Giao tiếp khi đi khám",
+      "Giao tiếp tại cơ sở y tế",
+      "Y học và chăm sóc sức khỏe"
+    ],
+    "actual_counts": {
+      "vocabulary": 17,
+      "examples": 18,
+      "skill_lessons": 0,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 27,
+    "name_vi": "Dược học",
+    "description_vi": "Lĩnh vực học liệu dược học.",
+    "subspecialties_vi": [
+      "Bao bì và thông tin dược phẩm",
+      "Dược học",
+      "Dạng bào chế và nhãn",
+      "Thông tin dùng thuốc"
+    ],
+    "actual_counts": {
+      "vocabulary": 16,
+      "examples": 17,
+      "skill_lessons": 0,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 28,
+    "name_vi": "Tâm lý học và sức khỏe tinh thần",
+    "description_vi": "Lĩnh vực học liệu tâm lý học và sức khỏe tinh thần.",
+    "subspecialties_vi": [
+      "Kỹ năng ứng phó",
+      "Tâm lý học nhận thức",
+      "Tâm lý học và sức khỏe tinh thần",
+      "Tâm lý và giao tiếp"
+    ],
+    "actual_counts": {
+      "vocabulary": 18,
+      "examples": 19,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 29,
+    "name_vi": "Xã hội học và công tác xã hội",
+    "description_vi": "Lĩnh vực học liệu xã hội học và công tác xã hội.",
+    "subspecialties_vi": [
+      "Công tác cộng đồng",
+      "Phỏng vấn định tính",
+      "Xã hội học và công tác xã hội",
+      "Đời sống cộng đồng"
+    ],
+    "actual_counts": {
+      "vocabulary": 16,
+      "examples": 17,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 30,
+    "name_vi": "Du lịch và khách sạn",
+    "description_vi": "Lĩnh vực học liệu du lịch và khách sạn.",
+    "subspecialties_vi": [
+      "Du lịch và khách sạn",
+      "Dịch vụ lưu trú",
+      "Lễ tân lưu trú",
+      "Lễ tân và lưu trú"
+    ],
+    "actual_counts": {
+      "vocabulary": 20,
+      "examples": 21,
+      "skill_lessons": 9,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 31,
+    "name_vi": "Nhà hàng và ẩm thực",
+    "description_vi": "Lĩnh vực học liệu nhà hàng và ẩm thực.",
+    "subspecialties_vi": [
+      "Bếp và phục vụ bàn",
+      "Dịch vụ ăn uống",
+      "Nhà hàng và ẩm thực",
+      "Ẩm thực và phục vụ bàn"
+    ],
+    "actual_counts": {
+      "vocabulary": 19,
+      "examples": 20,
+      "skill_lessons": 8,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 32,
+    "name_vi": "Logistics và chuỗi cung ứng",
+    "description_vi": "Lĩnh vực học liệu logistics và chuỗi cung ứng.",
+    "subspecialties_vi": [
+      "Kho vận",
+      "Logistics và chuỗi cung ứng",
+      "Quản lý tồn kho",
+      "Tiếp nhận và phân phối hàng"
+    ],
+    "actual_counts": {
+      "vocabulary": 15,
+      "examples": 16,
+      "skill_lessons": 5,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 33,
+    "name_vi": "Thương mại quốc tế và hải quan",
+    "description_vi": "Lĩnh vực học liệu thương mại quốc tế và hải quan.",
+    "subspecialties_vi": [
+      "Chứng từ ngoại thương",
+      "Giao nhận quốc tế",
+      "Thương mại quốc tế và hải quan",
+      "Thủ tục xuất nhập khẩu"
+    ],
+    "actual_counts": {
+      "vocabulary": 19,
+      "examples": 20,
+      "skill_lessons": 1,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 34,
+    "name_vi": "Bất động sản và quy hoạch",
+    "description_vi": "Lĩnh vực học liệu bất động sản và quy hoạch.",
+    "subspecialties_vi": [
+      "Bất động sản và quy hoạch",
+      "Không gian đô thị và nhà đất",
+      "Ranh giới đất",
+      "Đặc điểm nhà và khu phố"
+    ],
+    "actual_counts": {
+      "vocabulary": 17,
+      "examples": 18,
+      "skill_lessons": 4,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 35,
+    "name_vi": "Bảo hiểm và quản trị rủi ro",
+    "description_vi": "Lĩnh vực học liệu bảo hiểm và quản trị rủi ro.",
+    "subspecialties_vi": [
+      "Bảo hiểm và quản trị rủi ro",
+      "Hạn mức bảo hiểm",
+      "Hợp đồng bảo hiểm",
+      "Xử lý yêu cầu bảo hiểm"
+    ],
+    "actual_counts": {
+      "vocabulary": 16,
+      "examples": 17,
+      "skill_lessons": 0,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 36,
+    "name_vi": "Năng lượng và công nghệ xanh",
+    "description_vi": "Lĩnh vực học liệu năng lượng và công nghệ xanh.",
+    "subspecialties_vi": [
+      "Năng lượng sạch",
+      "Năng lượng và công nghệ xanh",
+      "Điện gió"
+    ],
+    "actual_counts": {
+      "vocabulary": 14,
+      "examples": 15,
+      "skill_lessons": 3,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 37,
+    "name_vi": "Nghệ thuật và thiết kế",
+    "description_vi": "Lĩnh vực học liệu nghệ thuật và thiết kế.",
+    "subspecialties_vi": [
+      "Nghệ thuật và thiết kế",
+      "Quy trình thiết kế",
+      "Tạo hình và bố cục"
+    ],
+    "actual_counts": {
+      "vocabulary": 13,
+      "examples": 14,
+      "skill_lessons": 5,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 38,
+    "name_vi": "Âm nhạc, điện ảnh và nhiếp ảnh",
+    "description_vi": "Lĩnh vực học liệu âm nhạc, điện ảnh và nhiếp ảnh.",
+    "subspecialties_vi": [
+      "Biên kịch",
+      "Ngôn ngữ hình ảnh và âm thanh",
+      "Âm nhạc, điện ảnh và nhiếp ảnh"
+    ],
+    "actual_counts": {
+      "vocabulary": 15,
+      "examples": 16,
+      "skill_lessons": 7,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 39,
+    "name_vi": "Thể thao và khoa học vận động",
+    "description_vi": "Lĩnh vực học liệu thể thao và khoa học vận động.",
+    "subspecialties_vi": [
+      "Huấn luyện và thi đấu",
+      "Thể thao và khoa học vận động",
+      "Điền kinh"
+    ],
+    "actual_counts": {
+      "vocabulary": 13,
+      "examples": 14,
+      "skill_lessons": 3,
+      "integrated_lessons": 1
+    }
+  },
+  {
+    "id": 40,
+    "name_vi": "Hành chính công, lịch sử và triết học",
+    "description_vi": "Lĩnh vực học liệu hành chính công, lịch sử và triết học.",
+    "subspecialties_vi": [
+      "Hành chính công, lịch sử và triết học",
+      "Lưu trữ lịch sử",
+      "Văn bản công, sử liệu và lập luận"
+    ],
+    "actual_counts": {
+      "vocabulary": 12,
+      "examples": 13,
+      "skill_lessons": 3,
+      "integrated_lessons": 1
+    }
+  }
+]

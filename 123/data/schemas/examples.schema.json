@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "examples",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "domain",
+      "focus_grammar",
+      "focus_vocabulary_id",
+      "id",
+      "language",
+      "level",
+      "original",
+      "pinyin",
+      "source",
+      "status",
+      "topic",
+      "translation_vi",
+      "translation_zh",
+      "usage_vi"
+    ],
+    "properties": {
+      "domain": {
+        "type": "integer"
+      },
+      "focus_grammar": {
+        "type": "string"
+      },
+      "focus_vocabulary": {
+        "type": "string"
+      },
+      "focus_vocabulary_id": {
+        "type": [
+          "null",
+          "string"
+        ]
+      },
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "original": {
+        "type": "string"
+      },
+      "pinyin": {
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "topic": {
+        "type": "string"
+      },
+      "translation_vi": {
+        "type": "string"
+      },
+      "translation_zh": {
+        "type": "string"
+      },
+      "usage_vi": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  }
+}

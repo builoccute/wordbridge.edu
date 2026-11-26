@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "speaking",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "activity",
+      "answer",
+      "domain",
+      "example",
+      "explanation",
+      "focus_phrases",
+      "guiding_questions",
+      "id",
+      "language",
+      "language_structure",
+      "level",
+      "minutes",
+      "model_dialogue",
+      "module",
+      "objective",
+      "outcome",
+      "pinyin",
+      "roles",
+      "self_assessment",
+      "situation",
+      "status",
+      "task",
+      "teaching",
+      "title",
+      "topic",
+      "translation_vi"
+    ],
+    "properties": {
+      "activity": {
+        "type": "string"
+      },
+      "answer": {
+        "type": "string"
+      },
+      "domain": {
+        "type": "integer"
+      },
+      "example": {
+        "type": "string"
+      },
+      "explanation": {
+        "type": "string"
+      },
+      "focus_phrases": {
+        "type": "array"
+      },
+      "guiding_questions": {
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "language_structure": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "minutes": {
+        "type": "integer"
+      },
+      "model_dialogue": {
+        "type": "array"
+      },
+      "module": {
+        "type": "string"
+      },
+      "objective": {
+        "type": "string"
+      },
+      "outcome": {
+        "type": "string"
+      },
+      "pinyin": {
+        "type": "array"
+      },
+      "roles": {
+        "type": "array"
+      },
+      "self_assessment": {
+        "type": "array"
+      },
+      "situation": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "task": {
+        "type": "string"
+      },
+      "teaching": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "topic": {
+        "type": "string"
+      },
+      "translation_vi": {
+        "type": "array"
+      }
+    },
+    "additionalProperties": false
+  }
+}

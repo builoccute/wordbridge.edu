@@ -1,0 +1,9 @@
+{
+  "new_unique_english_chinese_pairs": 726,
+  "first_id": "WB5-10001",
+  "last_id": "WB5-10726",
+  "legacy_overlap": "NOT_CHECKED",
+  "duplicate_candidates_dropped": 42,
+  "last_batch": "2026-11-26-vocabulary-001",
+  "last_batch_actual": 500
+}

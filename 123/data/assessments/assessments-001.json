@@ -1,0 +1,526 @@
+[
+  {
+    "id": "AS-0001",
+    "title": "Find the right bus",
+    "language": "en",
+    "level": "A2",
+    "module": "reading",
+    "domain": 17,
+    "stimulus": "Monday notice: The 9:00 bus to Lake Park starts at Market Square this week. It will not stop at Hill Street. Return buses from the park still stop at Hill Street as usual.",
+    "task": "Answer in short phrases. 1. Where does the 9:00 bus start? 2. Can you board it at Hill Street on the way to the park? 3. Can you get off at Hill Street on the way back?",
+    "answer": [
+      "At Market Square.",
+      "No.",
+      "Yes."
+    ],
+    "explanation": "The return buses được mô tả trong câu riêng; quy định lượt đi không tự động áp dụng cho lượt về.",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Ghi Market Square cho chiều đi.",
+        "if_missing_vi": "Tìm cụm starts at."
+      },
+      {
+        "points": 1,
+        "observable": "Nêu không đón ở Hill Street chiều đi.",
+        "if_missing_vi": "Đọc câu có will not stop."
+      },
+      {
+        "points": 1,
+        "observable": "Nêu vẫn dừng Hill Street chiều về.",
+        "if_missing_vi": "Xác định hướng của from the park."
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 5,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  },
+  {
+    "id": "AS-0002",
+    "title": "图书馆里的两种座位",
+    "language": "zh",
+    "level": "A2",
+    "module": "reading",
+    "domain": 2,
+    "stimulus": "一楼的桌子可以直接使用。二楼的小房间需要提前一天预约。周三上午二楼打扫卫生，一楼照常开放。",
+    "task": "你周三上午临时来学习。回答：①去哪一层？②为什么不能用二楼的小房间？说出两个相关条件。",
+    "answer": [
+      "去一楼。",
+      "二楼的小房间要提前一天预约，而且周三上午二楼打扫卫生。"
+    ],
+    "explanation": "临时表明没有提前安排。二楼还有当天的卫生安排。",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Chọn tầng một.",
+        "if_missing_vi": "Tìm tầng được nói là 照常开放."
+      },
+      {
+        "points": 1,
+        "observable": "Nêu cần đặt phòng tầng hai trước một ngày.",
+        "if_missing_vi": "Gạch chân cụm 提前一天预约."
+      },
+      {
+        "points": 1,
+        "observable": "Nêu sáng thứ Tư tầng hai được vệ sinh.",
+        "if_missing_vi": "Đối chiếu thời gian 周三上午."
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 6,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED",
+    "translation_vi": "Bàn ở tầng một có thể dùng ngay. Phòng nhỏ tầng hai cần đặt trước một ngày. Sáng thứ Tư tầng hai được vệ sinh, tầng một vẫn mở."
+  },
+  {
+    "id": "AS-0003",
+    "title": "Correct the meeting note",
+    "language": "en",
+    "level": "B1",
+    "module": "listening",
+    "domain": 7,
+    "stimulus": "Mara: Let’s meet in Room Six on Friday. Ben: Friday works, but Room Six is booked. I checked Room Four and it is free after two. Mara: Good, I’ll reserve it for half past two. I’ll ask Jin to bring the drawings.",
+    "task": "Listen twice. Correct this note: “Friday, 2:00, Room Six. Ben brings the drawings.” Write the final time, room and person.",
+    "answer": [
+      "2:30 p.m.",
+      "Room Four.",
+      "Jin."
+    ],
+    "explanation": "After two là khoảng phòng trống. Half past two mới là giờ cuộc hẹn.",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Ghi 2:30 chiều.",
+        "if_missing_vi": "Phân biệt thời điểm phòng trống với giờ được đặt."
+      },
+      {
+        "points": 1,
+        "observable": "Ghi phòng Bốn.",
+        "if_missing_vi": "Nghe phòng thay thế sau but."
+      },
+      {
+        "points": 1,
+        "observable": "Ghi Jin là người được nhờ mang bản vẽ.",
+        "if_missing_vi": "Nghe tên ngay sau ask."
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 5,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED",
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "delivery_vi": "Người hỗ trợ đọc kịch bản hai lần, che văn bản với người nghe."
+  },
+  {
+    "id": "AS-0004",
+    "title": "改动的接客安排",
+    "language": "zh",
+    "level": "B1",
+    "module": "listening",
+    "domain": 30,
+    "stimulus": "前台：明天司机七点去车站接您。客人：我的车七点半才到，麻烦司机晚一点来。前台：好的，七点四十在南门见。请您到了给前台打电话。",
+    "task": "听两遍后记下新的见面时间、地点和客人到站后要做的事。",
+    "answer": [
+      "七点四十。",
+      "车站南门。",
+      "给前台打电话。"
+    ],
+    "explanation": "七点半是到站时间，七点四十才是约好的见面时间。",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Ghi 7:40.",
+        "if_missing_vi": "Đối chiếu giờ đến ga với giờ gặp."
+      },
+      {
+        "points": 1,
+        "observable": "Ghi cổng nam nhà ga.",
+        "if_missing_vi": "Lắng nghe từ chỉ phương hướng trước 门."
+      },
+      {
+        "points": 1,
+        "observable": "Nêu gọi điện cho lễ tân khi đến ga.",
+        "if_missing_vi": "Xác định người nhận cuộc gọi sau 给."
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 5,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED",
+    "audio_asset_status": "TEXT_SCRIPT_ONLY",
+    "delivery_vi": "Người hỗ trợ đọc hai vai hai lần khi người học chưa thấy văn bản.",
+    "translation_vi": "Lễ tân hẹn tài xế đón khách lúc bảy giờ. Khách báo bảy rưỡi tàu mới đến. Hai bên hẹn bảy giờ bốn mươi ở cổng nam. Khách đến nơi cần gọi cho lễ tân."
+  },
+  {
+    "id": "AS-0005",
+    "title": "Order for two people",
+    "language": "en",
+    "level": "A2",
+    "module": "speaking",
+    "domain": 31,
+    "stimulus": "You want a bowl of soup and water. Your friend wants rice and tea. There is only one menu, and you would like a second one.",
+    "task": "Speak to the server for 20–40 seconds. Order for both people and make the additional request.",
+    "answer": "Could I have a bowl of soup and some water, please? My friend would like rice and tea. Could we have another menu, too?",
+    "explanation": "My friend would like giúp nhân viên phân biệt hai suất. Another menu chỉ một thực đơn nữa.",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Gọi đủ súp và nước cho mình.",
+        "if_missing_vi": "Nêu rõ món ăn và đồ uống của mình."
+      },
+      {
+        "points": 1,
+        "observable": "Nói rõ cơm và trà cho bạn.",
+        "if_missing_vi": "Thêm chủ ngữ my friend khi chuyển suất."
+      },
+      {
+        "points": 1,
+        "observable": "Xin thêm một thực đơn bằng lời nhờ lịch sự.",
+        "if_missing_vi": "Dùng Could we have another…?"
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 5,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  },
+  {
+    "id": "AS-0006",
+    "title": "给乘客解释换乘",
+    "language": "zh",
+    "level": "B1",
+    "module": "speaking",
+    "domain": 17,
+    "stimulus": "你是车站志愿者。一位乘客要去博物馆。她可以先坐三号线，到公园站换六号线，再坐两站。她担心错过换乘站。",
+    "task": "口头说明路线，再用一个问题确认乘客知道在哪儿换车。",
+    "answer": "您先坐三号线，到公园站换六号线，再坐两站就到了。您记得在哪一站换车吗？",
+    "explanation": "先…再…组织步骤。在哪一站换车引导乘客主动回忆。",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Nêu đi tuyến 3 trước.",
+        "if_missing_vi": "Dùng 先 nêu tuyến khởi đầu."
+      },
+      {
+        "points": 1,
+        "observable": "Nêu đổi sang tuyến 6 tại ga Công Viên.",
+        "if_missing_vi": "Gắn tên ga với động từ 换."
+      },
+      {
+        "points": 1,
+        "observable": "Nêu đi thêm hai ga.",
+        "if_missing_vi": "Phân biệt số tuyến với số ga còn lại."
+      },
+      {
+        "points": 1,
+        "observable": "Hỏi lại để xác nhận khách nhớ ga chuyển tuyến.",
+        "if_missing_vi": "Thêm câu hỏi chỉ rõ thông tin cần xác nhận."
+      }
+    ],
+    "max_score": 4,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 6,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  },
+  {
+    "id": "AS-0007",
+    "title": "Ask for a corrected label",
+    "language": "en",
+    "level": "B1",
+    "module": "writing",
+    "domain": 32,
+    "stimulus": "A parcel label says Unit 5, but the order lists Unit 15. The delivery leaves at 3 p.m. You are writing to your colleague Dana.",
+    "task": "Draft a message of 25–55 words that identifies the mismatch, requests a change and asks Dana to confirm before dispatch.",
+    "answer": "Hi Dana, the order lists Unit 15, but the parcel label says Unit 5. Could you change the label to Unit 15 and let me know when it is ready? The delivery leaves at 3 p.m. Thanks.",
+    "explanation": "Order và label chỉ hai tài liệu khác nhau. Ready và leaves làm rõ việc cần hoàn tất trước giờ giao.",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Đối chiếu đúng cả hai số phòng.",
+        "if_missing_vi": "Đặt hai số cạnh tên tài liệu chính xác."
+      },
+      {
+        "points": 1,
+        "observable": "Yêu cầu đổi nhãn thành Unit 15.",
+        "if_missing_vi": "Nêu số đúng ngay sau change the label to."
+      },
+      {
+        "points": 1,
+        "observable": "Yêu cầu xác nhận trước lúc xuất hàng và nêu mốc 3 giờ chiều.",
+        "if_missing_vi": "Dùng before hoặc nêu hạn trong câu tiếp theo."
+      },
+      {
+        "points": 1,
+        "observable": "Giữ giọng điệu lịch sự, phù hợp tin nhắn đồng nghiệp.",
+        "if_missing_vi": "Dùng lời nhờ trực tiếp và lịch sự."
+      }
+    ],
+    "max_score": 4,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 8,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  },
+  {
+    "id": "AS-0008",
+    "title": "通知同学改教室",
+    "language": "zh",
+    "level": "B1",
+    "module": "writing",
+    "domain": 2,
+    "stimulus": "原安排：周四九点在二楼上课。新安排：时间不变，改到三楼会议室。请同学带上上周的笔记。",
+    "task": "用两到四句话写通知，让没有看到原消息的同学也能看懂。",
+    "answer": "同学们，周四的课仍然是上午九点开始。上课地点从二楼改到三楼会议室。请大家带上上周的笔记。",
+    "explanation": "仍然保留原时间，从…改到…表示地点发生变化。",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Ghi thứ Năm lúc chín giờ sáng.",
+        "if_missing_vi": "Bổ sung cả ngày và giờ."
+      },
+      {
+        "points": 1,
+        "observable": "Cho biết phòng họp tầng ba là nơi mới.",
+        "if_missing_vi": "Dùng 改到 trước địa điểm mới."
+      },
+      {
+        "points": 1,
+        "observable": "Nêu mang ghi chép tuần trước.",
+        "if_missing_vi": "Nêu rõ 上周的笔记."
+      },
+      {
+        "points": 1,
+        "observable": "Trình bày thành thông báo dễ hiểu cho bạn học.",
+        "if_missing_vi": "Đọc lại dưới góc nhìn người chưa thấy tin cũ."
+      }
+    ],
+    "max_score": 4,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 7,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  },
+  {
+    "id": "AS-0009",
+    "title": "Report a limited observation",
+    "language": "en",
+    "level": "B2",
+    "module": "grammar",
+    "domain": 21,
+    "stimulus": "An editor receives this sentence: “If the city replaced the lamps last month, the electricity use will fall last month.” Records show that the lamps were replaced, and use was lower that month. No causal study was done.",
+    "task": "Write one or two sentences reporting the observed events. Remove the time inconsistency and avoid claiming a proven cause.",
+    "answer": "The city replaced the lamps last month, and electricity use was lower that month. The records do not establish whether the lamp replacement caused the decrease.",
+    "explanation": "A conjunction such as and reports co-occurrence. Because would add a causal conclusion beyond the records.",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Dùng quá khứ cho cả hai sự kiện đã ghi nhận.",
+        "if_missing_vi": "Đối chiếu dạng động từ với last month."
+      },
+      {
+        "points": 1,
+        "observable": "Giữ đúng thông tin thay đèn và lượng điện thấp hơn.",
+        "if_missing_vi": "Kiểm tra cả hai sự kiện gốc có trong câu mới."
+      },
+      {
+        "points": 1,
+        "observable": "Diễn đạt rõ hồ sơ chưa chứng minh quan hệ nhân quả.",
+        "if_missing_vi": "Thêm giới hạn bằng do not establish whether…"
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 7,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  },
+  {
+    "id": "AS-0010",
+    "title": "三件事的时间关系",
+    "language": "zh",
+    "level": "B1",
+    "module": "grammar",
+    "domain": 1,
+    "stimulus": "情况：你进屋的时候，妹妹正在画画。你打开窗户以后，她才放下画笔。",
+    "task": "用“正在”和“…以后…才…”分别写一句，保持原来的时间关系。",
+    "answer": "我进屋的时候，妹妹正在画画。我打开窗户以后，她才放下画笔。",
+    "explanation": "正在表示当时进行的动作，才强调后一个动作直到前一个动作之后才发生。",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Câu đầu cho thấy đang vẽ khi người nói vào phòng.",
+        "if_missing_vi": "Đặt 正在 ngay trước động tác đang diễn ra."
+      },
+      {
+        "points": 1,
+        "observable": "Câu sau cho thấy mở cửa sổ trước rồi mới đặt bút xuống.",
+        "if_missing_vi": "Kiểm tra lại thứ tự mở cửa và đặt bút xuống."
+      },
+      {
+        "points": 1,
+        "observable": "Dùng đúng 正在 và 以后…才… cùng vị trí động từ.",
+        "if_missing_vi": "Gắn 以后 với mệnh đề chỉ mốc đi trước."
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 6,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  },
+  {
+    "id": "AS-0011",
+    "title": "Contrast two possible corrections",
+    "language": "en",
+    "level": "B1",
+    "module": "pronunciation",
+    "domain": 1,
+    "stimulus": "Line 1: I said fifteen, not fifty. Line 2: I wanted a blue folder, not a green one.",
+    "task": "Read both lines aloud. Then repeat only the corrected information to show what the speaker is contrasting.",
+    "answer": "Line 1 contrasts fifteen and fifty. Line 2 contrasts blue and green. The color words carry the correction in line 2.",
+    "explanation": "Focus stress can mark the words being corrected. Fifteen and fifty also have different endings; preserve the final /n/ in fifteen.",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Làm rõ hai số để người nghe phân biệt fifteen và fifty.",
+        "if_missing_vi": "Luyện riêng phần cuối -teen và -ty."
+      },
+      {
+        "points": 1,
+        "observable": "Nhấn tương phản blue và green trong câu hai.",
+        "if_missing_vi": "Đọc lại, nhấn hai màu thay vì folder."
+      },
+      {
+        "points": 1,
+        "observable": "Người nghe hoặc chính người học nghe lại có thể ghi đúng hai cặp đối lập.",
+        "if_missing_vi": "Ghi âm hai lượt và đối chiếu với câu đích."
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 5,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED",
+    "audio_asset_status": "NOT_PROVIDED"
+  },
+  {
+    "id": "AS-0012",
+    "title": "区分买和卖",
+    "language": "zh",
+    "level": "A2",
+    "module": "pronunciation",
+    "domain": 1,
+    "stimulus": "甲：你买什么？乙：我买水果。丙：这家店卖水果。",
+    "task": "先读三句话，再单独读“买”和“卖”。请听者判断哪个词是购买，哪个是出售。",
+    "answer": "买 mǎi 是购买。卖 mài 是出售。买水果表示购买水果，卖水果表示出售水果。",
+    "explanation": "同一个声母和韵母配上不同声调可以区别词义。读词组时，第三声不必每次都完整升起来。",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Ghép 买 mǎi với mua và 卖 mài với bán.",
+        "if_missing_vi": "Kiểm tra lại nghĩa bằng câu có 这家店."
+      },
+      {
+        "points": 1,
+        "observable": "Khi đọc riêng, phân biệt thanh ba mǎi và thanh bốn mài.",
+        "if_missing_vi": "Đọc riêng hai âm theo pinyin rồi đối chiếu."
+      },
+      {
+        "points": 1,
+        "observable": "Người nghe nhận đúng hai động từ khi nghe lại hai cụm cuối.",
+        "if_missing_vi": "Đọc chậm cả cụm, giữ sự khác biệt thanh điệu."
+      }
+    ],
+    "max_score": 3,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 5,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED",
+    "audio_asset_status": "NOT_PROVIDED"
+  },
+  {
+    "id": "AS-0013",
+    "title": "Explain a revised recording schedule",
+    "language": "en",
+    "level": "B2",
+    "module": "integrated",
+    "domain": 38,
+    "stimulus": "Studio note: The hall is free from 11:00 to 12:00. The choir needs 40 minutes and the soloist needs 15. The soloist cannot arrive before 11:40. Only one group can record at a time.",
+    "task": "Propose a workable schedule in writing. Then explain aloud why the reverse order would not fit.",
+    "answer": "Record the choir from 11:00 to 11:40 and the soloist from 11:40 to 11:55. If the soloist went first at 11:40, the choir could not finish before noon.",
+    "explanation": "Starting with the choir uses the period when the soloist is unavailable. Five minutes remain after both sessions.",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Cho dàn hợp xướng đủ 40 phút.",
+        "if_missing_vi": "Kiểm tra độ dài khung giờ đầu bằng phép trừ."
+      },
+      {
+        "points": 1,
+        "observable": "Sắp ca sĩ sau hoặc đúng 11:40 trong đủ 15 phút.",
+        "if_missing_vi": "Đặt giờ sớm nhất của ca sĩ làm ràng buộc."
+      },
+      {
+        "points": 1,
+        "observable": "Hai lượt không chồng nhau và hoàn thành trước hoặc đúng 12:00.",
+        "if_missing_vi": "Vẽ hai khoảng trên cùng dòng thời gian."
+      },
+      {
+        "points": 1,
+        "observable": "Giải thích chính xác vì sao đảo thứ tự sẽ quá giờ.",
+        "if_missing_vi": "Tính giờ kết thúc nếu ca sĩ đi trước."
+      }
+    ],
+    "max_score": 4,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 9,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  },
+  {
+    "id": "AS-0014",
+    "title": "给两种读者改写展览消息",
+    "language": "zh",
+    "level": "B2",
+    "module": "integrated",
+    "domain": 8,
+    "stimulus": "内部便条：因布展需要，周五体验活动从上午十点推迟到下午两点，地点仍是北厅。已登记的观众不用重新报名。",
+    "task": "先给公众写一则简短通知，再给同事写一句提醒，要求及时更新海报。",
+    "answer": "公众通知：本周五北厅的体验活动改为下午两点举行。已登记的观众无需重新报名。同事提醒：请在海报上把周五的活动时间从上午十点改为下午两点，地点仍写北厅。",
+    "explanation": "公众需要到场信息，负责海报的同事需要能直接执行的修改说明。",
+    "criteria": [
+      {
+        "points": 1,
+        "observable": "Thông báo cho khách ghi đúng chiều thứ Sáu lúc hai giờ ở sảnh bắc.",
+        "if_missing_vi": "Đối chiếu lại giờ mới và địa điểm."
+      },
+      {
+        "points": 1,
+        "observable": "Giải thích khách đã đăng ký không cần đăng ký lại.",
+        "if_missing_vi": "Bổ sung quyền giữ đăng ký cũ."
+      },
+      {
+        "points": 1,
+        "observable": "Nhắc đồng nghiệp cập nhật giờ trên áp phích.",
+        "if_missing_vi": "Nêu rõ phần phải sửa trên áp phích."
+      },
+      {
+        "points": 1,
+        "observable": "Hai văn bản phân biệt được người đọc và hành động của họ.",
+        "if_missing_vi": "Đọc riêng từng thông điệp để kiểm tra có dùng độc lập được không."
+      }
+    ],
+    "max_score": 4,
+    "scoring_vi": "Tự cho một điểm cho từng tiêu chí có bằng chứng trong bài làm. Ghi lại câu hoặc cụm từ chứng minh. Với mỗi tiêu chí còn thiếu, làm lại theo phản hồi tương ứng.",
+    "minutes": 9,
+    "assessment_purpose_vi": "Tự đánh giá sau luyện tập",
+    "status": "REVIEW_REQUIRED"
+  }
+]

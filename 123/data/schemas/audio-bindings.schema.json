@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WordBridgeAudioAssetBinding",
+  "type": "object",
+  "required": [
+    "binding_id",
+    "module",
+    "source_id",
+    "language",
+    "asset_status",
+    "audio_url",
+    "r2_object_key",
+    "duration_seconds",
+    "allow_playback_button"
+  ],
+  "properties": {
+    "binding_id": {
+      "type": "string"
+    },
+    "module": {
+      "type": "string",
+      "enum": [
+        "listening",
+        "pronunciation",
+        "speaking"
+      ]
+    },
+    "source_id": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "zh"
+      ]
+    },
+    "asset_status": {
+      "type": "string",
+      "enum": [
+        "TEXT_SCRIPT_ONLY",
+        "AUDIO_READY",
+        "TTS_VERIFIED"
+      ]
+    },
+    "audio_url": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "r2_object_key": {
+      "type": "string"
+    },
+    "duration_seconds": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "allow_playback_button": {
+      "type": "boolean"
+    },
+    "note_vi": {
+      "type": "string"
+    }
+  }
+}

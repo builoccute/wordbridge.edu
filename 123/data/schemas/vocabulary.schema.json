@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "vocabulary",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "definition_en",
+      "definition_zh",
+      "domain",
+      "en",
+      "example_en",
+      "example_pinyin",
+      "example_vi",
+      "example_zh",
+      "explanation_vi",
+      "grammar_vi",
+      "id",
+      "ipa",
+      "level",
+      "pinyin",
+      "pos",
+      "source",
+      "specialty_vi",
+      "status",
+      "usage_vi",
+      "vi",
+      "zh"
+    ],
+    "properties": {
+      "definition_en": {
+        "type": "string"
+      },
+      "definition_zh": {
+        "type": "string"
+      },
+      "domain": {
+        "type": "integer"
+      },
+      "en": {
+        "type": "string"
+      },
+      "example_en": {
+        "type": "string"
+      },
+      "example_pinyin": {
+        "type": "string"
+      },
+      "example_vi": {
+        "type": "string"
+      },
+      "example_zh": {
+        "type": "string"
+      },
+      "explanation_vi": {
+        "type": "string"
+      },
+      "grammar_vi": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "ipa": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "pinyin": {
+        "type": "string"
+      },
+      "pos": {
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "specialty_vi": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "usage_vi": {
+        "type": "string"
+      },
+      "vi": {
+        "type": "string"
+      },
+      "zh": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  }
+}

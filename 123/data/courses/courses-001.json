@@ -1,0 +1,1362 @@
+[
+  {
+    "id": "CRS-EN-001",
+    "title": "Tiếng Anh Nền tảng & Phát âm Cốt lõi",
+    "language": "en",
+    "proficiency_scale": "CEFR",
+    "scale_note_vi": "Áp dụng khung tham chiếu CEFR (A1 → A2) cho tiếng Anh.",
+    "category": "Nền tảng",
+    "description": "Xây dựng nền tảng ngữ pháp cơ bản, phân biệt các cặp nguyên âm – phụ âm dễ nhầm và giao tiếp tình huống ngắn hàng ngày.",
+    "objectives": [
+      "Nhận diện và thực hành chuẩn các cặp âm tiếng Anh dễ nhầm (/ɪ/–/iː/, /æ/–/e/, trọng âm từ).",
+      "Vận dụng chính xác mạo từ, thì cơ bản và cấu trúc câu đơn trong sinh hoạt hàng ngày.",
+      "Hoàn thành các bài tập đọc hiểu và viết lời nhắn ngắn ở trình độ A1–A2."
+    ],
+    "entry_level": "A1",
+    "target_level": "A2",
+    "target_audience": "Người mới bắt đầu hoặc cần củng cố lại nền tảng phát âm và ngữ pháp tiếng Anh.",
+    "primary_skills": [
+      "Pronunciation",
+      "Grammar",
+      "Reading",
+      "Writing"
+    ],
+    "topics": [
+      "Đời sống và giao tiếp",
+      "Giáo dục và học thuật",
+      "Đi lại"
+    ],
+    "estimated_hours": 10,
+    "prerequisites": [],
+    "delivery_mode": "SELF_STUDY",
+    "certificate_issued": false,
+    "status": "REVIEW_REQUIRED",
+    "chapters": [
+      {
+        "id": "CRS-EN-001-CH1",
+        "order": 1,
+        "title": "Chương 1: Phát âm nền tảng & Cấu trúc câu cơ bản",
+        "objective": "Phân biệt các cặp nguyên âm cốt lõi và nắm vững mạo từ, câu khẳng định cơ bản.",
+        "lessons": [
+          {
+            "id": "CRS-EN-001-L1",
+            "order": 1,
+            "title": "Bài 1: Cặp nguyên âm cốt lõi và mạo từ",
+            "objective": "Phân biệt âm /ɪ/–/iː/ và dùng đúng mạo từ a/an.",
+            "estimated_minutes": 25,
+            "activities": [
+              {
+                "id": "ACT-EN1-1",
+                "type": "pronunciation",
+                "source_module": "pronunciation",
+                "source_id": "PR-00001",
+                "title": "Hai nguyên âm trong sit và seat",
+                "instruction_vi": "Đọc hướng dẫn khẩu hình, luyện cặp từ đối lập và tự ghi âm đối chiếu."
+              },
+              {
+                "id": "ACT-EN1-2",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00001",
+                "title": "Mạo từ khi giới thiệu vật",
+                "instruction_vi": "Đọc quy tắc ngữ pháp, phân tích ví dụ và hoàn thành nhiệm vụ điền từ."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00001",
+              "EX-00002"
+            ]
+          },
+          {
+            "id": "CRS-EN-001-L2",
+            "order": 2,
+            "title": "Bài 2: Đọc thông báo ngắn & Viết lời nhắn",
+            "objective": "Nắm bắt thông tin giới hạn thời gian khi đọc và viết lời nhắn rõ người nhận, giờ hẹn.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-EN1-3",
+                "type": "reading",
+                "source_module": "reading",
+                "source_id": "RD-00001",
+                "title": "The last book on the cart",
+                "instruction_vi": "Đọc kỹ văn bản, trả lời câu hỏi đọc hiểu và đối chiếu giải thích."
+              },
+              {
+                "id": "ACT-EN1-4",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00001",
+                "title": "Để lời nhắn cho người nhận bưu kiện",
+                "instruction_vi": "Lập dàn ý theo bối cảnh, soạn lời nhắn hoàn chỉnh và tự rà soát theo tiêu chí."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00005",
+              "EX-00006"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0001"
+      },
+      {
+        "id": "CRS-EN-001-CH2",
+        "order": 2,
+        "title": "Chương 2: Luyện nghe – nói tình huống sinh hoạt",
+        "objective": "Xử lý các thay đổi kế hoạch hẹn gặp và giao tiếp cơ bản qua hội thoại.",
+        "lessons": [
+          {
+            "id": "CRS-EN-001-L3",
+            "order": 1,
+            "title": "Bài 3: Nhận diện thay đổi kế hoạch trong hội thoại",
+            "objective": "Phân biệt phương án ban đầu và thỏa thuận cuối khi nghe và nói.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-EN1-5",
+                "type": "listening",
+                "source_module": "listening",
+                "source_id": "LS-00001",
+                "title": "Listen for the second invitation",
+                "instruction_vi": "Thực hành theo hướng dẫn trước khi nghe; che kịch bản nếu luyện cặp và trả lời câu hỏi."
+              },
+              {
+                "id": "ACT-EN1-6",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00001",
+                "title": "Đổi điểm hẹn khi lỡ chuyến",
+                "instruction_vi": "Đọc tình huống, sử dụng câu hỏi gợi ý và thu âm phần đối đáp của bạn."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00009",
+              "EX-00010"
+            ]
+          },
+          {
+            "id": "CRS-EN-001-L4",
+            "order": 2,
+            "title": "Bài 4: Tích hợp ngữ pháp & tình huống đời sống",
+            "objective": "Kết hợp ngữ pháp trọng tâm vào bài học tích hợp.",
+            "estimated_minutes": 25,
+            "activities": [
+              {
+                "id": "ACT-EN1-7",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00002",
+                "title": "Hòa hợp chủ ngữ và động từ",
+                "instruction_vi": "Ôn cấu trúc ngữ pháp và sửa lỗi thường gặp."
+              },
+              {
+                "id": "ACT-EN1-8",
+                "type": "integrated",
+                "source_module": "lessons",
+                "source_id": "LESSON-000001",
+                "title": "A key for the spare room",
+                "instruction_vi": "Hoàn thành bài học tích hợp và kiểm tra kết quả đầu ra."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00013",
+              "EX-00014"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0003"
+      }
+    ]
+  },
+  {
+    "id": "CRS-EN-002",
+    "title": "Tiếng Anh Giao tiếp Thực chiến (A2–B1)",
+    "language": "en",
+    "proficiency_scale": "CEFR",
+    "scale_note_vi": "Áp dụng khung tham chiếu CEFR (A2 → B1) cho tiếng Anh.",
+    "category": "Giao tiếp",
+    "description": "Phát triển phản xạ nghe hiểu, diễn đạt quan điểm, xử lý tình huống giao tiếp hàng ngày và cải thiện ngữ điệu tự nhiên.",
+    "objectives": [
+      "Duy trì hội thoại tự nhiên trong các tình huống dịch vụ, lịch hẹn và trao đổi thông tin.",
+      "Cải thiện trọng âm câu, nối âm và độ rõ khi trình bày bằng miệng.",
+      "Hiểu và xử lý thông tin chi tiết trong hội thoại nhiều lượt."
+    ],
+    "entry_level": "A2",
+    "target_level": "B1",
+    "target_audience": "Người học đã có nền tảng A2 muốn nâng cao năng lực giao tiếp thực tế.",
+    "primary_skills": [
+      "Listening",
+      "Speaking",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Giao tiếp thực tế",
+      "Dịch vụ & di chuyển",
+      "Xử lý tình huống"
+    ],
+    "estimated_hours": 14,
+    "prerequisites": [
+      "CRS-EN-001"
+    ],
+    "delivery_mode": "SELF_STUDY",
+    "certificate_issued": false,
+    "status": "REVIEW_REQUIRED",
+    "chapters": [
+      {
+        "id": "CRS-EN-002-CH1",
+        "order": 1,
+        "title": "Chương 1: Nghe nắm ý chính & Phản xạ hội thoại",
+        "objective": "Nghe hiểu ý định người nói và phản hồi đúng trọng tâm.",
+        "lessons": [
+          {
+            "id": "CRS-EN-002-L1",
+            "order": 1,
+            "title": "Bài 1: Hội thoại thỏa thuận và xác nhận thông tin",
+            "objective": "Xác nhận chi tiết và đề xuất giải pháp thay thế.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-EN2-1",
+                "type": "listening",
+                "source_module": "listening",
+                "source_id": "LS-00002",
+                "title": "Which box should wait?",
+                "instruction_vi": "Đọc mục tiêu nghe, làm nhiệm vụ kiểm tra trước khi mở kịch bản."
+              },
+              {
+                "id": "ACT-EN2-2",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00002",
+                "title": "Thu hẹp đề tài nghiên cứu",
+                "instruction_vi": "Thực hành đóng vai và tự đánh giá theo 6 tiêu chí giao tiếp."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00017",
+              "EX-00018"
+            ]
+          },
+          {
+            "id": "CRS-EN-002-L2",
+            "order": 2,
+            "title": "Bài 2: Ngữ điệu, phát âm & Mở rộng hội thoại",
+            "objective": "Giữ nhịp điệu tự nhiên khi giải thích lý do.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-EN2-3",
+                "type": "pronunciation",
+                "source_module": "pronunciation",
+                "source_id": "PR-00003",
+                "title": "Đọc ký hiệu /ʃ/ và /tʃ/",
+                "instruction_vi": "Luyện hiện tượng phát âm và tự ghi âm kiểm tra độ rõ."
+              },
+              {
+                "id": "ACT-EN2-4",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00003",
+                "title": "Phản hồi về áp phích",
+                "instruction_vi": "Trình bày tình huống dựa trên cấu trúc gợi ý."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00021",
+              "EX-00022"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0005"
+      },
+      {
+        "id": "CRS-EN-002-CH2",
+        "order": 2,
+        "title": "Chương 2: Trình bày quan điểm & Xử lý tình huống",
+        "objective": "Diễn đạt ý kiến mạch lạc và xử lý yêu cầu phát sinh.",
+        "lessons": [
+          {
+            "id": "CRS-EN-002-L3",
+            "order": 1,
+            "title": "Bài 3: Nghe hiểu tình huống đa chiều",
+            "objective": "Bắt được điều kiện, ngoại lệ và thái độ người nói.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-EN2-5",
+                "type": "listening",
+                "source_module": "listening",
+                "source_id": "LS-00003",
+                "title": "The sound before the image",
+                "instruction_vi": "Ghi chú từ khóa trọng tâm và trả lời câu hỏi kiểm tra."
+              },
+              {
+                "id": "ACT-EN2-6",
+                "type": "integrated",
+                "source_module": "lessons",
+                "source_id": "LESSON-000005",
+                "title": "Two dates on one receipt",
+                "instruction_vi": "Hoàn thành nhiệm vụ tích hợp kỹ năng."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00025",
+              "EX-00026"
+            ]
+          },
+          {
+            "id": "CRS-EN-002-L4",
+            "order": 2,
+            "title": "Bài 4: Đóng vai giải quyết vấn đề",
+            "objective": "Đưa ra phương án lịch sự và thuyết phục.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-EN2-7",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00004",
+                "title": "Xác nhận dịch vụ gửi hành lý",
+                "instruction_vi": "Thực hiện bài nói theo câu hỏi gợi ý và tự đánh giá."
+              },
+              {
+                "id": "ACT-EN2-8",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00006",
+                "title": "Hiện tại tiếp diễn cho tình huống tạm thời",
+                "instruction_vi": "Áp dụng cấu trúc ngữ pháp trung cấp vào hội thoại."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00029",
+              "EX-00030"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0007"
+      }
+    ]
+  },
+  {
+    "id": "CRS-EN-003",
+    "title": "Tiếng Anh Đọc hiểu & Viết Học thuật – Công sở (B1–B2)",
+    "language": "en",
+    "proficiency_scale": "CEFR",
+    "scale_note_vi": "Áp dụng khung tham chiếu CEFR (B1 → B2) cho tiếng Anh.",
+    "category": "Học thuật",
+    "description": "Rèn kỹ năng đọc phân tích văn bản thông tin, nắm vững ngữ pháp liên kết câu và thực hành quy trình viết bài bản từ lập dàn ý đến tự biên tập.",
+    "objectives": [
+      "Đọc hiểu sâu văn bản thông tin, phân biệt lập luận chính và chi tiết bổ trợ.",
+      "Viết email, báo cáo ngắn và đoạn văn phân tích rõ bố cục, đúng văn phong.",
+      "Tự kiểm tra lỗi ngữ pháp và đối chiếu bài viết theo bộ tiêu chí cụ thể."
+    ],
+    "entry_level": "B1",
+    "target_level": "B2",
+    "target_audience": "Sinh viên, người đi làm cần nâng cao năng lực đọc tài liệu và viết tiếng Anh mạch lạc.",
+    "primary_skills": [
+      "Reading",
+      "Writing",
+      "Grammar"
+    ],
+    "topics": [
+      "Học thuật",
+      "Email & văn bản công sở",
+      "Phân tích thông tin"
+    ],
+    "estimated_hours": 16,
+    "prerequisites": [
+      "CRS-EN-002"
+    ],
+    "delivery_mode": "SELF_STUDY",
+    "certificate_issued": false,
+    "status": "REVIEW_REQUIRED",
+    "chapters": [
+      {
+        "id": "CRS-EN-003-CH1",
+        "order": 1,
+        "title": "Chương 1: Đọc phân tích & Ngữ pháp liên kết",
+        "objective": "Nắm chắc cấu trúc đoạn văn và phương tiện liên kết ý.",
+        "lessons": [
+          {
+            "id": "CRS-EN-003-L1",
+            "order": 1,
+            "title": "Bài 1: Đọc hiểu văn bản thông tin & điều kiện",
+            "objective": "Phân tích thông tin chi tiết và suy luận hợp lý từ văn bản.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-EN3-1",
+                "type": "reading",
+                "source_module": "reading",
+                "source_id": "RD-00003",
+                "title": "A shorter queue on paper",
+                "instruction_vi": "Đọc toàn văn, đánh dấu từ khóa và hoàn thành câu hỏi đọc hiểu."
+              },
+              {
+                "id": "ACT-EN3-2",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00011",
+                "title": "Điều kiện có thể xảy ra",
+                "instruction_vi": "Học chủ điểm ngữ pháp trung cao cấp và làm bài vận dụng."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00033",
+              "EX-00034"
+            ]
+          },
+          {
+            "id": "CRS-EN-003-L2",
+            "order": 2,
+            "title": "Bài 2: Quy trình viết chuẩn – Lập dàn ý và soạn thảo",
+            "objective": "Thực hành đủ 5 bước: đọc đề, lập dàn ý, viết nháp, tự rà soát, đối chiếu bài mẫu.",
+            "estimated_minutes": 40,
+            "activities": [
+              {
+                "id": "ACT-EN3-3",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00003",
+                "title": "Mô tả lỗi hiển thị trong ứng dụng",
+                "instruction_vi": "Viết bài hoàn chỉnh theo đề bài và đối chiếu tiêu chí đánh giá."
+              },
+              {
+                "id": "ACT-EN3-4",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00004",
+                "title": "Viết biển hướng dẫn dùng trạm nước",
+                "instruction_vi": "Thực hành viết tình huống công sở, kiểm tra số từ và lỗi thường gặp."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00037",
+              "EX-00038"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0009"
+      },
+      {
+        "id": "CRS-EN-003-CH2",
+        "order": 2,
+        "title": "Chương 2: Nâng cao lập luận & Văn phong chuyên nghiệp",
+        "objective": "Viết mạch lạc, súc tích và xử lý văn bản phân tích B2.",
+        "lessons": [
+          {
+            "id": "CRS-EN-003-L3",
+            "order": 1,
+            "title": "Bài 3: Đọc văn bản phân tích & Tóm tắt trọng tâm",
+            "objective": "Tổng hợp luận điểm và dữ kiện cốt lõi.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-EN3-5",
+                "type": "reading",
+                "source_module": "reading",
+                "source_id": "RD-00009",
+                "title": "What the poster promises",
+                "instruction_vi": "Đọc bài phân tích và trả lời câu hỏi kiểm tra."
+              },
+              {
+                "id": "ACT-EN3-6",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00015",
+                "title": "Quá khứ hoàn thành trước một mốc đã qua",
+                "instruction_vi": "Củng cố cấu trúc câu phức và tránh lỗi sai phổ biến."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00041",
+              "EX-00042"
+            ]
+          },
+          {
+            "id": "CRS-EN-003-L4",
+            "order": 2,
+            "title": "Bài 4: Viết phản hồi & Đánh giá tổng hợp",
+            "objective": "Hoàn thành bài viết dài đạt đủ yêu cầu nội dung và ngôn ngữ.",
+            "estimated_minutes": 40,
+            "activities": [
+              {
+                "id": "ACT-EN3-7",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00006",
+                "title": "Ghi chú quan sát ở bờ ao",
+                "instruction_vi": "Soạn bài viết trong không gian soạn thảo và đối chiếu bài mẫu."
+              },
+              {
+                "id": "ACT-EN3-8",
+                "type": "integrated",
+                "source_module": "lessons",
+                "source_id": "LESSON-000017",
+                "title": "One ticket, two buses",
+                "instruction_vi": "Ôn tập tổng hợp kiến thức chương."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00045",
+              "EX-00046"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0011"
+      }
+    ]
+  },
+  {
+    "id": "CRS-EN-004",
+    "title": "Tiếng Anh Công việc & Chuyên ngành Ứng dụng (B1–B2)",
+    "language": "en",
+    "proficiency_scale": "CEFR",
+    "scale_note_vi": "Áp dụng khung tham chiếu CEFR (B1 → B2) cho tiếng Anh chuyên ngành.",
+    "category": "Chuyên ngành",
+    "description": "Ứng dụng cả 4 kỹ năng vào bối cảnh doanh nghiệp, trao đổi công việc, đọc tài liệu nghiệp vụ và thuyết trình ngắn.",
+    "objectives": [
+      "Kết hợp thuật ngữ chuyên ngành vào bối cảnh giao tiếp và viết nghiệp vụ thực tế.",
+      "Nghe hiểu và phản hồi chính xác trong các cuộc trao đổi công việc.",
+      "Đọc và viết văn bản chuyên môn rõ ràng, hạn chế diễn đạt sai ngữ cảnh."
+    ],
+    "entry_level": "B1",
+    "target_level": "B2",
+    "target_audience": "Người đi làm cần sử dụng tiếng Anh trong công việc và các lĩnh vực chuyên môn.",
+    "primary_skills": [
+      "Listening",
+      "Speaking",
+      "Reading",
+      "Writing"
+    ],
+    "topics": [
+      "Kinh tế và kinh doanh",
+      "Công nghệ thông tin",
+      "Quản trị & nghiệp vụ"
+    ],
+    "estimated_hours": 15,
+    "prerequisites": [
+      "CRS-EN-002"
+    ],
+    "delivery_mode": "SELF_STUDY",
+    "certificate_issued": false,
+    "status": "REVIEW_REQUIRED",
+    "chapters": [
+      {
+        "id": "CRS-EN-004-CH1",
+        "order": 1,
+        "title": "Chương 1: Giao tiếp & Xử lý công việc",
+        "objective": "Trao đổi tiến độ, yêu cầu và phối hợp công việc hiệu quả.",
+        "lessons": [
+          {
+            "id": "CRS-EN-004-L1",
+            "order": 1,
+            "title": "Bài 1: Nghe hiểu trao đổi công việc & Phản hồi",
+            "objective": "Nắm bắt yêu cầu công việc và phản hồi rõ ràng bằng lời nói.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-EN4-1",
+                "type": "listening",
+                "source_module": "listening",
+                "source_id": "LS-00010",
+                "title": "The cabin number on the ticket",
+                "instruction_vi": "Thực hành nghe phân tích thông tin công việc."
+              },
+              {
+                "id": "ACT-EN4-2",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00006",
+                "title": "Thu lại cảnh phỏng vấn",
+                "instruction_vi": "Đóng vai xử lý tình huống công việc và tự ghi âm."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00049",
+              "EX-00050"
+            ]
+          },
+          {
+            "id": "CRS-EN-004-L2",
+            "order": 2,
+            "title": "Bài 2: Đọc tài liệu nghiệp vụ & Viết trao đổi chuyên môn",
+            "objective": "Đọc chính xác quy định và viết văn bản công việc mạch lạc.",
+            "estimated_minutes": 40,
+            "activities": [
+              {
+                "id": "ACT-EN4-3",
+                "type": "reading",
+                "source_module": "reading",
+                "source_id": "RD-00013",
+                "title": "Two numbers on one receipt",
+                "instruction_vi": "Đọc bài chuyên sâu và trả lời câu hỏi kiểm tra."
+              },
+              {
+                "id": "ACT-EN4-4",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00013",
+                "title": "Chuyển thông tin đổi cửa ra máy bay",
+                "instruction_vi": "Soạn văn bản theo yêu cầu công việc và tự đối chiếu tiêu chí."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00053",
+              "EX-00054"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0013"
+      },
+      {
+        "id": "CRS-EN-004-CH2",
+        "order": 2,
+        "title": "Chương 2: Thuyết trình & Tổng hợp chuyên ngành",
+        "objective": "Trình bày vấn đề có cấu trúc và củng cố độ chính xác ngôn ngữ.",
+        "lessons": [
+          {
+            "id": "CRS-EN-004-L3",
+            "order": 1,
+            "title": "Bài 3: Trình bày giải pháp & Phát âm rõ ràng",
+            "objective": "Nói rõ trọng âm và mạch ý khi trình bày trước nhóm.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-EN4-5",
+                "type": "pronunciation",
+                "source_module": "pronunciation",
+                "source_id": "PR-00011",
+                "title": "Biến thể âm /r/ sau nguyên âm",
+                "instruction_vi": "Luyện phát âm trọng âm và ngữ điệu chuyên nghiệp."
+              },
+              {
+                "id": "ACT-EN4-6",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00014",
+                "title": "Xác định đúng hộp linh kiện",
+                "instruction_vi": "Thực hành trình bày quan điểm chuyên môn."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00057",
+              "EX-00058"
+            ]
+          },
+          {
+            "id": "CRS-EN-004-L4",
+            "order": 2,
+            "title": "Bài 4: Bài học tích hợp công việc",
+            "objective": "Kết hợp đọc, viết và ngữ pháp trong tình huống tổng hợp.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-EN4-7",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00014",
+                "title": "Viết biên bản về một quyết định còn treo",
+                "instruction_vi": "Viết hoàn chỉnh theo đề bài nâng cao."
+              },
+              {
+                "id": "ACT-EN4-8",
+                "type": "integrated",
+                "source_module": "lessons",
+                "source_id": "LESSON-000031",
+                "title": "Soup for the second table",
+                "instruction_vi": "Hoàn thành bài học tích hợp cuối khóa."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00061",
+              "EX-00062"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0013"
+      }
+    ]
+  },
+  {
+    "id": "CRS-ZH-001",
+    "title": "Tiếng Trung Giản thể Nền tảng (HSK 1–2)",
+    "language": "zh-CN",
+    "proficiency_scale": "HSK (Hệ quy chiếu tiếng Trung chuẩn, không gán nhãn CEFR)",
+    "scale_note_vi": "Khóa học sử dụng cấp độ HSK 1–2. Lưu ý: các bản ghi học liệu gốc trong ZIP hiện còn lưu trường level theo ký hiệu A1–A2; hệ thống ánh xạ tham chiếu sang HSK 1–2 và ghi nhận để chuẩn hóa ở đợt kiểm định chuyên gia.",
+    "category": "Nền tảng",
+    "description": "Làm chủ thanh mẫu, vận mẫu, thanh điệu, Pinyin, cấu trúc câu tiếng Trung cơ bản và đọc – viết câu ngắn sinh hoạt.",
+    "objectives": [
+      "Phát âm đúng thanh mẫu, vận mẫu, thanh điệu và quy tắc biến điệu cơ bản trong tiếng Trung giản thể.",
+      "Nắm vững trật tự câu, trợ từ và cấu trúc ngữ pháp cốt lõi cấp độ HSK 1–2.",
+      "Đọc hiểu tin nhắn ngắn và viết đoạn trao đổi cơ bản bằng chữ Hán giản thể."
+    ],
+    "entry_level": "HSK 1",
+    "target_level": "HSK 2",
+    "target_audience": "Người mới bắt đầu học tiếng Trung giản thể từ Pinyin và câu cơ bản.",
+    "primary_skills": [
+      "Pronunciation",
+      "Grammar",
+      "Reading",
+      "Writing"
+    ],
+    "topics": [
+      "Pinyin & Thanh điệu",
+      "Đời sống hàng ngày",
+      "Giao tiếp sơ cấp"
+    ],
+    "estimated_hours": 12,
+    "prerequisites": [],
+    "delivery_mode": "SELF_STUDY",
+    "certificate_issued": false,
+    "status": "REVIEW_REQUIRED",
+    "chapters": [
+      {
+        "id": "CRS-ZH-001-CH1",
+        "order": 1,
+        "title": "Chương 1: Thanh điệu, Pinyin & Ngữ pháp nền tảng",
+        "objective": "Luyện phân biệt thanh điệu – âm dễ nhầm và đặt câu tiếng Trung đúng trật tự.",
+        "lessons": [
+          {
+            "id": "CRS-ZH-001-L1",
+            "order": 1,
+            "title": "Bài 1: Luyện thanh mẫu – vận mẫu & Quy tắc câu cơ bản",
+            "objective": "Phân biệt chuẩn âm tiết Pinyin và áp dụng cấu trúc ngữ pháp đầu tiên.",
+            "estimated_minutes": 25,
+            "activities": [
+              {
+                "id": "ACT-ZH1-1",
+                "type": "pronunciation",
+                "source_module": "pronunciation",
+                "source_id": "PR-00013",
+                "title": "Bốn thanh điệu trên âm ma",
+                "instruction_vi": "Đọc kỹ hướng dẫn vị trí lưỡi/thanh điệu, luyện cặp từ và tự ghi âm đối chiếu."
+              },
+              {
+                "id": "ACT-ZH1-2",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00020",
+                "title": "Câu vị ngữ tính từ",
+                "instruction_vi": "Học cấu trúc ngữ pháp tiếng Trung và làm nhiệm vụ vận dụng."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00003",
+              "EX-00004"
+            ]
+          },
+          {
+            "id": "CRS-ZH-001-L2",
+            "order": 2,
+            "title": "Bài 2: Đọc văn bản ngắn & Viết lời nhắn tiếng Trung",
+            "objective": "Đọc hiểu thông tin cơ bản và viết đoạn ngắn đúng chữ Hán – Pinyin.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-ZH1-3",
+                "type": "reading",
+                "source_module": "reading",
+                "source_id": "RD-00005",
+                "title": "雨伞放在哪儿",
+                "instruction_vi": "Đọc bài chữ Hán giản thể, trả lời câu hỏi và xem giải thích."
+              },
+              {
+                "id": "ACT-ZH1-4",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00007",
+                "title": "Nhắn lại lối ra ở ga",
+                "instruction_vi": "Lập ý, viết đoạn ngắn theo yêu cầu và đối chiếu bài mẫu."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00007",
+              "EX-00008"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0002"
+      },
+      {
+        "id": "CRS-ZH-001-CH2",
+        "order": 2,
+        "title": "Chương 2: Hội thoại sinh hoạt HSK 2",
+        "objective": "Nghe hiểu hội thoại ngắn và phản xạ nói trong tình huống quen thuộc.",
+        "lessons": [
+          {
+            "id": "CRS-ZH-001-L3",
+            "order": 1,
+            "title": "Bài 3: Nghe – Nói tình huống đời sống",
+            "objective": "Nắm thông tin chính trong hội thoại và tự thu âm đối đáp.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-ZH1-5",
+                "type": "listening",
+                "source_module": "listening",
+                "source_id": "LS-00005",
+                "title": "哪个出口见",
+                "instruction_vi": "Thực hành nghe theo kịch bản có hướng dẫn và trả lời câu hỏi."
+              },
+              {
+                "id": "ACT-ZH1-6",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00007",
+                "title": "Hỏi mượn ô ở cửa",
+                "instruction_vi": "Thực hành vai nói theo câu hỏi gợi ý và tự ghi âm."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00011",
+              "EX-00012"
+            ]
+          },
+          {
+            "id": "CRS-ZH-001-L4",
+            "order": 2,
+            "title": "Bài 4: Củng cố biến điệu & Bài học tích hợp",
+            "objective": "Nối mạch kiến thức phát âm, ngữ pháp và tình huống thực tế.",
+            "estimated_minutes": 25,
+            "activities": [
+              {
+                "id": "ACT-ZH1-7",
+                "type": "pronunciation",
+                "source_module": "pronunciation",
+                "source_id": "PR-00014",
+                "title": "Thanh nhẹ trong âm tiết thứ hai",
+                "instruction_vi": "Luyện hiện tượng thanh điệu/âm tiết tiếng Trung."
+              },
+              {
+                "id": "ACT-ZH1-8",
+                "type": "integrated",
+                "source_module": "lessons",
+                "source_id": "LESSON-000002",
+                "title": "两种截止时间",
+                "instruction_vi": "Hoàn thành bài học tích hợp cuối chương."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00015",
+              "EX-00016"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0004"
+      }
+    ]
+  },
+  {
+    "id": "CRS-ZH-002",
+    "title": "Tiếng Trung Giao tiếp Đời sống (HSK 2–3)",
+    "language": "zh-CN",
+    "proficiency_scale": "HSK (Hệ quy chiếu tiếng Trung chuẩn, không gán nhãn CEFR)",
+    "scale_note_vi": "Sử dụng cấp độ HSK 2–3. Học liệu gốc trong ZIP được tham chiếu minh bạch từ mức sơ–trung cấp.",
+    "category": "Giao tiếp",
+    "description": "Mở rộng khả năng nghe hiểu hội thoại tự nhiên, trao đổi kế hoạch, hỏi đáp dịch vụ và phát âm rõ thanh điệu trong câu dài.",
+    "objectives": [
+      "Xử lý trôi chảy các tình huống hẹn gặp, di chuyển, mua sắm và trao đổi cá nhân.",
+      "Cải thiện độ chuẩn thanh điệu, nhịp điệu và ngắt nghỉ trong câu tiếng Trung.",
+      "Trả lời câu hỏi và kể lại sự việc ngắn bằng cấu trúc phù hợp HSK 2–3."
+    ],
+    "entry_level": "HSK 2",
+    "target_level": "HSK 3",
+    "target_audience": "Người học đã nắm nền tảng HSK 1–2 muốn giao tiếp tự tin hơn.",
+    "primary_skills": [
+      "Listening",
+      "Speaking",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Giao tiếp hàng ngày",
+      "Di chuyển & dịch vụ",
+      "Kể chuyện & trao đổi"
+    ],
+    "estimated_hours": 14,
+    "prerequisites": [
+      "CRS-ZH-001"
+    ],
+    "delivery_mode": "SELF_STUDY",
+    "certificate_issued": false,
+    "status": "REVIEW_REQUIRED",
+    "chapters": [
+      {
+        "id": "CRS-ZH-002-CH1",
+        "order": 1,
+        "title": "Chương 1: Hội thoại đa lượt & Ngữ điệu tự nhiên",
+        "objective": "Bắt ý chính hội thoại và phản hồi tự nhiên bằng mẫu câu thông dụng.",
+        "lessons": [
+          {
+            "id": "CRS-ZH-002-L1",
+            "order": 1,
+            "title": "Bài 1: Trao đổi kế hoạch và xác nhận thông tin",
+            "objective": "Nghe nhận diện thay đổi và trả lời đúng trọng tâm.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-ZH2-1",
+                "type": "listening",
+                "source_module": "listening",
+                "source_id": "LS-00006",
+                "title": "一张缺了日期的照片",
+                "instruction_vi": "Thực hành bài nghe và trả lời câu hỏi kiểm tra."
+              },
+              {
+                "id": "ACT-ZH2-2",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00008",
+                "title": "Gọi món cho người không ăn cay",
+                "instruction_vi": "Luyện nói theo tình huống và tự đánh giá qua Micro."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00019",
+              "EX-00020"
+            ]
+          },
+          {
+            "id": "CRS-ZH-002-L2",
+            "order": 2,
+            "title": "Bài 2: Phân biệt âm khó & Thực hành hội thoại",
+            "objective": "Khắc phục lỗi phát âm phổ biến của người Việt khi nói tiếng Trung.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-ZH2-3",
+                "type": "pronunciation",
+                "source_module": "pronunciation",
+                "source_id": "PR-00016",
+                "title": "Vận mẫu trước tròn môi ü",
+                "instruction_vi": "Luyện âm khó và tự ghi âm đối chiếu."
+              },
+              {
+                "id": "ACT-ZH2-4",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00009",
+                "title": "Xin đổi chỗ trong lớp",
+                "instruction_vi": "Thực hiện nhiệm vụ nói có câu hỏi gợi ý."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00023",
+              "EX-00024"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0006"
+      },
+      {
+        "id": "CRS-ZH-002-CH2",
+        "order": 2,
+        "title": "Chương 2: Diễn đạt ý kiến & Xử lý tình huống",
+        "objective": "Trình bày lý do và đề xuất phương án rõ ràng.",
+        "lessons": [
+          {
+            "id": "CRS-ZH-002-L3",
+            "order": 1,
+            "title": "Bài 3: Nghe hiểu tình huống thực tế",
+            "objective": "Phân tích chi tiết trong hội thoại dài hơn.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-ZH2-5",
+                "type": "listening",
+                "source_module": "listening",
+                "source_id": "LS-00007",
+                "title": "请把字再放大一点",
+                "instruction_vi": "Hoàn thành nhiệm vụ nghe và đối chiếu giải thích."
+              },
+              {
+                "id": "ACT-ZH2-6",
+                "type": "integrated",
+                "source_module": "lessons",
+                "source_id": "LESSON-000006",
+                "title": "阅读会借用协议",
+                "instruction_vi": "Hoàn thành bài học tích hợp tình huống."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00027",
+              "EX-00028"
+            ]
+          },
+          {
+            "id": "CRS-ZH-002-L4",
+            "order": 2,
+            "title": "Bài 4: Thực hành đối đáp & Ngữ pháp câu ghép",
+            "objective": "Dùng liên từ và bổ ngữ chính xác trong lời nói.",
+            "estimated_minutes": 30,
+            "activities": [
+              {
+                "id": "ACT-ZH2-7",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00010",
+                "title": "Hỏi về thời điểm hái lê",
+                "instruction_vi": "Đóng vai và tự đánh giá tính mạch lạc."
+              },
+              {
+                "id": "ACT-ZH2-8",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00026",
+                "title": "Trợ từ 过 cho trải nghiệm",
+                "instruction_vi": "Học cấu trúc ngữ pháp câu ghép tiếng Trung."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00031",
+              "EX-00032"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0008"
+      }
+    ]
+  },
+  {
+    "id": "CRS-ZH-003",
+    "title": "Tiếng Trung Đọc hiểu, Ngữ pháp & Viết Trung cấp (HSK 3–4)",
+    "language": "zh-CN",
+    "proficiency_scale": "HSK (Hệ quy chiếu tiếng Trung chuẩn, không gán nhãn CEFR)",
+    "scale_note_vi": "Sử dụng cấp độ HSK 3–4 cho tiếng Trung giản thể.",
+    "category": "Trung cấp",
+    "description": "Phát triển năng lực đọc văn bản chữ Hán dài hơn, nắm vững các cấu trúc ngữ pháp trọng điểm HSK 3–4 và thực hành viết đoạn hoàn chỉnh.",
+    "objectives": [
+      "Đọc hiểu thông báo, bài viết đời sống và văn bản thông tin bằng chữ Hán giản thể.",
+      "Vận dụng chính xác các cấu trúc chữ 把, 被, bổ ngữ kết quả/xu hướng và liên từ HSK 3–4.",
+      "Thực hành viết bài có bối cảnh, dàn ý, số chữ rõ ràng và tự kiểm tra lỗi sai."
+    ],
+    "entry_level": "HSK 3",
+    "target_level": "HSK 4",
+    "target_audience": "Người học muốn đọc tài liệu và viết tiếng Trung mạch lạc ở bậc trung cấp.",
+    "primary_skills": [
+      "Reading",
+      "Writing",
+      "Grammar"
+    ],
+    "topics": [
+      "Đọc hiểu trung cấp",
+      "Ngữ pháp HSK 3–4",
+      "Viết đoạn & thư tín"
+    ],
+    "estimated_hours": 16,
+    "prerequisites": [
+      "CRS-ZH-002"
+    ],
+    "delivery_mode": "SELF_STUDY",
+    "certificate_issued": false,
+    "status": "REVIEW_REQUIRED",
+    "chapters": [
+      {
+        "id": "CRS-ZH-003-CH1",
+        "order": 1,
+        "title": "Chương 1: Đọc văn bản thông tin & Ngữ pháp trọng tâm",
+        "objective": "Nắm bắt cấu trúc lập luận và từ nối trong văn bản chữ Hán.",
+        "lessons": [
+          {
+            "id": "CRS-ZH-003-L1",
+            "order": 1,
+            "title": "Bài 1: Đọc hiểu văn bản dài & Phân tích ngữ pháp",
+            "objective": "Xác định ý chính, chi tiết ngoại lệ và cấu trúc câu quan trọng.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-ZH3-1",
+                "type": "reading",
+                "source_module": "reading",
+                "source_id": "RD-00007",
+                "title": "菜单上的一条线",
+                "instruction_vi": "Đọc kỹ văn bản chữ Hán và trả lời câu hỏi đọc hiểu."
+              },
+              {
+                "id": "ACT-ZH3-2",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00030",
+                "title": "Bổ ngữ kết quả",
+                "instruction_vi": "Học chủ điểm ngữ pháp trung cấp và hoàn thành bài tập."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00035",
+              "EX-00036"
+            ]
+          },
+          {
+            "id": "CRS-ZH-003-L2",
+            "order": 2,
+            "title": "Bài 2: Quy trình viết đoạn tiếng Trung hoàn chỉnh",
+            "objective": "Lập dàn ý, viết bản nháp và đối chiếu bài mẫu kèm giải thích.",
+            "estimated_minutes": 40,
+            "activities": [
+              {
+                "id": "ACT-ZH3-3",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00009",
+                "title": "Hỏi chỗ lấy đồ thất lạc",
+                "instruction_vi": "Viết bài theo đề bài và kiểm tra tiêu chí đánh giá."
+              },
+              {
+                "id": "ACT-ZH3-4",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00010",
+                "title": "Thông báo lịch sử dụng phòng sinh hoạt",
+                "instruction_vi": "Thực hành viết tình huống thực tế và tránh lỗi thường gặp."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00039",
+              "EX-00040"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0010"
+      },
+      {
+        "id": "CRS-ZH-003-CH2",
+        "order": 2,
+        "title": "Chương 2: Đọc phân tích & Viết phản hồi mạch lạc",
+        "objective": "Nâng cao độ chính xác diễn đạt trong đọc và viết HSK 4.",
+        "lessons": [
+          {
+            "id": "CRS-ZH-003-L3",
+            "order": 1,
+            "title": "Bài 3: Đọc phân tích & Cấu trúc nâng cao",
+            "objective": "Hiểu hàm ý và quan hệ nguyên nhân – kết quả trong bài đọc.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-ZH3-5",
+                "type": "reading",
+                "source_module": "reading",
+                "source_id": "RD-00011",
+                "title": "集合地点改了",
+                "instruction_vi": "Đọc và hoàn thành câu hỏi kiểm tra đọc hiểu."
+              },
+              {
+                "id": "ACT-ZH3-6",
+                "type": "grammar",
+                "source_module": "grammar",
+                "source_id": "GR-00034",
+                "title": "Điều kiện với 只要…就…",
+                "instruction_vi": "Ôn tập cấu trúc câu phức tiếng Trung."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00043",
+              "EX-00044"
+            ]
+          },
+          {
+            "id": "CRS-ZH-003-L4",
+            "order": 2,
+            "title": "Bài 4: Viết hoàn chỉnh & Tổng kết chương",
+            "objective": "Hoàn thiện kỹ năng tự biên tập bài viết tiếng Trung.",
+            "estimated_minutes": 40,
+            "activities": [
+              {
+                "id": "ACT-ZH3-7",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00012",
+                "title": "Tóm tắt buổi đi bộ theo nhóm",
+                "instruction_vi": "Soạn bài viết, đếm ký tự và đối chiếu tiêu chí."
+              },
+              {
+                "id": "ACT-ZH3-8",
+                "type": "integrated",
+                "source_module": "lessons",
+                "source_id": "LESSON-000018",
+                "title": "行李在哪儿领",
+                "instruction_vi": "Hoàn thành bài học tích hợp cuối chương."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00047",
+              "EX-00048"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0012"
+      }
+    ]
+  },
+  {
+    "id": "CRS-ZH-004",
+    "title": "Tiếng Trung Công việc & Chuyên ngành Ứng dụng (HSK 3–4+)",
+    "language": "zh-CN",
+    "proficiency_scale": "HSK (Hệ quy chiếu tiếng Trung chuẩn, không gán nhãn CEFR)",
+    "scale_note_vi": "Sử dụng cấp độ HSK 3–4+ cho bối cảnh công việc và chuyên ngành.",
+    "category": "Chuyên ngành",
+    "description": "Rèn luyện 4 kỹ năng tiếng Trung trong môi trường làm việc: trao đổi công việc, đọc tài liệu nghiệp vụ và viết phản hồi chuyên nghiệp.",
+    "objectives": [
+      "Sử dụng từ vựng và cấu trúc tiếng Trung phù hợp trong trao đổi công việc.",
+      "Nghe hiểu và phản hồi tình huống hợp tác, lịch trình và xử lý sự cố.",
+      "Đọc văn bản chuyên môn và viết thông báo/email rõ ràng bằng chữ Hán giản thể."
+    ],
+    "entry_level": "HSK 3",
+    "target_level": "HSK 4+",
+    "target_audience": "Người đi làm, nhân sự thương mại – kỹ thuật cần dùng tiếng Trung trong công việc.",
+    "primary_skills": [
+      "Listening",
+      "Speaking",
+      "Reading",
+      "Writing"
+    ],
+    "topics": [
+      "Thương mại & kinh doanh",
+      "Công việc văn phòng",
+      "Chuyên ngành"
+    ],
+    "estimated_hours": 15,
+    "prerequisites": [
+      "CRS-ZH-002"
+    ],
+    "delivery_mode": "SELF_STUDY",
+    "certificate_issued": false,
+    "status": "REVIEW_REQUIRED",
+    "chapters": [
+      {
+        "id": "CRS-ZH-004-CH1",
+        "order": 1,
+        "title": "Chương 1: Nghe – Nói trong môi trường công việc",
+        "objective": "Trao đổi thông tin công việc rõ ràng, lịch sự và đúng trọng tâm.",
+        "lessons": [
+          {
+            "id": "CRS-ZH-004-L1",
+            "order": 1,
+            "title": "Bài 1: Nghe hiểu trao đổi công việc & Phản xạ nói",
+            "objective": "Xác nhận yêu cầu và đề xuất giải pháp bằng tiếng Trung.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-ZH4-1",
+                "type": "listening",
+                "source_module": "listening",
+                "source_id": "LS-00012",
+                "title": "留言里的两个名字",
+                "instruction_vi": "Thực hành nghe tình huống công việc."
+              },
+              {
+                "id": "ACT-ZH4-2",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00012",
+                "title": "Hỏi về căn hộ trước khi xem",
+                "instruction_vi": "Đóng vai giao tiếp công việc và tự ghi âm."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00051",
+              "EX-00052"
+            ]
+          },
+          {
+            "id": "CRS-ZH-004-L2",
+            "order": 2,
+            "title": "Bài 2: Đọc tài liệu nghiệp vụ & Viết phản hồi",
+            "objective": "Hiểu chính xác văn bản quy định và viết trao đổi công việc.",
+            "estimated_minutes": 40,
+            "activities": [
+              {
+                "id": "ACT-ZH4-3",
+                "type": "reading",
+                "source_module": "reading",
+                "source_id": "RD-00015",
+                "title": "转账备注写什么",
+                "instruction_vi": "Đọc bài nghiệp vụ và hoàn thành câu hỏi kiểm tra."
+              },
+              {
+                "id": "ACT-ZH4-4",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00015",
+                "title": "Ghi chú đóng hai thùng sách",
+                "instruction_vi": "Viết bài theo tình huống công sở và đối chiếu tiêu chí."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00055",
+              "EX-00056"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0014"
+      },
+      {
+        "id": "CRS-ZH-004-CH2",
+        "order": 2,
+        "title": "Chương 2: Trình bày & Tích hợp chuyên ngành",
+        "objective": "Tổng hợp cả 4 kỹ năng trong bối cảnh chuyên môn thực tế.",
+        "lessons": [
+          {
+            "id": "CRS-ZH-004-L3",
+            "order": 1,
+            "title": "Bài 3: Phát âm chuẩn nhịp & Trình bày quan điểm",
+            "objective": "Cải thiện độ trôi chảy và ngữ điệu khi trình bày.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-ZH4-5",
+                "type": "pronunciation",
+                "source_module": "pronunciation",
+                "source_id": "PR-00023",
+                "title": "Dấu nháy tách âm tiết",
+                "instruction_vi": "Luyện thanh điệu và nhịp điệu câu dài."
+              },
+              {
+                "id": "ACT-ZH4-6",
+                "type": "speaking",
+                "source_module": "speaking",
+                "source_id": "SP-00016",
+                "title": "Làm rõ tỷ lệ trên bản vẽ",
+                "instruction_vi": "Thực hiện bài nói trình bày giải pháp."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00059",
+              "EX-00060"
+            ]
+          },
+          {
+            "id": "CRS-ZH-004-L4",
+            "order": 2,
+            "title": "Bài 4: Hoàn thiện viết & Bài học tích hợp",
+            "objective": "Tổng kết năng lực ứng dụng tiếng Trung chuyên ngành.",
+            "estimated_minutes": 35,
+            "activities": [
+              {
+                "id": "ACT-ZH4-7",
+                "type": "writing",
+                "source_module": "writing",
+                "source_id": "WR-00016",
+                "title": "Đề nghị bạn gửi ảnh bài tập",
+                "instruction_vi": "Viết bài nâng cao và đối chiếu bài mẫu."
+              },
+              {
+                "id": "ACT-ZH4-8",
+                "type": "integrated",
+                "source_module": "lessons",
+                "source_id": "LESSON-000032",
+                "title": "少一箱还是晚一箱",
+                "instruction_vi": "Hoàn thành bài học tích hợp cuối khóa."
+              }
+            ],
+            "exercise_ids": [
+              "EX-00063",
+              "EX-00064"
+            ]
+          }
+        ],
+        "chapter_assessment_id": "AS-0014"
+      }
+    ]
+  }
+]

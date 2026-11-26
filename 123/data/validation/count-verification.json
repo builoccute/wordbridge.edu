@@ -1,0 +1,24 @@
+{
+  "counts": {
+    "vocabulary": 726,
+    "examples": 770,
+    "reading": 16,
+    "listening": 16,
+    "speaking": 16,
+    "writing": 16,
+    "grammar": 51,
+    "pronunciation": 33,
+    "exercises": 64,
+    "assessments": 14,
+    "lessons": 40
+  },
+  "specialties": 40,
+  "eligible_skill_lessons": 148,
+  "eligible_integrated_lessons": 40,
+  "eligible_unique_lesson_total": 188,
+  "target_unique_lessons": 1000000,
+  "target_vocabulary": 40000,
+  "target_examples": 100000,
+  "target_each_skill": 5000,
+  "overall": "INCOMPLETE"
+}

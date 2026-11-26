@@ -1,0 +1,19 @@
+{
+  "checkpoint": "400/500",
+  "new_this_turn": 100,
+  "batch_actual": 400,
+  "vocabulary_total": 626,
+  "examples_total": 670,
+  "first_id": "WB5-10527",
+  "last_id": "WB5-10626",
+  "rejected_existing_terms": [
+    "capsule",
+    "package insert",
+    "stock count",
+    "wind farm"
+  ],
+  "schema_id_link_checks": "PASS",
+  "linguistic_review": "REVIEW_REQUIRED",
+  "legacy_overlap": "NOT_PROVIDED",
+  "status": "INCOMPLETE"
+}

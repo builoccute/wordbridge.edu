@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "WordBridgeSelfStudyCourse",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "language",
+    "proficiency_scale",
+    "description",
+    "objectives",
+    "entry_level",
+    "target_level",
+    "target_audience",
+    "primary_skills",
+    "topics",
+    "estimated_hours",
+    "prerequisites",
+    "chapters",
+    "status",
+    "delivery_mode"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^CRS-(EN|ZH)-[0-9]{3}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 5
+    },
+    "language": {
+      "type": "string",
+      "enum": [
+        "en",
+        "zh-CN"
+      ]
+    },
+    "proficiency_scale": {
+      "type": "string"
+    },
+    "scale_note_vi": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 2
+    },
+    "entry_level": {
+      "type": "string"
+    },
+    "target_level": {
+      "type": "string"
+    },
+    "target_audience": {
+      "type": "string"
+    },
+    "primary_skills": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "topics": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    },
+    "estimated_hours": {
+      "type": "number",
+      "minimum": 1
+    },
+    "prerequisites": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "delivery_mode": {
+      "type": "string",
+      "enum": [
+        "SELF_STUDY"
+      ]
+    },
+    "certificate_issued": {
+      "type": "boolean",
+      "const": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "REVIEW_REQUIRED",
+        "VALIDATED_STRUCTURE",
+        "EXPERT_REVIEWED",
+        "PUBLISHED"
+      ]
+    },
+    "chapters": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "order",
+          "title",
+          "objective",
+          "lessons",
+          "chapter_assessment_id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "order": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "objective": {
+            "type": "string"
+          },
+          "lessons": {
+            "type": "array",
+            "minItems": 2,
+            "items": {
+              "type": "object",
+              "required": [
+                "id",
+                "order",
+                "title",
+                "objective",
+                "estimated_minutes",
+                "activities",
+                "exercise_ids"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "order": {
+                  "type": "integer",
+                  "minimum": 1
+                },
+                "title": {
+                  "type": "string"
+                },
+                "objective": {
+                  "type": "string"
+                },
+                "estimated_minutes": {
+                  "type": "integer",
+                  "minimum": 5
+                },
+                "activities": {
+                  "type": "array",
+                  "minItems": 2,
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "id",
+                      "type",
+                      "source_module",
+                      "source_id",
+                      "title",
+                      "instruction_vi"
+                    ],
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "type": {
+                        "type": "string"
+                      },
+                      "source_module": {
+                        "type": "string"
+                      },
+                      "source_id": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "instruction_vi": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "exercise_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              }
+            }
+          },
+          "chapter_assessment_id": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

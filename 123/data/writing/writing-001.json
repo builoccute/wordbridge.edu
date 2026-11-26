@@ -1,0 +1,722 @@
+[
+  {
+    "id": "WR-00001",
+    "title": "Để lời nhắn cho người nhận bưu kiện",
+    "language": "en",
+    "module": "writing",
+    "level": "A2",
+    "topic": "Để lời nhắn cho người nhận bưu kiện",
+    "domain": 1,
+    "objective": "Viết lời nhắn có người nhận, vị trí và giờ hẹn.",
+    "teaching": "Dùng quá khứ đơn cho việc đã nhận, hiện tại đơn cho vị trí hiện tại.",
+    "example": "Hi Sam, I took your parcel in this afternoon. It’s on the bookshelf in my hall. I’ll be home after seven, so you can pick it up this evening. Just ring my bell. May",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Bạn đã nhận một gói hàng hộ hàng xóm. Viết lời nhắn để họ biết gói ở đâu và lúc nào có thể nhận.",
+    "answer": "Đủ ba dữ kiện|Người nhận biết hành động tiếp theo|Mốc thời gian dễ hiểu",
+    "explanation": "Took your parcel in xác định việc đã làm. It’s on… giúp người nhận hình dung vị trí, còn after seven nêu thời điểm thuận tiện.",
+    "outcome": "Viết lời nhắn có người nhận, vị trí và giờ hẹn.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Bạn đã nhận một gói hàng hộ hàng xóm. Viết lời nhắn để họ biết gói ở đâu và lúc nào có thể nhận.",
+    "writing_requirements": [
+      "Nêu tên người nhận",
+      "Ghi vị trí cất gói",
+      "Cho biết giờ bạn có nhà"
+    ],
+    "suggested_length": "25–45 từ",
+    "suggested_vocabulary": [
+      "parcel",
+      "bookshelf",
+      "pick it up"
+    ],
+    "suggested_grammar": "Dùng quá khứ đơn cho việc đã nhận, hiện tại đơn cho vị trí hiện tại.",
+    "model_text": "Hi Sam, I took your parcel in this afternoon. It’s on the bookshelf in my hall. I’ll be home after seven, so you can pick it up this evening. Just ring my bell. May",
+    "model_explanation": "Took your parcel in xác định việc đã làm. It’s on… giúp người nhận hình dung vị trí, còn after seven nêu thời điểm thuận tiện.",
+    "translation_vi": "Sam ơi, chiều nay mình đã nhận hộ gói hàng của bạn. Nó ở trên giá sách ngoài hành lang nhà mình. Sau bảy giờ mình có nhà, nên tối nay bạn có thể qua lấy. Cứ bấm chuông nhé. May",
+    "pinyin": null,
+    "assessment_criteria": [
+      "Đủ ba dữ kiện",
+      "Người nhận biết hành động tiếp theo",
+      "Mốc thời gian dễ hiểu"
+    ],
+    "common_errors": [
+      "Nhầm by seven với after seven",
+      "Dùng it không rõ vật nào"
+    ]
+  },
+  {
+    "id": "WR-00002",
+    "title": "Viết chú thích cho biểu đồ khảo sát",
+    "language": "en",
+    "module": "writing",
+    "level": "B2",
+    "topic": "Viết chú thích cho biểu đồ khảo sát",
+    "domain": 25,
+    "objective": "Trình bày đúng mẫu số và giới hạn của một kết quả khảo sát.",
+    "teaching": "Dùng Of the… để xác định tập người được mô tả; dùng may để diễn đạt khả năng.",
+    "example": "Of the 20 students who answered, 12 preferred the bus and eight preferred cycling. The chart therefore shows a bus preference among respondents. Five classmates did not answer, so their choices are unknown and may differ from the pattern shown here.",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Một lớp có 25 học viên; 20 người trả lời khảo sát. Trong số người trả lời, 12 chọn xe buýt và 8 chọn xe đạp. Viết chú thích cho biểu đồ.",
+    "answer": "Đúng 12 và 8 trong 20|Tách người trả lời khỏi cả lớp|Dùng cách diễn đạt phù hợp với dữ liệu",
+    "explanation": "Câu đầu giới hạn mẫu trong 20 người; câu cuối ngăn suy rộng kết quả cho cả lớp.",
+    "outcome": "Trình bày đúng mẫu số và giới hạn của một kết quả khảo sát.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Một lớp có 25 học viên; 20 người trả lời khảo sát. Trong số người trả lời, 12 chọn xe buýt và 8 chọn xe đạp. Viết chú thích cho biểu đồ.",
+    "writing_requirements": [
+      "Ghi số phản hồi",
+      "So sánh hai lựa chọn",
+      "Chỉ ra điều chưa biết"
+    ],
+    "suggested_length": "40–65 từ",
+    "suggested_vocabulary": [
+      "respondent",
+      "out of",
+      "travel preference"
+    ],
+    "suggested_grammar": "Dùng Of the… để xác định tập người được mô tả; dùng may để diễn đạt khả năng.",
+    "model_text": "Of the 20 students who answered, 12 preferred the bus and eight preferred cycling. The chart therefore shows a bus preference among respondents. Five classmates did not answer, so their choices are unknown and may differ from the pattern shown here.",
+    "model_explanation": "Câu đầu giới hạn mẫu trong 20 người; câu cuối ngăn suy rộng kết quả cho cả lớp.",
+    "translation_vi": "Trong số 20 học viên trả lời, 12 người thích đi xe buýt và 8 người thích đi xe đạp. Vì vậy, biểu đồ cho thấy người trả lời thiên về xe buýt. Năm bạn cùng lớp không trả lời nên chưa rõ lựa chọn của họ và lựa chọn đó có thể khác xu hướng trên biểu đồ.",
+    "pinyin": null,
+    "assessment_criteria": [
+      "Đúng 12 và 8 trong 20",
+      "Tách người trả lời khỏi cả lớp",
+      "Dùng cách diễn đạt phù hợp với dữ liệu"
+    ],
+    "common_errors": [
+      "Gọi 12 người là đa số của cả lớp",
+      "Viết ít người thực sự đi xe đạp khi câu hỏi đo sở thích"
+    ]
+  },
+  {
+    "id": "WR-00003",
+    "title": "Mô tả lỗi hiển thị trong ứng dụng",
+    "language": "en",
+    "module": "writing",
+    "level": "B1",
+    "topic": "Mô tả lỗi hiển thị trong ứng dụng",
+    "domain": 12,
+    "objective": "Viết các bước thao tác, kết quả mong đợi và kết quả quan sát.",
+    "teaching": "Dùng mệnh lệnh cho bước tái hiện và hiện tại đơn cho điều quan sát được.",
+    "example": "On a tablet, open the calendar in weekly view and rotate the screen to landscape. I expect all seven days to remain visible. Instead, the right edge cuts off Sunday, and I cannot scroll across to see it. Turning the tablet upright brings Sunday back.",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Trên máy tính bảng, lịch tuần bị cắt mất Chủ nhật khi xoay ngang. Hãy gửi mô tả giúp nhóm phát triển kiểm tra.",
+    "answer": "Người đọc làm lại được đúng trình tự|Mô tả đúng ngày bị cắt|Nêu kết quả mong đợi",
+    "explanation": "Instead đánh dấu kết quả thực tế; câu cuối cho nhóm phát triển một điều kiện đối chiếu cụ thể.",
+    "outcome": "Viết các bước thao tác, kết quả mong đợi và kết quả quan sát.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Trên máy tính bảng, lịch tuần bị cắt mất Chủ nhật khi xoay ngang. Hãy gửi mô tả giúp nhóm phát triển kiểm tra.",
+    "writing_requirements": [
+      "Nêu thiết bị và hướng màn hình",
+      "Mô tả trình tự",
+      "Tách kết quả thực tế khỏi mong đợi"
+    ],
+    "suggested_length": "40–65 từ",
+    "suggested_vocabulary": [
+      "weekly view",
+      "rotate",
+      "visible"
+    ],
+    "suggested_grammar": "Dùng mệnh lệnh cho bước tái hiện và hiện tại đơn cho điều quan sát được.",
+    "model_text": "On a tablet, open the calendar in weekly view and rotate the screen to landscape. I expect all seven days to remain visible. Instead, the right edge cuts off Sunday, and I cannot scroll across to see it. Turning the tablet upright brings Sunday back.",
+    "model_explanation": "Instead đánh dấu kết quả thực tế; câu cuối cho nhóm phát triển một điều kiện đối chiếu cụ thể.",
+    "translation_vi": "Trên máy tính bảng, mở lịch ở chế độ xem theo tuần rồi xoay ngang màn hình. Tôi mong cả bảy ngày vẫn hiển thị. Tuy nhiên, mép phải cắt mất Chủ nhật và tôi không thể cuộn ngang để xem. Xoay máy thẳng đứng thì Chủ nhật lại xuất hiện.",
+    "pinyin": null,
+    "assessment_criteria": [
+      "Người đọc làm lại được đúng trình tự",
+      "Mô tả đúng ngày bị cắt",
+      "Nêu kết quả mong đợi"
+    ],
+    "common_errors": [
+      "Suy đoán nguyên nhân trong khi chỉ quan sát được biểu hiện",
+      "Bỏ quên hướng màn hình"
+    ]
+  },
+  {
+    "id": "WR-00004",
+    "title": "Viết biển hướng dẫn dùng trạm nước",
+    "language": "en",
+    "module": "writing",
+    "level": "B1",
+    "topic": "Viết biển hướng dẫn dùng trạm nước",
+    "domain": 21,
+    "objective": "Viết hướng dẫn theo trình tự với động từ cụ thể.",
+    "teaching": "Đặt động từ mệnh lệnh ở đầu mỗi bước; dùng if cho tình huống phát sinh.",
+    "example": "Refill your own bottle here. Place it under the tap, then hold down the green button. Release the button when your bottle is nearly full. If water spills onto the floor, please tell the library desk.",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Trạm nước ở thư viện dùng cho bình cá nhân. Nhấn nút xanh để rót và nhả nút để dừng. Khách có thể báo quầy nếu nước tràn.",
+    "answer": "Các bước đúng thứ tự|Động tác dừng rõ|Có chỉ dẫn khi nước tràn",
+    "explanation": "Hold down khác với press once. Nearly full cho người dùng biết khi nào nên dừng thao tác.",
+    "outcome": "Viết hướng dẫn theo trình tự với động từ cụ thể.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Trạm nước ở thư viện dùng cho bình cá nhân. Nhấn nút xanh để rót và nhả nút để dừng. Khách có thể báo quầy nếu nước tràn.",
+    "writing_requirements": [
+      "Nêu vật cần đặt dưới vòi",
+      "Phân biệt nhấn và nhả",
+      "Cho biết nơi báo nước tràn"
+    ],
+    "suggested_length": "25–45 từ",
+    "suggested_vocabulary": [
+      "refill",
+      "hold down",
+      "release"
+    ],
+    "suggested_grammar": "Đặt động từ mệnh lệnh ở đầu mỗi bước; dùng if cho tình huống phát sinh.",
+    "model_text": "Refill your own bottle here. Place it under the tap, then hold down the green button. Release the button when your bottle is nearly full. If water spills onto the floor, please tell the library desk.",
+    "model_explanation": "Hold down khác với press once. Nearly full cho người dùng biết khi nào nên dừng thao tác.",
+    "translation_vi": "Hãy rót nước vào bình cá nhân tại đây. Đặt bình dưới vòi rồi nhấn giữ nút xanh. Nhả nút khi bình gần đầy. Nếu nước tràn xuống sàn, vui lòng báo quầy thư viện.",
+    "pinyin": null,
+    "assessment_criteria": [
+      "Các bước đúng thứ tự",
+      "Động tác dừng rõ",
+      "Có chỉ dẫn khi nước tràn"
+    ],
+    "common_errors": [
+      "Viết close the button thay cho release",
+      "Đặt bước dừng sau khi bình đã tràn"
+    ]
+  },
+  {
+    "id": "WR-00005",
+    "title": "Đính chính giờ mở cửa",
+    "language": "en",
+    "module": "writing",
+    "level": "B2",
+    "topic": "Đính chính giờ mở cửa",
+    "domain": 8,
+    "objective": "Đính chính dữ kiện và giúp khách xử lý nếu lịch hẹn bị ảnh hưởng.",
+    "teaching": "Dùng said trong lời nhắc về bản tin cũ và will close cho sự kiện sắp tới.",
+    "example": "A correction to this morning’s newsletter: our shop will close at 7 p.m. this Saturday. The newsletter said 9 p.m. Our hours on other days are as published. If you arranged to collect an order after seven on Saturday, please reply to your confirmation email so that we can agree on another time.",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Bản tin sáng nay ghi cửa hàng mở đến 9 giờ tối thứ Bảy. Giờ đúng là 7 giờ tối; giờ mở cửa các ngày khác giữ như lịch đã công bố.",
+    "answer": "Đúng ngày và hai mốc giờ|Chỉ rõ lịch nào bị ảnh hưởng|Có hành động cho khách",
+    "explanation": "Đặt giờ đúng ở câu đầu để người đọc lướt vẫn thấy điều cần thay đổi. Câu cuối hướng đúng nhóm bị ảnh hưởng tới một kênh liên hệ.",
+    "outcome": "Đính chính dữ kiện và giúp khách xử lý nếu lịch hẹn bị ảnh hưởng.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Bản tin sáng nay ghi cửa hàng mở đến 9 giờ tối thứ Bảy. Giờ đúng là 7 giờ tối; giờ mở cửa các ngày khác giữ như lịch đã công bố.",
+    "writing_requirements": [
+      "Xác định thông tin sai",
+      "Nêu ngay giờ đúng",
+      "Cho khách một cách liên hệ"
+    ],
+    "suggested_length": "45–70 từ",
+    "suggested_vocabulary": [
+      "correction",
+      "opening hours",
+      "appointment"
+    ],
+    "suggested_grammar": "Dùng said trong lời nhắc về bản tin cũ và will close cho sự kiện sắp tới.",
+    "model_text": "A correction to this morning’s newsletter: our shop will close at 7 p.m. this Saturday. The newsletter said 9 p.m. Our hours on other days are as published. If you arranged to collect an order after seven on Saturday, please reply to your confirmation email so that we can agree on another time.",
+    "model_explanation": "Đặt giờ đúng ở câu đầu để người đọc lướt vẫn thấy điều cần thay đổi. Câu cuối hướng đúng nhóm bị ảnh hưởng tới một kênh liên hệ.",
+    "translation_vi": "Xin đính chính bản tin sáng nay: cửa hàng sẽ đóng cửa lúc 7 giờ tối thứ Bảy này. Bản tin đã ghi 9 giờ tối. Giờ các ngày khác vẫn theo lịch đã công bố. Nếu bạn đã hẹn đến lấy đơn sau 7 giờ tối thứ Bảy, vui lòng trả lời email xác nhận để cùng thống nhất giờ khác.",
+    "pinyin": null,
+    "assessment_criteria": [
+      "Đúng ngày và hai mốc giờ",
+      "Chỉ rõ lịch nào bị ảnh hưởng",
+      "Có hành động cho khách"
+    ],
+    "common_errors": [
+      "Lặp giờ sai mà không ghi rõ đó là lỗi",
+      "Dùng 7 giờ không chỉ buổi sáng hay tối"
+    ]
+  },
+  {
+    "id": "WR-00006",
+    "title": "Ghi chú quan sát ở bờ ao",
+    "language": "en",
+    "module": "writing",
+    "level": "B1",
+    "topic": "Ghi chú quan sát ở bờ ao",
+    "domain": 20,
+    "objective": "Mô tả theo thời gian và giới hạn kết luận.",
+    "teaching": "Dùng after để sắp xếp sự kiện. Dùng may have + phân từ cho khả năng chưa xác minh.",
+    "example": "At eight this morning I watched the north bank of the pond for ten minutes. Three birds were standing near the reeds. After a truck passed, two flew away and one stayed. The noise may have disturbed them, but I could not tell what made them leave.",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Trong mười phút lúc 8 giờ, bạn thấy ba con chim ở bờ bắc. Sau khi xe tải đi qua, hai con bay đi. Hãy ghi nhật ký và phân biệt điều thấy với điều suy đoán.",
+    "answer": "Đủ dữ kiện quan sát|Phân biệt sự kiện và giả thuyết|Nhất quán thì quá khứ",
+    "explanation": "After chỉ trình tự; may have disturbed thêm một giả thuyết với mức chắc chắn phù hợp.",
+    "outcome": "Mô tả theo thời gian và giới hạn kết luận.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Trong mười phút lúc 8 giờ, bạn thấy ba con chim ở bờ bắc. Sau khi xe tải đi qua, hai con bay đi. Hãy ghi nhật ký và phân biệt điều thấy với điều suy đoán.",
+    "writing_requirements": [
+      "Ghi thời điểm, địa điểm và số lượng",
+      "Nêu sự kiện theo thứ tự",
+      "Đánh dấu suy đoán"
+    ],
+    "suggested_length": "40–65 từ",
+    "suggested_vocabulary": [
+      "north bank",
+      "flew away",
+      "may have"
+    ],
+    "suggested_grammar": "Dùng after để sắp xếp sự kiện. Dùng may have + phân từ cho khả năng chưa xác minh.",
+    "model_text": "At eight this morning I watched the north bank of the pond for ten minutes. Three birds were standing near the reeds. After a truck passed, two flew away and one stayed. The noise may have disturbed them, but I could not tell what made them leave.",
+    "model_explanation": "After chỉ trình tự; may have disturbed thêm một giả thuyết với mức chắc chắn phù hợp.",
+    "translation_vi": "Lúc tám giờ sáng nay tôi quan sát bờ bắc ao trong mười phút. Có ba con chim đứng gần đám sậy. Sau khi một xe tải đi qua, hai con bay đi còn một con ở lại. Tiếng ồn có thể đã làm chúng giật mình, nhưng tôi không xác định được điều gì khiến chúng bay đi.",
+    "pinyin": null,
+    "assessment_criteria": [
+      "Đủ dữ kiện quan sát",
+      "Phân biệt sự kiện và giả thuyết",
+      "Nhất quán thì quá khứ"
+    ],
+    "common_errors": [
+      "Dùng because dù chưa xác định nguyên nhân",
+      "Thêm loài chim khi chưa nhận diện"
+    ]
+  },
+  {
+    "id": "WR-00007",
+    "title": "Nhắn lại lối ra ở ga",
+    "language": "zh",
+    "module": "writing",
+    "level": "A2",
+    "topic": "Nhắn lại lối ra ở ga",
+    "domain": 17,
+    "objective": "Chỉ đường và mô tả một dấu hiệu nhận biết.",
+    "teaching": "Dùng 别 để khuyên tránh một lối; dùng 着 để tả trạng thái đang cầm đồ.",
+    "example": "南门今天不开，别往南走。你从北门出来就能看到报亭。我拿着一个白布包，在报亭旁边等你。",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Một người bạn đang đến ga. Lối ra phía nam đóng cửa, bạn cầm túi vải trắng và đứng cạnh quầy báo phía bắc. Nhắn để bạn ấy dễ nhận ra.",
+    "answer": "Đúng hai hướng|Có mốc tìm đường|Có đặc điểm nhận diện",
+    "explanation": "从 chỉ điểm xuất phát; 在报亭旁边 chỉ vị trí đứng chờ. Dấu hiệu cuối giúp người đến tìm đúng người.",
+    "outcome": "Chỉ đường và mô tả một dấu hiệu nhận biết.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Một người bạn đang đến ga. Lối ra phía nam đóng cửa, bạn cầm túi vải trắng và đứng cạnh quầy báo phía bắc. Nhắn để bạn ấy dễ nhận ra.",
+    "writing_requirements": [
+      "Nêu lối ra đóng cửa",
+      "Chỉ lối đúng",
+      "Nêu dấu hiệu nhận ra bạn"
+    ],
+    "suggested_length": "25–50 chữ Hán",
+    "suggested_vocabulary": [
+      "南门",
+      "报亭",
+      "白布包"
+    ],
+    "suggested_grammar": "Dùng 别 để khuyên tránh một lối; dùng 着 để tả trạng thái đang cầm đồ.",
+    "model_text": "南门今天不开，别往南走。你从北门出来就能看到报亭。我拿着一个白布包，在报亭旁边等你。",
+    "model_explanation": "从 chỉ điểm xuất phát; 在报亭旁边 chỉ vị trí đứng chờ. Dấu hiệu cuối giúp người đến tìm đúng người.",
+    "translation_vi": "Hôm nay cửa phía nam không mở, đừng đi về phía nam. Bạn ra cửa bắc là sẽ thấy quầy báo. Mình cầm một chiếc túi vải trắng, đang đợi bạn cạnh quầy báo.",
+    "pinyin": "Nánmén jīntiān bù kāi, bié wǎng nán zǒu. Nǐ cóng běimén chūlái jiù néng kàndào bàotíng. Wǒ názhe yí ge bái bùbāo, zài bàotíng pángbiān děng nǐ.",
+    "assessment_criteria": [
+      "Đúng hai hướng",
+      "Có mốc tìm đường",
+      "Có đặc điểm nhận diện"
+    ],
+    "common_errors": [
+      "Đảo lối bắc với lối nam",
+      "Dùng 往 cho vị trí đứng yên"
+    ]
+  },
+  {
+    "id": "WR-00008",
+    "title": "Viết nhãn cho tác phẩm giấy cắt",
+    "language": "zh",
+    "module": "writing",
+    "level": "B1",
+    "topic": "Viết nhãn cho tác phẩm giấy cắt",
+    "domain": 37,
+    "objective": "Liên hệ cách làm với chi tiết khách có thể quan sát.",
+    "teaching": "Dùng 先……再…… mô tả thứ tự và 把 để đưa vật chịu tác động lên trước động từ.",
+    "example": "这幅剪纸用的是一张红纸。作者先把纸对折，再沿着画好的线剪。打开以后，两条鱼面对面，鱼尾的花纹也正好相对。",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Tác phẩm mô tả hai con cá và dùng một tờ giấy đỏ gấp đôi. Khi mở giấy, hai con cá đối diện nhau. Viết nhãn trưng bày cho người xem.",
+    "answer": "Đúng chất liệu|Đúng thứ tự|Có một chi tiết thị giác cụ thể",
+    "explanation": "Nhãn đi từ chất liệu qua thao tác đến hình ảnh cuối cùng, giúp khách vừa đọc vừa quan sát vật trưng bày.",
+    "outcome": "Liên hệ cách làm với chi tiết khách có thể quan sát.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Tác phẩm mô tả hai con cá và dùng một tờ giấy đỏ gấp đôi. Khi mở giấy, hai con cá đối diện nhau. Viết nhãn trưng bày cho người xem.",
+    "writing_requirements": [
+      "Giới thiệu chất liệu",
+      "Giải thích thao tác gấp và cắt",
+      "Nêu một chi tiết nhìn thấy"
+    ],
+    "suggested_length": "35–65 chữ Hán",
+    "suggested_vocabulary": [
+      "剪纸",
+      "对折",
+      "面对面"
+    ],
+    "suggested_grammar": "Dùng 先……再…… mô tả thứ tự và 把 để đưa vật chịu tác động lên trước động từ.",
+    "model_text": "这幅剪纸用的是一张红纸。作者先把纸对折，再沿着画好的线剪。打开以后，两条鱼面对面，鱼尾的花纹也正好相对。",
+    "model_explanation": "Nhãn đi từ chất liệu qua thao tác đến hình ảnh cuối cùng, giúp khách vừa đọc vừa quan sát vật trưng bày.",
+    "translation_vi": "Bức tranh cắt giấy này dùng một tờ giấy đỏ. Tác giả gấp đôi tờ giấy trước rồi cắt dọc theo đường đã vẽ. Khi mở ra, hai con cá đối diện nhau, hoa văn ở đuôi cá cũng đối xứng với nhau.",
+    "pinyin": "Zhè fú jiǎnzhǐ yòng de shì yì zhāng hóngzhǐ. Zuòzhě xiān bǎ zhǐ duìzhé, zài yánzhe huà hǎo de xiàn jiǎn. Dǎkāi yǐhòu, liǎng tiáo yú miànduìmiàn, yúwěi de huāwén yě zhènghǎo xiāngduì.",
+    "assessment_criteria": [
+      "Đúng chất liệu",
+      "Đúng thứ tự",
+      "Có một chi tiết thị giác cụ thể"
+    ],
+    "common_errors": [
+      "Dùng sai lượng từ cho cá",
+      "Đặt 再 trước bước đầu tiên"
+    ]
+  },
+  {
+    "id": "WR-00009",
+    "title": "Hỏi chỗ lấy đồ thất lạc",
+    "language": "zh",
+    "module": "writing",
+    "level": "A2",
+    "topic": "Hỏi chỗ lấy đồ thất lạc",
+    "domain": 30,
+    "objective": "Mô tả vật thất lạc và hỏi cách nhận lại.",
+    "teaching": "Dùng 把……忘在…… để nêu vật bỏ quên và nơi bỏ quên.",
+    "example": "您好！我昨天把一本蓝色的笔记本忘在大厅窗边了。第一页上有我的名字。请问有人捡到吗？如果找到了，我可以去哪里取？",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Hôm qua bạn ngồi cạnh cửa sổ ở sảnh khách sạn. Bạn để quên một quyển sổ màu xanh lam, trang đầu có tên. Viết tin hỏi lễ tân.",
+    "answer": "Có vị trí cụ thể|Có mô tả đủ phân biệt|Hỏi lịch sự cách nhận lại",
+    "explanation": "Màu bìa giúp tìm sổ; tên trên trang đầu giúp xác nhận đúng chủ. 如果 giữ cho lời hỏi phù hợp ngay cả khi sổ chưa được tìm thấy.",
+    "outcome": "Mô tả vật thất lạc và hỏi cách nhận lại.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Hôm qua bạn ngồi cạnh cửa sổ ở sảnh khách sạn. Bạn để quên một quyển sổ màu xanh lam, trang đầu có tên. Viết tin hỏi lễ tân.",
+    "writing_requirements": [
+      "Nêu thời gian và vị trí",
+      "Nêu hai đặc điểm nhận biết",
+      "Hỏi nơi nhận"
+    ],
+    "suggested_length": "35–60 chữ Hán",
+    "suggested_vocabulary": [
+      "大厅",
+      "笔记本",
+      "第一页"
+    ],
+    "suggested_grammar": "Dùng 把……忘在…… để nêu vật bỏ quên và nơi bỏ quên.",
+    "model_text": "您好！我昨天把一本蓝色的笔记本忘在大厅窗边了。第一页上有我的名字。请问有人捡到吗？如果找到了，我可以去哪里取？",
+    "model_explanation": "Màu bìa giúp tìm sổ; tên trên trang đầu giúp xác nhận đúng chủ. 如果 giữ cho lời hỏi phù hợp ngay cả khi sổ chưa được tìm thấy.",
+    "translation_vi": "Xin chào! Hôm qua tôi bỏ quên một cuốn sổ màu xanh lam cạnh cửa sổ ở sảnh. Trang đầu có tên tôi. Xin hỏi có ai nhặt được không? Nếu tìm thấy, tôi có thể đến đâu để nhận lại?",
+    "pinyin": "Nín hǎo! Wǒ zuótiān bǎ yì běn lánsè de bǐjìběn wàng zài dàtīng chuāngbiān le. Dì yī yè shang yǒu wǒ de míngzi. Qǐngwèn yǒu rén jiǎndào ma? Rúguǒ zhǎodào le, wǒ kěyǐ qù nǎli qǔ?",
+    "assessment_criteria": [
+      "Có vị trí cụ thể",
+      "Có mô tả đủ phân biệt",
+      "Hỏi lịch sự cách nhận lại"
+    ],
+    "common_errors": [
+      "Dùng 一个 thay cho 一本",
+      "Khẳng định lễ tân đã nhặt được"
+    ]
+  },
+  {
+    "id": "WR-00010",
+    "title": "Thông báo lịch sử dụng phòng sinh hoạt",
+    "language": "zh",
+    "module": "writing",
+    "level": "B1",
+    "topic": "Thông báo lịch sử dụng phòng sinh hoạt",
+    "domain": 36,
+    "objective": "Diễn đạt rõ thay đổi địa điểm và thời gian bị ảnh hưởng.",
+    "teaching": "Dùng 因为 nêu nguyên nhân và 改在……举行 để nói địa điểm mới.",
+    "example": "因为要换灯，本周五下午两点到四点，活动室暂停使用。当天的读书会改在二〇三室举行，开始时间照常。请参加的同学直接去新教室。",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Phòng sinh hoạt thay đèn thứ Sáu từ 2 đến 4 giờ chiều. Buổi đọc sách chuyển sang phòng 203, giờ bắt đầu không đổi. Viết thông báo.",
+    "answer": "Đúng khoảng giờ|Đúng phòng mới|Nêu rõ giờ buổi đọc sách",
+    "explanation": "当天 nối buổi đọc sách với đúng ngày sửa đèn. 照常 cho người đọc biết chi tiết nào vẫn như lịch cũ.",
+    "outcome": "Diễn đạt rõ thay đổi địa điểm và thời gian bị ảnh hưởng.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Phòng sinh hoạt thay đèn thứ Sáu từ 2 đến 4 giờ chiều. Buổi đọc sách chuyển sang phòng 203, giờ bắt đầu không đổi. Viết thông báo.",
+    "writing_requirements": [
+      "Nêu nguyên nhân",
+      "Ghi đúng thời gian",
+      "Chỉ rõ thay đổi của buổi đọc sách"
+    ],
+    "suggested_length": "35–65 chữ Hán",
+    "suggested_vocabulary": [
+      "活动室",
+      "换灯",
+      "照常"
+    ],
+    "suggested_grammar": "Dùng 因为 nêu nguyên nhân và 改在……举行 để nói địa điểm mới.",
+    "model_text": "因为要换灯，本周五下午两点到四点，活动室暂停使用。当天的读书会改在二〇三室举行，开始时间照常。请参加的同学直接去新教室。",
+    "model_explanation": "当天 nối buổi đọc sách với đúng ngày sửa đèn. 照常 cho người đọc biết chi tiết nào vẫn như lịch cũ.",
+    "translation_vi": "Vì cần thay đèn, phòng sinh hoạt tạm dừng sử dụng từ hai đến bốn giờ chiều thứ Sáu tuần này. Buổi đọc sách hôm đó chuyển sang phòng 203, giờ bắt đầu như thường lệ. Các bạn tham dự vui lòng đến thẳng phòng mới.",
+    "pinyin": "Yīnwèi yào huàn dēng, běn zhōuwǔ xiàwǔ liǎng diǎn dào sì diǎn, huódòngshì zàntíng shǐyòng. Dàngtiān de dúshūhuì gǎi zài èr líng sān shì jǔxíng, kāishǐ shíjiān zhàocháng. Qǐng cānjiā de tóngxué zhíjiē qù xīn jiàoshì.",
+    "assessment_criteria": [
+      "Đúng khoảng giờ",
+      "Đúng phòng mới",
+      "Nêu rõ giờ buổi đọc sách"
+    ],
+    "common_errors": [
+      "Dùng 取消 cho một hoạt động chỉ chuyển phòng",
+      "Bỏ mất 下午 làm giờ bị mơ hồ"
+    ]
+  },
+  {
+    "id": "WR-00011",
+    "title": "Xác nhận số lượng hàng cần đặt",
+    "language": "zh",
+    "module": "writing",
+    "level": "B1",
+    "topic": "Xác nhận số lượng hàng cần đặt",
+    "domain": 3,
+    "objective": "Đính chính rõ số lượng theo quy cách và yêu cầu báo tổng tiền.",
+    "teaching": "Dùng 不是……而是…… để sửa một con số; dùng 按…… để nêu cơ sở tính.",
+    "example": "谢谢您发来的报价。大号纸袋三十个，这个数量是对的。小号纸袋不是三十个，而是二十个。请按这两个数量再算一下总价，发给我确认。",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Bạn cần 30 túi giấy cỡ lớn và 20 túi cỡ nhỏ. Bên bán nhầm thành 30 túi cỡ nhỏ. Viết thư ngắn để sửa và xin báo giá mới.",
+    "answer": "Nêu đúng hai số lượng|Phân biệt rõ hai cỡ|Có yêu cầu phản hồi",
+    "explanation": "Nhắc lại cả dòng đúng và dòng sai để người bán có đủ cơ sở tính lại báo giá.",
+    "outcome": "Đính chính rõ số lượng theo quy cách và yêu cầu báo tổng tiền.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Bạn cần 30 túi giấy cỡ lớn và 20 túi cỡ nhỏ. Bên bán nhầm thành 30 túi cỡ nhỏ. Viết thư ngắn để sửa và xin báo giá mới.",
+    "writing_requirements": [
+      "Cảm ơn người gửi",
+      "Đối chiếu đủ hai cỡ",
+      "Yêu cầu gửi lại tổng tiền"
+    ],
+    "suggested_length": "35–65 chữ Hán",
+    "suggested_vocabulary": [
+      "大号",
+      "小号",
+      "总价"
+    ],
+    "suggested_grammar": "Dùng 不是……而是…… để sửa một con số; dùng 按…… để nêu cơ sở tính.",
+    "model_text": "谢谢您发来的报价。大号纸袋三十个，这个数量是对的。小号纸袋不是三十个，而是二十个。请按这两个数量再算一下总价，发给我确认。",
+    "model_explanation": "Nhắc lại cả dòng đúng và dòng sai để người bán có đủ cơ sở tính lại báo giá.",
+    "translation_vi": "Cảm ơn anh chị đã gửi báo giá. Túi giấy cỡ lớn ba mươi chiếc, số lượng này đúng. Túi cỡ nhỏ là hai mươi chiếc thay vì ba mươi. Xin tính lại tổng tiền theo hai số lượng này rồi gửi tôi xác nhận.",
+    "pinyin": "Xièxie nín fā lái de bàojià. Dàhào zhǐdài sānshí ge, zhège shùliàng shì duì de. Xiǎohào zhǐdài bú shì sānshí ge, ér shì èrshí ge. Qǐng àn zhè liǎng ge shùliàng zài suàn yíxià zǒngjià, fā gěi wǒ quèrèn.",
+    "assessment_criteria": [
+      "Nêu đúng hai số lượng",
+      "Phân biệt rõ hai cỡ",
+      "Có yêu cầu phản hồi"
+    ],
+    "common_errors": [
+      "Đảo 大号 và 小号",
+      "Chỉ ghi 减少十个 mà không chỉ loại hàng"
+    ]
+  },
+  {
+    "id": "WR-00012",
+    "title": "Tóm tắt buổi đi bộ theo nhóm",
+    "language": "zh",
+    "module": "writing",
+    "level": "B1",
+    "topic": "Tóm tắt buổi đi bộ theo nhóm",
+    "domain": 39,
+    "objective": "Tường thuật kế hoạch bị thay đổi và ý định ở lần tiếp theo.",
+    "teaching": "Dùng 本来…… để giới thiệu dự kiến; dùng 刚……就…… để thể hiện hai sự kiện sát nhau.",
+    "example": "我们本来想绕湖走一圈，刚走到木桥就下起雨来。大家商量了一下，决定原路返回。下次我们想早点出门，看看清晨的湖面。",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Nhóm dự tính đi một vòng hồ. Khi tới cầu gỗ trời bắt đầu mưa nên cả nhóm quay lại. Lần sau muốn thử đi lúc sáng sớm. Viết nhật ký ngắn.",
+    "answer": "Tách rõ dự tính và kết quả|Nêu đúng nơi đổi kế hoạch|Ý định phù hợp với lần tới",
+    "explanation": "本来 báo hiệu dự tính có thể khác kết quả; 下次 chuyển từ hồi tưởng sang ý định.",
+    "outcome": "Tường thuật kế hoạch bị thay đổi và ý định ở lần tiếp theo.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Nhóm dự tính đi một vòng hồ. Khi tới cầu gỗ trời bắt đầu mưa nên cả nhóm quay lại. Lần sau muốn thử đi lúc sáng sớm. Viết nhật ký ngắn.",
+    "writing_requirements": [
+      "Nêu kế hoạch ban đầu",
+      "Giải thích điểm quay lại",
+      "Nêu ý định lần tới"
+    ],
+    "suggested_length": "35–65 chữ Hán",
+    "suggested_vocabulary": [
+      "绕湖",
+      "木桥",
+      "原路返回"
+    ],
+    "suggested_grammar": "Dùng 本来…… để giới thiệu dự kiến; dùng 刚……就…… để thể hiện hai sự kiện sát nhau.",
+    "model_text": "我们本来想绕湖走一圈，刚走到木桥就下起雨来。大家商量了一下，决定原路返回。下次我们想早点出门，看看清晨的湖面。",
+    "model_explanation": "本来 báo hiệu dự tính có thể khác kết quả; 下次 chuyển từ hồi tưởng sang ý định.",
+    "translation_vi": "Ban đầu chúng tôi định đi bộ một vòng quanh hồ, vừa tới cầu gỗ thì trời bắt đầu mưa. Mọi người bàn một chút rồi quyết định quay về theo đường cũ. Lần sau chúng tôi muốn ra khỏi nhà sớm một chút để ngắm mặt hồ lúc sáng sớm.",
+    "pinyin": "Wǒmen běnlái xiǎng rào hú zǒu yì quān, gāng zǒudào mùqiáo jiù xià qǐ yǔ lái. Dàjiā shāngliang le yíxià, juédìng yuánlù fǎnhuí. Xià cì wǒmen xiǎng zǎodiǎn chūmén, kànkan qīngchén de húmiàn.",
+    "assessment_criteria": [
+      "Tách rõ dự tính và kết quả",
+      "Nêu đúng nơi đổi kế hoạch",
+      "Ý định phù hợp với lần tới"
+    ],
+    "common_errors": [
+      "Viết 已经走了一圈 khiến người đọc hiểu đã đi hết vòng",
+      "Bỏ 就 trong cặp 刚……就……"
+    ]
+  },
+  {
+    "id": "WR-00013",
+    "title": "Chuyển thông tin đổi cửa ra máy bay",
+    "language": "en",
+    "module": "writing",
+    "level": "B1",
+    "topic": "Chuyển thông tin đổi cửa ra máy bay",
+    "domain": 18,
+    "objective": "Chuyển đủ ba dữ kiện để người nhận tới đúng cửa.",
+    "teaching": "Dùng has moved để mô tả thay đổi có hiệu lực tại thời điểm nhắn.",
+    "example": "Our flight AB204 has moved from gate B6 to gate C3. Boarding still starts at 4:10 p.m. I’m heading to C3 now. Please check the departure board on your way over in case there’s another update.",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Tin nhắn ở sân bay cho biết chuyến AB204 đổi từ cửa B6 sang C3. Giờ lên máy bay vẫn là 16:10. Hãy nhắn cho bạn đang đợi ở B6.",
+    "answer": "Chính xác chuyến và cửa|Phân biệt lên máy bay và cất cánh|Giúp người đọc biết đi đâu",
+    "explanation": "From…to… chỉ chiều thay đổi; still khẳng định thông tin về thời gian tiếp tục có hiệu lực.",
+    "outcome": "Chuyển đủ ba dữ kiện để người nhận tới đúng cửa.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Tin nhắn ở sân bay cho biết chuyến AB204 đổi từ cửa B6 sang C3. Giờ lên máy bay vẫn là 16:10. Hãy nhắn cho bạn đang đợi ở B6.",
+    "writing_requirements": [
+      "Ghi số hiệu chuyến",
+      "Nêu cửa cũ và mới",
+      "Giữ nguyên giờ lên máy bay"
+    ],
+    "suggested_length": "25–45 từ",
+    "suggested_vocabulary": [
+      "gate change",
+      "boarding time",
+      "departure board"
+    ],
+    "suggested_grammar": "Dùng has moved để mô tả thay đổi có hiệu lực tại thời điểm nhắn.",
+    "model_text": "Our flight AB204 has moved from gate B6 to gate C3. Boarding still starts at 4:10 p.m. I’m heading to C3 now. Please check the departure board on your way over in case there’s another update.",
+    "model_explanation": "From…to… chỉ chiều thay đổi; still khẳng định thông tin về thời gian tiếp tục có hiệu lực.",
+    "translation_vi": "Chuyến AB204 của mình đã đổi từ cửa B6 sang C3. Giờ lên máy bay vẫn bắt đầu lúc 4 giờ 10 chiều. Mình đang tới C3. Trên đường sang bạn xem bảng chuyến bay phòng khi có cập nhật nữa nhé.",
+    "pinyin": null,
+    "assessment_criteria": [
+      "Chính xác chuyến và cửa",
+      "Phân biệt lên máy bay và cất cánh",
+      "Giúp người đọc biết đi đâu"
+    ],
+    "common_errors": [
+      "Viết arrives at thay cho boards at",
+      "Đảo cửa cũ và mới"
+    ]
+  },
+  {
+    "id": "WR-00014",
+    "title": "Viết biên bản về một quyết định còn treo",
+    "language": "en",
+    "module": "writing",
+    "level": "B2",
+    "topic": "Viết biên bản về một quyết định còn treo",
+    "domain": 7,
+    "objective": "Tách việc đã quyết định khỏi vấn đề còn mở trong biên bản.",
+    "teaching": "Dùng agreed to cho việc đã thống nhất và remains open cho quyết định chưa chốt.",
+    "example": "The team agreed to complete the equipment inventory before Friday. Linh will compile the list and send it to everyone for review. The choice of supplier remains open. Once the inventory is available, the team will compare the quantities needed with the two quotations already on file.",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Cuộc họp thống nhất kiểm kê thiết bị trước thứ Sáu. Linh phụ trách thống kê; nhóm chưa chọn nhà cung cấp. Viết đoạn biên bản để người vắng mặt biết việc tiếp theo.",
+    "answer": "Nêu đúng trách nhiệm và hạn|Đánh dấu quyết định chưa chốt|Bước tiếp theo khả thi",
+    "explanation": "Hai câu đầu ghi quyết định và người thực hiện. Once giới thiệu dữ kiện cần có trước khi đưa ra quyết định còn lại.",
+    "outcome": "Tách việc đã quyết định khỏi vấn đề còn mở trong biên bản.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Cuộc họp thống nhất kiểm kê thiết bị trước thứ Sáu. Linh phụ trách thống kê; nhóm chưa chọn nhà cung cấp. Viết đoạn biên bản để người vắng mặt biết việc tiếp theo.",
+    "writing_requirements": [
+      "Ghi người phụ trách",
+      "Nêu hạn kiểm kê",
+      "Nêu điều kiện để bàn tiếp việc chọn nhà cung cấp"
+    ],
+    "suggested_length": "40–65 từ",
+    "suggested_vocabulary": [
+      "inventory",
+      "outstanding decision",
+      "supplier"
+    ],
+    "suggested_grammar": "Dùng agreed to cho việc đã thống nhất và remains open cho quyết định chưa chốt.",
+    "model_text": "The team agreed to complete the equipment inventory before Friday. Linh will compile the list and send it to everyone for review. The choice of supplier remains open. Once the inventory is available, the team will compare the quantities needed with the two quotations already on file.",
+    "model_explanation": "Hai câu đầu ghi quyết định và người thực hiện. Once giới thiệu dữ kiện cần có trước khi đưa ra quyết định còn lại.",
+    "translation_vi": "Nhóm nhất trí hoàn tất kiểm kê thiết bị trước thứ Sáu. Linh sẽ tổng hợp danh sách và gửi mọi người xem lại. Việc chọn nhà cung cấp vẫn chưa chốt. Khi có danh sách kiểm kê, nhóm sẽ đối chiếu số lượng cần mua với hai báo giá đã lưu.",
+    "pinyin": null,
+    "assessment_criteria": [
+      "Nêu đúng trách nhiệm và hạn",
+      "Đánh dấu quyết định chưa chốt",
+      "Bước tiếp theo khả thi"
+    ],
+    "common_errors": [
+      "Ghi nhóm đã chọn nhà cung cấp",
+      "Đổi before Friday thành by the end of Friday"
+    ]
+  },
+  {
+    "id": "WR-00015",
+    "title": "Ghi chú đóng hai thùng sách",
+    "language": "zh",
+    "module": "writing",
+    "level": "A2",
+    "topic": "Ghi chú đóng hai thùng sách",
+    "domain": 32,
+    "objective": "Viết chỉ dẫn phân loại và xử lý một loại sách.",
+    "teaching": "Dùng 把 với vật đã xác định rồi thêm vị trí hoặc kết quả sau động từ.",
+    "example": "请把儿童书放进一号箱，把画册放进二号箱。画册要平放。装好以后，请在每个箱子上写清楚里面是什么书。",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Thùng số một đựng sách thiếu nhi, thùng số hai đựng sách ảnh. Sách ảnh cần xếp nằm. Hãy để lại lời nhắn cho người xếp hàng.",
+    "answer": "Đúng loại và số thùng|Nêu được cách xếp sách ảnh|Có bước ghi nhãn",
+    "explanation": "放进 xác định chuyển động vào trong thùng; 箱子上 chỉ nơi viết nhãn bên ngoài.",
+    "outcome": "Viết chỉ dẫn phân loại và xử lý một loại sách.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Thùng số một đựng sách thiếu nhi, thùng số hai đựng sách ảnh. Sách ảnh cần xếp nằm. Hãy để lại lời nhắn cho người xếp hàng.",
+    "writing_requirements": [
+      "Nêu nội dung từng thùng",
+      "Chỉ rõ loại sách cần xếp nằm",
+      "Yêu cầu ghi nhãn sau khi xếp"
+    ],
+    "suggested_length": "30–55 chữ Hán",
+    "suggested_vocabulary": [
+      "一号箱",
+      "画册",
+      "平放"
+    ],
+    "suggested_grammar": "Dùng 把 với vật đã xác định rồi thêm vị trí hoặc kết quả sau động từ.",
+    "model_text": "请把儿童书放进一号箱，把画册放进二号箱。画册要平放。装好以后，请在每个箱子上写清楚里面是什么书。",
+    "model_explanation": "放进 xác định chuyển động vào trong thùng; 箱子上 chỉ nơi viết nhãn bên ngoài.",
+    "translation_vi": "Vui lòng bỏ sách thiếu nhi vào thùng số một, sách ảnh vào thùng số hai. Sách ảnh phải xếp nằm. Sau khi xếp xong, vui lòng ghi rõ trên từng thùng loại sách đựng bên trong.",
+    "pinyin": "Qǐng bǎ értóngshū fàngjìn yī hào xiāng, bǎ huàcè fàngjìn èr hào xiāng. Huàcè yào píngfàng. Zhuāng hǎo yǐhòu, qǐng zài měi ge xiāngzi shang xiě qīngchu lǐmiàn shì shénme shū.",
+    "assessment_criteria": [
+      "Đúng loại và số thùng",
+      "Nêu được cách xếp sách ảnh",
+      "Có bước ghi nhãn"
+    ],
+    "common_errors": [
+      "Đảo hai số thùng",
+      "Viết 箱子里 khi muốn ghi trên mặt ngoài"
+    ]
+  },
+  {
+    "id": "WR-00016",
+    "title": "Đề nghị bạn gửi ảnh bài tập",
+    "language": "zh",
+    "module": "writing",
+    "level": "A2",
+    "topic": "Đề nghị bạn gửi ảnh bài tập",
+    "domain": 2,
+    "objective": "Nêu lý do ngắn gọn rồi đưa ra hai yêu cầu rõ ràng.",
+    "teaching": "Dùng 能不能…… để nhờ giúp và 最晚什么时候…… để hỏi hạn muộn nhất.",
+    "example": "我今天回老家，没去上课。你能不能给今天的作业拍张照片，发给我？我还想问一下，这次作业最晚什么时候交？谢谢你！",
+    "activity": "Lập dàn ý từ các dữ kiện, viết bản nháp rồi đối chiếu từng tiêu chí trước khi đọc bài mẫu.",
+    "task": "Bạn nghỉ buổi học vì phải về quê. Hãy nhắn bạn cùng lớp xin ảnh trang bài tập và hỏi hạn nộp.",
+    "answer": "Lý do rõ|Xác định đúng tài liệu|Hỏi đúng hạn nộp",
+    "explanation": "Câu đầu cung cấp lý do cần trợ giúp. Hai câu hỏi tách riêng để người nhận có thể đáp đủ.",
+    "outcome": "Nêu lý do ngắn gọn rồi đưa ra hai yêu cầu rõ ràng.",
+    "minutes": 15,
+    "status": "REVIEW_REQUIRED",
+    "prompt": "Bạn nghỉ buổi học vì phải về quê. Hãy nhắn bạn cùng lớp xin ảnh trang bài tập và hỏi hạn nộp.",
+    "writing_requirements": [
+      "Nêu lý do vắng",
+      "Xin ảnh đúng tài liệu",
+      "Hỏi hạn nộp bài"
+    ],
+    "suggested_length": "30–55 chữ Hán",
+    "suggested_vocabulary": [
+      "作业",
+      "拍张照片",
+      "最晚"
+    ],
+    "suggested_grammar": "Dùng 能不能…… để nhờ giúp và 最晚什么时候…… để hỏi hạn muộn nhất.",
+    "model_text": "我今天回老家，没去上课。你能不能给今天的作业拍张照片，发给我？我还想问一下，这次作业最晚什么时候交？谢谢你！",
+    "model_explanation": "Câu đầu cung cấp lý do cần trợ giúp. Hai câu hỏi tách riêng để người nhận có thể đáp đủ.",
+    "translation_vi": "Hôm nay mình về quê nên không đến lớp. Bạn chụp ảnh bài tập hôm nay rồi gửi mình được không? Mình cũng muốn hỏi bài tập lần này phải nộp muộn nhất lúc nào. Cảm ơn bạn!",
+    "pinyin": "Wǒ jīntiān huí lǎojiā, méi qù shàngkè. Nǐ néng bu néng gěi jīntiān de zuòyè pāi zhāng zhàopiàn, fā gěi wǒ? Wǒ hái xiǎng wèn yíxià, zhè cì zuòyè zuì wǎn shénme shíhou jiāo? Xièxie nǐ!",
+    "assessment_criteria": [
+      "Lý do rõ",
+      "Xác định đúng tài liệu",
+      "Hỏi đúng hạn nộp"
+    ],
+    "common_errors": [
+      "Dùng 什么时候开始 cho hạn nộp",
+      "Thiếu người nhận sau 发给"
+    ]
+  }
+]

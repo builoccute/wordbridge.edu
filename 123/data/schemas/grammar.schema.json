@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "grammar",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": [
+      "activity",
+      "answer",
+      "common_error_vi",
+      "domain",
+      "example",
+      "example_vi",
+      "explanation",
+      "id",
+      "language",
+      "level",
+      "minutes",
+      "module",
+      "objective",
+      "outcome",
+      "source",
+      "status",
+      "structure",
+      "task",
+      "teaching",
+      "title",
+      "topic"
+    ],
+    "properties": {
+      "activity": {
+        "type": "string"
+      },
+      "answer": {
+        "type": "string"
+      },
+      "common_error_vi": {
+        "type": "string"
+      },
+      "domain": {
+        "type": "integer"
+      },
+      "example": {
+        "type": "string"
+      },
+      "example_vi": {
+        "type": "string"
+      },
+      "explanation": {
+        "type": "string"
+      },
+      "id": {
+        "type": "string"
+      },
+      "language": {
+        "type": "string"
+      },
+      "level": {
+        "type": "string"
+      },
+      "minutes": {
+        "type": "integer"
+      },
+      "module": {
+        "type": "string"
+      },
+      "objective": {
+        "type": "string"
+      },
+      "outcome": {
+        "type": "string"
+      },
+      "source": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string"
+      },
+      "structure": {
+        "type": "string"
+      },
+      "task": {
+        "type": "string"
+      },
+      "teaching": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "topic": {
+        "type": "string"
+      }
+    },
+    "additionalProperties": false
+  }
+}

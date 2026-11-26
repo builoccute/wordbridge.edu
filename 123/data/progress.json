@@ -1,5 +1,5 @@
 {
-  "version": "0.7.0",
+  "version": "0.8.0",
   "date": "2026-11-26",
   "status": "INCOMPLETE",
   "actual_counts": {
@@ -13,7 +13,10 @@
     "pronunciation": 33,
     "exercises": 64,
     "assessments": 14,
-    "lessons": 40
+    "lessons": 40,
+    "flashcards_isolated": 2000,
+    "courses_self_study": 8,
+    "audio_asset_bindings": 49
   },
   "skill_lesson_records": 148,
   "independent_integrated_lessons": 40,
@@ -41,5 +44,12 @@
     "status": "COMPLETE",
     "first_id": "WB5-10227",
     "last_id": "WB5-10726"
-  }
+  },
+  "upgraded_from": "0.7.0",
+  "notes_v0_8_0": [
+    "Bảo toàn 100% toàn bộ 12 nhóm dữ liệu gốc (726 từ vựng, 770 ví dụ, 16x4 kỹ năng, 51 ngữ pháp, 33 phát âm, 64 bài tập, 14 đánh giá, 40 bài học, 40 lĩnh vực).",
+    "Bổ sung 2.000 Flashcard độc lập (FLASHCARD_ONLY, 0 trùng lặp với 726 từ gốc, không trộn vào từ điển công khai).",
+    "Bổ sung 8 Khóa học tự học độc lập (4 EN CEFR, 4 ZH-CN HSK) liên kết ID học liệu thật.",
+    "Bổ sung 49 Audio Asset Bindings (trạng thái trung thực TEXT_SCRIPT_ONLY, không có URL audio giả)."
+  ]
 }

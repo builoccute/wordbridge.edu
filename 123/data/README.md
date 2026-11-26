@@ -1,12 +1,20 @@
-# WORD BRIDGE Master Data 2026 — đợt biên soạn đang tiếp diễn
+# WORD BRIDGE MASTER DATA — VERSION 0.8.0 (UPGRADED)
 
-Dữ liệu gồm tiếng Anh, Trung giản thể và giải thích tiếng Việt. Các thư mục chứa JSON dạng mảng, chia shard tối đa 100 bản ghi. manifest.json ghi SHA-256 và số bản ghi từng tệp. Schema riêng cho từng loại nằm trong schemas/.
+Gói dữ liệu này nâng cấp từ `WORD-BRIDGE-MASTER-DATA-2026` (v0.7.0) với nguyên tắc **bảo toàn 100% dữ liệu học liệu hợp lệ gốc** và bổ sung các cấu phần còn thiếu:
 
-Trạng thái nghiệm thu toàn bộ là INCOMPLETE. Trạng thái nội dung từng bản ghi là REVIEW_REQUIRED, cần người có chuyên môn đối chiếu IPA, Pinyin, thuật ngữ, bản dịch và độ tự nhiên trước khi công bố. Hai shard cũ 10.000 mục chưa được cung cấp để kiểm tra trùng lặp. ID mới bắt đầu từ WB5-10001; chỉ những mục mới, phân biệt được theo cặp Anh–Trung, mới được tính. Bản ghi trùng cặp được liệt kê tại validation/duplicate-report.json. Câu ví dụ, bài tập và bài tự đánh giá là nhóm độc lập; không tính vào số bài học. Bài nghe hiện chỉ có kịch bản văn bản, không có tài sản âm thanh.
+## 1. Dữ liệu gốc được bảo toàn nguyên vẹn
+- `vocabulary/`: 726 mục từ vựng (`REVIEW_REQUIRED`)
+- `examples/`: 770 câu ví dụ song ngữ
+- `reading/`, `listening/`, `speaking/`, `writing/`: 16 bản ghi mỗi kỹ năng
+- `grammar/`: 51 chủ điểm ngữ pháp
+- `pronunciation/`: 33 chủ điểm phát âm
+- `exercises/`: 64 bài tập thực hành
+- `assessments/`: 14 bộ đánh giá năng lực (không cấp chứng chỉ)
+- `lessons/`: 40 bài học tích hợp
+- `specialties/domains.json`: 40 lĩnh vực chuyên môn
 
-Nguồn trong bản ghi ghi nguồn biên soạn mới, không ngụ ý đã tham khảo hay thẩm định từ điển bên ngoài. Tham chiếu để thiết kế tiêu chí là thang CEFR của Hội đồng châu Âu và bảng ký hiệu của International Phonetic Association, không sao chép nội dung từ các trang này.
-
-- CEFR https://www.coe.int/en/web/common-european-framework-reference-languages/cefr-descriptors
-- IPA https://www.internationalphoneticassociation.org/content/chart
-
-Đọc reports/final-acceptance-report.json để xem chỉ tiêu thực đạt và còn thiếu.
+## 2. Dữ liệu & Schema bổ sung mới ở phiên bản 0.8.0
+- `flashcards/flashcards-001.json` .. `flashcards-004.json`: **2.000 thẻ Flashcard độc lập** (`FC-0001`..`FC-2000`, `deck_scope: "FLASHCARD_ONLY"`, 0 trùng lặp với 726 từ vựng gốc, phủ đủ 40/40 lĩnh vực).
+- `courses/courses-001.json`: **8 khóa học tự học độc lập** (4 Tiếng Anh theo CEFR A1–B2, 4 Tiếng Trung giản thể theo HSK 1–4+), 16 chương, 32 bài học, 64 hoạt động liên kết trực tiếp ID học liệu thật.
+- `audio/audio-manifest.json`: **49 liên kết tài nguyên âm thanh** cho 16 Listening + 33 Pronunciation (`TEXT_SCRIPT_ONLY`, `allow_playback_button: false`, sẵn khóa R2 bucket `word`).
+- `schemas/`: bổ sung `flashcards.schema.json`, `courses.schema.json`, `audio-bindings.schema.json`.

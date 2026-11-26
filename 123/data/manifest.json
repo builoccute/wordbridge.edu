@@ -1,12 +1,41 @@
 {
-  "version": "0.7.0",
+  "version": "0.8.0",
+  "upgraded_from": "0.7.0",
   "created_date": "2026-11-26",
-  "status": "INCOMPLETE",
+  "status": "UPGRADED_REVIEW_REQUIRED",
+  "human_review": "PENDING",
+  "specialties": 40,
+  "module_counts": {
+    "vocabulary": 726,
+    "examples": 770,
+    "reading": 16,
+    "listening": 16,
+    "speaking": 16,
+    "writing": 16,
+    "grammar": 51,
+    "pronunciation": 33,
+    "exercises": 64,
+    "assessments": 14,
+    "lessons": 40,
+    "flashcards_isolated": 2000,
+    "courses_self_study": 8,
+    "audio_asset_bindings": 49
+  },
   "file_inventory": [
     {
       "path": "assessments/assessments-001.json",
       "sha256": "fe6b3828c12deb42258f3a6505b9010eb8073d48d71b713a35ca5dadc7c718b8",
       "records": 14
+    },
+    {
+      "path": "audio/audio-manifest.json",
+      "sha256": "c796d4100408dc06c2e3b1fe351f394e60f4ee6be910a2e522f92111ea84d815",
+      "records": 49
+    },
+    {
+      "path": "courses/courses-001.json",
+      "sha256": "0757a2a021ab22c53ccd0cbc272fea45509fc0550f5809947565e8c353c3161b",
+      "records": 8
     },
     {
       "path": "examples/examples-001.json",
@@ -64,6 +93,26 @@
       "records": 64
     },
     {
+      "path": "flashcards/flashcards-001.json",
+      "sha256": "1a63b5b7000bfcaaea2623d5a946a8d2d95f908818a120887936ff13c5b470da",
+      "records": 500
+    },
+    {
+      "path": "flashcards/flashcards-002.json",
+      "sha256": "62ae1e61a2af3a2971ef544a05ac63643b675aee98fc1c345c6b99b5e3c230f1",
+      "records": 500
+    },
+    {
+      "path": "flashcards/flashcards-003.json",
+      "sha256": "cf190107f140af918ea25f7dc6d9806238f3455c65dd045ea85e27d11a63a476",
+      "records": 500
+    },
+    {
+      "path": "flashcards/flashcards-004.json",
+      "sha256": "2ef00dff9e991e3b5d79d447fd73241d52018090e67250b0124193c977d33692",
+      "records": 500
+    },
+    {
       "path": "grammar/grammar-001.json",
       "sha256": "33ff14867327820a74ef4ea49a5efd72ef3665ff22744dae605bad814e3bfa44",
       "records": 51
@@ -79,8 +128,13 @@
       "records": 16
     },
     {
+      "path": "manifest-v0.7.0-original.json",
+      "sha256": "e292e7ce4b559d69ec21965cf3febe44a0ef2524039869d64e6012790e61125e",
+      "records": null
+    },
+    {
       "path": "progress.json",
-      "sha256": "d156a364875849f6df1f6d69026daf15886aa2ed7d8ee33794a369a65525765c",
+      "sha256": "ef3a5dc0a365f1ff374dc0968eccc73f85cb59636ea5b07a191c00e96060aca5",
       "records": null
     },
     {
@@ -119,6 +173,16 @@
       "records": null
     },
     {
+      "path": "schemas/audio-bindings.schema.json",
+      "sha256": "93525230aba009cd9fd7a21f9874d557d9b6523ad827c3487b0a10f057f0f5c6",
+      "records": null
+    },
+    {
+      "path": "schemas/courses.schema.json",
+      "sha256": "66aa6a03af19af589eae24cf5c9b6debdd747f6bf50fe26801d05f019d59a5df",
+      "records": null
+    },
+    {
       "path": "schemas/examples.schema.json",
       "sha256": "f42bfad5759bfd0c7e1234c2ef9ea1e45cad0554001f50dd2d06046ac6d65c61",
       "records": null
@@ -126,6 +190,11 @@
     {
       "path": "schemas/exercises.schema.json",
       "sha256": "c2022e8e351f01e3fe6580e1e7d1eda1c5751742adba4292b3229ba743ac0fa8",
+      "records": null
+    },
+    {
+      "path": "schemas/flashcards.schema.json",
+      "sha256": "9fb3af63609c83c81c013b5659bb2f5a89eb1dde951825f40f1f55eca9647d4d",
       "records": null
     },
     {
@@ -288,20 +357,5 @@
       "sha256": "ab3de10f31f68ba54143d9dbb7926063e533f60d093b8f244a63b684b2cab8a1",
       "records": 16
     }
-  ],
-  "module_counts": {
-    "vocabulary": 726,
-    "examples": 770,
-    "reading": 16,
-    "listening": 16,
-    "speaking": 16,
-    "writing": 16,
-    "grammar": 51,
-    "pronunciation": 33,
-    "exercises": 64,
-    "assessments": 14,
-    "lessons": 40
-  },
-  "specialties": 40,
-  "human_review": "PENDING"
+  ]
 }

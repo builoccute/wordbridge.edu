@@ -1,21 +1,18 @@
 {
   "package_name": "WORD-BRIDGE-UPGRADE-PACKAGE-2026",
-  "generated_at_utc": "2026-11-26T13:53:08Z",
-  "original_master_data_preserved": "59/59 files byte-identical (REVIEW_REQUIRED preserved)",
-  "new_additions": {
-    "flashcards_isolated": 2000,
-    "courses_self_study": 8,
-    "audio_asset_bindings": 49,
-    "d1_migrations": 3,
-    "frontend_modules": 3,
-    "reports": 4
-  },
-  "total_files": 78,
+  "version": "0.8.0",
+  "generated_at_utc": "2026-11-26T14:11:48Z",
+  "total_files": 81,
   "files": [
     {
+      "path": "README.md",
+      "size_bytes": 1937,
+      "sha256": "6d553c2eb51652a7d0acf19f0321e0dd1f02c2761994d10945ee88612874baf3"
+    },
+    {
       "path": "data/README.md",
-      "size_bytes": 1704,
-      "sha256": "cb0e6270cf43c7e64afafb593aca5eaffe6de503d9f7b4fe48c3769cc24f7a6e"
+      "size_bytes": 1663,
+      "sha256": "bb7e6739b8e8f3f9f14981dde9b1c2d58355211d2b69c2ebe757406ae936f01b"
     },
     {
       "path": "data/assessments/assessments-001.json",
@@ -123,14 +120,19 @@
       "sha256": "94d3a62404e81e05b0e9b322dbac482a40b0dfaa2130bb8d1af53508b88bca88"
     },
     {
-      "path": "data/manifest.json",
+      "path": "data/manifest-v0.7.0-original.json",
       "size_bytes": 9834,
       "sha256": "e292e7ce4b559d69ec21965cf3febe44a0ef2524039869d64e6012790e61125e"
     },
     {
+      "path": "data/manifest.json",
+      "size_bytes": 11619,
+      "sha256": "8d15065a41d7cdacfc82a79ecc33c81e41d578803c99b3e0b1dcdc849fb80a53"
+    },
+    {
       "path": "data/progress.json",
-      "size_bytes": 1126,
-      "sha256": "d156a364875849f6df1f6d69026daf15886aa2ed7d8ee33794a369a65525765c"
+      "size_bytes": 1852,
+      "sha256": "ef3a5dc0a365f1ff374dc0968eccc73f85cb59636ea5b07a191c00e96060aca5"
     },
     {
       "path": "data/pronunciation/pronunciation-001.json",
@@ -401,6 +403,11 @@
       "path": "reports/TEST_AND_QA_REPORT.md",
       "size_bytes": 3833,
       "sha256": "4b8544bc7adcfa753fc824d22a080893bfcb60589913fc37f0b60d40f816de51"
+    },
+    {
+      "path": "wordbridge-learning-hub.html",
+      "size_bytes": 2053228,
+      "sha256": "39f6674516ed23c581bce36971bc6917e46fc3828d841ed5b87747cb0eff481d"
     }
   ]
 }

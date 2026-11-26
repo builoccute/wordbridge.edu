@@ -21,8 +21,10 @@
     "test:integration": "npm test",
     "test:e2e": "python3 tests/e2e/browser.py",
     "qa:browser": "npm run test:e2e",
-    "lint:check": "node --check src/index.js && node --check src/modules/legal-policies.js && node --check src/modules/oauth-service.js && node --check src/modules/admin-pin-pages.js && node --check src/modules/language-api-adapters.js && node --check src/modules/academic-catalog.js && node --check tests/release.test.mjs && node --check public/scripts/app.js && node --check public/scripts/i18n.js",
-    "db:fix:remote": "node scripts/fix-remote-d1.mjs"
+    "lint:check": "node --check src/index.js && node --check src/modules/legal-policies.js && node --check src/modules/oauth-service.js && node --check src/modules/admin-pin-pages.js && node --check src/modules/language-api-adapters.js && node --check src/modules/academic-catalog.js && node --check tests/release.test.mjs && node --check public/scripts/app.js && node --check public/scripts/i18n.js && node --check src/modules/vocab-v5-service.js && node --check scripts/vocab-v5-qa.mjs && node --check tests/vocab-v5.test.mjs && node --check scripts/vocab-v5-ingest.mjs",
+    "db:fix:remote": "node scripts/fix-remote-d1.mjs",
+    "qa:vocab-v5": "node scripts/vocab-v5-qa.mjs",
+    "test:vocab-v5": "node --test tests/vocab-v5.test.mjs"
   },
   "devDependencies": {
     "wrangler": "^4.16.0"

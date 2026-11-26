@@ -1,0 +1,29 @@
+{
+  "version": "5.0.0",
+  "requiredFields": [
+    "id",
+    "en",
+    "zh",
+    "pinyin",
+    "ipa",
+    "meaningVi",
+    "pos",
+    "defEn",
+    "defZh",
+    "context",
+    "exampleEn",
+    "exampleZh",
+    "exampleVi",
+    "topic",
+    "domain",
+    "level",
+    "source",
+    "reviewStatus"
+  ],
+  "allowedReviewStatuses": [
+    "draft",
+    "reviewed",
+    "published"
+  ],
+  "publishRule": "Only entries with reviewStatus === \"published\" are exposed to learners and counted in public UI."
+}

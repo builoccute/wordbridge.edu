@@ -3,6 +3,7 @@ import { OAuthService } from "./modules/oauth-service.js";
 import { AdminPinService, buildAdminSessionCookie, clearAdminSessionCookie, renderAdminBootstrapPage, renderAdminLoginPage, renderAdminPinLockPage, renderAdminCenterHtml } from "./modules/admin-pin-pages.js";
 import { LanguageServicesAdapter } from "./modules/language-api-adapters.js";
 import { CHINESE_FOUNDATION_22, ENGLISH_FOUNDATION_22, SPECIALIZED_100_DOMAINS, CONTACT_CATEGORIES_12, renderContactPageV42, renderSessionInvalidContent, renderErrorSystemHubHtml, renderErrorWaveSvg } from "./modules/academic-catalog.js";
+import { searchVocabV5, getVocabV5EntryById, toDictionaryNotebookPayload } from "./modules/vocab-v5-service.js";
 var __defProp = Object.defineProperty;
 var __name = (target, value) => __defProp(target, "name", { value, configurable: true });
 
@@ -4392,6 +4393,53 @@ async function handleApiRequest(request, url, ctx) {
       topics,
       words: words.slice(start, start + limit)
     });
+  }
+  if (path === "/api/v1/vocab-v5/stats" && method === "GET") {
+    const v5 = await loadVocabV5Data(request, url, env);
+    if (!v5) return errorResponse("VOCAB_V5_UNAVAILABLE", "Chưa có dữ liệu từ vựng V5.0 được xuất bản.", 503);
+    return jsonResponse({ ok: true, ...v5.index });
+  }
+  if (path === "/api/v1/vocab-v5/search" && method === "GET") {
+    const v5 = await loadVocabV5Data(request, url, env);
+    if (!v5) return errorResponse("VOCAB_V5_UNAVAILABLE", "Chưa có dữ liệu từ vựng V5.0 được xuất bản.", 503);
+    const result = searchVocabV5(v5.entries, {
+      q: url.searchParams.get("q") || "",
+      lang: url.searchParams.get("lang") || "",
+      domain: url.searchParams.get("domain") || "",
+      topic: url.searchParams.get("topic") || "",
+      pos: url.searchParams.get("pos") || "",
+      level: url.searchParams.get("level") || "",
+      page: url.searchParams.get("page") || 1,
+      limit: url.searchParams.get("limit") || 50
+    });
+    return jsonResponse(result);
+  }
+  if (path.startsWith("/api/v1/vocab-v5/entry/") && method === "GET") {
+    const v5 = await loadVocabV5Data(request, url, env);
+    if (!v5) return errorResponse("VOCAB_V5_UNAVAILABLE", "Chưa có dữ liệu từ vựng V5.0 được xuất bản.", 503);
+    const entryId = decodeURIComponent(path.slice("/api/v1/vocab-v5/entry/".length));
+    const entry = getVocabV5EntryById(v5.entries, entryId);
+    if (!entry) return errorResponse("ENTRY_NOT_FOUND", `Không tìm thấy mục từ V5.0: ${entryId}`, 404);
+    return jsonResponse({ ok: true, entry });
+  }
+  if (path === "/api/v1/vocab-v5/save" && method === "POST") {
+    if (!user) return errorResponse("AUTH_REQUIRED", "Vui lòng đăng nhập để lưu từ vào sổ từ vựng cá nhân.", 401);
+    const v5 = await loadVocabV5Data(request, url, env);
+    if (!v5) return errorResponse("VOCAB_V5_UNAVAILABLE", "Chưa có dữ liệu từ vựng V5.0 được xuất bản.", 503);
+    const bodyV5 = await readJsonBody(request);
+    const entry = getVocabV5EntryById(v5.entries, bodyV5.id || bodyV5.entryId);
+    if (!entry) return errorResponse("ENTRY_NOT_FOUND", "Không tìm thấy mục từ V5.0 đã xuất bản.", 404);
+    const mapped = toDictionaryNotebookPayload(entry);
+    const saved = await services.dictionary.saveToNotebook(user.accountId, {
+      entryId: mapped.id,
+      groupName: bodyV5.groupName || entry.topic,
+      tags: Array.isArray(bodyV5.tags) ? bodyV5.tags : [entry.domain, entry.level],
+      personalNote: bodyV5.personalNote || `${entry.ipa} | ${entry.pinyin} — ${entry.meaningVi}`,
+      setId: bodyV5.setId || null
+    }, {
+      resolveSpecializedTerm: async () => mapped
+    });
+    return jsonResponse({ ok: true, saved, entryId: entry.id, notebookEntryId: mapped.id });
   }
   if (path === "/api/v1/webhooks/email" && method === "POST") {
     const rawBody = await request.text();
@@ -9879,6 +9927,28 @@ async function loadVocabJson(domainSlug, request, url, rawEnv) {
   }
 }
 __name(loadVocabJson, "loadVocabJson");
+var cachedVocabV5 = null;
+async function loadVocabV5Data(request, url, rawEnv) {
+  if (cachedVocabV5) return cachedVocabV5;
+  try {
+    const idxRes = await loadStaticAsset("/data/vocab-v5/index.json", request, url, rawEnv);
+    if (!idxRes || idxRes.status !== 200) return null;
+    const index = await idxRes.json();
+    const entries = [];
+    for (const s of index.shards || []) {
+      const sRes = await loadStaticAsset(`/data/vocab-v5/${s.file}`, request, url, rawEnv);
+      if (sRes && sRes.status === 200) {
+        const shardData = await sRes.json();
+        if (Array.isArray(shardData.entries)) entries.push(...shardData.entries);
+      }
+    }
+    cachedVocabV5 = { index, entries };
+    return cachedVocabV5;
+  } catch {
+    return null;
+  }
+}
+__name(loadVocabV5Data, "loadVocabV5Data");
 function failure(status, request, id) {
   if (new URL(request.url).pathname.startsWith("/api/")) {
     return jsonResponse({ ok: false, error: { code: String(status), message: errorTitles[status] }, requestId: id }, status);

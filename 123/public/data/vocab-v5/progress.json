@@ -1,0 +1,108 @@
+{
+  "version": "5.0.0",
+  "targetTotal": 50000,
+  "batchSize": 500,
+  "totalBatches": 100,
+  "completedBatches": 6,
+  "nextBatch": 7,
+  "publishedValidEntries": 3000,
+  "remainingEntries": 47000,
+  "history": [
+    {
+      "batch": 1,
+      "idRange": "WB5-00001..WB5-00500",
+      "count": 500,
+      "domains": {
+        "academic": 100,
+        "business": 100,
+        "daily-life": 100,
+        "idioms": 100,
+        "technology": 100
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T08:05:00+07:00"
+    },
+    {
+      "batch": 2,
+      "idRange": "WB5-00501..WB5-01000",
+      "count": 500,
+      "domains": {
+        "accounting": 101,
+        "healthcare": 102,
+        "legal-civic": 101,
+        "hospitality-tourism": 102,
+        "media-design-edu": 94
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T01:31:57.677Z"
+    },
+    {
+      "batch": 3,
+      "idRange": "WB5-01001..WB5-01500",
+      "count": 500,
+      "domains": {
+        "mechanical-cnc": 105,
+        "automotive-ev": 104,
+        "electrical-plc": 101,
+        "hvac-construction": 90,
+        "network-hardware": 100
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T02:02:08.440Z"
+    },
+    {
+      "batch": 4,
+      "idRange": "WB5-01501..WB5-02000",
+      "count": 500,
+      "domains": {
+        "agri-environment": 90,
+        "psychology-society": 101,
+        "sports-culture": 98,
+        "ecommerce-marketing": 111,
+        "core-academic-pro": 100
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T02:02:28.662Z"
+    },
+    {
+      "batch": 5,
+      "idRange": "WB5-02001..WB5-02500",
+      "count": 500,
+      "domains": {
+        "maritime-shipping": 146,
+        "banking-fintech": 111,
+        "real-estate-urban": 100,
+        "textile-apparel": 105,
+        "chemistry-lab": 38
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T02:38:57.115Z"
+    },
+    {
+      "batch": 6,
+      "idRange": "WB5-02501..WB5-03000",
+      "count": 500,
+      "domains": {
+        "ai-data-science": 104,
+        "dental-family-care": 89,
+        "aviation-airport": 93,
+        "earth-astronomy": 136,
+        "workplace-phrases": 78
+      },
+      "qaPassed": true,
+      "duplicateRate": 0,
+      "missingFieldRate": 0,
+      "completedAt": "2026-11-26T02:38:57.348Z"
+    }
+  ]
+}

@@ -3,21 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WORD BRIDGE — Hệ thống học tập Tiếng Anh & Tiếng Trung giản thể</title>
+  <title>WORD BRIDGE — Trung tâm học tập Tiếng Anh &amp; Tiếng Trung giản thể</title>
   <link rel="stylesheet" href="styles/wordbridge.css">
 </head>
 <body>
   <header class="wb-header">
     <div class="wb-header-inner">
-      <button type="button" class="wb-brand" id="wb-brand-home">
+      <button type="button" class="wb-brand" id="wb-brand-home" aria-label="WORD BRIDGE Trang chủ học tập">
         <span class="wb-brand-mark">WB</span>
-        <span>WORD BRIDGE</span>
+        <span class="wb-brand-text">
+          <strong>WORD BRIDGE</strong>
+          <small>Where Languages Bring People Together.</small>
+        </span>
       </button>
-      <button type="button" class="wb-mobile-menu-btn" id="wb-mobile-toggle" aria-label="Mở menu điều hướng">Menu</button>
+
       <nav class="wb-nav" id="wb-nav" aria-label="Điều hướng chính"></nav>
+
+      <div class="wb-header-right">
+        <span class="wb-sync-badge" id="wb-sync-badge" title="Trạng thái kết nối tài khoản &amp; lưu trữ">Lưu cục bộ</span>
+        <button type="button" class="wb-mobile-menu-btn" id="wb-mobile-toggle" aria-expanded="false" aria-controls="wb-nav" aria-label="Mở menu điều hướng">Menu</button>
+      </div>
     </div>
     <div class="wb-subnav-wrap">
-      <div class="wb-subnav" id="wb-subnav" aria-label="Điều hướng chức năng"></div>
+      <div class="wb-subnav" id="wb-subnav" aria-label="Điều hướng mục con"></div>
     </div>
   </header>
 
@@ -26,10 +34,18 @@
   </main>
 
   <footer class="wb-footer">
-    WORD BRIDGE · Where Languages Bring People Together · Nền tảng tự học Tiếng Anh và Tiếng Trung giản thể.
+    <div class="wb-footer-inner">
+      <div><strong>WORD BRIDGE</strong> · Where Languages Bring People Together.</div>
+      <div class="wb-footer-links">
+        <span>Nền tảng tự học Tiếng Anh &amp; Tiếng Trung giản thể</span>
+        <span>·</span>
+        <a href="https://www.wordbridge.io.vn/" target="_blank" rel="noopener">wordbridge.io.vn</a>
+      </div>
+    </div>
   </footer>
 
   <div class="wb-toast" id="wb-toast" role="status" aria-live="polite"></div>
+  <script src="js/api-adapter.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

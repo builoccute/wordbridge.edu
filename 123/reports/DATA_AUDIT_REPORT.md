@@ -1,41 +1,36 @@
-# BÁO CÁO KIỂM ĐỊNH DỮ LIỆU — WORD BRIDGE (2026)
+# BÁO CÁO KIỂM ĐỊNH DỮ LIỆU & TIẾN ĐỘ HỌC LIỆU — WORD BRIDGE (2026)
 
-## 1. Kết quả kiểm tra gói ZIP gốc (`WORD-BRIDGE-MASTER-DATA-2026 (1).zip`)
-- **Tổng số tệp thực tế:** 59 tệp (57 tệp liệt kê trong `manifest.json -> file_inventory` + 2 tệp siêu dữ liệu `README.md` và `manifest.json`).
-- **Đối chiếu Hash SHA-256 & số bản ghi:** **57/57 khớp 100%**, 0 tệp thiếu, 0 sai lệch hash, 0 sai lệch số lượng bản ghi.
-- **Kiểm định JSON Schema (`jsonschema`):** **0 lỗi schema** trên toàn bộ 11 nhóm học liệu có schema gốc.
-- **Bảo toàn dữ liệu gốc:** Toàn bộ 59 tệp gốc được giữ nguyên từng byte (59/59 SHA-256 trùng khớp 100% trong gói nâng cấp tại thư mục `data/`). Không xóa, không ghi đè, không tự nâng trạng thái `REVIEW_REQUIRED` sang `EXPERT_REVIEWED` hoặc `PUBLISHED`.
+## 1. Kiểm toán tính toàn vẹn gói nguồn v0.8.0
+- **Kiểm tra CRC tệp ZIP gốc (`WORD-BRIDGE-UPGRADE-PACKAGE-2026 (1).zip`):** `unzip -t` đạt **0 lỗi CRC** trên toàn bộ tệp nén.
+- **Đối chiếu SHA-256 theo `manifest-upgrade.json`:** **81/81 tệp khớp 100%**, 0 tệp thiếu, 0 sai lệch hash.
+- **Bảo toàn dữ liệu gốc:** Toàn bộ thư mục `data/` (học liệu gốc + 2.000 Flashcard + 8 Khóa học + 14 Schema + 49 Audio Manifest) được giữ nguyên từng byte. Không xóa dữ liệu, không ghi đè, không tự ý nâng `REVIEW_REQUIRED` sang `PUBLISHED` hoặc `EXPERT_REVIEWED`, không bổ sung 1.000 thuật ngữ chuyên ngành, không tạo dữ liệu giả.
 
-## 2. Kiểm đếm chi tiết từng nhóm dữ liệu gốc
+## 2. Tách biệt bắt buộc: Tiến độ kho học liệu (Dữ liệu) vs Hoàn thiện phần mềm
+> **Tuyên bố trung thực:** Việc sửa giao diện, sửa lỗi frontend và chuẩn bị tích hợp production **KHÔNG** làm thay đổi trạng thái chưa hoàn thành của các chỉ tiêu kho học liệu lớn dưới đây. Chỉ thay đổi trạng thái khi có dữ liệu thực tế được kiểm chứng.
 
-| Nhóm dữ liệu | Số bản ghi | Phân bổ ngôn ngữ | Trạng thái | Ghi chú kiểm định |
-| :--- | ---: | :--- | :--- | :--- |
-| Từ vựng (`vocabulary`) | 726 | Song ngữ EN – ZH – VI | `REVIEW_REQUIRED` | 725 từ EN duy nhất; `vacancy` xuất hiện hợp lệ ở 2 lĩnh vực khác nhau (7: Nhân sự `空缺职位` và 30: Du lịch `空房`). 0 trường bắt buộc bị thiếu. |
-| Câu ví dụ (`examples`) | 770 | `en-zh`: 770 | `REVIEW_REQUIRED` | 0 `focus_vocabulary_id` mồ côi (100% tham chiếu khớp `vocabulary`). |
-| Reading (`reading`) | 16 | EN: 8, ZH: 8 | `REVIEW_REQUIRED` | Đầy đủ văn bản, câu hỏi trắc nghiệm, đáp án, giải thích, từ vựng & ngữ pháp. |
-| Listening (`listening`) | 16 | EN: 8, ZH: 8 | `REVIEW_REQUIRED` | 16/16 có `audio_asset_status: "TEXT_SCRIPT_ONLY"` (chưa có tệp audio thực tế). |
-| Speaking (`speaking`) | 16 | EN: 8, ZH: 8 | `REVIEW_REQUIRED` | Đầy đủ tình huống, vai nói, câu hỏi gợi ý, hội thoại mẫu, tiêu chí tự đánh giá. |
-| Writing (`writing`) | 16 | EN: 8, ZH: 8 | `REVIEW_REQUIRED` | Đầy đủ bối cảnh, đề bài, yêu cầu nội dung, dung lượng gợi ý, bài mẫu, tiêu chí & lỗi thường gặp. |
-| Grammar (`grammar`) | 51 | EN: 25, ZH: 26 | `REVIEW_REQUIRED` | Đầy đủ quy tắc, cấu trúc, ví dụ, lỗi thường gặp và nhiệm vụ thực hành. |
-| Pronunciation (`pronunciation`) | 33 | EN: 16, ZH: 17 | `REVIEW_REQUIRED` | Chưa gắn tệp audio mẫu thực tế; cần gắn qua `audio/audio-manifest.json`. |
-| Exercises (`exercises`) | 64 | EN: 32, ZH: 32 | `REVIEW_REQUIRED` | Đa dạng dạng bài, 0 lỗi schema. |
-| Assessments (`assessments`) | 14 | EN: 7, ZH: 7 | `REVIEW_REQUIRED` | Có tiêu chí chấm điểm và thang điểm cụ thể, không gắn chức năng cấp chứng chỉ. |
-| Bài học tích hợp (`lessons`) | 40 | EN: 20, ZH: 20 | `REVIEW_REQUIRED` | Liên kết đa kỹ năng, 0 lỗi schema. |
-| Lĩnh vực chuyên môn (`specialties`) | 40 | Tiếng Việt | Hoàn chỉnh cấu trúc | Đủ 40 lĩnh vực `id: 1..40` khớp hoàn toàn trường `domain` ở các module. |
+| Nhóm học liệu | Mục tiêu cũ | Hiện có thực tế | Trạng thái kho dữ liệu | Trạng thái kiểm định |
+| :--- | ---: | ---: | :--- | :--- |
+| Từ vựng (`vocabulary`) | 40.000 | 726 | **Chưa hoàn thành** | `REVIEW_REQUIRED` (0 ID trùng) |
+| Câu ví dụ (`examples`) | 100.000 | 770 | **Chưa hoàn thành** | `REVIEW_REQUIRED` (100% khớp `focus_vocabulary_id`) |
+| Reading | 5.000 | 16 | **Chưa hoàn thành** | `REVIEW_REQUIRED` (8 EN, 8 ZH) |
+| Listening | 5.000 | 16 | **Chưa hoàn thành** | `REVIEW_REQUIRED`, `TEXT_SCRIPT_ONLY` (8 EN, 8 ZH) |
+| Speaking | 5.000 | 16 | **Chưa hoàn thành** | `REVIEW_REQUIRED` (8 EN, 8 ZH) |
+| Writing | 5.000 | 16 | **Chưa hoàn thành** | `REVIEW_REQUIRED` (8 EN, 8 ZH) |
+| Bài học độc lập / tích hợp (`lessons`) | 1.000.000 | 40 | **Chưa hoàn thành** | `REVIEW_REQUIRED` (20 EN, 20 ZH) |
+| Lĩnh vực chuyên ngành (`specialties`) | 40 | 40 | **Hoàn thành** | Đủ 40 lĩnh vực `id: 1..40` |
 
-## 3. Các vấn đề phát hiện và xử lý
-1. **Nhãn cấp độ tiếng Trung trong dữ liệu gốc:** Các bản ghi tiếng Trung trong ZIP gốc hiện dùng ký hiệu `A1–C2` ở trường `level`. Để bảo toàn 100% dữ liệu gốc mà không vi phạm quy tắc phân cấp tiếng Trung, gói nâng cấp giữ nguyên tệp gốc, đồng thời áp dụng chuẩn **HSK 1–5** (có ghi chú `scale_note_vi` rõ ràng, không gán nhãn CEFR thiếu căn cứ) cho toàn bộ 4 khóa học tiếng Trung mới và 2.000 Flashcard mới.
-2. **Hai ảnh giao diện đính kèm:** Hai tệp ảnh người dùng gửi có cùng giá trị MD5 (`d91488707c787ca3e2a2730e298c19ab`, đều chụp màn hình trang `Luyện Viết (Writing)` với thẻ từ vựng `account` / `account for` kèm textarea và nút `Xem câu mẫu chuẩn`). Dù thiếu ảnh chụp thực tế của trang Speaking, toàn bộ lỗi mô tả cho cả hai trang Speaking và Writing tại Phần III đều đã được khắc phục triệt để trong giao diện mới.
-3. **Trạng thái âm thanh Listening & Pronunciation:** 100% bài nghe gốc đang ở trạng thái `TEXT_SCRIPT_ONLY`. Đã tạo `data/audio/audio-manifest.json` (49 bản ghi liên kết với khóa R2 `audio/<module>/<lang>/<id>.mp3`, `audio_url: null`, `allow_playback_button: false`) để sẵn sàng bổ sung âm thanh sau này mà không tạo nút phát âm giả.
+### Các nhóm học liệu mở rộng hiện có trong gói (tách biệt với bảng mục tiêu trên)
+| Nhóm dữ liệu | Số lượng thực tế | Phạm vi & Trạng thái | Ghi chú kiểm định |
+| :--- | ---: | :--- | :--- |
+| Flashcard (`flashcards-001..004.json`) | 2.000 | `FLASHCARD_ONLY`, `REVIEW_REQUIRED` | 0 ID trùng (`FC-0001..2000`), 0 trùng tiếng Anh với 726 từ vựng gốc, đủ EN/ZH/Pinyin/IPA/VI/Ví dụ/Cấp độ/Chủ đề. Không trộn vào từ điển công khai. |
+| Khóa học (`courses-001.json`) | 8 khóa học | `SELF_STUDY`, `certificate_issued: false` | 16 chương, 32 bài học, 64 hoạt động; **0 tham chiếu ID gãy**. |
+| Pronunciation (`pronunciation-001.json`) | 33 | `REVIEW_REQUIRED`, `TEXT_SCRIPT_ONLY` | 16 EN, 17 ZH. |
+| Grammar (`grammar-001.json`) | 51 | `REVIEW_REQUIRED` | 25 EN, 26 ZH. |
+| Exercises (`exercises-001.json`) | 64 | `REVIEW_REQUIRED` | 32 EN, 32 ZH. |
+| Assessments (`assessments-001.json`) | 14 | `REVIEW_REQUIRED`, không cấp chứng chỉ | 7 EN, 7 ZH. |
+| Audio Manifest (`audio-manifest.json`) | 49 | `TEXT_SCRIPT_ONLY`, `audio_url: null` | 16 Listening + 33 Pronunciation; `allow_playback_button: false`, 0 URL giả. |
 
-## 4. Dữ liệu bổ sung mới trong gói nâng cấp
-- **2.000 Flashcard mới (`data/flashcards/flashcards-001.json` .. `flashcards-004.json`):**
-  - Đúng **2.000 thẻ** (4 tệp × 500 thẻ), mã `FC-0001` đến `FC-2000`.
-  - **0 trùng lặp nội bộ**, **0 trùng lặp** với 726 mục từ vựng gốc.
-  - Phủ đủ **40/40 lĩnh vực**, đủ 5 từ loại (`noun`: 920, `verb`: 493, `adjective`: 399, `adverb`: 146, `phrase`: 42), đủ CEFR A1–C1 và HSK 1–5.
-  - Gắn cờ bắt buộc `deck_scope: "FLASHCARD_ONLY"` và `status: "REVIEW_REQUIRED"`, hoàn toàn tách biệt khỏi từ điển công khai.
-  - **Không bổ sung 1.000 thuật ngữ chuyên ngành** theo đúng yêu cầu.
-- **Hệ thống Khóa học tự học độc lập (`data/courses/courses-001.json`):**
-  - **8 khóa học thực tế** (4 Tiếng Anh theo CEFR A1–B2, 4 Tiếng Trung giản thể theo HSK 1–4+), 16 chương, 32 bài học, 64 hoạt động kỹ năng.
-  - **0 tham chiếu gãy:** 100% ID hoạt động, bài tập và bài đánh giá cuối chương liên kết trực tiếp tới bản ghi có thật trong gói dữ liệu.
-  - Đạt **0 lỗi** trên `schemas/courses.schema.json`.
+## 3. Đính chính quan trọng về hai lỗi giao diện tham chiếu trước đó
+Bản báo cáo cũ của v0.8.0 đã ghi sai rằng hai ảnh tham chiếu là cùng một ảnh. Ghi nhận chính xác hai lỗi riêng biệt đã được xử lý triệt để trong giao diện mới:
+1. **Lỗi trang Speaking:** Giao diện luyện nói cũ bị trình bày giống danh sách thuật ngữ chuyên ngành → Đã thay bằng **Speaking Studio** chuyên biệt (tình huống, vai nói, câu hỏi gợi ý, cụm từ hỗ trợ, buồng ghi âm MediaRecorder 7 trạng thái, hội thoại mẫu đối chiếu và tiêu chí tự đánh giá).
+2. **Lỗi trang Writing:** Giao diện luyện viết cũ bị biến thành danh sách từ vựng kèm ô textarea dịch từng từ → Đã thay bằng **Writing Studio** 2 cột (đề bài, bối cảnh, yêu cầu bắt buộc, lập dàn ý, trình soạn thảo có bộ đếm từ/ký tự, lưu nháp, nộp bài, tiêu chí tự đánh giá, lỗi thường gặp và bài mẫu kèm giải thích).

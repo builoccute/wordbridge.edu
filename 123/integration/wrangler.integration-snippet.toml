@@ -1,0 +1,23 @@
+# ============================================================================
+# WORD BRIDGE — Reference Cloudflare Wrangler Bindings Snippet (NO SECRETS)
+# Merge ONLY missing bindings into your existing `wrangler.toml`;
+# DO NOT overwrite existing env vars, routes, or custom domains.
+# ============================================================================
+
+name = "wordbridge-edu"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "word"
+database_id = "ce84cc48-6d49-409b-b45a-13ba3bc4a771"
+migrations_dir = "migrations"
+
+[[r2_buckets]]
+binding = "WORD_R2"
+bucket_name = "word"

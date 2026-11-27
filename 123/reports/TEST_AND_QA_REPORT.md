@@ -1,30 +1,38 @@
-# BÁO CÁO KIỂM THỬ & XÁC MINH KỸ THUẬT — WORD BRIDGE
+# BÁO CÁO KIỂM THỬ & NGHIỆM THU TRUNG THỰC — WORD BRIDGE (v0.9.1-final-2026)
 
-## 1. Phạm vi kiểm thử thực tế
-Do môi trường làm việc không chứa mã nguồn repository production của Cloudflare Worker `wordbridge-edu` (`src/index.js`, `./public`, cấu hình `wrangler.toml`, D1 database thực tế), quá trình kiểm thử được thực hiện đầy đủ trên **gói nâng cấp dữ liệu + giao diện học tập hoàn chỉnh** đã xây dựng:
-1. Kiểm định tĩnh cú pháp JavaScript (`node --check frontend/js/app.js`).
-2. Kiểm định tính toàn vẹn HTML/DOM/handler bằng `check_web_app.py` trên bản ứng dụng chạy độc lập (`wordbridge-learning-hub.html`).
-3. Kiểm định toàn vẹn dữ liệu, JSON Schema (`jsonschema`), hash SHA-256 và tham chiếu chéo bằng Python.
-4. Kiểm định quét chuỗi nội bộ bị cấm trên giao diện công khai.
-5. Kiểm tra kết xuất giao diện trực quan trên trình duyệt (qua trình kết xuất ảnh HTML).
+## 1. Bảng trạng thái tiến độ theo quy chuẩn (Phần XIII)
+Phân biệt nghiêm ngặt 3 trạng thái: **(1) Đã xây dựng trong mã nguồn**, **(2) Đã tích hợp vào website thật**, **(3) Đã triển khai & kiểm thử production**.
 
-## 2. Kết quả kiểm thử chi tiết
+| Hạng mục | Mã nguồn | Tích hợp website thật | Kiểm thử cục bộ / Full-stack SQLite | Nghiệm thu Production |
+| :--- | :--- | :--- | :--- | :--- |
+| Giao diện & Điều hướng 4 nhóm | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium 4 màn hình) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Listening (16 bài, `TEXT_SCRIPT_ONLY`) | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E + API D1) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Speaking Studio + MediaRecorder 7 trạng thái | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Reading (Editorial Split + Focus mode) | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Writing Studio (2 cột + bộ đếm từ + bài mẫu) | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E + API D1) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Pronunciation Lab (33 bài, độc lập) | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Grammar (51), Exercises (64), Assessments (14) | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Khóa học (8 khóa, 16 chương, 32 bài, 40 lessons) | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E + D1 Seed) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Flashcard 2.000 thẻ (`FLASHCARD_ONLY`) & SRS | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E + D1 Seed/SRS) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| My Mistakes, Practice Insights, Lịch sử học tập | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Chromium E2E + API D1) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Sửa lỗi Từ điển 0/0 & Lưu thuật ngữ chuyên ngành | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Unit + Chromium E2E + API D1) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| D1 Migration (9 bảng `wb_*`), Seed SQL & Rollback | `IMPLEMENTED` | `BLOCKED` | `TESTED` (SQLite3 UP + Seed + ROLLBACK) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
+| Worker API `/api/wb/*` & Cô lập tài khoản `user_id` | `IMPLEMENTED` | `BLOCKED` | `TESTED` (Full-stack SQLite đa người dùng) | `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` |
 
-| Hạng mục kiểm thử | Kết quả | Chi tiết xác minh |
-| :--- | :--- | :--- |
-| Bảo toàn 59 tệp ZIP gốc | **ĐẠT (59/59)** | 100% khớp SHA-256 từng byte so với gói gốc. |
-| Schema 11 nhóm gốc + 3 schema mới | **ĐẠT (0 lỗi)** | Toàn bộ 14 JSON Schema kiểm định thành công bằng `jsonschema`. |
-| 2.000 Flashcards mới | **ĐẠT** | Đúng 2.000 thẻ, 0 trùng nội bộ, 0 trùng với 726 từ gốc, 40/40 lĩnh vực, `FLASHCARD_ONLY`. |
-| 8 Khóa học tự học độc lập | **ĐẠT** | 8 khóa, 16 chương, 32 bài học, 64 hoạt động; 0 tham chiếu ID gãy. |
-| Audio Asset Bindings | **ĐẠT** | 49 liên kết (16 Listening + 33 Pronunciation), `audio_url: null`, `allow_playback_button: false`, 0 URL giả. |
-| Cú pháp JavaScript (`node --check`) | **ĐẠT** | 0 lỗi cú pháp trên `frontend/js/app.js`. |
-| Kiểm tra DOM & Handler (`check_web_app.py`) | **ĐẠT** | `OK: no issues found.` — không có nút chết, ID trùng hoặc API bị chặn. |
-| Quét nhãn nội bộ bị cấm | **ĐẠT (0 phát hiện)** | Không tồn tại `Excel gốc`, `Biên soạn mở rộng (+1.000 từ)`, `0 / 0 mục từ công bố` trên toàn bộ giao diện công khai. |
-| Kiểm thử trình duyệt trực tiếp trên `wordbridge.io.vn` | **CHƯA THỰC HIỆN ĐƯỢC** | Chưa có mã nguồn repo gốc và quyền triển khai lên Cloudflare Worker `wordbridge-edu`. Cần người dùng cung cấp repo để áp dụng bản vá và kiểm thử trực tiếp trên staging/production. |
+## 2. Kết quả kiểm thử thực tế đã chạy (0 lỗi)
+### A. Kiểm thử Full-Stack Worker API + SQLite D1 đa tài khoản
+- **Sinh & nạp Seed D1 (`migrations/seeds/seed_wb_catalog_d1.sql`):** **PASS** — Nạp thành công 8 khóa học (`wb_courses`), 2.000 Flashcard (`wb_flashcard_deck_items`, 100% `FLASHCARD_ONLY`), 49 audio bindings (`wb_audio_asset_bindings`, 100% `TEXT_SCRIPT_ONLY`, `audio_url IS NULL`).
+- **Luồng đa tài khoản (`User A → Đăng xuất → User B → Đăng nhập lại User A`):** **PASS**
+  - Yêu cầu chưa xác thực trả đúng `401`.
+  - `User A` đăng nhập → ghi tiến độ khóa học (`CRS-EN-001`), SRS Flashcard (`FC-0001`), phiên Listening (`LS-00001`), lỗi vào My Mistakes, bản nháp Writing (`WR-00001`), và lưu thuật ngữ chuyên ngành không có `entryId` (tự chuẩn hóa `SPEC-D32-bill-of-lading`).
+  - Chuyển sang `User B` → xác minh `User B` nhận `0` bản ghi của `User A` và không thể sửa/đóng lỗi của `User A`.
+  - Đăng nhập lại `User A` → toàn bộ dữ liệu học tập còn nguyên vẹn 100% từ SQLite D1.
+- **SQLite3 Rollback (`migrations/rollbacks/20261127_001_rollback.sql`):** **PASS** — Xóa sạch 9 bảng `wb_*`, giữ nguyên vẹn bảng `legacy_users`.
 
-## 3. Xác minh các quy tắc bắt buộc (Phần XIX)
-- **Speaking & Micro State Machine:** Quản lý đầy đủ 7 trạng thái `IDLE`, `REQUESTING_PERMISSION`, `RECORDING`, `STOPPED`, `PLAYING`, `ERROR`, `PERMISSION_DENIED`. Chỉ hiển thị `"Đang ghi âm thực tế..."` khi `MediaRecorder.state === "recording"`.
-- **Writing Studio:** Loại bỏ hoàn toàn mẫu thẻ từ vựng + textarea; cung cấp quy trình lập dàn ý → trình soạn thảo có bộ đếm từ/ký tự thời gian thực → lưu nháp `localStorage` → nộp bài → tự kiểm tra tiêu chí & bài mẫu kèm giải thích + lỗi thường gặp.
-- **Listening & Pronunciation:** Hiển thị trung thực trạng thái `TEXT_SCRIPT_ONLY`, ẩn nút phát âm giả khi chưa gắn tệp âm thanh R2.
-- **My Mistakes & Practice Insights:** Khởi tạo trống hoàn toàn (không chèn lỗi giả hay biểu đồ phần trăm giả); chỉ ghi nhận từ các lượt nộp bài thực tế của người học.
-- **Khóa học & Đánh giá:** Không tạo video giả, không tạo lớp học giáo viên, không cấp chứng chỉ (`certificate_issued: false`).
+### B. Kiểm thử Trình duyệt thật (Headless Chromium / Selenium CDP)
+- **16/16 kịch bản đạt (0 lỗi JS `SEVERE`, 0 nhãn nội bộ bị cấm):** Tải trang + nhãn đồng bộ trung thực, Khóa học + Breadcrumb, Listening (không nút audio giả, hiện đủ `explanation_vi`), Speaking Studio + MediaRecorder `IDLE`, Reading Editorial Split + Focus mode, Writing Studio + bộ đếm từ + bài mẫu, Pronunciation Lab + 40 bài học tích hợp, Từ điển (726 mục từ, không mất focus khi gõ), Lưu thuật ngữ Chuyên ngành, Flashcard 2.000 thẻ + hàng đợi SRS, My Mistakes + Practice Insights + Lịch sử học tập.
+- **Đa màn hình (0 tràn ngang):** Desktop `1440×900` (`1425 <= 1440`), Laptop `1280×800` (`1265 <= 1280`), Tablet `768×1024` (`753 <= 768`), Mobile `390×844` (`375 <= 390`).
+- **Bảo toàn dữ liệu gốc (`data/`):** **PASS** — 69/69 tệp gốc khớp SHA-256 từng byte.
+
+## 3. Hạng mục đang bị chặn (Trung thực)
+- **Triển khai trực tiếp lên `https://www.wordbridge.io.vn/`:** `BLOCKED – PRODUCTION SOURCE NOT PROVIDED` do người dùng không cung cấp mã nguồn repository `wordbridge-edu` (`src/`, `public/`, `wrangler.toml`) và môi trường không có quyền deploy lên tài khoản Cloudflare của người dùng. Toàn bộ phần mã nguồn, migration, seed SQL và module tích hợp đã được hoàn thiện tối đa và kiểm thử full-stack cục bộ để bạn dán thẳng vào repository khi triển khai.
